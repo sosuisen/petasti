@@ -15,7 +15,6 @@ import {
   setGlobalFocusEventListenerPermission,
   updateAvatar,
 } from './modules_main/card';
-import { MESSAGE } from './modules_main/store_settings';
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
 import { openSettings, settingsDialog } from './modules_main/settings';
 import {
@@ -28,20 +27,18 @@ import { getIdFromUrl } from './modules_common/avatar_url_utils';
 import {
   closeDB,
   currentAvatarMap,
-  loadCurrentAvatars,
   loadCurrentNote,
-  openDB,
-  prepareDbSync,
+  loadNotebook,
+  MESSAGE,
   updateWorkspaceStatus,
 } from './modules_main/store';
 import {
   avatarWindows,
+  createAvatarWindows,
   getZIndexOfTopAvatar,
   setZIndexOfTopAvatar,
 } from './modules_main/avatar_window';
 import { avatarDepthUpdateActionCreator } from './modules_common/actions';
-import { persistentStoreActionDispatcher } from './modules_main/store_utils';
-import { Avatar } from './modules_common/schema_avatar';
 
 // process.on('unhandledRejection', console.dir);
 
@@ -60,26 +57,45 @@ ipcMain.setMaxListeners(1000);
  * Some APIs can only be used after this event occurs.
  */
 app.on('ready', async () => {
-  // locale can be got after 'ready'
-  const myLocale = app.getLocale();
-  console.debug(`locale: ${myLocale}`);
-  let preferredLanguage: string = defaultLanguage;
-  if (availableLanguages.includes(myLocale)) {
-    preferredLanguage = myLocale;
-  }
-
   // for debug
   if (!app.isPackaged && process.env.NODE_ENV === 'development') {
     openSettings();
   }
 
   // load workspaces
-  await openDB();
+  await loadNotebook();
 
-  await loadCurrentNote();
+  await createAvatarWindows(Object.values(currentAvatarMap));
 
-  prepareDbSync();
+  const backToFront = Object.values(currentAvatarMap).sort((a, b) => {
+    if (a.geometry.z < b.geometry.z) {
+      return -1;
+    }
+    else if (a.geometry.z > b.geometry.z) {
+      return 1;
+    }
+    return 0;
+  });
 
+  let zIndexOfTopAvatar = 0;
+  backToFront.forEach(avatar => {
+    const avatarWin = avatarWindows.get(avatar.url);
+    if (avatarWin && !avatarWin.window.isDestroyed()) {
+      avatarWin.window.moveTop();
+      zIndexOfTopAvatar = avatar.geometry.z;
+    }
+  });
+  setZIndexOfTopAvatar(zIndexOfTopAvatar);
+
+  const size = Object.keys(currentAvatarMap).length;
+  console.debug(`Completed to load ${size} cards`);
+
+  /*
+  if (size === 0) {
+    addNewAvatar();
+    console.debug(`Added initial card`);
+  }
+  */
   /**
    * Add task tray
    **/
@@ -263,20 +279,20 @@ ipcMain.handle('get-uuid', () => {
   return uuidv4();
 });
 
-ipcMain.handle('bring-to-front', async (event, url: string, rearrange = false) => {
+ipcMain.handle('bring-to-front', (event, url: string, rearrange = false) => {
   // Database Update
   const zIndexOfTopAvatar = getZIndexOfTopAvatar() + 1;
   console.debug(`new zIndex: ${zIndexOfTopAvatar}`);
   const action = avatarDepthUpdateActionCreator(url, zIndexOfTopAvatar, false);
-  persistentStoreActionDispatcher(action);
+
+  //  persistentStoreActionDispatcher(action);
+
   // persistentStoreActionDispatcher works synchronously,
   // so DB has been already updated here.
   setZIndexOfTopAvatar(zIndexOfTopAvatar);
 
   // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
   if (rearrange) {
-    await loadCurrentAvatars();
-
     const backToFront = Object.values(currentAvatarMap).sort((a, b) => {
       if (a.geometry.z < b.geometry.z) {
         return -1;
@@ -297,9 +313,7 @@ ipcMain.handle('bring-to-front', async (event, url: string, rearrange = false) =
   }
 });
 
-ipcMain.handle('send-to-back', async (event, url: string) => {
-  await loadCurrentAvatars();
-
+ipcMain.handle('send-to-back', (event, url: string) => {
   const backToFront = Object.values(currentAvatarMap).sort((a, b) => {
     if (a.geometry.z < b.geometry.z) {
       return -1;
@@ -314,7 +328,9 @@ ipcMain.handle('send-to-back', async (event, url: string) => {
   const zIndexOfBottomAvatar = backToFront[0].geometry.z - 1;
   console.debug(`new zIndex: ${zIndexOfBottomAvatar}`);
   const action = avatarDepthUpdateActionCreator(url, zIndexOfBottomAvatar, false);
-  persistentStoreActionDispatcher(action);
+
+  // persistentStoreActionDispatcher(action);
+
   // persistentStoreActionDispatcher works synchronously,
   // so DB has been already updated here.
 

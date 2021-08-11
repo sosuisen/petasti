@@ -6,7 +6,7 @@
 import path from 'path';
 import { nanoid } from 'nanoid';
 
-import { app, dialog, ipcMain } from 'electron';
+import { app, dialog, ipcMain, nativeImage } from 'electron';
 import {
   Collection,
   DatabaseOptions,
@@ -14,13 +14,12 @@ import {
   RemoteOptions,
   Sync,
 } from 'git-documentdb';
+import { selectPreferredLanguage, translate } from 'typed-intl';
 import { CardProp } from '../modules_common/cardprop';
-import { MESSAGE } from './store_settings';
 import { getIdFromUrl } from '../modules_common/avatar_url_utils';
 import { generateId, getCurrentDateAndTime } from '../modules_common/utils';
 import { NoteProp } from '../modules_common/schema_workspace';
 import { Avatar, Geometry2D, GeometryXY } from '../modules_common/schema_avatar';
-import { avatarWindows, createAvatarWindows, setZIndexOfTopAvatar } from './avatar_window';
 import {
   AvatarDepthUpdateAction,
   AvatarPositionUpdateAction,
@@ -28,65 +27,84 @@ import {
   PersistentStoreAction,
 } from '../modules_common/actions';
 import { emitter } from './event';
-import { dataDirName, SettingsState2 } from '../modules_common/store_settings.types';
-import { MessageLabel } from '../modules_common/i18n';
-import { scheme } from '../modules_common/const';
+import {
+  dataDirName,
+  defaultDataDir,
+  InfoState,
+  initialSettingsState,
+  SettingsState,
+} from '../modules_common/store.types';
+import {
+  availableLanguages,
+  defaultLanguage,
+  English,
+  Japanese,
+  MessageLabel,
+} from '../modules_common/i18n';
+import { scheme, settingsDbName } from '../modules_common/const';
 
 /**
- * Default data directory
- *
- * settingsDB is created in defaultDataDir.
- * inventoryDB is created in settings.dataStorePath. (Default is defaultDataDir.)
- *
- * - '../../../../../../inventory_manager_data' is default path when using asar created by squirrels.windows.
- * - './inventory_manager_data' is default path when starting from command line (npm start).
- * - They can be distinguished by using app.isPackaged
- *
- * TODO: Default path for Mac / Linux is needed.
+ * GitDocumentDB
  */
-const defaultDataDir = app.isPackaged
-  ? path.join(__dirname, `../../../../../${dataDirName}`)
-  : path.join(__dirname, `../${dataDirName}`);
-
 let bookDB: GitDocumentDB;
 let settingsDB: GitDocumentDB;
 let noteCollection: Collection;
 let cardCollection: Collection;
 
-export const notePropMap: { [_id: string]: NoteProp } = {};
-export const currentAvatarMap: { [url: string]: Avatar } = {};
-
-/**
- * GitDocumentDB
- */
-const notebookDbName = 'book001';
-const settingsDbName = 'local_settings';
-const WORKSPACE_VERSION = 0;
-
 /**
  * Sync
  */
 const remoteUrl = '';
-let sync: Sync;
+let sync: Sync | undefined;
 let remoteOptions: RemoteOptions;
-let settings: SettingsState2 = {
-  _id: 'settings',
-  language: '',
-  dataStorePath: defaultDataDir,
-  currentNoteId: '',
-  currentNotebookName: notebookDbName,
-  sync: {
-    remoteUrl: '',
-    connection: {
-      type: 'github',
-      personalAccessToken: '',
-      private: true,
-    },
-    interval: 30000,
+let settings: SettingsState = initialSettingsState;
+
+export const getSettings = () => {
+  return settings;
+};
+
+/**
+ * Store
+ */
+export const notePropMap: { [_id: string]: NoteProp } = {};
+export const currentAvatarMap: { [url: string]: Avatar } = {};
+
+export const info: InfoState = {
+  messages: English,
+  appinfo: {
+    name: app.getName(),
+    version: app.getVersion(),
+    iconDataURL: nativeImage
+      // .ico cannot be loaded in ubuntu
+      //  .createFromPath(path.resolve(__dirname, '../assets/tree-stickies-icon.ico'))
+      .createFromPath(path.resolve(__dirname, '../assets/tree-stickies-icon-128x128.png'))
+      .toDataURL(),
   },
 };
 
-export const openDB = async () => {
+/**
+ * I18n
+ */
+const translations = translate(English).supporting('ja', Japanese);
+
+/**
+ * loadNoteBook
+ */
+// eslint-disable-next-line complexity
+export const loadNotebook = async () => {
+  // locale can be got after 'ready'
+  const myLocale = app.getLocale();
+  console.debug(`locale: ${myLocale}`);
+  let preferredLanguage: string = defaultLanguage;
+  if (availableLanguages.includes(myLocale)) {
+    preferredLanguage = myLocale;
+  }
+  // Set i18n from locale (for initial error)
+  selectPreferredLanguage(availableLanguages, [preferredLanguage]);
+
+  // Set i18n from locale (for initial errors)
+  info.messages = translations.messages();
+
   // Open databases
   try {
     settingsDB = new GitDocumentDB({
@@ -95,9 +113,7 @@ export const openDB = async () => {
     });
     await settingsDB.open();
 
-    const loadedSettings = ((await settingsDB.get(
-      'settings'
-    )) as unknown) as SettingsState2;
+    const loadedSettings = ((await settingsDB.get('settings')) as unknown) as SettingsState;
     if (loadedSettings === undefined) {
       await settingsDB.put(settings);
     }
@@ -105,7 +121,7 @@ export const openDB = async () => {
       settings = loadedSettings;
     }
 
-    const dbOption: DatabaseOptions = {
+    const bookDbOption: DatabaseOptions = {
       localDir: settings.dataStorePath,
       dbName: settings.currentNotebookName,
       schema: {
@@ -117,7 +133,7 @@ export const openDB = async () => {
       },
     };
 
-    bookDB = new GitDocumentDB(dbOption);
+    bookDB = new GitDocumentDB(bookDbOption);
 
     const openResult = await bookDB.open();
     if (openResult.isNew) {
@@ -142,11 +158,43 @@ export const openDB = async () => {
       // eslint-disable-next-line require-atomic-updates
       bookDB.committer = bookDB.author;
     }
+
+    if (settings.sync.remoteUrl && settings.sync.connection.personalAccessToken) {
+      remoteOptions = {
+        remoteUrl: settings.sync.remoteUrl,
+        connection: settings.sync.connection,
+        interval: settings.sync.interval,
+        conflictResolutionStrategy: 'ours-diff',
+        live: true,
+      };
+    }
   } catch (err) {
     showErrorDialog('databaseCreateError', err.message);
     console.log(err);
     app.exit();
   }
+
+  if (!settingsDB || !bookDB) {
+    return;
+  }
+
+  if (remoteOptions) {
+    sync = await bookDB.sync(remoteOptions).catch(err => {
+      showErrorDialog('syncError', err.message);
+      return undefined;
+    });
+  }
+
+  if (settings.language === '') {
+    // eslint-disable-next-line require-atomic-updates
+    settings.language = preferredLanguage;
+  }
+
+  /**
+   * Set i18n from settings
+   */
+  selectPreferredLanguage(availableLanguages, [settings.language, defaultLanguage]);
+  info.messages = translations.messages();
 
   // Create all collections by one line
   cardCollection = bookDB.collection('card');
@@ -160,48 +208,10 @@ export const openDB = async () => {
     prop._id = noteDir.collectionPath; // Set note id instead of 'prop'.
     notePropMap[prop._id] = prop;
   }
-};
 
-export const closeDB = () => {
-  if (!bookDB) {
-    return Promise.resolve();
-  }
-  return bookDB.close();
-};
+  await loadCurrentNote();
 
-export const prepareDbSync = () => {
-  // sync
-  console.log('DatabaseService: sync');
-  /*
-  if (settings.sync.remoteUrl && settings.sync.connection.personalAccessToken) {
-    remoteOptions = {
-      remoteUrl: settings.sync.remoteUrl,
-      connection: settings.sync.connection,
-      interval: settings.sync.interval,
-      conflictResolutionStrategy: 'ours-diff',
-      live: true,
-    };
-  }
-  sync = await bookDB.sync(remoteOptions);
-*/
-  /**
-   * Forwarding Observer
-   */
-  /*
-    cardCollection.onSyncEvent(sync, 'localChange', (changedFiles: ChangedFile[]) => {
-      const avatar: Avatar = (changeEvent.documentData as unknown) as Avatar;
-      avatarWindows.get(avatar.url)!.reactiveForwarder({
-        state: avatar,
-      });
-    });
-    
-    noteCollection.onSyncEvent(sync, 'localChange', (changedFiles: ChangedFile[]) => {
-      const avatar: Avatar = (changeEvent.documentData as unknown) as Avatar;
-      avatarWindows.get(avatar.url)!.reactiveForwarder({
-        state: avatar,
-      });
-    });
-    */
+  // setSyncEvents();
 };
 
 export const getNotePropList = (): NoteProp[] => {
@@ -242,36 +252,6 @@ export const loadCurrentNote = async () => {
   console.log('# currentNoteId: ' + settings.currentNoteId);
 
   await loadCurrentAvatars();
-
-  await createAvatarWindows(Object.values(currentAvatarMap));
-
-  const backToFront = Object.values(currentAvatarMap).sort((a, b) => {
-    if (a.geometry.z < b.geometry.z) {
-      return -1;
-    }
-    else if (a.geometry.z > b.geometry.z) {
-      return 1;
-    }
-    return 0;
-  });
-
-  let zIndexOfTopAvatar = 0;
-  backToFront.forEach(avatar => {
-    const avatarWin = avatarWindows.get(avatar.url);
-    if (avatarWin && !avatarWin.window.isDestroyed()) {
-      avatarWin.window.moveTop();
-      zIndexOfTopAvatar = avatar.geometry.z;
-    }
-  });
-  setZIndexOfTopAvatar(zIndexOfTopAvatar);
-
-  const size = Object.keys(currentAvatarMap).length;
-  console.debug(`Completed to load ${size} cards`);
-
-  if (size === 0) {
-    addNewAvatar();
-    console.debug(`Added initial card`);
-  }
 };
 
 const createNote = async (name?: string): Promise<NoteProp> => {
@@ -352,7 +332,7 @@ export const updateWorkspaceStatus = async () => {
 /**
  * Avatar
  */
-export const loadCurrentAvatars = async (): Promise<void> => {
+const loadCurrentAvatars = async (): Promise<void> => {
   const avatarDocs = await bookDB.find({
     prefix: settings.currentNoteId + '/c',
   });
@@ -360,7 +340,17 @@ export const loadCurrentAvatars = async (): Promise<void> => {
     const url = `${scheme}://local/${avatarDoc._id}`;
     const cardId = getIdFromUrl(url);
     // eslint-disable-next-line no-await-in-loop
-    const cardDoc = await cardCollection.get(cardId);
+    let cardDoc = await cardCollection.get(cardId);
+    if (cardDoc === undefined) {
+      const current = getCurrentDateAndTime();
+      cardDoc = {
+        _body: '',
+        date: {
+          createDate: current,
+          modifiedDate: current,
+        },
+      };
+    }
     const avatar: Avatar = {
       url,
       data: cardDoc._body,
@@ -605,95 +595,6 @@ export const updateOrCreateCardData = (prop: CardProp): Promise<string> => {
     */
 };
 
-export const exportJSON = (filepath: string) => {
-  /*
-  const cardIdMap: Record<string, string> = {};
-  const cardObj = (await cardDB.allDocs({ include_docs: true })).rows.reduce(
-    (obj, row) => {
-      const newID = 'c' + nanoid();
-      cardIdMap[row.id] = newID;
-      obj[newID] = row.doc;
-      delete obj[newID]._id;
-      delete obj[newID]._rev;
-      return obj;
-    },
-    {} as { [id: string]: any }
-  );
-
-  const workspaceObj: Record<string, any> = {};
-  workspaceObj.version = 0;
-  workspaceObj.spaces = (await workspaceDB.allDocs({ include_docs: true })).rows
-    .filter(row => row.id !== 'currentId')
-    .map(row => {
-      const doc = (row.doc as unknown) as Record<
-        string,
-        string | string[] | number | Record<string, string>
-      >;
-      const newID = 'w' + nanoid();
-      doc.id = newID;
-      delete doc._id;
-      delete doc._rev;
-
-      const current = getCurrentDateAndTime();
-      doc.date = {
-        createdDate: current,
-        modifiedDate: current,
-      };
-      doc.version = 0;
-
-      if (row.doc) {
-        const avatars = doc.avatars as string[];
-        if (avatars) {
-          const newAvatarArray = avatars.map(url => {
-            const cardId = cardIdMap[getIdFromUrl(url)];
-
-            const oldLocation = getLocationFromUrl(url);
-            const newURL = `rxdesktop://local/ws/${newID}/${cardId}/${nanoid(5)}`;
-
-            // @ts-ignore
-            const newAvatar = cardObj[cardId].avatars[oldLocation];
-            newAvatar.url = newURL;
-            return newAvatar;
-          });
-          doc.avatars = newAvatarArray;
-        }
-      }
-      return doc;
-    });
-
-  for (const id in cardObj) {
-    cardObj[id].user = 'local';
-    cardObj[id].version = 0;
-    const current = getCurrentDateAndTime();
-    cardObj[id].date = {
-      createdDate: current,
-      modifiedDate: current,
-    };
-    for (const url in cardObj[id].avatars) {
-      cardObj[id].date = cardObj[id].avatars[url].date;
-    }
-    cardObj[id].type = 'text/html';
-    delete cardObj[id].avatars;
-  }
-
-  const newCardObj: Record<string, any> = {};
-  newCardObj.version = 0;
-
-  const cardArray = [];
-  for (const id in cardObj) {
-    cardObj[id].id = id;
-    cardArray.push(cardObj[id]);
-  }
-  newCardObj.cards = cardArray;
-
-  const dataObj = {
-    workspace: workspaceObj,
-    card: newCardObj,
-  };
-  fs.writeJSON(filepath, dataObj, { spaces: 2 });
- */
-};
-
 const avatarUpdater = (
   action: PersistentStoreAction,
   reducer: (avatar: Avatar) => Avatar
@@ -776,4 +677,26 @@ const showErrorDialog = (label: MessageLabel, msg: string) => {
     buttons: ['OK'],
     message: MESSAGE(label) + '(' + msg + ')',
   });
+};
+
+// Utility for i18n
+export const MESSAGE = (label: MessageLabel, ...args: string[]) => {
+  let message: string = info.messages[label];
+  if (args) {
+    args.forEach((replacement, index) => {
+      const variable = '$' + (index + 1); // $1, $2, ...
+      message = message.replace(variable, replacement);
+    });
+  }
+  return message;
+};
+
+export const closeDB = async () => {
+  if (settingsDB !== undefined) {
+    await settingsDB.close();
+  }
+  if (!bookDB) {
+    return Promise.resolve();
+  }
+  return bookDB.close();
 };

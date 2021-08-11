@@ -9,7 +9,7 @@ import {
   initialSettingsState,
   PersistentSettingsAction,
   SettingsState,
-} from '../modules_common/store_settings.types';
+} from '../modules_common/store.types';
 
 // 'SettingsState' is used both Main process and this Renderer process.
 // ! Notice that it is not shared with Main and Renderer processes by reference,

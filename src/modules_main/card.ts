@@ -36,7 +36,6 @@ import {
 } from './store_workspaces';
 import { DialogButton } from '../modules_common/const';
 import { cardColors, ColorName } from '../modules_common/color';
-import { getSettings, globalDispatch, MESSAGE } from './store_settings';
 import {
   getIdFromUrl,
   getLocationFromUrl,
@@ -49,6 +48,7 @@ import {
   deleteAvatarUrl,
   deleteCardData,
   getCardProp,
+  MESSAGE,
   updateOrCreateCardData,
 } from './store';
 
@@ -109,7 +109,7 @@ const generateNewCardId = (): string => {
 export const createCard = async (propObject: CardPropSerializable) => {
   const prop = CardProp.fromObject(propObject);
   const card = new Card('New', prop);
-  cards.set(card.prop.id, card);
+  cards.set(card.prop._id, card);
 
   /**
    * Render avatar if current workspace matches
@@ -118,7 +118,7 @@ export const createCard = async (propObject: CardPropSerializable) => {
   const promises = [];
   for (const loc in card.prop.avatars) {
     if (loc.match(workspaceUrl)) {
-      const avatarUrl = loc + card.prop.id;
+      const avatarUrl = loc + card.prop._id;
       const avatar = new Avatar(
         new AvatarProp(avatarUrl, getCardData(avatarUrl), getAvatarProp(avatarUrl))
       );
@@ -132,7 +132,7 @@ export const createCard = async (propObject: CardPropSerializable) => {
     console.error(`Error in createCard: ${e.message}`);
   });
   await saveCard(card.prop);
-  return prop.id;
+  return prop._id;
 };
 
 const saveCard = async (cardProp: CardProp) => {
@@ -220,8 +220,8 @@ export class Card {
       }
       else if (arg instanceof CardProp) {
         // Create card with specified CardProp
-        if (arg.id === '') {
-          arg.id = generateNewCardId();
+        if (arg._id === '') {
+          arg._id = generateNewCardId();
         }
         this.prop = arg;
       }
@@ -593,9 +593,9 @@ class Avatar {
             // Destroy
             const id = getIdFromUrl(this.prop.url);
             deleteCardWithRetry(id);
-            return;
+            // return;
           }
-
+          /*
           const domain = domainMatch[1];
           if (getSettings().persistent.navigationAllowedURLs.includes(domain)) {
             console.debug(`Navigation to ${navUrl} is allowed.`);
@@ -625,6 +625,7 @@ class Avatar {
             const id = getIdFromUrl(this.prop.url);
             deleteCardWithRetry(id);
           }
+          */
         }
       };
       //      console.debug('did-finish-load: ' + this.window.webContents.getURL());

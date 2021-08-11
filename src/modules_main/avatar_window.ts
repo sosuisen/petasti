@@ -17,20 +17,18 @@ import {
 import contextMenu from 'electron-context-menu';
 import { DebounceQueue } from 'rx-queue';
 import { DialogButton } from '../modules_common/const';
-import { getSettings, globalDispatch, MESSAGE } from './store_settings';
+
 import { getIdFromUrl } from '../modules_common/avatar_url_utils';
 import { handlers } from './event';
 import { cardColors, ColorName } from '../modules_common/color';
 import { getCurrentWorkspaceId, workspaces } from './store_workspaces';
 import { Avatar } from '../modules_common/schema_avatar';
-import { Card } from '../modules_common/schema_card';
 import { AvatarUrl } from '../modules_common/schema_workspace';
 import {
   avatarPositionUpdateActionCreator,
   avatarSizeUpdateActionCreator,
-  PersistentStoreAction,
 } from '../modules_common/actions';
-import { persistentStoreActionDispatcher } from './store_utils';
+import { MESSAGE } from './store';
 
 /**
  * Const
@@ -426,9 +424,9 @@ export class AvatarWindow {
              * TODO:
             deleteCardWithRetry(id);
              */
-            return;
+            // return;
           }
-
+          /*
           const domain = domainMatch[1];
           if (getSettings().persistent.navigationAllowedURLs.includes(domain)) {
             console.debug(`Navigation to ${navUrl} is allowed.`);
@@ -456,11 +454,12 @@ export class AvatarWindow {
             // Destroy if not permitted
             console.debug(`Deny ${domain}`);
             const id = getIdFromUrl(this.url);
-            /**
-             * TODO:
-            deleteCardWithRetry(id);
-            */
+            //
+            // TODO:
+            // deleteCardWithRetry(id);
+            //
           }
+          */
         }
       };
       //      console.debug('did-finish-load: ' + this.window.webContents.getURL());
@@ -481,11 +480,11 @@ export class AvatarWindow {
 
     this._debouncedAvatarPositionUpdateActionQueue.subscribe(rect => {
       const action = avatarPositionUpdateActionCreator(this.url, rect, true);
-      persistentStoreActionDispatcher(action);
+      //      persistentStoreActionDispatcher(action);
     });
     this._debouncedAvatarSizeUpdateActionQueue.subscribe(rect => {
       const action = avatarSizeUpdateActionCreator(this.url, rect, true);
-      persistentStoreActionDispatcher(action);
+      //      persistentStoreActionDispatcher(action);
     });
   }
 

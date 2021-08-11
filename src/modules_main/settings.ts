@@ -4,9 +4,7 @@
  */
 import path from 'path';
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
-import electronConnect from 'electron-connect';
-import { subscribeStoreFromSettings } from './store_settings';
-import { closeDB, exportJSON, importJSON } from './store';
+import { closeDB } from './store';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let settingsDialog: BrowserWindow;
@@ -39,15 +37,15 @@ export const openSettings = () => {
 
   // hot reload
   if (!app.isPackaged && process.env.NODE_ENV === 'development') {
-    electronConnect.client.create(settingsDialog);
+    require('electron-connect').client.create(settingsDialog);
     settingsDialog.webContents.openDevTools();
   }
 
   settingsDialog.loadURL(path.join(__dirname, '../settings/settings.html'));
   settingsDialog.webContents.on('did-finish-load', () => {
-    const unsubscribe = subscribeStoreFromSettings(settingsDialog);
+    //    const unsubscribe = subscribeStoreFromSettings(settingsDialog);
     settingsDialog.on('close', () => {
-      unsubscribe();
+      //      unsubscribe();
     });
   });
   settingsDialog.webContents.on('new-window', (e, _url) => {
@@ -67,14 +65,6 @@ ipcMain.handle('open-file-selector-dialog', (event, message: string) => {
 
 ipcMain.handle('close-cardio', async event => {
   await closeDB();
-});
-
-ipcMain.handle('export-data-to', async (event, filepath: string) => {
-  await exportJSON(filepath);
-});
-
-ipcMain.handle('import-data-from', async (event, filepath: string) => {
-  await importJSON(filepath);
 });
 
 const openDirectorySelectorDialog = (message: string) => {

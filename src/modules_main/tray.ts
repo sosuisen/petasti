@@ -6,7 +6,6 @@ import path from 'path';
 import prompt from 'electron-prompt';
 import { app, dialog, Menu, MenuItemConstructorOptions, Tray } from 'electron';
 import { closeSettings, openSettings, settingsDialog } from './settings';
-import { getSettings, MESSAGE } from './store_settings';
 import { createCard } from './card';
 import { emitter } from './event';
 import {
@@ -20,7 +19,14 @@ import { getRandomInt } from '../modules_common/utils';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
 import { addAvatarToWorkspace, setChangingToWorkspaceId } from './store_workspaces';
 import { appIcon } from '../modules_common/const';
-import { currentAvatarMap, getCurrentNoteProp, getNotePropList } from './store';
+import {
+  currentAvatarMap,
+  getCurrentNoteProp,
+  getNotePropList,
+  getSettings,
+  info,
+  MESSAGE,
+} from './store';
 import { avatarWindows } from './avatar_window';
 
 /**
@@ -297,7 +303,7 @@ export const setTrayContextMenu = () => {
 
 export const initializeTaskTray = () => {
   tray = new Tray(path.join(__dirname, '../assets/' + appIcon));
-  currentLanguage = getSettings().persistent.language;
+  currentLanguage = getSettings().language;
   setTrayContextMenu();
   /*
   tray.on('click', () => {
@@ -307,7 +313,7 @@ export const initializeTaskTray = () => {
 };
 
 emitter.on('updateTrayContextMenu', () => {
-  const newLanguage = getSettings().persistent.language;
+  const newLanguage = getSettings().language;
   if (currentLanguage !== newLanguage) {
     currentLanguage = newLanguage;
     setTrayContextMenu();

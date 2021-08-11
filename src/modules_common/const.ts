@@ -9,6 +9,9 @@ export const DialogButton = {
   Cancel: 1,
 };
 
+export const notebookDbName = 'book001';
+export const settingsDbName = 'local_settings';
+
 export const scheme = 'treestickies';
 
 export const appIcon = 'tree-stickies-icon.ico';

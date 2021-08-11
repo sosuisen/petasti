@@ -16,8 +16,7 @@ export const cardVersion = '1.0';
 export const DRAG_IMAGE_MARGIN = 50;
 
 export type CardBase = {
-  version: string;
-  id: string;
+  _id: string;
   data: string;
 };
 
@@ -153,15 +152,14 @@ export class AvatarProp extends TransformableFeature {
 }
 
 export class CardProp implements CardBase {
-  public version = cardVersion;
-  public id = '';
+  public _id = '';
   public data = '';
   public avatars: CardAvatars;
 
   // eslint-disable-next-line complexity
   constructor (_id?: string, _data?: string, _avatars?: CardAvatars) {
     if (_id !== undefined) {
-      this.id = _id;
+      this._id = _id;
     }
 
     if (_data !== undefined) {
@@ -195,14 +193,13 @@ export class CardProp implements CardBase {
 
   public toObject = (): CardPropSerializable => {
     return {
-      version: this.version,
-      id: this.id,
+      _id: this._id,
       data: this.data,
       avatars: this.avatars,
     };
   };
 
   public static fromObject = (json: CardPropSerializable): CardProp => {
-    return new CardProp(json.id, json.data, json.avatars);
+    return new CardProp(json._id, json.data, json.avatars);
   };
 }

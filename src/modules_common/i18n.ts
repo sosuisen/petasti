@@ -11,6 +11,7 @@ type MessagesMain = {
   pleaseRestartErrorInOpeningEditor: string;
   securityPageNavigationAlert: string;
   securityLocalNavigationError: string;
+  syncError: string;
   btnCloseCard: string;
   btnOK: string;
   btnAllow: string;
@@ -151,6 +152,7 @@ export const English: Messages = {
     'Trying to open external website $1. Allow if you think it is safe, otherwise it must be removed.',
   securityLocalNavigationError:
     'Script is trying to open $1, but it cannot be allowed. The card will be removed.',
+  syncError: 'Error: Cannot sync with remote',
   btnCloseCard: 'Close card',
   btnOK: 'OK',
   btnAllow: 'Allow',
@@ -236,6 +238,7 @@ export const Japanese: Messages = {
     '外部サイト $1 を開こうとしています。安全な場合のみ許可してください。\n許可しない場合、このカードは削除されます。',
   securityLocalNavigationError:
     'スクリプトが $1 を開こうとしていますが、許可できません。このカードを削除します。',
+  syncError: 'エラー：リモートと同期することができませんでした。同期を再設定してください。',
   btnCloseCard: 'カードを閉じる',
   btnOK: 'はい',
   btnAllow: '許可する',

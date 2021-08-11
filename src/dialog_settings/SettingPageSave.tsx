@@ -12,7 +12,7 @@ import { MenuItemProps } from './MenuItem';
 import { SettingPageTemplate } from './SettingPageTemplate';
 import { MessageLabel } from '../modules_common/i18n';
 import { ColorName, uiColors } from '../modules_common/color';
-import { cardDirName } from '../modules_common/store_settings.types';
+import { dataDirName } from '../modules_common/store.types';
 import { DialogButton } from '../modules_common/const';
 import { getCurrentDateAndTime } from '../modules_common/utils';
 
@@ -24,7 +24,7 @@ export interface SettingPageSaveProps {
 export const SettingPageSave = (props: SettingPageSaveProps) => {
   const [globalState, globalDispatch] = React.useContext(GlobalContext) as GlobalProvider;
   const MESSAGE = (label: MessageLabel) => {
-    return globalState.temporal.messages[label];
+    return globalState.info.messages[label];
   };
   const onChangeButtonClick = async () => {
     const file = await ipcRenderer
