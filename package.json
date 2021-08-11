@@ -1,0 +1,124 @@
+{
+  "name": "tree-stickies",
+  "productName": "TreeStickies",
+  "version": "0.1.0",
+  "description": "TreeStickies",
+  "main": "dist/main.js",
+  "scripts": {
+    "update-ckeditor": "cd external_modules/ckeditor4/ && git pull origin major && cd ./dev/builder/ && build.sh && cd ../../../../ && git add external_modules/ckeditor4",
+    "copy-static": "rm -r dist && cp -r html dist && cp -r external_modules/ckeditor4/dev/builder/release/ckeditor/ dist/ && cp -r external_modules/fontawesome dist/ && cp -r assets dist/ && cp ./node_modules/react/umd/react.production.min.js ./dist/settings/ && cp ./node_modules/react-dom/umd/react-dom.production.min.js ./dist/settings",
+    "lint": "eslint --fix --ext .ts .",
+    "tsc-iframe": "npx tsc -p ./tsconfig.iframe.json",
+    "webpack-renderer": "npx webpack --config webpack.renderer.production.js",
+    "tsc-main": "tsc -p tsconfig.main.production.json",
+    "webpack-renderer-debug": "cross-env NODE_ENV=development npx webpack --config webpack.renderer.production.js",
+    "tsc-main-debug": "tsc -p tsconfig.main.development.json",
+    "compile-main-debug": "npx npm-run-all --parallel webpack-renderer-debug tsc-main-debug",
+    "webpack-settings": "npx webpack --config webpack.settings.production.js",
+    "/* notice for compile-all */": "/* tsc in compile-main must be run finally because the .ts files under modules_common are temporally overwritten by tsc-iframe command and webpacks",
+    "/* notice for compile-all (2) */": "/* Can it be parallelize?", 
+    "compile-all": "npx npm-run-all --parallel tsc-iframe webpack-settings webpack-renderer tsc-main",
+    "compile-all-clean": "npm run copy-static && npm run lint && npm run compile-all",
+    "/* debug-main */": "/* Please launch [Main (tree-stickies)] from VSCode debugger after compile-main-debug */",
+    "/* debug-renderer */": "/* Please launch [Renderer (tree-stickies)] from VSCode debugger after compile-main-debug and [Main (tree-stickies)] */",
+    "debug-settings": "cross-env NODE_ENV=development npx webpack --config webpack.settings.development.js --watch",
+    "start": "npm run start-all",
+    "start-all": "npm run compile-all && electron-forge start",
+    "start-all-clean": "npm run compile-all-clean && electron-forge start",
+    "make": "npm run compile-all-clean && electron-forge make"
+  },
+  "keywords": [],
+  "author": "Hidekazu Kubota",
+  "license": "UNLICENSED",
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "appCopyright": "© 2021 Hidekazu Kubota",
+        "asar": true,
+        "icon": "assets/tree-stickies-icon",
+        "win32metadata": {
+          "ProductName": "TreeStickies",
+          "FileDescription": "TreeStickies"
+        }
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "media_stickies"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "@babel/core": "^7.10.5",
+    "@electron-forge/cli": "^6.0.0-beta.52",
+    "@electron-forge/maker-deb": "^6.0.0-beta.50",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.50",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.50",
+    "@electron-forge/maker-zip": "^6.0.0-beta.50",
+    "@types/ckeditor": "^4.9.10",
+    "@types/electron-prompt": "^1.3.1",
+    "@types/fs-extra": "^9.0.1",
+    "@types/leveldown": "^4.0.2",
+    "@types/node": "^12.12.37",
+    "@types/react": "^16.9.49",
+    "@types/react-css-modules": "^4.6.2",
+    "@types/react-dom": "^16.9.8",
+    "@types/uuid": "^8.3.0",
+    "@typescript-eslint/eslint-plugin": "^2.29.0",
+    "@typescript-eslint/parser": "^2.29.0",
+    "babel-loader": "^8.1.0",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "cross-env": "^7.0.2",
+    "css-loader": "^3.6.0",
+    "electron": "^8.5.3",
+    "electron-reload-webpack-plugin": "^2.0.4",
+    "eslint": "^6.8.0",
+    "eslint-config-standardize": "^0.6.1",
+    "eslint-plugin-prettierx": "^0.12.0",
+    "npm-run-all": "^4.1.5",
+    "source-map-loader": "^1.0.1",
+    "style-loader": "^1.2.1",
+    "ts-loader": "^8.0.1",
+    "typescript": "^3.8.3",
+    "webpack": "^4.44.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-merge": "^5.0.9"
+  },
+  "dependencies": {
+    "babel-plugin-react-css-modules": "^5.2.6",
+    "electron-connect": "^0.6.3",
+    "electron-context-menu": "^2.3.0",
+    "electron-prompt": "^1.6.0",
+    "electron-squirrel-startup": "^1.0.0",
+    "electron-store": "^6.0.0",
+    "fs-extra": "^9.0.1",
+    "leveldown": "^5.6.0",
+    "nanoid": "^3.1.12",
+    "pouchdb-adapter-leveldb": "^7.2.2",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "redux": "^4.0.5",
+    "rx-queue": "^0.8.5",
+    "rxdb": "^9.9.0",
+    "rxjs": "^6.6.3",
+    "typed-intl": "^1.0.3",
+    "uuid": "^8.1.0"
+  }
+}

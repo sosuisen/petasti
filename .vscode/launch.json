@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Main",
+      "type": "node",
+      "request": "launch",
+      // "preLaunchTask": "compile-main-debug-task",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron-forge-vscode-nix",
+      "windows": {
+        "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron-forge-vscode-win.cmd"
+      },
+      // runtimeArgs will be passed directly to your Electron application
+      "runtimeArgs": [
+        // this args for attaching render process
+        "--remote-debugging-port=9222"
+      ],
+      "cwd": "${workspaceFolder}",
+      "outputCapture": "std"
+    },
+    {
+      "name": "Renderer",
+      "type": "chrome",
+      // "preLaunchTask": "Sleepdelay",
+      "request": "attach",
+      "port": 9222,
+      "webRoot": "${workspaceRoot}/dist",
+    }],
+  "compounds": [{
+    "name": "Main & Renderer",
+    "configurations": ["Main", "Renderer"]
+  }]
+}

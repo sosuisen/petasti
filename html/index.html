@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'> 
+  <link type='text/css' href='fontawesome/css/all.min.css' rel='stylesheet'>
+  <link type='text/css' href='css/card.css?20200629' rel='stylesheet'>
+  <script type='text/javascript' src='renderer.js'></script>
+  <script type='text/javascript' src='ckeditor/ckeditor.js?20200901'></script>
+</head>
+
+<body>
+  <div id='card' class='card'>
+    <div id='title' class='title'>
+      <div id='titleBar' class='title-bar title-body'><div id='titleMessage' class='title-message title-body'></div></div>
+      <div id='newBtn' class='new-btn title-btn'><i class='fas fa-plus title-btn-icon'></i></div>
+      <div id='titleSeparator01' class='title-separator01 title-body'></div>
+      <div id='codeBtn' class='code-btn title-btn'><i class='fas fa-code title-btn-icon'></i></div>
+      <div id='closeBtn' class='close-btn title-btn'><i id='closeIcon' class='fas fa-minus-circle title-btn-icon'></i></div>
+    </div>
+    <div id='contents' class='contents'>
+      <iframe id='contentsFrame' sandbox='allow-forms allow-same-origin allow-scripts allow-popups' frameborder=0 class='contentsFrame' src='iframe/contents_frame.html'></iframe>
+    </div>
+    <textarea id='editor'></textarea>   
+  </div>
+  <div id='windowMask' class='window-mask'></div>
+  <div id='resizeAreaRight' class='resize-area resize-area-ew'></div>
+  <div id='resizeAreaBottom' class='resize-area resize-area-ns'></div>
+  <div id='resizeAreaRightBottom' class='resize-area resize-area-nwse'></div>    
+</body>
+
+</html>

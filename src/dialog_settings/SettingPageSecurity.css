@@ -1,0 +1,13 @@
+.urls {
+  height: 150px;
+  overflow-y: scroll;
+}
+
+
+.urls::-webkit-scrollbar { 
+  width: 7px;
+  background-color: #ffd0ff;
+}
+.urls::-webkit-scrollbar-thumb { 
+  background-color: #d090d0;
+}

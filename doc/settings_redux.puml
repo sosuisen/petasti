@@ -1,0 +1,44 @@
+' PlantUML
+@startuml
+title Using Redux for App settings in Media Stickies
+
+skinparam activity {
+  BackgroundColor #e0ffff
+  BorderColor #609090
+}
+
+partition initializeGlobalStore {
+  (*) --> "loadOrCreate()"
+  note bottom
+    Create by default value
+    if not exist
+  end note
+}
+
+"electron-store\n(App settings are saved as JSON)" as JSON << Component >> -up-> [deserialize] "loadOrCreate()"
+
+partition Redux(in_MainProcess) {
+  "loadOrCreate()" --> [globalDispatch\n(action)] "Global Store"
+  "Global Store" --> [prev state,\naction] "globalReducer"
+  "globalReducer" --> [new state] "Global Store"
+  "subscribeStoreFromSettings\n(Proxy)" -down-> [subscribe\nstate changes] "Global Store"
+  "subscriber" -up-> [subscribe\nstate changes] "Global Store"
+  "subscriber" --> [serialize] JSON  
+}
+
+partition StoreProvider(in_RendererProcess) {
+  "subscribeStoreFromSettings\n(Proxy)" --> [IPC:globalStoreChanged(state)] "listener"
+  "listener" --> [localDispatch(state)] "useState"
+  "useState" --> [state] "GlobalContext.Provider" as Provider
+  Provider --> [state, globalDispatch] "React Component" as React
+  note bottom
+    View uses state.
+    UI invokes action.
+  end note
+  React --> [globalDispatch(action)] "Proxy"
+}
+
+partition Redux(in_MainProcess) {
+  "Proxy" --> [IPC:globalDispatch(action)] "handler"
+  "handler" --> [globalDispatch(action)] "Global Store"
+}

@@ -1,0 +1,104 @@
+' PlantUML
+@startuml
+title Initializing TreeStickies
+
+autonumber "<font color=orange>0. "
+participant main <<main.ts>> order 10
+entity Card <<card.ts>> order 20
+database ICardIO as "CardIO\nimplements\nICardIO" <<io.ts>> order 50
+box "Renderer Process" #LightBlue
+  entity BrowserWindow <<renderer.ts>> order 100
+  entity Iframe <<contents_frame.html>> order 101
+  participant ICardEditor as "CardEditorCKE\nimplements\nICardEditor" <<editor.ts>> order 111
+  participant CKEDITOR <<ckeditor>> order 112
+end box 
+
+[-> main: app.on('ready')
+activate main
+
+main ->>ICardIO: ICardIO.getCardIdList()
+activate main #6060f0
+main <-- ICardIO: card IDs
+deactivate main
+loop Create Cards with IDs
+  main -> Card: new
+  activate Card
+  Card -> BrowserWindow: new
+  activate BrowserWindow
+end
+
+group Promise.all[Card.render()])
+  group Promise.all[loadOrCreateCardDate(), loadHTML()])
+    activate main #6060f0  
+    rnote Right Card: Load CardProp        
+    Card ->> Card: loadOrCreateCardData():Promise
+    activate Card  #6060f0
+    Card ->> ICardIO: readCardData
+    Card <<-- ICardIO: CardProp
+
+    deactivate Card
+
+    rnote Right Card: Load HTML skelton
+    Card ->> Card: loadHTML():Promise
+    activate Card  #6060f0
+    Card ->> BrowserWindow: loadURL
+
+
+    BrowserWindow ->> BrowserWindow: onload
+      activate BrowserWindow #f0f0f0
+      BrowserWindow ->> CKEDITOR: Load ckeditor.js
+      activate CKEDITOR
+      BrowserWindow -> ICardEditor: new
+      activate ICardEditor
+
+      group Promise.all([loadUI(),waitIframeInitializing()])    
+        BrowserWindow ->> ICardEditor: loadUI():Promise
+          rnote Right BrowserWindow: Check if editor is loaded
+          activate BrowserWindow #6060f0
+          ICardEditor ->> CKEDITOR: replace('editor')
+            activate ICardEditor #6060f0
+            hnote over CKEDITOR: Create instance
+          ICardEditor <- CKEDITOR: instanceReady
+          deactivate ICardEditor
+        BrowserWindow <-- ICardEditor: resolve()
+        deactivate BrowserWindow
+        
+        rnote Right BrowserWindow: Check if iframe is initialized
+          BrowserWindow ->> Iframe: waitIframeInitializing(): Promise\npostMessage('check-initializing')
+          activate BrowserWindow #6060f0          
+          BrowserWindow <-- Iframe: postMessage('contents-frame-initialized')
+          activate Iframe  
+        BrowserWindow <-- BrowserWindow: resolve()      
+        
+        deactivate BrowserWindow
+      end
+
+      Card <-- BrowserWindow: finish-load
+      deactivate BrowserWindow
+    deactivate Card
+  end
+
+  group renderCard()
+    hnote over Card: Call setSize()\nwith loaded CardProp
+    hnote over Card: Call setPotision()\nwith loaded CardProp
+    hnote over Card: Call showInactive()
+    Card ->> BrowserWindow: Send 'render-card' with CardProp
+    activate Card #6060f0
+    BrowserWindow -> ICardEditor: setCard(CardProp)
+    note over ICardEditor: Ready to show card
+    BrowserWindow -> BrowserWindow: Set contents to visible
+    note left BrowserWindow: render()
+    BrowserWindow -> Iframe: renderContentsData()
+    main <-- BrowserWindow: Invoke 'finish-render-card'    
+    BrowserWindow <-- Iframe: loaded
+    main -> Card: Set renderingCompleted to true
+    Card -> Card: resolve()
+    deactivate Card
+    |||
+  end
+  main <-- Card: resolve()
+  deactivate main
+end
+
+hnote over main: Sort Cards by Z order
+@enduml

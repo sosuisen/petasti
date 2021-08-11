@@ -1,0 +1,45 @@
+/** 
+ * EBNF of Card and Pile url
+ * using W3C EBNF notation (https://www.w3.org/TR/xml/#sec-notation)
+ * Use https://www.bottlecaps.de/rr/ui to render svg.
+ */
+CardURL ::= location 'card' '/' cardID
+PileURL ::= location 'pile' '/' pileID
+
+location ::= scheme '//' place '/'
+cardID ::= 'c' nanoid11
+pileID ::= 'p' nanoid11
+
+scheme ::= 'rxdesktop:'
+
+place ::= remote | 'local'
+remote ::= login ( '/' path )*
+path ::= ( uchar | ';' | ':' | '@' | '&' | '=' )+
+
+nanoid11 ::= nanoalpha nanoalpha nanoalpha nanoalpha nanoalpha nanoalpha nanoalpha nanoalpha nanoalpha nanoalpha nanoalpha
+nanoalpha ::= [0-9a-zA-Z_-] 
+
+/* https://tools.ietf.org/html/rfc1738#section-5 */
+
+login ::= ( user ( ':' password )? '@' )? hostport
+hostport ::= host ( ':' port )?
+host ::= hostname | hostnumber
+hostname ::= ( domainlabel '.' ) toplabel
+domainlabel ::= alphadigit | alphadigit ( alphadigit | '-' )* alphadigit
+toplabel ::= alpha | alpha ( alphadigit | '-' )* alphadigit
+port ::= digit+
+user ::= ( uchar | ';' | '?' | '&' | '=' )+
+password ::= ( uchar | ';' | '?' | '&' | '=' )+
+
+hostnumber ::= digits '.' digits '.' digits '.' digits 
+
+safe ::= '$' | '-' | '_' | '.' | '+'
+extra ::= '!' | '*' | "'" | '(' | ')' | ','
+escape ::= '%' hex hex
+unreserved ::= alpha | digit | safe | extra
+uchar ::= unreserved | escape
+
+alphadigit ::= alpha | digit
+alpha ::= [a-zA-Z]
+digit ::= [0-9]
+

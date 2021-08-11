@@ -1,0 +1,15 @@
+.tag {
+  float: left;
+  border-radius: 7px;
+  padding: 7px;
+  margin-right: 7px;
+  margin-bottom: 3px;
+}
+.label {
+  float: left;
+  margin-right:3px;
+}
+.removeButton {
+  float: right;
+  cursor: pointer;
+}

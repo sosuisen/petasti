@@ -1,0 +1,3 @@
+[submodule "external_modules/ckeditor4"]
+	path = external_modules/ckeditor4
+	url = https://github.com/sosuisen/ckeditor4

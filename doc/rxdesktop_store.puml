@@ -1,0 +1,153 @@
+' PlantUML
+@startuml
+title DB & Presentation Update Flow ver. 0.91, November 15th, 2020
+
+skinparam activity {
+  BackgroundColor #ffffff
+  BorderColor #609090
+}
+skinparam activityShape<< Exclude >> octagon
+
+partition "Main Process" {
+    "Create MainAction" --> [action] "WorkspaceStoreReducer"
+    "Create MainAction\n(Mark action as\nDeserializingAction)" #c0ffff  --> [action] "WorkspaceStoreReducer"
+    
+    "PersistentStoreObserver"   --> [{ state: avatar }] "Create MainAction\n(Mark action as\nDeserializingAction)"
+    
+    "_willMoveListener" --> [x,y] "Create MainAction\n(Mark as RenderedAction)"
+    "_willResizeListener" --> [x,y,width,height] Create MainAction\n(Mark as RenderedAction)
+    "_focusListener" --> [z] "Create MainAction\n(Mark as RenderedAction)"
+    "Create MainAction\n(Mark as RenderedAction)" #e09040 --> [action] "WorkspaceStoreReducer"
+
+    "WorkspaceStoreReducer"    --> [new state] "WorkspaceStore" #e0e0e0
+        partition MainViewController #e0ffff {
+            
+            "WorkspaceStore"    --> [new state] "Excludes update\nmarked as UpstreamAction" << Exclude >> #ffc000
+                                --> "MainViewUpdater"
+                "MainViewUpdater"   --> [new state] "Excludes update\nmarked as RenderedAction" << Exclude >> #e09040
+                                    --> [geometry] "MainWindowUpdater"
+                    "MainWindowUpdater" --> [x, y, width, height] "browserWindow.setPosition()\nbrowserWindow.setSize()"
+                    "MainWindowUpdater" --> [z] "bringToFront()\nsendToBack()"
+        }
+        partition Downstreamer #ffe0ff {
+            "MainViewUpdater"   -up-> [new state] "Create DowstreamAction"
+                                --> [action] "Mark action as DownstreamAction" #ffc0ff
+                                --> [action] "reactiveForwarder"
+        }
+        partition "Database Update" #fff0e0 {
+            "WorkspaceStore"    --> [new state] "Excludes update\nmarked as\nDeserializingAction" << Exclude >> #c0ffff
+                                --> [new state] "debouncedActionQueue"
+                                --> [debounce 1000ms] "persistentStoreActionDispatcher()"
+                                --> [action] "Mark action as SerializingAction" #ffff00                                
+                                --> [action] "storeUpdater(action)"
+                                --> [action] "avatarUpdater(action, reducer(avatar))"
+       }
+    "Global API" --> [action] "Create MainAction"
+    "Global API" --> "Some behaviours"
+}
+
+partition Initialization {
+    (*) --> "loadCurrentWorkspace()"
+        --> "Create WorkspaceStore"
+        --> "Start observers"
+}
+    
+partition preload {
+    "Create WorkspaceStore" --> ['render-card' event with card and avatar] "ipcRenderer - postMessage bridge"     
+    "reactiveForwarder" --> ['reactive-forward' event\n with action] "ipcRenderer - postMessage bridge"
+}
+
+partition PersistentStore(RxDB)  #ffffe0 {
+    "avatarUpdater(action, reducer(avatar))" --> [new avatar] "start atomicPatch"    
+    "start atomicPatch" -left-> [new avatar] "preSave hook"
+    if "SerializingAction?" then
+        --> [true] "Mark update as\nSerializingAction" #ffff00 
+        -right-> "Save"
+    else 
+        --> [false] "Save"
+    "Save" -down-> "Observable Avatar"
+    "Observable Avatar" --> "Excludes update\n marked as\nSerializingAction"
+
+    "PersistentStoreObserver"   --> [subscribe] "Excludes update\n marked as\nSerializingAction" << Exclude >> #ffff00
+                                --> [update event\n with new avatar] "PersistentStoreObserver"
+}            
+
+partition "GitHub Plugin" #e0ffff {
+    "new commit" -right-> "syncTo"
+    "syncTo" --> "start atomicPatch"
+    "Observable Avatar" -up-> [update event\n with new avatar] "Observer(GitHub)"
+    "Observer(GitHub)" -right-> [subscribe] "Observable Avatar"
+    "Observer(GitHub)" -left-> "new commit"
+}
+
+partition "Renderer Process" {
+        "onmousemove\non resizeArea"   --> [x,y,width,height] "Create RendererAction"
+        partition "User Script" #ffc0c0 {
+            "Call Global API\nfrom User Script" --> [api] "Global API"
+            "Call Local API\nfrom User Script" --> [api] "Create RendererAction"            
+            note on link
+                New...
+                Delete...
+                Close...
+            end note
+        }
+        "Create RendererAction" --> [action] "AvatarStoreReducer"
+        "AvatarStoreReducer"    --> [new state] "AvatarStore"
+
+        partition "RendererViewController" #ffe0ff {
+            "AvatarStore" #e0e0e0   --> [new state] " Excludes update\nmarked as RenderedAction" << Exclude >> #e09040
+                                    --> [new state] "RendererViewUpdater"
+                "RendererViewUpdater"   --> [geometry] "RendererWindowUpdater"
+                    "RendererWindowUpdater" --> [x, y, width, height] "window.moveTo()\nwindow.resizeTo()"
+                    "RendererWindowUpdater" --> [z] "window.api.bringToFront()\nwindow.api.sendToBack()"
+                "RendererViewUpdater" --> [others] "RendererContentsUpdater\n(React)"
+        }
+        partition "Upstreamer" #fff0e0 {
+            "AvatarStore"   --> [new state] "Excludes update\nmarked as DownstreamAction" << Exclude >> #ffc0ff
+                            --> [new state] "debouncedActionQueueFromRenderer"
+                            --> [debounce 1000ms] "Create UpstreamAction" #ffc000
+                            --> [action] "upstreamActionDisptatcher"
+                            --> [action] "WorkspaceStoreReducer"
+        }
+    "ipcRenderer - postMessage bridge" --> [action] "AvatarStoreReducer"
+}
+
+partition "External Apps" #ffc0c0 {
+    "Call Global API" --> [api] "Global API"
+}
+
+partition "User operations on BrowserWindow" #ffc0c0 {
+    "Mouse dragging on title bar to move window" --> ['will-move'\nevent] "_willMoveListener"
+    note on link
+        Window position
+        is changed immediately
+        by mouse dragging.
+        View is regarded
+        as already rendered.
+    end note
+    "Mouse dragging on edges to resize window" --> ['will-resize' event] "_willResizeListener"
+    note on link
+        Window size
+        is changed immediately
+        by mouse dragging.
+        View is regarded
+        as already rendered.
+    end note
+    "Mouse click to focus window" --> ['focus' event] "_focusListener"
+    note on link
+        Window z-order
+        is changed immediately
+        by mouse clicking.
+        View is regarded
+        as already rendered.    
+    end note
+}
+
+partition "User operations on HTML contents" #ffc0c0 {
+    "Mouse dragging on resizeArea" --> ['mousemove' event\non resizeArea] "onmousemove\non resizeArea"
+    note on link
+        Window size has not been changed yet.
+    end note
+
+    "Other interactions" --> [data, geometry,\nstyle, condition, date] "Create RendererAction"
+}

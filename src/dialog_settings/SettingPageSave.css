@@ -1,0 +1,77 @@
+.locationSelector {
+  float: left;
+  height: 30px;  
+}
+
+.saveFilePath {
+  float: left;
+  padding: 6px;
+  margin-left: 10px;  
+  width: 400px;
+}
+
+.saveFilePathLabel {
+  float:left;
+  margin-top: 5px;
+}
+
+.saveFilePathValue {
+  float:left;
+  margin-top: 5px;  
+}
+
+.saveChangeFilePathButton {
+  float: left;
+  height: 30px;
+  margin-left: 20px;
+  margin-top: 0px;
+  border-radius: 7px;
+  border: 0px;
+  cursor: pointer;
+  box-shadow: 3px 3px 10px 0 rgba(128, 96, 96, 0.7);  
+  font-weight: bold;  
+}
+
+.exportData {
+  float: left;
+  margin-top: 24px;
+}
+
+.exportDataLabel {
+  float: left;
+  margin-top: 5px;  
+}
+
+.exportDataButton {
+  float: left;
+  height: 30px;
+  margin-left: 20px;
+  margin-top: 0px;
+  border-radius: 7px;
+  border: 0px;
+  cursor: pointer;
+  box-shadow: 3px 3px 10px 0 rgba(128, 96, 96, 0.7);  
+  font-weight: bold; 
+}
+
+.importData {
+  float: left;
+  margin-top: 12px;
+}
+
+.importDataLabel {
+  float: left;
+  margin-top: 5px;  
+}
+
+.importDataButton {
+  float: left;
+  height: 30px;
+  margin-left: 20px;
+  margin-top: 0px;
+  border-radius: 7px;
+  border: 0px;
+  cursor: pointer;
+  box-shadow: 3px 3px 10px 0 rgba(128, 96, 96, 0.7);  
+  font-weight: bold; 
+}
