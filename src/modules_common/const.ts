@@ -9,4 +9,6 @@ export const DialogButton = {
   Cancel: 1,
 };
 
+export const scheme = 'treestickies';
+
 export const appIcon = 'tree-stickies-icon.ico';

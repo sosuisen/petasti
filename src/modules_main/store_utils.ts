@@ -4,7 +4,6 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { RxCollection, RxDocument } from 'rxdb';
 import { Avatar } from '../modules_common/schema_avatar';
 import { Card } from '../modules_common/schema_card';
 import { CartaDocument } from '../modules_common/types';

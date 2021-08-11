@@ -3,7 +3,6 @@
  * © 2021 Hidekazu Kubota
  */
 import path from 'path';
-import Store from 'electron-store';
 import { app, BrowserWindow, ipcMain, nativeImage } from 'electron';
 import { combineReducers, createStore } from 'redux';
 import { selectPreferredLanguage, translate } from 'typed-intl';
@@ -16,7 +15,7 @@ import {
 } from '../modules_common/i18n';
 import { emitter } from './event';
 import {
-  cardDirName,
+  dataDirName,
   initialPersistentSettingsState,
   initialTemporalSettingsState,
   PersistentSettingsAction,
@@ -41,40 +40,13 @@ const translations = translate(English).supporting('ja', Japanese);
  * TODO: Default path for Mac / Linux is needed.
  */
 const defaultCardDir = app.isPackaged
-  ? path.join(__dirname, `../../../../../../${cardDirName}`)
-  : path.join(__dirname, `../../${cardDirName}`);
+  ? path.join(__dirname, `../../../../../../${dataDirName}`)
+  : path.join(__dirname, `../../${dataDirName}`);
 
 const defaultStorage = {
   type: 'local',
   path: defaultCardDir,
 };
-
-/**
- * electron-store for individual settings (a.k.a local machine settings)
- *
- * * Individual settings are serialized into config.json
- * * It is saved to:
- * * app.isPackaged == true ? C:\Users\{UserName}\AppData\Roaming\TreeStickies
- * *                        : Project root directory (/tree-stickies)
- * TODO: config.json path for Mac / Linux is needed.
- */
-
-const electronStore = new Store({
-  cwd: app.isPackaged ? './' : path.join(__dirname, '../../'),
-});
-
-/**
- * Redux for individual settings
- * Individual settings are deserialized into Global Redux store.
- */
-
-/**
- * Redux globalReducer
- * * The main process has a global store with globalReducer,
- * * while each renderer process has a local store with a localReducer such as SettingsDialogReducer.
- * * The state of the global store is proxied to the renderer processes.
- * * The state of the local store is used only in the renderer process.
- */
 
 /**
  * persistent reducer
@@ -240,21 +212,6 @@ store.dispatch({
   type: 'app-put',
   payload: { name: appName, version: appVersion, iconDataURL: dataURL },
 });
-
-// Persistent settings are deserialized from electron-store
-export const initializeGlobalStore = (preferredLanguage: string) => {
-  const loadOrCreate = (key: string, defaultValue: any) => {
-    const value: any = electronStore.get(key, defaultValue);
-    store.dispatch({
-      type: key + '-put',
-      payload: value,
-    } as PersistentSettingsAction);
-  };
-
-  loadOrCreate('storage', defaultStorage);
-  loadOrCreate('language', preferredLanguage);
-  loadOrCreate('navigationAllowedURLs', []);
-};
 
 /**
  * Utilities

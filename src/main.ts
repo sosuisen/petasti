@@ -15,7 +15,7 @@ import {
   setGlobalFocusEventListenerPermission,
   updateAvatar,
 } from './modules_main/card';
-import { initializeGlobalStore, MESSAGE } from './modules_main/store_settings';
+import { MESSAGE } from './modules_main/store_settings';
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
 import { openSettings, settingsDialog } from './modules_main/settings';
 import {
@@ -27,9 +27,9 @@ import { emitter, handlers } from './modules_main/event';
 import { getIdFromUrl } from './modules_common/avatar_url_utils';
 import {
   closeDB,
-  dumpDB,
-  getCurrentAvatars,
-  loadCurrentWorkspace,
+  currentAvatarMap,
+  loadCurrentAvatars,
+  loadCurrentNote,
   openDB,
   prepareDbSync,
   updateWorkspaceStatus,
@@ -67,7 +67,6 @@ app.on('ready', async () => {
   if (availableLanguages.includes(myLocale)) {
     preferredLanguage = myLocale;
   }
-  initializeGlobalStore(preferredLanguage as string);
 
   // for debug
   if (!app.isPackaged && process.env.NODE_ENV === 'development') {
@@ -77,10 +76,7 @@ app.on('ready', async () => {
   // load workspaces
   await openDB();
 
-  // debug
-  // await dumpDB();
-
-  await loadCurrentWorkspace().catch(err => console.error(err));
+  await loadCurrentNote();
 
   prepareDbSync();
 
@@ -106,7 +102,7 @@ emitter.on('change-workspace', (nextWorkspaceId: string) => {
   setCurrentWorkspaceId(nextWorkspaceId);
   setTrayContextMenu();
   updateWorkspaceStatus();
-  loadCurrentWorkspace();
+  loadCurrentNote();
 });
 
 app.on('window-all-closed', () => {
@@ -279,9 +275,9 @@ ipcMain.handle('bring-to-front', async (event, url: string, rearrange = false) =
 
   // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
   if (rearrange) {
-    const avatars: Avatar[] = await getCurrentAvatars();
+    await loadCurrentAvatars();
 
-    const backToFront = avatars.sort((a, b) => {
+    const backToFront = Object.values(currentAvatarMap).sort((a, b) => {
       if (a.geometry.z < b.geometry.z) {
         return -1;
       }
@@ -302,9 +298,9 @@ ipcMain.handle('bring-to-front', async (event, url: string, rearrange = false) =
 });
 
 ipcMain.handle('send-to-back', async (event, url: string) => {
-  const avatars: Avatar[] = await getCurrentAvatars();
+  await loadCurrentAvatars();
 
-  const backToFront = avatars.sort((a, b) => {
+  const backToFront = Object.values(currentAvatarMap).sort((a, b) => {
     if (a.geometry.z < b.geometry.z) {
       return -1;
     }

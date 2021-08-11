@@ -243,7 +243,7 @@ const initializeUIEvents = () => {
   });
 };
 
-const waitIframeInitializing = () => {
+const waitIframeInitializing = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
 
@@ -349,7 +349,7 @@ window.addEventListener('message', event => {
       // onMoveByHand(event.data.bounds);
       break;
     case 'render-card':
-      onRenderCard(event.data.card, event.data.avatar);
+      onRenderCard(event.data.avatar);
       break;
     case 'resize-by-hand':
       // onResizeByHand(event.data.bounds);
@@ -425,10 +425,9 @@ const onMoveByHand = (newBounds: {
 };
 
 // Render card data
-const onRenderCard = (card: Card, avatar: Avatar) => {
+const onRenderCard = (avatar: Avatar) => {
   const _prop: AvatarPropSerializable = {
     ...avatar,
-    data: card.data,
   };
   avatarProp = AvatarProp.fromObject(_prop);
 

@@ -20,7 +20,7 @@ import { getRandomInt } from '../modules_common/utils';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
 import { addAvatarToWorkspace, setChangingToWorkspaceId } from './store_workspaces';
 import { appIcon } from '../modules_common/const';
-import { getCurrentWorkspace, getWorkspaces } from './store';
+import { currentAvatarMap, getCurrentNoteProp, getNotePropList } from './store';
 import { avatarWindows } from './avatar_window';
 
 /**
@@ -87,17 +87,15 @@ const createNewCard = () => {
  */
 };
 
-export const setTrayContextMenu = async () => {
+export const setTrayContextMenu = () => {
   if (!tray) {
     return;
   }
-  const currentWorkspace = await getCurrentWorkspace().catch(err => {
-    console.error(err);
-    return null;
-  });
+  const currentWorkspace = getCurrentNoteProp();
+
   let changeWorkspaces: MenuItemConstructorOptions[] = [];
   if (currentWorkspace !== null) {
-    changeWorkspaces = [...(await getWorkspaces())]
+    changeWorkspaces = [...getNotePropList()]
       .sort(function (a, b) {
         if (a.date.createdDate > b.date.createdDate) {
           return 1;
@@ -111,15 +109,15 @@ export const setTrayContextMenu = async () => {
         return {
           label: `${workspace.name}`,
           type: 'radio',
-          checked: workspace.id === currentWorkspace.id,
+          checked: workspace._id === currentWorkspace._id,
           click: () => {
-            if (workspace.id !== currentWorkspace.id) {
+            if (workspace._id !== currentWorkspace._id) {
               closeSettings();
-              if (currentWorkspace.avatars.length === 0) {
-                emitter.emit('change-workspace', workspace.id);
+              if (Object.keys(currentAvatarMap).length === 0) {
+                emitter.emit('change-workspace', workspace._id);
               }
               else {
-                setChangingToWorkspaceId(workspace.id);
+                setChangingToWorkspaceId(workspace._id);
                 try {
                   // Remove listeners firstly to avoid focus another card in closing process
                   /** 
@@ -263,7 +261,7 @@ export const setTrayContextMenu = async () => {
     },
     {
       label: MESSAGE('exit'),
-      click: async () => {
+      click: () => {
         if (!currentWorkspace) {
           return;
         }
@@ -272,14 +270,14 @@ export const setTrayContextMenu = async () => {
         }
         setChangingToWorkspaceId('exit');
         closeSettings();
-        if (currentWorkspace.avatars.length === 0) {
+        if (Object.keys(currentAvatarMap).length === 0) {
           emitter.emit('exit');
         }
         else {
           try {
-            (await getCurrentWorkspace()).avatars.forEach(url =>
-              avatarWindows.get(url)!.window.webContents.send('card-close')
-            );
+            for (const url in currentAvatarMap) {
+              avatarWindows.get(url)!.window.webContents.send('card-close');
+            }
           } catch (e) {
             console.error(e);
             emitter.emit('exit');

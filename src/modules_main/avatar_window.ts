@@ -70,18 +70,12 @@ export const getGlobalFocusEventListenerPermission = () => {
 // TODO:
 const saveCard = () => {};
 
-export const createAvatarWindows = async (
-  cardMap: Map<string, Card>,
-  avatars: Avatar[]
-) => {
+export const createAvatarWindows = async (avatars: Avatar[]) => {
   const renderers: Promise<void>[] = [];
   avatars.forEach(avatar => {
     const avatarWindow = new AvatarWindow(avatar.url);
     avatarWindows.set(avatar.url, avatarWindow);
-    const card = cardMap.get(getIdFromUrl(avatar.url));
-    if (card) {
-      renderers.push(avatarWindow.render(card, avatar));
-    }
+    renderers.push(avatarWindow.render(avatar));
   });
   await Promise.all(renderers).catch(e => {
     console.error(`Error while rendering cards in ready event: ${e.message}`);
@@ -573,17 +567,17 @@ export class AvatarWindow {
     this.window.off('blur', this._blurListener);
   };
 
-  public render = async (card: Card, avatar: Avatar) => {
-    await this._loadHTML(card, avatar).catch(e => {
+  public render = async (avatar: Avatar) => {
+    await this._loadHTML(avatar).catch(e => {
       throw new Error(`Error in render(): ${e.message}`);
     });
     console.debug('Start _renderCard()' + avatar.url);
-    await this._renderCard(card, avatar).catch(e => {
+    await this._renderCard(avatar).catch(e => {
       throw new Error(`Error in _renderCard(): ${e.message}`);
     });
   };
 
-  _renderCard = (card: Card, avatar: Avatar) => {
+  _renderCard = (avatar: Avatar): Promise<void> => {
     return new Promise(resolve => {
       console.debug('setSize' + avatar.url);
       console.dir(avatar, { depth: null });
@@ -593,7 +587,7 @@ export class AvatarWindow {
       this.window.showInactive();
 
       console.debug('render-card ' + avatar.url);
-      this.window.webContents.send('render-card', card, avatar); // CardProp must be serialize because passing non-JavaScript objects to IPC methods is deprecated and will throw an exception beginning with Electron 9.
+      this.window.webContents.send('render-card', avatar); // CardProp must be serialize because passing non-JavaScript objects to IPC methods is deprecated and will throw an exception beginning with Electron 9.
       const checkTimer = setInterval(() => {
         if (this.renderingCompleted) {
           clearInterval(checkTimer);
@@ -603,16 +597,13 @@ export class AvatarWindow {
     });
   };
 
-  private _loadHTML: (card: Card, avatar: Avatar) => Promise<void> = (
-    card: Card,
-    avatar: Avatar
-  ) => {
+  private _loadHTML: (avatar: Avatar) => Promise<void> = (avatar: Avatar) => {
     return new Promise((resolve, reject) => {
       const finishLoadListener = (event: Electron.IpcMainInvokeEvent) => {
         console.debug('loadHTML  ' + this.url);
         const _finishReloadListener = () => {
           console.debug('Reloaded: ' + this.url);
-          this.window.webContents.send('render-card', card, avatar);
+          this.window.webContents.send('render-card', avatar);
         };
 
         // Don't use 'did-finish-load' event.

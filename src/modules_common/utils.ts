@@ -2,6 +2,8 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
+import { monotonicFactory } from 'ulid';
+const ulid = monotonicFactory();
 
 export const sleep = (msec: number) =>
   new Promise<void>(resolve => setTimeout(resolve, msec));
@@ -17,4 +19,8 @@ export const getRandomInt = (min: number, max: number) => {
   max = Math.floor(max);
   // The maximum is exclusive and the minimum is inclusive
   return Math.floor(Math.random() * (max - min)) + min;
+};
+
+export const generateId = () => {
+  return ulid(Date.now());
 };

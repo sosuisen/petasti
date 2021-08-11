@@ -3,35 +3,23 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-
-import { readFileSync } from 'fs';
+import path from 'path';
 import { nanoid } from 'nanoid';
+
+import { app, dialog, ipcMain } from 'electron';
 import {
-  addRxPlugin,
-  createRxDatabase,
-  RxCollectionCreator,
-  RxDatabase,
-  RxDocument,
-} from 'rxdb';
-import leveldown from 'leveldown';
-import { ipcMain } from 'electron';
-import { filter } from 'rxjs/operators';
+  Collection,
+  DatabaseOptions,
+  GitDocumentDB,
+  RemoteOptions,
+  Sync,
+} from 'git-documentdb';
 import { CardProp } from '../modules_common/cardprop';
-import { getSettings, MESSAGE } from './store_settings';
+import { MESSAGE } from './store_settings';
 import { getIdFromUrl } from '../modules_common/avatar_url_utils';
-import { getCurrentDateAndTime } from '../modules_common/utils';
-import { Workspace, workspaceSchema } from '../modules_common/schema_workspace';
-import { Card, cardSchema } from '../modules_common/schema_card';
-import {
-  Avatar,
-  avatarSchema,
-  AvatarWithRevision,
-  AvatarWithSkipForward,
-  Geometry,
-  Geometry2D,
-  GeometryXY,
-} from '../modules_common/schema_avatar';
-import { getDocs } from './store_utils';
+import { generateId, getCurrentDateAndTime } from '../modules_common/utils';
+import { NoteProp } from '../modules_common/schema_workspace';
+import { Avatar, Geometry2D, GeometryXY } from '../modules_common/schema_avatar';
 import { avatarWindows, createAvatarWindows, setZIndexOfTopAvatar } from './avatar_window';
 import {
   AvatarDepthUpdateAction,
@@ -40,285 +28,224 @@ import {
   PersistentStoreAction,
 } from '../modules_common/actions';
 import { emitter } from './event';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-addRxPlugin(require('pouchdb-adapter-leveldb'));
-
-let rxdb: RxDatabase;
+import { dataDirName, SettingsState2 } from '../modules_common/store_settings.types';
+import { MessageLabel } from '../modules_common/i18n';
+import { scheme } from '../modules_common/const';
 
 /**
- * RxDB Collections
+ * Default data directory
+ *
+ * settingsDB is created in defaultDataDir.
+ * inventoryDB is created in settings.dataStorePath. (Default is defaultDataDir.)
+ *
+ * - '../../../../../../inventory_manager_data' is default path when using asar created by squirrels.windows.
+ * - './inventory_manager_data' is default path when starting from command line (npm start).
+ * - They can be distinguished by using app.isPackaged
+ *
+ * TODO: Default path for Mac / Linux is needed.
  */
-const dbName = 'cartadb';
+const defaultDataDir = app.isPackaged
+  ? path.join(__dirname, `../../../../../${dataDirName}`)
+  : path.join(__dirname, `../${dataDirName}`);
+
+let bookDB: GitDocumentDB;
+let settingsDB: GitDocumentDB;
+let noteCollection: Collection;
+let cardCollection: Collection;
+
+export const notePropMap: { [_id: string]: NoteProp } = {};
+export const currentAvatarMap: { [url: string]: Avatar } = {};
+
+/**
+ * GitDocumentDB
+ */
+const notebookDbName = 'book001';
+const settingsDbName = 'local_settings';
 const WORKSPACE_VERSION = 0;
-
-const collectionNames = ['workspace', 'avatar', 'card'] as const;
-type CollectionName = typeof collectionNames[number];
-interface RxDesktopCollectionCreator extends RxCollectionCreator {
-  name: CollectionName;
-}
-const collections: RxDesktopCollectionCreator[] = [
-  {
-    name: 'workspace',
-    schema: workspaceSchema,
-  },
-  {
-    name: 'avatar',
-    schema: avatarSchema,
-  },
-  {
-    name: 'card',
-    schema: cardSchema,
-  },
-];
-
-/**
- * Local Documents
- */
-const workspaceLocalDocumentIds = ['currentWorkspace'] as const;
-// WorkspaceLocalDocumentIds is union. e.g) 'currentWorkspace' | 'foobar' | ...
-// Use it to check type.
-// Use below to iterate WorkspaceLocalDocumentIds:
-//   for (const id of workspaceLocalDocumentIds) { ... }
-type WorkspaceLocalDocumentId = typeof workspaceLocalDocumentIds[number];
-
-type CurrentWorkspace = {
-  id: string;
-  version: number;
-};
-
-type WorkspaceLocalDocument = CurrentWorkspace;
-
-const insertWorkspaceLocalDoc = async (
-  id: WorkspaceLocalDocumentId,
-  doc: WorkspaceLocalDocument
-): Promise<void> => {
-  await rxdb.workspace.insertLocal(id, doc);
-};
-
-const getWorkspaceLocalDoc = async <T extends WorkspaceLocalDocument>(
-  id: WorkspaceLocalDocumentId
-): Promise<T | null> => {
-  const docRx = await rxdb.workspace.getLocal<T>(id).catch(e => {
-    throw new Error(e);
-  });
-  if (docRx === null) {
-    return null;
-  }
-  return docRx.toJSON();
-};
-
-const getAllWorkspaceLocalDocs = async (): Promise<WorkspaceLocalDocument[]> => {
-  const documents: WorkspaceLocalDocument[] = [];
-  for (const id of workspaceLocalDocumentIds) {
-    // eslint-disable-next-line no-await-in-loop, prettierx/options
-    documents.push((await rxdb.workspace.getLocal<WorkspaceLocalDocument>(id))?.toJSON());
-  }
-  return documents;
-};
 
 /**
  * Sync
  */
-let syncType = 'coudbDB';
-syncType = 'GitHub';
-const syncURL = '';
-
-/**
- * Dump RxDB for debug
- */
-export const dumpDB = async () => {
-  console.debug('************* Workspace Local Documents');
-  console.dir(await getAllWorkspaceLocalDocs(), { depth: null });
-  console.debug('************* Workspaces');
-  console.dir(await getDocs<Workspace>(getCollection('workspace')), { depth: null });
-  console.debug('************* Avatars');
-  console.dir(await getDocs<Avatar>(getCollection('avatar')), { depth: null });
-  console.debug('************* Cards');
-  // console.dir(await getDocs<Card>(getCollection('card')), { depth: null });
+const remoteUrl = '';
+let sync: Sync;
+let remoteOptions: RemoteOptions;
+let settings: SettingsState2 = {
+  _id: 'settings',
+  language: '',
+  dataStorePath: defaultDataDir,
+  currentNoteId: '',
+  currentNotebookName: notebookDbName,
+  sync: {
+    remoteUrl: '',
+    connection: {
+      type: 'github',
+      personalAccessToken: '',
+      private: true,
+    },
+    interval: 30000,
+  },
 };
 
 export const openDB = async () => {
+  // Open databases
   try {
-    rxdb = await createRxDatabase({
-      name: getSettings().persistent.storage.path + '/' + dbName,
-      adapter: leveldown,
+    settingsDB = new GitDocumentDB({
+      localDir: defaultDataDir,
+      dbName: settingsDbName,
     });
+    await settingsDB.open();
 
-    // Create all collections by one line
-    await Promise.all(collections.map(collection => rxdb.collection(collection)));
+    const loadedSettings = ((await settingsDB.get(
+      'settings'
+    )) as unknown) as SettingsState2;
+    if (loadedSettings === undefined) {
+      await settingsDB.put(settings);
+    }
+    else {
+      settings = loadedSettings;
+    }
 
-    /**
-     * Forwarding Observer
-     */
-    const skipForwardRevisions = new Set();
-    const generateSkipKey = (avatarWithRev: AvatarWithRevision) => {
-      return avatarWithRev.url + '_' + avatarWithRev._rev;
-    };
-    const reserveSkipForward = (avatarWithRev: AvatarWithRevision) => {
-      skipForwardRevisions.add(generateSkipKey(avatarWithRev));
-    };
-    const executeSkipForward = (prevData: AvatarWithRevision) => {
-      if (skipForwardRevisions.has(generateSkipKey(prevData))) {
-        skipForwardRevisions.delete(generateSkipKey(prevData));
-        return true;
-      }
-      return false;
-    };
-
-    rxdb.avatar.update$
-      .pipe(
-        filter(changeEvent => {
-          const prevData = (changeEvent.previousData as unknown) as AvatarWithRevision;
-          // Execute skipForward
-          if (executeSkipForward(prevData)) {
-            return false;
-          }
-          return true;
-        })
-      )
-      .subscribe(changeEvent => {
-        const avatar: Avatar = (changeEvent.documentData as unknown) as Avatar;
-        avatarWindows.get(avatar.url)!.reactiveForwarder({
-          state: avatar,
-        });
-      });
-
-    /**
-     * Update of avatar must be atomic to enable 'SkipForward'
-     */
-    rxdb.avatar.preSave(
-      (plainData: { _rev: string } & AvatarWithSkipForward, rxDocument) => {
-        // console.debug('preSave: ' + plainData._rev + ',' + plainData.url);
-        if (plainData.skipForward) {
-          reserveSkipForward(plainData);
-          avatarWindows.get(plainData.url);
-        }
-        delete plainData.skipForward;
+    const dbOption: DatabaseOptions = {
+      localDir: settings.dataStorePath,
+      dbName: settings.currentNotebookName,
+      schema: {
+        json: {
+          plainTextProperties: {
+            name: true,
+          },
+        },
       },
-      false
-    );
-  } catch (e) {
-    console.error(e);
-    throw e;
+    };
+
+    bookDB = new GitDocumentDB(dbOption);
+
+    const openResult = await bookDB.open();
+    if (openResult.isNew) {
+      const terminalId = generateId();
+      const userId = generateId();
+      const author = {
+        name: userId,
+        email: terminalId + '@localhost',
+      };
+      const committer = {
+        name: userId,
+        email: terminalId + '@localhost',
+      };
+      // eslint-disable-next-line require-atomic-updates
+      bookDB.author = author;
+      // eslint-disable-next-line require-atomic-updates
+      bookDB.committer = committer;
+      bookDB.saveAuthor();
+    }
+    else {
+      bookDB.loadAuthor();
+      // eslint-disable-next-line require-atomic-updates
+      bookDB.committer = bookDB.author;
+    }
+  } catch (err) {
+    showErrorDialog('databaseCreateError', err.message);
+    console.log(err);
+    app.exit();
+  }
+
+  // Create all collections by one line
+  cardCollection = bookDB.collection('card');
+  noteCollection = bookDB.collection('note');
+
+  // Load note properties
+  const noteDirList = await noteCollection.getCollections();
+  for (const noteDir of noteDirList) {
+    // eslint-disable-next-line no-await-in-loop
+    const prop: NoteProp = (await noteDir.get('prop')) as NoteProp;
+    prop._id = noteDir.collectionPath; // Set note id instead of 'prop'.
+    notePropMap[prop._id] = prop;
   }
 };
 
 export const closeDB = () => {
-  if (!rxdb) {
+  if (!bookDB) {
     return Promise.resolve();
   }
-  return rxdb.destroy();
+  return bookDB.close();
 };
 
 export const prepareDbSync = () => {
-  // hooks
-  rxdb.workspace.$.subscribe(changeEvent => {
-    /*
-    // insert, update, delete
-    if (changeEvent.operation === 'INSERT') {
-      const payload = changeEvent.documentData;
-      mainWindow.webContents.send('reactive-forward', payload);
-    }
-    else if (changeEvent.operation === 'DELETE') {
-      mainWindow.webContents.send(
-        'persistent-store-deleted',
-        changeEvent.documentData.id
-      );
-    }
-  */
-  });
-
-  if (syncType === 'couchDB') {
-    // sync
-    console.log('DatabaseService: sync');
-    // Set sync() to all collections by one line
-    collections
-      .map(col => col.name)
-      .map(colName => {
-        const remoteURL = syncURL + colName + '/';
-        console.debug(remoteURL);
-        const state = rxdb[colName].sync({
-          remote: remoteURL,
-        });
-        state.change$.subscribe(change => console.dir(change, 3));
-        state.docs$.subscribe(docData => console.dir(docData, 3));
-        state.active$.subscribe(active => console.debug(`[${colName}] active: ${active}`));
-        state.alive$.subscribe(alive => console.debug(`[${colName}] alive: ${alive}`));
-        state.error$.subscribe(error => console.dir(error));
-      });
-  }
-  else if (syncType === 'GitHub') {
-  }
-};
-
-const getCollection = (collectionName: CollectionName) => {
-  return rxdb[collectionName];
-};
-
-// ! Operations for workspace
-
-export const getWorkspaces = async (): Promise<Workspace[]> => {
-  return await getDocs<Workspace>(getCollection('workspace'));
-};
-
-export const loadCurrentWorkspace = async () => {
-  // load cards
-  const docOrError: RxDocument | NoWorkspaceIdError = await getCurrentWorkspaceRx().catch(
-    e => {
-      if (e instanceof NoWorkspaceIdError) {
-        return e;
-      }
-      console.error(e);
-      throw new Error(e);
-    }
-  );
-  let currentWorkspaceRx: RxDocument;
-  if (docOrError instanceof NoWorkspaceIdError) {
-    const newDoc: CurrentWorkspace = {
-      id: docOrError.workspaces[0].id,
-      version: WORKSPACE_VERSION,
+  // sync
+  console.log('DatabaseService: sync');
+  /*
+  if (settings.sync.remoteUrl && settings.sync.connection.personalAccessToken) {
+    remoteOptions = {
+      remoteUrl: settings.sync.remoteUrl,
+      connection: settings.sync.connection,
+      interval: settings.sync.interval,
+      conflictResolutionStrategy: 'ours-diff',
+      live: true,
     };
-    console.debug('workspaceId does not exist.');
-    // eslint-disable-next-line promise/no-nesting
-    await insertWorkspaceLocalDoc('currentWorkspace', newDoc).catch(err => {
-      throw new Error(err);
-    });
-    console.debug('Create workspaceId');
-    // eslint-disable-next-line promise/no-nesting
-    currentWorkspaceRx = await getCurrentWorkspaceRx().catch(err => {
-      throw new Error(err);
-    });
   }
-  else {
-    currentWorkspaceRx = docOrError;
+  sync = await bookDB.sync(remoteOptions);
+*/
+  /**
+   * Forwarding Observer
+   */
+  /*
+    cardCollection.onSyncEvent(sync, 'localChange', (changedFiles: ChangedFile[]) => {
+      const avatar: Avatar = (changeEvent.documentData as unknown) as Avatar;
+      avatarWindows.get(avatar.url)!.reactiveForwarder({
+        state: avatar,
+      });
+    });
+    
+    noteCollection.onSyncEvent(sync, 'localChange', (changedFiles: ChangedFile[]) => {
+      const avatar: Avatar = (changeEvent.documentData as unknown) as Avatar;
+      avatarWindows.get(avatar.url)!.reactiveForwarder({
+        state: avatar,
+      });
+    });
+    */
+};
+
+export const getNotePropList = (): NoteProp[] => {
+  return Object.values(notePropMap);
+};
+
+export const getCurrentNoteProp = () => {
+  return notePropMap[settings.currentNoteId];
+};
+
+export const loadCurrentNote = async () => {
+  // Create note if not exist.
+
+  let createNoteFlag = false;
+  if (Object.keys(notePropMap).length === 0) {
+    createNoteFlag = true;
+  }
+  else if (settings.currentNoteId === undefined || settings.currentNoteId === '') {
+    const sortedNotePropList = Object.keys(notePropMap).sort((a, b) => {
+      if (notePropMap[a].name > notePropMap[b].name) return 1;
+      else if (notePropMap[a].name < notePropMap[b].name) return -1;
+      return 0;
+    });
+    settings.currentNoteId = sortedNotePropList[0];
+    await settingsDB.put(settings);
+  }
+  else if (notePropMap[settings.currentNoteId] === undefined) {
+    createNoteFlag = true;
   }
 
-  // console.dir(currentWorkspaceRx.toJSON(), { depth: null });
+  if (createNoteFlag) {
+    const currentNoteProp = await createNote();
+    // eslint-disable-next-line require-atomic-updates
+    settings.currentNoteId = currentNoteProp._id;
+    await settingsDB.put(settings);
+  }
 
-  const avatars: Avatar[] = await getCurrentAvatars(currentWorkspaceRx);
+  console.log('# currentNoteId: ' + settings.currentNoteId);
 
-  //  console.dir(avatars, { depth: null });
+  await loadCurrentAvatars();
 
-  const cardIds = avatars.map(avatar => getIdFromUrl(avatar.url));
-  // Be unique
-  const uniqueCardIds = [...new Set(cardIds)];
-  const cards = await getDocs<Card>(getCollection('card'), uniqueCardIds).catch(err => {
-    throw err;
-  });
-  const cardMap = new Map<string, Card>();
-  uniqueCardIds.forEach(id => {
-    const index = cards.findIndex(card => card.id === id);
-    if (index >= 0) {
-      cardMap.set(id, cards[index]);
-    }
-  });
+  await createAvatarWindows(Object.values(currentAvatarMap));
 
-  //  console.dir(cards, { depth: null });
-
-  await createAvatarWindows(cardMap, avatars);
-
-  const backToFront = avatars.sort((a, b) => {
+  const backToFront = Object.values(currentAvatarMap).sort((a, b) => {
     if (a.geometry.z < b.geometry.z) {
       return -1;
     }
@@ -338,83 +265,37 @@ export const loadCurrentWorkspace = async () => {
   });
   setZIndexOfTopAvatar(zIndexOfTopAvatar);
 
-  console.debug(`Completed to load ${avatars.length} cards`);
+  const size = Object.keys(currentAvatarMap).length;
+  console.debug(`Completed to load ${size} cards`);
 
-  if (avatars.length === 0) {
+  if (size === 0) {
     addNewAvatar();
     console.debug(`Added initial card`);
   }
 };
 
-class NoWorkspaceIdError extends Error {
-  constructor (public workspaces: Workspace[], e?: string) {
-    super(e);
-    this.name = 'NoWorkspaceIdError';
-  }
-}
-
-const getCurrentWorkspaceId = async (): Promise<string> => {
-  const currentWorkspaceDoc = await getWorkspaceLocalDoc<CurrentWorkspace>(
-    'currentWorkspace'
-  ).catch(e => {
-    throw new Error(e);
-  });
-  if (currentWorkspaceDoc === null || !currentWorkspaceDoc.id) {
-    const workspaces = await getDocs<Workspace>(getCollection('workspace'));
-    if (workspaces.length === 0) {
-      throw new Error('No workspace exists.');
-    }
-    else {
-      throw new NoWorkspaceIdError(workspaces, 'No workspaceId exists.');
-    }
-  }
-  return currentWorkspaceDoc.id;
-};
-
-export const getCurrentWorkspaceRx = async (): Promise<RxDocument> => {
-  const currentWorkspaceId = await getCurrentWorkspaceId().catch(e => {
-    throw e;
-  });
-  console.debug(`Current workspaceId: ${currentWorkspaceId}`);
-  const workspaceRx: RxDocument = ((await rxdb.workspace
-    .findOne(currentWorkspaceId)
-    .exec()) as unknown) as RxDocument;
-  if (!workspaceRx) {
-    throw new Error('No workspace exist');
-  }
-
-  return workspaceRx;
-};
-
-export const getCurrentWorkspace = async (): Promise<Workspace> => {
-  return (
-    await getCurrentWorkspaceRx().catch(e => {
-      throw e;
-    })
-  ).toJSON() as Workspace;
-};
-
-const createWorkspace = async (name?: string): Promise<Workspace> => {
+const createNote = async (name?: string): Promise<NoteProp> => {
   if (!name) {
-    const workspaces = getDocs<Workspace>(getCollection('workspace'));
-    name = MESSAGE('workspaceName', ((await workspaces).length + 1).toString());
+    name = MESSAGE('workspaceName', (Object.keys(notePropMap).length + 1).toString());
   }
-  const newID = 'w' + nanoid();
+  const _id = 'w' + nanoid();
   const current = getCurrentDateAndTime();
-  const newDoc: RxDocument = ((await rxdb.workspace.insert({
-    id: newID,
-    name: name,
+
+  const newNote: NoteProp = {
     date: {
       createdDate: current,
       modifiedDate: current,
     },
-    version: WORKSPACE_VERSION,
-    avatars: [],
-  })) as unknown) as RxDocument;
-  return newDoc.toJSON() as Workspace;
+    name,
+    user: 'local',
+    _id,
+  };
+  await noteCollection.put(newNote);
+
+  return newNote;
 };
 
-export const updateWorkspace = async (workspaceId: string, workspace: Workspace) => {
+export const updateWorkspace = async (workspaceId: string, note: NoteProp) => {
   /*
   const wsObj: { _id: string; _rev: string } & Workspace = {
     _id: workspaceId,
@@ -471,18 +352,28 @@ export const updateWorkspaceStatus = async () => {
 /**
  * Avatar
  */
-export const getCurrentAvatars = async (
-  currentWorkspaceRx?: RxDocument
-): Promise<Avatar[]> => {
-  if (!currentWorkspaceRx) {
-    currentWorkspaceRx = ((await getCurrentWorkspaceRx()) as unknown) as RxDocument;
+export const loadCurrentAvatars = async (): Promise<void> => {
+  const avatarDocs = await bookDB.find({
+    prefix: settings.currentNoteId + '/c',
+  });
+  for (const avatarDoc of avatarDocs) {
+    const url = `${scheme}://local/${avatarDoc._id}`;
+    const cardId = getIdFromUrl(url);
+    // eslint-disable-next-line no-await-in-loop
+    const cardDoc = await cardCollection.get(cardId);
+    const avatar: Avatar = {
+      url,
+      data: cardDoc._body,
+      geometry: avatarDoc.geometry,
+      style: avatarDoc.style,
+      condition: avatarDoc.condition,
+      date: {
+        createdDate: cardDoc.date,
+        modifiedDate: cardDoc.date,
+      },
+    };
+    currentAvatarMap[url] = avatar;
   }
-  if (currentWorkspaceRx) {
-    return (((await currentWorkspaceRx.populate(
-      'avatars'
-    )) as unknown) as RxDocument[]).map(avatarDoc => avatarDoc.toJSON() as Avatar);
-  }
-  return [];
 };
 
 const addNewAvatar = () => {
@@ -634,8 +525,8 @@ export const getCardProp = (id: string): Promise<CardProp> => {
             locked: false,
           };
 
-          const { createdDate, modifiedDate } = (doc as unknown) as CartaDate;
-          const date: CartaDate = { createdDate, modifiedDate };
+          const { createdDate, modifiedDate } = (doc as unknown) as bookDate;
+          const date: bookDate = { createdDate, modifiedDate };
 
           propsRequired.avatars[getCurrentWorkspaceUrl()] = new TransformableFeature(
             geometry,
@@ -709,7 +600,7 @@ export const updateOrCreateCardData = (prop: CardProp): Promise<string> => {
       return res.id;
     })
     .catch(e => {
-      throw new Error(`Error in updateOrCreateCartaDate: ${e.message}`);
+      throw new Error(`Error in updateOrCreatebookDate: ${e.message}`);
     });
     */
 };
@@ -803,45 +694,12 @@ export const exportJSON = (filepath: string) => {
  */
 };
 
-export const importJSON = async (filepath: string) => {
-  console.debug('Start import JSON from ' + filepath);
-  const jsonObj = JSON.parse(readFileSync(filepath).toLocaleString());
-
-  const workspaces = (jsonObj['workspace']['spaces'] as { [key: string]: any }[]).map(
-    workspace => {
-      const newWorkspace = JSON.parse(JSON.stringify(workspace));
-      newWorkspace.avatars = (workspace.avatars as { [key: string]: any }[]).map(
-        avatar => avatar.url
-      );
-      return newWorkspace;
-    }
-  );
-  // console.dir(workspaces, { depth: null });
-
-  const avatars: { [key: string]: any } = [];
-  (jsonObj['workspace']['spaces'] as { [key: string]: any }[]).forEach(workspace => {
-    avatars.push(...workspace.avatars);
-  });
-  // console.dir(avatars);
-
-  try {
-    // @ts-ignore
-    await rxdb.workspace.bulkInsert(workspaces);
-    // @ts-ignore
-    await rxdb.avatar.bulkInsert(avatars);
-    // @ts-ignore
-    await rxdb.card.bulkInsert(jsonObj['card']['cards']);
-  } catch (e) {
-    console.debug(e);
-  }
-  console.debug('Finished');
-};
-
-const avatarUpdater = async (
+const avatarUpdater = (
   action: PersistentStoreAction,
   reducer: (avatar: Avatar) => Avatar
 ) => {
   const url: string = action.payload.url;
+  /*
   const docRx: RxDocument = await rxdb.avatar.findOne(url).exec();
   if (docRx) {
     const avatarClone: Avatar = (docRx.toJSON() as unknown) as Avatar;
@@ -852,6 +710,7 @@ const avatarUpdater = async (
   else {
     console.error(`Error: ${url} does not exist in DB`);
   }
+  */
 };
 
 const avatarPositionUpdater = async (action: AvatarPositionUpdateAction) => {
@@ -910,3 +769,11 @@ emitter.on('persistent-store-dispatch', async (action: PersistentStoreAction) =>
   console.debug(`Call storeUpdater() from Main process: ${action.type}`);
   await storeUpdater(action).catch(e => console.debug(e));
 });
+
+const showErrorDialog = (label: MessageLabel, msg: string) => {
+  dialog.showMessageBoxSync({
+    type: 'error',
+    buttons: ['OK'],
+    message: MESSAGE(label) + '(' + msg + ')',
+  });
+};

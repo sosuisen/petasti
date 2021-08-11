@@ -38,7 +38,6 @@ export type Avatar = {
   style: AvatarStyle;
   condition: AvatarCondition;
   date: CartaDate;
-  version: number;
 };
 
 export type AvatarWithSkipForward = {
@@ -48,77 +47,3 @@ export type AvatarWithSkipForward = {
 export type AvatarWithRevision = {
   _rev?: string;
 } & Avatar;
-
-// For RxDB
-export const avatarSchema = {
-  title: 'Avatar Schema',
-  description: 'RxSchema for avatars of RxDesktop',
-  version: 0,
-  type: 'object',
-  properties: {
-    url: {
-      primary: true,
-      type: 'string',
-    },
-    geometry: {
-      type: 'object',
-      properties: {
-        x: {
-          type: 'number',
-        },
-        y: {
-          type: 'number',
-        },
-        z: {
-          type: 'number',
-        },
-        width: {
-          type: 'number',
-        },
-        height: {
-          type: 'number',
-        },
-      },
-    },
-    style: {
-      type: 'object',
-      properties: {
-        uiColor: {
-          type: 'string',
-        },
-        backgroundColor: {
-          type: 'string',
-        },
-        opacity: {
-          type: 'number',
-        },
-        zoom: {
-          type: 'number',
-        },
-      },
-    },
-    condition: {
-      type: 'object',
-      properties: {
-        locked: {
-          type: 'boolean',
-        },
-      },
-    },
-    date: {
-      type: 'object',
-      properties: {
-        createdDate: {
-          type: 'string',
-        },
-        modifiedDate: {
-          type: 'string',
-        },
-      },
-    },
-    version: {
-      type: 'number',
-      default: 0,
-    },
-  },
-};

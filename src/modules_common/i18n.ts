@@ -1,4 +1,5 @@
 type MessagesMain = {
+  databaseCreateError: string;
   exit: string;
   zoomIn: string;
   zoomOut: string;
@@ -133,6 +134,7 @@ export const English: Messages = {
   ...LanguagesCommon,
   ...WorkspaceEnglish,
   ...SettingsEnglish,
+  databaseCreateError: 'Error: Cannot create database',
   exit: 'Exit',
   zoomIn: 'Zoom In',
   zoomOut: 'Zoom Out',
@@ -217,6 +219,7 @@ export const Japanese: Messages = {
   ...LanguagesCommon,
   ...WorkspaceJapanese,
   ...SettingsJapanese,
+  databaseCreateError: 'エラー：データベースを作成できませんでした。',
   exit: '終了',
   zoomIn: '拡大',
   zoomOut: '縮小',

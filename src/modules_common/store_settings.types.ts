@@ -5,12 +5,10 @@
 
 import { English, Messages } from './i18n';
 
-export const cardDirName = 'tree_stickies_data';
+export const dataDirName = 'tree_stickies_data';
 
 /**
  * Redux State
- * ! A key of the PersistentSettingsState (that is deserialized data) must be same as
- * ! a key of the electron-store (that is serialized data)
  */
 
 export interface PersistentSettingsState {
@@ -105,4 +103,21 @@ export const initialTemporalSettingsState: TemporalSettingsState = {
 export const initialSettingsState: SettingsState = {
   persistent: initialPersistentSettingsState,
   temporal: initialTemporalSettingsState,
+};
+
+export type SettingsState2 = {
+  _id: string;
+  language: string;
+  dataStorePath: string;
+  currentNoteId: string;
+  currentNotebookName: string;
+  sync: {
+    remoteUrl: string;
+    connection: {
+      type: 'github';
+      personalAccessToken: string;
+      private: boolean;
+    };
+    interval: number;
+  };
 };

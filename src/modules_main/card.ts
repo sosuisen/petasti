@@ -673,7 +673,7 @@ class Avatar {
     });
   };
 
-  _renderCard = (_prop: AvatarProp) => {
+  _renderCard = (_prop: AvatarProp): Promise<void> => {
     return new Promise(resolve => {
       this.window.setSize(_prop.geometry.width, _prop.geometry.height);
       this.window.setPosition(_prop.geometry.x, _prop.geometry.y);

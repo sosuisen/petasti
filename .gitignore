@@ -7,7 +7,7 @@ yarn-error.log*
 lerna-debug.log*
 
 # Card dir
-rxdesktop_data/
+tree_stickies_data/
 
 # Dist dir
 dist/

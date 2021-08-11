@@ -100,7 +100,7 @@ const renderTitleBarStyle = () => {
   }
 };
 
-const renderContentsData = () => {
+const renderContentsData = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     //    console.debug('renderContentsData');
 

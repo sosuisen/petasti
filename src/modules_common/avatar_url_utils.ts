@@ -26,5 +26,5 @@ export const getWorkspaceIdFromUrl = (avatarUrl: string): string => {
 
 export const getIdFromUrl = (avatarUrl: string): string => {
   const paths = avatarUrl.split('/');
-  return paths[paths.length - 2];
+  return paths[paths.length - 1];
 };

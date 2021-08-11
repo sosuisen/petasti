@@ -16,7 +16,7 @@ type task = {
 
 const unfinishedTasks: task[] = [];
 
-export const waitUnfinishedTasks = (id: string) => {
+export const waitUnfinishedTasks = (id: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (unfinishedTasks.length > 0) {
       let timeoutCounter = 0;
