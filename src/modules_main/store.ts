@@ -237,7 +237,8 @@ class MainStore {
     for (const noteDir of noteDirList) {
       // eslint-disable-next-line no-await-in-loop
       const prop: NoteProp = (await noteDir.get('prop')) as NoteProp;
-      prop._id = noteDir.collectionPath; // Set note id instead of 'prop'.
+      const pathArr = noteDir.collectionPath.split('/'); // collectionPath is note/nXXXXXX/
+      prop._id = pathArr[1]; // Set note id instead of 'prop'.
       this._notePropMap[prop._id] = prop;
     }
 
@@ -371,7 +372,7 @@ class MainStore {
    * Avatar
    */
   loadCurrentAvatars = async (): Promise<void> => {
-    const avatarDocs = await this._bookDB.find({
+    const avatarDocs = await this._noteCollection.find({
       prefix: this._settings.currentNoteId + '/c',
     });
     for (const avatarDoc of avatarDocs) {

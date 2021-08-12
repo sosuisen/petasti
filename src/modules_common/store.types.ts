@@ -23,7 +23,7 @@ export const dataDirName = 'tree_stickies_data';
  */
 export const defaultDataDir = app.isPackaged
   ? path.join(__dirname, `../../../../../${dataDirName}`)
-  : path.join(__dirname, `../${dataDirName}`);
+  : path.join(__dirname, `../../${dataDirName}`);
 
 /**
  * Temporal State
