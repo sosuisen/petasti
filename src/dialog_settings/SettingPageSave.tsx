@@ -2,10 +2,7 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-import path from 'path';
 import * as React from 'react';
-import { ipcRenderer } from 'electron';
-import fs from 'fs-extra';
 import './SettingPageSave.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { MenuItemProps } from './MenuItem';
@@ -27,15 +24,18 @@ export const SettingPageSave = (props: SettingPageSaveProps) => {
   const dataStorePath = useSelector(selectorDataStorePath);
 
   const onChangeButtonClick = async () => {
+    /* Use window.api
     const file = await ipcRenderer
       .invoke('open-directory-selector-dialog', messages.chooseSaveFilePath)
       .catch(e => {
         console.error(`Failed to open directory selector dialog: ${e.me}`);
       });
     if (file) {
-      /**
-       * TODO: pause sync while copying files
-       */
+
+
+       // TODO: pause sync while copying files
+      
+       
       await ipcRenderer.invoke('close-cardio').catch(e => {
         console.error(`Failed to close cardio: ${e.me}`);
       });
@@ -73,6 +73,7 @@ export const SettingPageSave = (props: SettingPageSaveProps) => {
           console.error(e.message);
         });
     }
+            */
   };
 
   const buttonStyle = (color: ColorName) => ({
