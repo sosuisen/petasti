@@ -4,16 +4,12 @@
  */
 import * as React from 'react';
 import './MenuItem.css';
+import { useSelector } from 'react-redux';
 import { ColorName, uiColors } from '../modules_common/color';
-import {
-  GlobalContext,
-  GlobalProvider,
-  SettingsDialogAction,
-  SettingsDialogContext,
-  SettingsDialogProvider,
-} from './StoreProvider';
+import { LocalAction, LocalContext, LocalProvider } from './localStore';
 import { MessageLabel } from '../modules_common/i18n';
 import { getRandomInt } from '../modules_common/utils';
+import { selectorMessages } from './selector';
 
 export interface MenuItemProps {
   id: string;
@@ -29,12 +25,8 @@ export interface MenuItemPropsInternal {
 }
 
 export const MenuItem = (props: MenuItemProps & MenuItemPropsInternal) => {
-  const [globalState] = React.useContext(GlobalContext) as GlobalProvider;
-  const [state, dispatch]: SettingsDialogProvider = React.useContext(SettingsDialogContext);
-
-  const MESSAGE = (label: MessageLabel) => {
-    return globalState.temporal.messages[label];
-  };
+  const messages = useSelector(selectorMessages);
+  const [state, dispatch]: LocalProvider = React.useContext(LocalContext);
 
   const isActive = state.activeSettingId === props.id;
   const isPrevActive = state.previousActiveSettingId === props.id;
@@ -56,7 +48,7 @@ export const MenuItem = (props: MenuItemProps & MenuItemPropsInternal) => {
     ) as HTMLAudioElement;
     currentAudio.play();
 
-    const action: SettingsDialogAction = {
+    const action: LocalAction = {
       type: 'UpdateActiveSetting',
       activeSettingId: props.id,
     };
@@ -76,7 +68,7 @@ export const MenuItem = (props: MenuItemProps & MenuItemPropsInternal) => {
         <i className={props.icon}></i>
       </span>
       <span styleName={`title ${isActive ? 'activeTitle' : 'inactiveTitle'}`}>
-        {MESSAGE(props.label)}
+        {messages[props.label]}
       </span>
     </h2>
   );

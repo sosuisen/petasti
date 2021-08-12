@@ -25,7 +25,7 @@ const onready = () => {
         },
         {
           id: 'security',
-          label: 'settingPageSecurity',
+          label: 'settingPageSync',
           icon: 'fas fa-shield-alt',
           color: 'purple',
           width: 350,

@@ -19,15 +19,8 @@ import { getRandomInt } from '../modules_common/utils';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
 import { addAvatarToWorkspace, setChangingToWorkspaceId } from './store_workspaces';
 import { appIcon } from '../modules_common/const';
-import {
-  currentAvatarMap,
-  getCurrentNoteProp,
-  getNotePropList,
-  getSettings,
-  info,
-  MESSAGE,
-} from './store';
 import { avatarWindows } from './avatar_window';
+import { mainStore, MESSAGE } from './store';
 
 /**
  * Task tray
@@ -97,11 +90,11 @@ export const setTrayContextMenu = () => {
   if (!tray) {
     return;
   }
-  const currentWorkspace = getCurrentNoteProp();
+  const currentWorkspace = mainStore.getCurrentNoteProp();
 
   let changeWorkspaces: MenuItemConstructorOptions[] = [];
   if (currentWorkspace !== null) {
-    changeWorkspaces = [...getNotePropList()]
+    changeWorkspaces = [...mainStore.getNotePropList()]
       .sort(function (a, b) {
         if (a.date.createdDate > b.date.createdDate) {
           return 1;
@@ -119,7 +112,7 @@ export const setTrayContextMenu = () => {
           click: () => {
             if (workspace._id !== currentWorkspace._id) {
               closeSettings();
-              if (Object.keys(currentAvatarMap).length === 0) {
+              if (Object.keys(mainStore.currentAvatarMap).length === 0) {
                 emitter.emit('change-workspace', workspace._id);
               }
               else {
@@ -276,12 +269,12 @@ export const setTrayContextMenu = () => {
         }
         setChangingToWorkspaceId('exit');
         closeSettings();
-        if (Object.keys(currentAvatarMap).length === 0) {
+        if (Object.keys(mainStore.currentAvatarMap).length === 0) {
           emitter.emit('exit');
         }
         else {
           try {
-            for (const url in currentAvatarMap) {
+            for (const url in mainStore.currentAvatarMap) {
               avatarWindows.get(url)!.window.webContents.send('card-close');
             }
           } catch (e) {
@@ -303,7 +296,7 @@ export const setTrayContextMenu = () => {
 
 export const initializeTaskTray = () => {
   tray = new Tray(path.join(__dirname, '../assets/' + appIcon));
-  currentLanguage = getSettings().language;
+  currentLanguage = mainStore.settings.language;
   setTrayContextMenu();
   /*
   tray.on('click', () => {
@@ -313,7 +306,7 @@ export const initializeTaskTray = () => {
 };
 
 emitter.on('updateTrayContextMenu', () => {
-  const newLanguage = getSettings().language;
+  const newLanguage = mainStore.settings.language;
   if (currentLanguage !== newLanguage) {
     currentLanguage = newLanguage;
     setTrayContextMenu();

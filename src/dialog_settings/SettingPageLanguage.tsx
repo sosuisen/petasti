@@ -3,12 +3,14 @@
  * © 2021 Hidekazu Kubota
  */
 import * as React from 'react';
-import { GlobalContext, GlobalProvider } from './StoreProvider';
 import './SettingPageLanguage.css';
+import { useDispatch, useSelector } from 'react-redux';
 import { MenuItemProps } from './MenuItem';
 import { availableLanguages, MessageLabel } from '../modules_common/i18n';
 import { SettingPageTemplate } from './SettingPageTemplate';
 import { SelectableTag } from './SelectableTag';
+import { selectorLanguage, selectorMessages } from './selector';
+import { settingsLanguageUpdateCreator } from './actionCreator';
 
 export interface SettingPageLanguageProps {
   item: MenuItemProps;
@@ -16,37 +18,37 @@ export interface SettingPageLanguageProps {
 }
 
 export const SettingPageLanguage = (props: SettingPageLanguageProps) => {
-  const [globalState, globalDispatch] = React.useContext(GlobalContext) as GlobalProvider;
-  const MESSAGE = (label: MessageLabel) => {
-    return globalState.temporal.messages[label];
-  };
+  const dispatch = useDispatch();
+
+  const messages = useSelector(selectorMessages);
+  const language = useSelector(selectorLanguage);
 
   const handleClick = (value: string) => {
-    globalDispatch({ type: 'language-put', payload: value });
+    dispatch(settingsLanguageUpdateCreator(value));
   };
 
   const languages = availableLanguages.map(lang => (
     <SelectableTag
       click={handleClick}
-      label={MESSAGE(lang as MessageLabel)}
+      label={messages[lang as MessageLabel]}
       value={lang}
-      selected={globalState.persistent.language === lang}
+      selected={language === lang}
     ></SelectableTag>
   ));
 
   return (
     <SettingPageTemplate item={props.item} index={props.index}>
-      <p>{MESSAGE('languageDetailedText')}</p>
+      <p>{messages.languageDetailedText}</p>
       <p>
-        <div styleName='currentLanguageLabel'>{MESSAGE('currentLanguage')}:</div>
+        <div styleName='currentLanguageLabel'>{messages.currentLanguage}:</div>
         <SelectableTag
           click={handleClick}
-          label={MESSAGE(globalState.persistent.language as MessageLabel)}
-          value={globalState.persistent.language}
+          label={messages[language as MessageLabel]}
+          value={language}
           selected={true}
         ></SelectableTag>
       </p>
-      <p style={{ clear: 'both' }}>{MESSAGE('selectableLanguages')}:</p>
+      <p style={{ clear: 'both' }}>{messages.selectableLanguages}:</p>
       <div>{languages}</div>
     </SettingPageTemplate>
   );

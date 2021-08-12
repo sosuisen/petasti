@@ -4,7 +4,10 @@
  */
 import path from 'path';
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
-import { closeDB } from './store';
+import { selectPreferredLanguage } from 'typed-intl';
+import { mainStore } from './store';
+import { DatabaseCommand } from '../modules_common/db.types';
+import { availableLanguages, defaultLanguage } from '../modules_common/i18n';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let settingsDialog: BrowserWindow;
@@ -22,8 +25,9 @@ export const openSettings = () => {
 
   settingsDialog = new BrowserWindow({
     webPreferences: {
-      nodeIntegration: true,
-      sandbox: false,
+      preload: path.join(__dirname, './preload_settings.js'),
+      sandbox: true,
+      contextIsolation: true,
     },
     width: 800,
     height: 360,
@@ -64,7 +68,55 @@ ipcMain.handle('open-file-selector-dialog', (event, message: string) => {
 });
 
 ipcMain.handle('close-cardio', async event => {
-  await closeDB();
+  await mainStore.closeDB();
+});
+
+// eslint-disable-next-line complexity
+ipcMain.handle('db', async (e, command: DatabaseCommand) => {
+  // eslint-disable-next-line default-case
+  switch (command.command) {
+    case 'db-language-update': {
+      mainStore.settings.language = command.data;
+      selectPreferredLanguage(availableLanguages, [
+        mainStore.settings.language,
+        defaultLanguage,
+      ]);
+      mainStore.info.messages = mainStore.translations.messages();
+      // mainWindow.webContents.send('update-info', info);
+      await mainStore.settingsDB.put(mainStore.settings);
+      break;
+    }
+    case 'db-data-store-path-update': {
+      mainStore.settings.dataStorePath = command.data;
+
+      break;
+    }
+    case 'db-sync-remote-url-update': {
+      if (command.data === '') {
+        if (mainStore.sync !== undefined) {
+          mainStore.bookDB.removeSync(mainStore.sync.remoteURL);
+          mainStore.sync = undefined;
+        }
+      }
+      mainStore.settings.sync.remoteUrl = command.data;
+      await mainStore.settingsDB.put(mainStore.settings);
+      break;
+    }
+    case 'db-sync-personal-access-token-update': {
+      mainStore.settings.sync.connection.personalAccessToken = command.data;
+      await mainStore.settingsDB.put(mainStore.settings);
+      break;
+    }
+    case 'db-sync-interval-update': {
+      mainStore.settings.sync.interval = command.data;
+      if (mainStore.sync !== undefined) {
+        mainStore.sync.pause();
+        mainStore.sync.resume({ interval: mainStore.settings.sync.interval });
+      }
+      await mainStore.settingsDB.put(mainStore.settings);
+      break;
+    }
+  }
 });
 
 const openDirectorySelectorDialog = (message: string) => {

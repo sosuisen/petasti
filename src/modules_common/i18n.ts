@@ -52,7 +52,7 @@ type MessagesWorkspace = {
 type MessagesSettings = {
   settingsDialog: string;
   settingPageLanguage: string;
-  settingPageSecurity: string;
+  settingPageSync: string;
   settingPageSave: string;
   settingPageAbout: string;
   exportData: string;
@@ -108,7 +108,7 @@ const WorkspaceEnglish: MessagesWorkspace = {
 const SettingsEnglish: MessagesSettings = {
   settingsDialog: 'Settings',
   settingPageLanguage: 'Language',
-  settingPageSecurity: 'Security',
+  settingPageSync: 'Sync',
   settingPageSave: 'Data Save',
   settingPageAbout: 'About',
   exportData: 'Export data (JSON format) by hand',
@@ -194,7 +194,7 @@ const WorkspaceJapanese: MessagesWorkspace = {
 const SettingsJapanese: MessagesSettings = {
   settingsDialog: '設定',
   settingPageLanguage: '言語',
-  settingPageSecurity: 'セキュリティ',
+  settingPageSync: '同期',
   settingPageSave: 'データ保存',
   settingPageAbout: 'アプリの情報',
   exportData: '手動で書き出し（JSON形式）',

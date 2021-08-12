@@ -24,14 +24,7 @@ import {
 } from './modules_main/store_workspaces';
 import { emitter, handlers } from './modules_main/event';
 import { getIdFromUrl } from './modules_common/avatar_url_utils';
-import {
-  closeDB,
-  currentAvatarMap,
-  loadCurrentNote,
-  loadNotebook,
-  MESSAGE,
-  updateWorkspaceStatus,
-} from './modules_main/store';
+import { mainStore, MESSAGE } from './modules_main/store';
 import {
   avatarWindows,
   createAvatarWindows,
@@ -63,11 +56,11 @@ app.on('ready', async () => {
   }
 
   // load workspaces
-  await loadNotebook();
+  await mainStore.loadNotebook();
 
-  await createAvatarWindows(Object.values(currentAvatarMap));
+  await createAvatarWindows(Object.values(mainStore.currentAvatarMap));
 
-  const backToFront = Object.values(currentAvatarMap).sort((a, b) => {
+  const backToFront = Object.values(mainStore.currentAvatarMap).sort((a, b) => {
     if (a.geometry.z < b.geometry.z) {
       return -1;
     }
@@ -87,7 +80,7 @@ app.on('ready', async () => {
   });
   setZIndexOfTopAvatar(zIndexOfTopAvatar);
 
-  const size = Object.keys(currentAvatarMap).length;
+  const size = Object.keys(mainStore.currentAvatarMap).length;
   console.debug(`Completed to load ${size} cards`);
 
   /*
@@ -106,7 +99,7 @@ app.on('ready', async () => {
  * Exit app
  */
 emitter.on('exit', () => {
-  closeDB();
+  mainStore.closeDB();
   destroyTray();
   app.quit();
 });
@@ -117,8 +110,8 @@ emitter.on('change-workspace', (nextWorkspaceId: string) => {
   avatarWindows.clear();
   setCurrentWorkspaceId(nextWorkspaceId);
   setTrayContextMenu();
-  updateWorkspaceStatus();
-  loadCurrentNote();
+  mainStore.updateWorkspaceStatus();
+  mainStore.loadCurrentNote();
 });
 
 app.on('window-all-closed', () => {
@@ -293,7 +286,7 @@ ipcMain.handle('bring-to-front', (event, url: string, rearrange = false) => {
 
   // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
   if (rearrange) {
-    const backToFront = Object.values(currentAvatarMap).sort((a, b) => {
+    const backToFront = Object.values(mainStore.currentAvatarMap).sort((a, b) => {
       if (a.geometry.z < b.geometry.z) {
         return -1;
       }
@@ -314,7 +307,7 @@ ipcMain.handle('bring-to-front', (event, url: string, rearrange = false) => {
 });
 
 ipcMain.handle('send-to-back', (event, url: string) => {
-  const backToFront = Object.values(currentAvatarMap).sort((a, b) => {
+  const backToFront = Object.values(mainStore.currentAvatarMap).sort((a, b) => {
     if (a.geometry.z < b.geometry.z) {
       return -1;
     }

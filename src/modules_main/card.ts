@@ -43,14 +43,7 @@ import {
 } from '../modules_common/avatar_url_utils';
 import { emitter, handlers } from './event';
 import { settingsDialog } from './settings';
-import {
-  addAvatarUrl,
-  deleteAvatarUrl,
-  deleteCardData,
-  getCardProp,
-  MESSAGE,
-  updateOrCreateCardData,
-} from './store';
+import { mainStore, MESSAGE } from './store';
 
 /**
  * Card
@@ -125,7 +118,7 @@ export const createCard = async (propObject: CardPropSerializable) => {
       avatars.set(avatarUrl, avatar);
       promises.push(avatar.render());
       getCurrentWorkspace()!.avatars.push(avatarUrl);
-      promises.push(addAvatarUrl(getCurrentWorkspaceId(), avatarUrl));
+      promises.push(mainStore.addAvatarUrl(getCurrentWorkspaceId(), avatarUrl));
     }
   }
   await Promise.all(promises).catch(e => {
@@ -136,7 +129,7 @@ export const createCard = async (propObject: CardPropSerializable) => {
 };
 
 const saveCard = async (cardProp: CardProp) => {
-  await updateOrCreateCardData(cardProp).catch((e: Error) => {
+  await mainStore.updateOrCreateCardData(cardProp).catch((e: Error) => {
     console.error(`Error in saveCard: ${e.message}`);
   });
 };
@@ -170,7 +163,7 @@ export const deleteCard = async (id: string) => {
   for (const avatarLocation in card.prop.avatars) {
     const avatarUrl = avatarLocation + id;
     // eslint-disable-next-line no-await-in-loop
-    await deleteAvatarUrl(getWorkspaceIdFromUrl(avatarUrl), avatarUrl); // Use await because there is race case.
+    await mainStore.deleteAvatarUrl(getWorkspaceIdFromUrl(avatarUrl), avatarUrl); // Use await because there is race case.
 
     const avatar = avatars.get(avatarUrl);
     const ws = getCurrentWorkspace();
@@ -187,7 +180,8 @@ export const deleteCard = async (id: string) => {
   /**
    * Delete actual card
    */
-  await deleteCardData(id)
+  await mainStore
+    .deleteCardData(id)
     .catch((e: Error) => {
       throw new Error(`Error in delete-card: ${e.message}`);
     })
@@ -238,7 +232,7 @@ export class Card {
       const id = arg;
 
       this.loadOrCreateCardData = async () => {
-        this.prop = await getCardProp(id).catch(e => {
+        this.prop = await mainStore.getCardProp(id).catch((e: Error) => {
           throw e;
         });
       };
@@ -256,7 +250,7 @@ export const deleteAvatar = async (_url: string) => {
     if (!avatar.window.isDestroyed()) {
       avatar.window.destroy();
     }
-    await deleteAvatarUrl(getCurrentWorkspaceId(), _url);
+    await mainStore.deleteAvatarUrl(getCurrentWorkspaceId(), _url);
     const ws = getCurrentWorkspace();
     if (ws) {
       ws.avatars = ws.avatars.filter(avatarUrl => avatarUrl !== _url);
@@ -308,10 +302,10 @@ const setContextMenu = (prop: AvatarProp, win: BrowserWindow) => {
 
   const moveAvatarToWorkspace = (workspaceId: string) => {
     removeAvatarFromWorkspace(getCurrentWorkspaceId(), prop.url);
-    deleteAvatarUrl(getCurrentWorkspaceId(), prop.url);
+    mainStore.deleteAvatarUrl(getCurrentWorkspaceId(), prop.url);
     const newAvatarUrl = getWorkspaceUrl(workspaceId) + getIdFromUrl(prop.url);
     addAvatarToWorkspace(workspaceId, newAvatarUrl);
-    addAvatarUrl(workspaceId, newAvatarUrl);
+    mainStore.addAvatarUrl(workspaceId, newAvatarUrl);
     win.webContents.send('card-close');
 
     const card = getCardFromUrl(prop.url);
@@ -334,7 +328,7 @@ const setContextMenu = (prop: AvatarProp, win: BrowserWindow) => {
       return;
     }
     addAvatarToWorkspace(workspaceId, newAvatarUrl);
-    addAvatarUrl(workspaceId, newAvatarUrl);
+    mainStore.addAvatarUrl(workspaceId, newAvatarUrl);
 
     const card = getCardFromUrl(prop.url);
     if (card) {

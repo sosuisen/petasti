@@ -4,15 +4,12 @@
  */
 import * as React from 'react';
 import './SettingsDialogTitle.css';
+import { useSelector } from 'react-redux';
 import { MessageLabel } from '../modules_common/i18n';
-import {
-  GlobalContext,
-  GlobalProvider,
-  SettingsDialogContext,
-  SettingsDialogProvider,
-} from './StoreProvider';
+import { LocalContext, LocalProvider } from './localStore';
 import { MenuItemProps } from './MenuItem';
 import { darkenHexColor, uiColors } from '../modules_common/color';
+import { selectorMessages } from './selector';
 
 export interface SettingsDialogTitleProps {
   title: MessageLabel;
@@ -20,16 +17,12 @@ export interface SettingsDialogTitleProps {
 }
 
 export const SettingsDialogTitle = (props: SettingsDialogTitleProps) => {
-  const [globalState] = React.useContext(GlobalContext) as GlobalProvider;
-  const [settingsDialogState, dispatch]: SettingsDialogProvider = React.useContext(
-    SettingsDialogContext
-  );
-  const MESSAGE = (label: MessageLabel) => {
-    return globalState.temporal.messages[label];
-  };
+  const messages = useSelector(selectorMessages);
+
+  const [localState, dispatch]: LocalProvider = React.useContext(LocalContext);
 
   const activeItem: MenuItemProps | undefined = props.items.find(
-    item => item.id === settingsDialogState.activeSettingId
+    item => item.id === localState.activeSettingId
   );
   let style;
   if (activeItem !== undefined) {
@@ -52,7 +45,7 @@ export const SettingsDialogTitle = (props: SettingsDialogTitleProps) => {
         <div styleName='draggable'>
           <div style={{ float: 'left' }}>
             <span style={{ color: '#909090' }} className='fas fa-cog'></span>&nbsp;&nbsp;
-            {MESSAGE(props.title)}
+            {messages[props.title]}
           </div>
         </div>
         <div styleName='closeButton' onClick={close}>

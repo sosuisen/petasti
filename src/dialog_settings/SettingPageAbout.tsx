@@ -3,10 +3,10 @@
  * © 2021 Hidekazu Kubota
  */
 import * as React from 'react';
-import { GlobalContext, GlobalProvider } from './StoreProvider';
+import { useSelector } from 'react-redux';
 import { MenuItemProps } from './MenuItem';
 import { SettingPageTemplate } from './SettingPageTemplate';
-import { MessageLabel } from '../modules_common/i18n';
+import { selectorAppInfo, selectorMessages } from './selector';
 
 export interface SettingPageAboutProps {
   item: MenuItemProps;
@@ -14,21 +14,19 @@ export interface SettingPageAboutProps {
 }
 
 export const SettingPageAbout = (props: SettingPageAboutProps) => {
-  const [globalState, globalDispatch] = React.useContext(GlobalContext) as GlobalProvider;
-  const MESSAGE = (label: MessageLabel) => {
-    return globalState.temporal.messages[label];
-  };
+  const messages = useSelector(selectorMessages);
+  const appInfo = useSelector(selectorAppInfo);
 
   return (
     <SettingPageTemplate item={props.item} index={props.index}>
-      <img src={globalState.temporal.app.iconDataURL}></img>
+      <img src={appInfo.iconDataURL}></img>
       <p>
-        {globalState.temporal.app.name} {globalState.temporal.app.version}
+        {appInfo.name} {appInfo.version}
       </p>
-      <p>{MESSAGE('aboutCopyright')}</p>
+      <p>{messages.aboutCopyright}</p>
       <p>
-        <a href={MESSAGE('aboutAppUrl')} target='_blank'>
-          {MESSAGE('aboutAppUrl')}
+        <a href={messages.aboutAppUrl} target='_blank'>
+          {messages.aboutAppUrl}
         </a>
       </p>
     </SettingPageTemplate>

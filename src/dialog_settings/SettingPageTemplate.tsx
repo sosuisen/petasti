@@ -3,11 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 import * as React from 'react';
-import {
-  SettingsDialogAction,
-  SettingsDialogContext,
-  SettingsDialogProvider,
-} from './StoreProvider';
+import { LocalAction, LocalContext, LocalProvider } from './localStore';
 import { ColorName, uiColors } from '../modules_common/color';
 import { MenuItemProps } from './MenuItem';
 import './SettingPageTemplate.css';
@@ -20,21 +16,19 @@ export interface SettingPageTemplateProps {
 }
 
 export const SettingPageTemplate = (props: SettingPageTemplateProps) => {
-  const [settingsDialogState, dispatch]: SettingsDialogProvider = React.useContext(
-    SettingsDialogContext
-  );
+  const [localState, dispatch]: LocalProvider = React.useContext(LocalContext);
   const style = (color: ColorName) => ({
     backgroundColor: uiColors[color],
-    zIndex: settingsDialogState.activeSettingId === props.item.id ? 200 : 150 - props.index,
+    zIndex: localState.activeSettingId === props.item.id ? 200 : 150 - props.index,
     width: props.item.width + 'px',
     height: props.item.height + 'px',
   });
 
   let activeState = 'inactivePage';
-  if (settingsDialogState.activeSettingId === props.item.id) {
+  if (localState.activeSettingId === props.item.id) {
     activeState = 'activePage';
   }
-  else if (settingsDialogState.previousActiveSettingId === props.item.id) {
+  else if (localState.previousActiveSettingId === props.item.id) {
     activeState = 'previousActivePage';
   }
 
@@ -44,7 +38,7 @@ export const SettingPageTemplate = (props: SettingPageTemplateProps) => {
       (document.getElementById(
         'soundEffect0' + getRandomInt(1, 4)
       ) as HTMLAudioElement).play();
-      const action: SettingsDialogAction = {
+      const action: LocalAction = {
         type: 'UpdateActiveSetting',
         activeSettingId: props.item.id,
       };

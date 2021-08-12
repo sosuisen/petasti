@@ -3,7 +3,6 @@
   overflow-y: scroll;
 }
 
-
 .urls::-webkit-scrollbar { 
   width: 7px;
   background-color: #ffd0ff;

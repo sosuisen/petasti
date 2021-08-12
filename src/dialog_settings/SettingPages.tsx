@@ -5,9 +5,9 @@
 import * as React from 'react';
 import './SettingPages.css';
 import { SettingPageSave } from './SettingPageSave';
-import { SettingPageSecurity } from './SettingPageSecurity';
+import { SettingPageSync } from './SettingPageSync';
 import { SettingPageLanguage } from './SettingPageLanguage';
-import { SettingsDialogContext, SettingsDialogProvider } from './StoreProvider';
+import { LocalContext, LocalProvider } from './localStore';
 import { MenuItemProps } from './MenuItem';
 import { SettingPageAbout } from './SettingPageAbout';
 
@@ -16,17 +16,15 @@ export interface SettingsProps {
 }
 
 export const SettingPages = (props: SettingsProps) => {
-  const [settingsDialogState]: SettingsDialogProvider = React.useContext(
-    SettingsDialogContext
-  );
+  const [localState]: LocalProvider = React.useContext(LocalContext);
   let ActivePage;
   const pages = props.items.map((item, index) => {
     let Page;
     if (item.id === 'save') {
       Page = <SettingPageSave item={item} index={index} />;
     }
-    else if (item.id === 'security') {
-      Page = <SettingPageSecurity item={item} index={index} />;
+    else if (item.id === 'sync') {
+      Page = <SettingPageSync item={item} index={index} />;
     }
     else if (item.id === 'language') {
       Page = <SettingPageLanguage item={item} index={index} />;
@@ -35,7 +33,7 @@ export const SettingPages = (props: SettingsProps) => {
       Page = <SettingPageAbout item={item} index={index} />;
     }
 
-    if (settingsDialogState.activeSettingId === item.id) {
+    if (localState.activeSettingId === item.id) {
       ActivePage = Page;
     }
     else {

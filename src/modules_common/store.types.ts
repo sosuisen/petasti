@@ -60,6 +60,11 @@ export type SettingsState = {
   };
 };
 
+export type SettingsDialogState = {
+  info: InfoState;
+  settings: SettingsState;
+};
+
 export const initialSettingsState: SettingsState = {
   _id: 'settings',
   language: '',
@@ -87,22 +92,7 @@ export type LanguagePutAction = {
   payload: string;
 };
 
-export type NavigationAllowedURLsPutAction = {
-  type: 'navigationAllowedURLs-put';
-  payload: string | string[];
-  appinfo: AppInfo;
-};
-
-export type NavigationAllowedURLsDeleteAction = {
-  type: 'navigationAllowedURLs-delete';
-  payload: string | string[];
-};
-
-export type PersistentSettingsAction =
-  | StoragePutAction
-  | LanguagePutAction
-  | NavigationAllowedURLsPutAction
-  | NavigationAllowedURLsDeleteAction;
+export type PersistentSettingsAction = StoragePutAction | LanguagePutAction;
 
 export type MessagesPutAction = {
   type: 'messages-put';
