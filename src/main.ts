@@ -50,13 +50,13 @@ ipcMain.setMaxListeners(1000);
  * Some APIs can only be used after this event occurs.
  */
 app.on('ready', async () => {
+  // load workspaces
+  await mainStore.loadNotebook();
+
   // for debug
   if (!app.isPackaged && process.env.NODE_ENV === 'development') {
     openSettings();
   }
-
-  // load workspaces
-  await mainStore.loadNotebook();
 
   await createAvatarWindows(Object.values(mainStore.currentAvatarMap));
 

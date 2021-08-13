@@ -48,10 +48,7 @@ export const openSettings = () => {
 
   settingsDialog.loadURL(path.join(__dirname, '../settings/settings.html'));
   settingsDialog.webContents.on('did-finish-load', () => {
-    //    const unsubscribe = subscribeStoreFromSettings(settingsDialog);
-    settingsDialog.on('close', () => {
-      //      unsubscribe();
-    });
+    settingsDialog.webContents.send('initialize-store', mainStore.info, mainStore.settings);
   });
   settingsDialog.webContents.on('new-window', (e, _url) => {
     e.preventDefault();
