@@ -80,8 +80,10 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
         defaultLanguage,
       ]);
       mainStore.info.messages = mainStore.translations.messages();
-      // mainWindow.webContents.send('update-info', info);
+      settingsDialog.webContents.send('update-info', mainStore.info);
+
       await mainStore.settingsDB.put(mainStore.settings);
+
       break;
     }
     case 'db-data-store-path-update': {
