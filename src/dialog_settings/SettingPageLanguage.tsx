@@ -10,7 +10,7 @@ import { availableLanguages, MessageLabel } from '../modules_common/i18n';
 import { SettingPageTemplate } from './SettingPageTemplate';
 import { SelectableTag } from './SelectableTag';
 import { selectorLanguage, selectorMessages } from './selector';
-import { settingsLanguageUpdateCreator } from './actionCreator';
+import { settingsLanguageUpdateCreator } from './action_creator';
 
 export interface SettingPageLanguageProps {
   item: MenuItemProps;

@@ -3,7 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 import * as React from 'react';
-import { LocalAction, localContext, LocalProvider } from './localStore';
+import { LocalAction, localContext, LocalProvider } from './store_local';
 import { ColorName, uiColors } from '../modules_common/color';
 import { MenuItemProps } from './MenuItem';
 import './SettingPageTemplate.css';

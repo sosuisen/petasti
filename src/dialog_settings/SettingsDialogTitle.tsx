@@ -6,7 +6,7 @@ import * as React from 'react';
 import './SettingsDialogTitle.css';
 import { useSelector } from 'react-redux';
 import { MessageLabel } from '../modules_common/i18n';
-import { localContext, LocalProvider } from './localStore';
+import { localContext, LocalProvider } from './store_local';
 import { MenuItemProps } from './MenuItem';
 import { darkenHexColor, uiColors } from '../modules_common/color';
 import { selectorMessages } from './selector';

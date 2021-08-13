@@ -7,7 +7,7 @@ import './SettingPages.css';
 import { SettingPageSave } from './SettingPageSave';
 import { SettingPageSync } from './SettingPageSync';
 import { SettingPageLanguage } from './SettingPageLanguage';
-import { localContext, LocalProvider } from './localStore';
+import { localContext, LocalProvider } from './store_local';
 import { MenuItemProps } from './MenuItem';
 import { SettingPageAbout } from './SettingPageAbout';
 

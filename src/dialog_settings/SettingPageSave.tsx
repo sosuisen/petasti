@@ -11,7 +11,7 @@ import { ColorName, uiColors } from '../modules_common/color';
 import { DIALOG_BUTTON } from '../modules_common/const';
 import { selectorDataStorePath, selectorMessages } from './selector';
 import { dataDirName } from '../modules_common/store.types';
-import { settingsDataStorePathUpdateCreator } from './actionCreator';
+import { settingsDataStorePathUpdateCreator } from './action_creator';
 
 export interface SettingPageSaveProps {
   item: MenuItemProps;

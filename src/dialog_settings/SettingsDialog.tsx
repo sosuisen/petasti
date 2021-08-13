@@ -10,7 +10,7 @@ import './SettingsDialog.css';
 import { MessageLabel } from '../modules_common/i18n';
 import { SettingsDialogTitle } from './SettingsDialogTitle';
 import { settingsDialogStore } from './store';
-import { localContext, LocalProvider, localReducer } from './localStore';
+import { localContext, LocalProvider, localReducer } from './store_local';
 
 export interface SettingsDialogProps {
   title: MessageLabel;
