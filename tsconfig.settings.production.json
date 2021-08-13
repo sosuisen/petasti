@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig-base-react",
+  "compilerOptions": {
+    "sourceMap": false,
+  },
+  "include": [
+    "src/dialog_settings/*",
+    "src/modules_common/*"
+  ]  
+}

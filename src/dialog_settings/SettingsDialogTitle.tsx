@@ -16,7 +16,7 @@ export interface SettingsDialogTitleProps {
   items: MenuItemProps[];
 }
 
-export const SettingsDialogTitle = (props: SettingsDialogTitleProps) => {
+export function SettingsDialogTitle (props: SettingsDialogTitleProps) {
   const messages = useSelector(selectorMessages);
 
   const [localState, dispatch]: LocalProvider = React.useContext(localContext);
@@ -54,4 +54,4 @@ export const SettingsDialogTitle = (props: SettingsDialogTitleProps) => {
       </h1>
     </div>
   );
-};
+}

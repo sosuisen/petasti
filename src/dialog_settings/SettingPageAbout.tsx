@@ -13,7 +13,7 @@ export interface SettingPageAboutProps {
   index: number;
 }
 
-export const SettingPageAbout = (props: SettingPageAboutProps) => {
+export function SettingPageAbout (props: SettingPageAboutProps) {
   const messages = useSelector(selectorMessages);
   const appInfo = useSelector(selectorAppInfo);
 
@@ -31,4 +31,4 @@ export const SettingPageAbout = (props: SettingPageAboutProps) => {
       </p>
     </SettingPageTemplate>
   );
-};
+}

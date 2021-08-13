@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig-base-renderer",  
+  "compilerOptions": {
+    "sourceMap": false,
+  },
+  "include": [
+    "src/**/*",
+  ],
+  "exclude": [
+    "src/dialog_settings/*"
+  ]
+}

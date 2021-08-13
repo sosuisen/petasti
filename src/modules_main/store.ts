@@ -36,7 +36,7 @@ import {
 import {
   availableLanguages,
   defaultLanguage,
-  English,
+  ENGLISH,
   JAPANESE,
   MessageLabel,
   Messages,
@@ -109,7 +109,7 @@ class MainStore {
   /**
    * I18n
    */
-  private _translations = translate(ENGLISH).supporting('ja', Japanese);
+  private _translations = translate(ENGLISH).supporting('ja', JAPANESE);
   get translations (): Translator<Messages> {
     return this._translations;
   }

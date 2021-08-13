@@ -96,3 +96,5 @@ out/
 config.json
 
 node_modules_before_using_rxdb
+TreeStickies-win32-x64/
+installer/

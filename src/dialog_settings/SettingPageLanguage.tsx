@@ -17,7 +17,7 @@ export interface SettingPageLanguageProps {
   index: number;
 }
 
-export const SettingPageLanguage = (props: SettingPageLanguageProps) => {
+export function SettingPageLanguage (props: SettingPageLanguageProps) {
   const dispatch = useDispatch();
 
   const messages = useSelector(selectorMessages);
@@ -52,4 +52,4 @@ export const SettingPageLanguage = (props: SettingPageLanguageProps) => {
       <div>{languages}</div>
     </SettingPageTemplate>
   );
-};
+}

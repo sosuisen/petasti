@@ -18,7 +18,7 @@ export interface SettingsDialogProps {
   defaultSettingId: string;
 }
 
-export const SettingsDialog = (props: SettingsDialogProps) => {
+export function SettingsDialog (props: SettingsDialogProps) {
   const [state, dispatch]: LocalProvider = React.useReducer(localReducer, {
     activeSettingId: props.defaultSettingId,
     previousActiveSettingId: '',
@@ -34,4 +34,4 @@ export const SettingsDialog = (props: SettingsDialogProps) => {
       </Provider>
     </div>
   );
-};
+}

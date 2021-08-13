@@ -15,7 +15,7 @@ export interface SettingPageSecurityProps {
   index: number;
 }
 
-export const SettingPageSync = (props: SettingPageSecurityProps) => {
+export function SettingPageSync (props: SettingPageSecurityProps) {
   const dispatch = useDispatch();
 
   const messages = useSelector(selectorMessages);
@@ -27,4 +27,4 @@ export const SettingPageSync = (props: SettingPageSecurityProps) => {
       <div styleName='urls'></div>
     </SettingPageTemplate>
   );
-};
+}

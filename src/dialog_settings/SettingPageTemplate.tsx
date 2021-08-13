@@ -15,7 +15,7 @@ export interface SettingPageTemplateProps {
   children: React.ReactNode;
 }
 
-export const SettingPageTemplate = (props: SettingPageTemplateProps) => {
+export function SettingPageTemplate (props: SettingPageTemplateProps) {
   const [localState, dispatch]: LocalProvider = React.useContext(localContext);
   const style = (color: ColorName) => ({
     backgroundColor: uiColors[color],
@@ -56,4 +56,4 @@ export const SettingPageTemplate = (props: SettingPageTemplateProps) => {
       {props.children}
     </div>
   );
-};
+}

@@ -10,7 +10,7 @@ export interface MenuListProps {
   items: MenuItemProps[];
 }
 
-export const MenuList = (props: MenuListProps) => {
+export function MenuList (props: MenuListProps) {
   return (
     <div styleName='menuList'>
       {props.items.map((item, index) => (
@@ -27,4 +27,4 @@ export const MenuList = (props: MenuListProps) => {
       ))}
     </div>
   );
-};
+}

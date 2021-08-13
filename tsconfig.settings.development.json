@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig-base-react",
+  "include": [
+    "src/dialog_settings/*",
+    "src/modules_common/*"
+  ]  
+}

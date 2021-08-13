@@ -18,7 +18,7 @@ export interface SettingPageSaveProps {
   index: number;
 }
 
-export const SettingPageSave = (props: SettingPageSaveProps) => {
+export function SettingPageSave (props: SettingPageSaveProps) {
   const dispatch = useDispatch();
   const messages = useSelector(selectorMessages);
   const dataStorePath = useSelector(selectorDataStorePath);
@@ -96,4 +96,4 @@ export const SettingPageSave = (props: SettingPageSaveProps) => {
       </div>
     </SettingPageTemplate>
   );
-};
+}

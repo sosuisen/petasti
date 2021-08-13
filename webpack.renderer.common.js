@@ -8,27 +8,6 @@ module.exports = {
     filename: 'renderer.js',
   },
 
-  module: {
-    rules: [
-      {
-        test: /\.ts$/,
-        exclude: [/node_modules/],
-        use: [
-          {
-            loader: 'ts-loader',
-            options: {
-              configFile: 'tsconfig.renderer.json',
-            },
-          },
-        ],
-      },
-      {
-        enforce: 'pre',
-        test: /\.js$/,
-        loader: 'source-map-loader',
-      },
-    ],
-  },
   resolve: {
     extensions: [
       '.ts',

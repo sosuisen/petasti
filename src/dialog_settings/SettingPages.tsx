@@ -15,35 +15,36 @@ export interface SettingsProps {
   items: MenuItemProps[];
 }
 
-export const SettingPages = (props: SettingsProps) => {
+export function SettingPages (props: SettingsProps) {
   const [localState]: LocalProvider = React.useContext(localContext);
-  let ActivePage;
-  const pages = props.items.map((item, index) => {
-    let Page;
+  let activePage: JSX.Element;
+  const pages = props.items.reduce((result, item, index) => {
+    let page: JSX.Element;
     if (item.id === 'save') {
-      Page = <SettingPageSave item={item} index={index} />;
+      page = <SettingPageSave item={item} index={index} />;
     }
     else if (item.id === 'sync') {
-      Page = <SettingPageSync item={item} index={index} />;
+      page = <SettingPageSync item={item} index={index} />;
     }
     else if (item.id === 'language') {
-      Page = <SettingPageLanguage item={item} index={index} />;
+      page = <SettingPageLanguage item={item} index={index} />;
     }
     else if (item.id === 'about') {
-      Page = <SettingPageAbout item={item} index={index} />;
+      page = <SettingPageAbout item={item} index={index} />;
     }
 
     if (localState.activeSettingId === item.id) {
-      ActivePage = Page;
+      activePage = page!;
     }
     else {
-      return Page;
+      result.push(page!);
     }
-  });
+    return result;
+  }, [] as JSX.Element[]);
   return (
     <div styleName='settingPages'>
-      {ActivePage}
+      {activePage!}
       {pages}
     </div>
   );
-};
+}

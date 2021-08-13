@@ -57,6 +57,9 @@
       "format": ["camelCase"],
       "leadingUnderscore": "allow"
     },{
+      "selector": ["function"],
+      "format": ["camelCase", "PascalCase"]
+    },{
       "selector": ["variableLike", "property"],
       "filter": {
         "regex": "(_id|_body)",

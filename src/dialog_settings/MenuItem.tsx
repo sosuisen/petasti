@@ -24,7 +24,7 @@ export interface MenuItemPropsInternal {
   index: number;
 }
 
-export const MenuItem = (props: MenuItemProps & MenuItemPropsInternal) => {
+export function MenuItem (props: MenuItemProps & MenuItemPropsInternal) {
   const messages = useSelector(selectorMessages);
   const [state, dispatch]: LocalProvider = React.useContext(localContext);
 
@@ -72,4 +72,4 @@ export const MenuItem = (props: MenuItemProps & MenuItemPropsInternal) => {
       </span>
     </h2>
   );
-};
+}

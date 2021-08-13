@@ -28,7 +28,7 @@ export const localReducer = (state: LocalState, action: LocalAction) => {
   }
   return state;
 };
-export const localContext = React.createContext<LocalState>({
+export const localContext = React.createContext<LocalState | any>({
   activeSettingId: '',
   previousActiveSettingId: '',
 });

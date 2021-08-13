@@ -13,7 +13,7 @@ export interface SelectableTagProps {
   selected: boolean;
 }
 
-export const SelectableTag = (props: SelectableTagProps) => {
+export function SelectableTag (props: SelectableTagProps) {
   const handleClick = () => {
     if (!props.selected) {
       props.click(props.value);
@@ -38,4 +38,4 @@ export const SelectableTag = (props: SelectableTagProps) => {
       {props.label}
     </div>
   );
-};
+}
