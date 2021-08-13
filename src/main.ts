@@ -5,7 +5,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { app, BrowserWindow, dialog, ipcMain, MouseInputEvent } from 'electron';
-import { DialogButton } from './modules_common/const';
+import { DIALOG_BUTTON } from './modules_common/const';
 import { AvatarPropSerializable, CardPropSerializable } from './modules_common/cardprop';
 import { availableLanguages, defaultLanguage, MessageLabel } from './modules_common/i18n';
 import {
@@ -247,8 +247,8 @@ ipcMain.handle(
     return dialog.showMessageBoxSync(win, {
       type: 'question',
       buttons: buttons,
-      defaultId: DialogButton.Default,
-      cancelId: DialogButton.Cancel,
+      defaultId: DIALOG_BUTTON.default,
+      cancelId: DIALOG_BUTTON.cancel,
       message: MESSAGE(label),
     });
   }

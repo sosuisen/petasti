@@ -3,10 +3,10 @@
  * © 2021 Hidekazu Kubota
  */
 
-export const DialogButton = {
-  Error: -1,
-  Default: 0,
-  Cancel: 1,
+export const DIALOG_BUTTON = {
+  error: -1,
+  default: 0,
+  cancel: 1,
 };
 
 export const notebookDbName = 'book001';

@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { MenuItemProps } from './MenuItem';
 import { SettingPageTemplate } from './SettingPageTemplate';
 import { ColorName, uiColors } from '../modules_common/color';
-import { DialogButton } from '../modules_common/const';
+import { DIALOG_BUTTON } from '../modules_common/const';
 import { selectorDataStorePath, selectorMessages } from './selector';
 import { dataDirName } from '../modules_common/store.types';
 import { settingsDataStorePathUpdateCreator } from './actionCreator';
@@ -49,7 +49,7 @@ export const SettingPageSave = (props: SettingPageSaveProps) => {
           'saveChangeFilePathAlert'
         )
         .then((res: number) => {
-          if (res === DialogButton.Default) {
+          if (res === DIALOG_BUTTON.default) {
             // OK
             const saveDir = path.join(newPath, dataDirName);
             try {
@@ -65,7 +65,7 @@ export const SettingPageSave = (props: SettingPageSaveProps) => {
               );
             }
           }
-          else if (res === DialogButton.Cancel) {
+          else if (res === DIALOG_BUTTON.cancel) {
             // Cancel
           }
         })

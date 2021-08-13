@@ -6,7 +6,7 @@ import * as React from 'react';
 import './SettingsDialogTitle.css';
 import { useSelector } from 'react-redux';
 import { MessageLabel } from '../modules_common/i18n';
-import { LocalContext, LocalProvider } from './localStore';
+import { localContext, LocalProvider } from './localStore';
 import { MenuItemProps } from './MenuItem';
 import { darkenHexColor, uiColors } from '../modules_common/color';
 import { selectorMessages } from './selector';
@@ -19,7 +19,7 @@ export interface SettingsDialogTitleProps {
 export const SettingsDialogTitle = (props: SettingsDialogTitleProps) => {
   const messages = useSelector(selectorMessages);
 
-  const [localState, dispatch]: LocalProvider = React.useContext(LocalContext);
+  const [localState, dispatch]: LocalProvider = React.useContext(localContext);
 
   const activeItem: MenuItemProps | undefined = props.items.find(
     item => item.id === localState.activeSettingId

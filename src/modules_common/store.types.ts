@@ -6,7 +6,7 @@
 import path from 'path';
 import { app } from 'electron';
 import { notebookDbName } from './const';
-import { English, Messages } from './i18n';
+import { ENGLISH, Messages } from './i18n';
 
 export const dataDirName = 'tree_stickies_data';
 /**

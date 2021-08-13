@@ -22,9 +22,9 @@ export class CardEditor implements ICardEditor {
   /**
    * Private
    */
-  private _ERROR_FAILED_TO_SET_DATA = 'Failed to set data.';
+  private _errorFailedToSetData = 'Failed to set data.';
 
-  private _TOOLBAR_HEIGHT = 28;
+  private _toolBarHeight = 28;
 
   private _startEditorFirstTime = true;
 
@@ -136,11 +136,11 @@ export class CardEditor implements ICardEditor {
 
       // Set default value of link target to _blank
       CKEDITOR.on('dialogDefinition', function (ev) {
-        var dialogName = ev.data.name;
-        var dialogDefinition = ev.data.definition;
+        const dialogName = ev.data.name;
+        const dialogDefinition = ev.data.definition;
         if (dialogName === 'link') {
-          var targetTab = dialogDefinition.getContents('target');
-          var targetField = targetTab.get('linkTargetType');
+          const targetTab = dialogDefinition.getContents('target');
+          const targetField = targetTab.get('linkTargetType');
           targetField.default = '_blank';
         }
       });
@@ -218,7 +218,7 @@ export class CardEditor implements ICardEditor {
           },
         });
       } catch (e) {
-        reject(new Error(this._ERROR_FAILED_TO_SET_DATA));
+        reject(new Error(this._errorFailedToSetData));
       }
     });
   };
@@ -315,7 +315,7 @@ export class CardEditor implements ICardEditor {
       let cont = false;
       // eslint-disable-next-line no-loop-func, no-await-in-loop
       await this._setData().catch(async err => {
-        if (err.message === this._ERROR_FAILED_TO_SET_DATA) {
+        if (err.message === this._errorFailedToSetData) {
           await sleep(1000);
           contCounter++;
           cont = true;
@@ -381,13 +381,13 @@ export class CardEditor implements ICardEditor {
     }
 
     // Expand card to add toolbar.
-    const expandedHeight = this._avatarProp.geometry.height + this._TOOLBAR_HEIGHT;
+    const expandedHeight = this._avatarProp.geometry.height + this._toolBarHeight;
     window.api.setWindowSize(
       this._avatarProp.url,
       this._avatarProp.geometry.width,
       expandedHeight
     );
-    setRenderOffsetHeight(this._TOOLBAR_HEIGHT);
+    setRenderOffsetHeight(this._toolBarHeight);
     render(['ContentsRect']);
 
     const toolbar = document.getElementById('cke_1_bottom');
@@ -570,7 +570,7 @@ export class CardEditor implements ICardEditor {
     }
   };
 
-  execAfterMouseDown = (func: Function) => {
+  execAfterMouseDown = (func: () => Promise<void>) => {
     CKEDITOR.instances.editor.document.once('mousedown', e => func());
   };
 }

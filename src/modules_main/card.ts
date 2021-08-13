@@ -34,7 +34,7 @@ import {
   removeAvatarFromWorkspace,
   workspaces,
 } from './store_workspaces';
-import { DialogButton } from '../modules_common/const';
+import { DIALOG_BUTTON } from '../modules_common/const';
 import { cardColors, ColorName } from '../modules_common/color';
 import {
   getIdFromUrl,
@@ -472,7 +472,7 @@ class Avatar {
 
   public renderingCompleted = false;
 
-  public resetContextMenu: Function;
+  public resetContextMenu: () => void;
 
   constructor (_prop: AvatarProp) {
     this.prop = _prop;
@@ -600,11 +600,11 @@ class Avatar {
           const res = dialog.showMessageBoxSync({
             type: 'question',
             buttons: [MESSAGE('btnAllow'), MESSAGE('btnCancel')],
-            defaultId: DialogButton.Default,
-            cancelId: DialogButton.Cancel,
+            defaultId: DIALOG_BUTTON.default,
+            cancelId: DIALOG_BUTTON.cancel,
             message: MESSAGE('securityPageNavigationAlert', navUrl),
           });
-          if (res === DialogButton.Default) {
+          if (res === DIALOG_BUTTON.default) {
             // Reload if permitted
             console.debug(`Allow ${domain}`);
             globalDispatch({
@@ -613,7 +613,7 @@ class Avatar {
             });
             this.window.webContents.reload();
           }
-          else if (res === DialogButton.Cancel) {
+          else if (res === DIALOG_BUTTON.cancel) {
             // Destroy if not permitted
             console.debug(`Deny ${domain}`);
             const id = getIdFromUrl(this.prop.url);
@@ -663,12 +663,12 @@ class Avatar {
     await this._loadHTML().catch(e => {
       throw new Error(`Error in render(): ${e.message}`);
     });
-    await this._renderCard(this.prop).catch(e => {
+    await this.renderCard(this.prop).catch(e => {
       throw new Error(`Error in _renderCard(): ${e.message}`);
     });
   };
 
-  _renderCard = (_prop: AvatarProp): Promise<void> => {
+  renderCard = (_prop: AvatarProp): Promise<void> => {
     return new Promise(resolve => {
       this.window.setSize(_prop.geometry.width, _prop.geometry.height);
       this.window.setPosition(_prop.geometry.x, _prop.geometry.y);
@@ -688,7 +688,7 @@ class Avatar {
     return new Promise((resolve, reject) => {
       const finishLoadListener = (event: Electron.IpcMainInvokeEvent) => {
         console.debug('loadHTML  ' + this.prop.url);
-        const _finishReloadListener = () => {
+        const finishReloadListener = () => {
           console.debug('Reloaded: ' + this.prop.url);
           this.window.webContents.send('render-card', this.prop.toObject());
         };
@@ -698,7 +698,7 @@ class Avatar {
         //     this.window.webContents.on('did-finish-load', () => {
         const handler = 'finish-load-' + encodeURIComponent(this.prop.url);
         handlers.push(handler);
-        ipcMain.handle(handler, _finishReloadListener);
+        ipcMain.handle(handler, finishReloadListener);
         resolve();
       };
       ipcMain.handleOnce(

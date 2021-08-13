@@ -6,7 +6,7 @@ import * as React from 'react';
 import './MenuItem.css';
 import { useSelector } from 'react-redux';
 import { ColorName, uiColors } from '../modules_common/color';
-import { LocalAction, LocalContext, LocalProvider } from './localStore';
+import { LocalAction, localContext, LocalProvider } from './localStore';
 import { MessageLabel } from '../modules_common/i18n';
 import { getRandomInt } from '../modules_common/utils';
 import { selectorMessages } from './selector';
@@ -26,7 +26,7 @@ export interface MenuItemPropsInternal {
 
 export const MenuItem = (props: MenuItemProps & MenuItemPropsInternal) => {
   const messages = useSelector(selectorMessages);
-  const [state, dispatch]: LocalProvider = React.useContext(LocalContext);
+  const [state, dispatch]: LocalProvider = React.useContext(localContext);
 
   const isActive = state.activeSettingId === props.id;
   const isPrevActive = state.previousActiveSettingId === props.id;

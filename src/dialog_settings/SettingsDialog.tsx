@@ -10,7 +10,7 @@ import './SettingsDialog.css';
 import { MessageLabel } from '../modules_common/i18n';
 import { SettingsDialogTitle } from './SettingsDialogTitle';
 import { settingsDialogStore } from './store';
-import { LocalContext, LocalProvider, LocalReducer } from './localStore';
+import { localContext, LocalProvider, localReducer } from './localStore';
 
 export interface SettingsDialogProps {
   title: MessageLabel;
@@ -19,18 +19,18 @@ export interface SettingsDialogProps {
 }
 
 export const SettingsDialog = (props: SettingsDialogProps) => {
-  const [state, dispatch]: LocalProvider = React.useReducer(LocalReducer, {
+  const [state, dispatch]: LocalProvider = React.useReducer(localReducer, {
     activeSettingId: props.defaultSettingId,
     previousActiveSettingId: '',
   });
   return (
     <div styleName='settingsDialog'>
       <Provider store={settingsDialogStore}>
-        <LocalContext.Provider value={[state, dispatch]}>
+        <localContext.Provider value={[state, dispatch]}>
           <SettingsDialogTitle title={props.title} items={props.menu.items} />
           <MenuList items={props.menu.items} />
           <SettingPages items={props.menu.items} />
-        </LocalContext.Provider>
+        </localContext.Provider>
       </Provider>
     </div>
   );

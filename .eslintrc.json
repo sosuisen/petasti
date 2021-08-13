@@ -47,6 +47,34 @@
        "breakBeforeElse": true,
        "semi": true,
        "trailingComma": "es5"
+    }],
+    "@typescript-eslint/naming-convention": ["error", {
+      "selector": "variable",
+      "modifiers": ["const", "global"],
+      "format": ["UPPER_CASE", "camelCase"]
+    },{
+      "selector": ["parameter"],
+      "format": ["camelCase"],
+      "leadingUnderscore": "allow"
+    },{
+      "selector": ["variableLike", "property"],
+      "filter": {
+        "regex": "(_id|_body)",
+        "match": true
+      },
+      "format": null,
+      "leadingUnderscore": "allow"
+    },{
+      "selector": "default",
+      "format": ["camelCase"]
+    },{
+      "selector": "typeLike",
+      "format": ["PascalCase"]
+    }, {
+      "selector": "memberLike",
+      "modifiers": ["private"],
+      "format": ["camelCase"],
+      "leadingUnderscore": "require"
     }]
   }
 }

@@ -37,7 +37,7 @@ export interface ICardEditor {
   setSize(width?: number, height?: number): void;
   setColor(): void;
 
-  execAfterMouseDown(func: Function): void;
+  execAfterMouseDown(func: () => Promise<void>): void;
 }
 
 export type CardCssStyle = {

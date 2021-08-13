@@ -86,12 +86,12 @@ export type Messages = MessagesMain &
 
 export type MessageLabel = keyof Messages;
 
-const LanguagesCommon: MessagesLanguage = {
-  en: 'English',
-  ja: '日本語(Japanese)',
+const LANGUAGES_COMMON: MessagesLanguage = {
+  en: 'ENGLISH',
+  ja: '日本語(JAPANESE)',
 };
 
-const WorkspaceEnglish: MessagesWorkspace = {
+const WORKSPACE_ENGLISH: MessagesWorkspace = {
   workspace: 'Workspace',
   workspaceNew: 'New workspace...',
   workspaceName: 'Workspace $1',
@@ -105,7 +105,7 @@ const WorkspaceEnglish: MessagesWorkspace = {
   workspaceNewName: 'Enter new workspace name',
 };
 
-const SettingsEnglish: MessagesSettings = {
+const SETTINGS_ENGLISH: MessagesSettings = {
   settingsDialog: 'Settings',
   settingPageLanguage: 'Language',
   settingPageSync: 'Sync',
@@ -131,10 +131,10 @@ const SettingsEnglish: MessagesSettings = {
   aboutCopyright: '© 2021 Hidekazu Kubota',
   aboutAppUrl: 'https://github.com/sosuisen/',
 };
-export const English: Messages = {
-  ...LanguagesCommon,
-  ...WorkspaceEnglish,
-  ...SettingsEnglish,
+export const ENGLISH: Messages = {
+  ...LANGUAGES_COMMON,
+  ...WORKSPACE_ENGLISH,
+  ...SETTINGS_ENGLISH,
   databaseCreateError: 'Error: Cannot create database',
   exit: 'Exit',
   zoomIn: 'Zoom In',
@@ -177,7 +177,7 @@ export const English: Messages = {
   transparent: 'transparent',
 };
 
-const WorkspaceJapanese: MessagesWorkspace = {
+const WORKSPACE_JAPANESE: MessagesWorkspace = {
   workspace: 'ワークスペース',
   workspaceNew: '新規ワークスペース...',
   workspaceName: 'ワークスペース $1',
@@ -191,7 +191,7 @@ const WorkspaceJapanese: MessagesWorkspace = {
   workspaceNewName: '新しいワークスペース名を入力してください',
 };
 
-const SettingsJapanese: MessagesSettings = {
+const SETTINGS_JAPANESE: MessagesSettings = {
   settingsDialog: '設定',
   settingPageLanguage: '言語',
   settingPageSync: '同期',
@@ -217,10 +217,10 @@ const SettingsJapanese: MessagesSettings = {
   aboutCopyright: '© 2021 Hidekazu Kubota',
   aboutAppUrl: 'https://github.com/sosuisen/',
 };
-export const Japanese: Messages = {
-  ...LanguagesCommon,
-  ...WorkspaceJapanese,
-  ...SettingsJapanese,
+export const JAPANESE: Messages = {
+  ...LANGUAGES_COMMON,
+  ...WORKSPACE_JAPANESE,
+  ...SETTINGS_JAPANESE,
   databaseCreateError: 'エラー：データベースを作成できませんでした。',
   exit: '終了',
   zoomIn: '拡大',

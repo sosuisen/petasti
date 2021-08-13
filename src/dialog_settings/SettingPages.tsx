@@ -7,7 +7,7 @@ import './SettingPages.css';
 import { SettingPageSave } from './SettingPageSave';
 import { SettingPageSync } from './SettingPageSync';
 import { SettingPageLanguage } from './SettingPageLanguage';
-import { LocalContext, LocalProvider } from './localStore';
+import { localContext, LocalProvider } from './localStore';
 import { MenuItemProps } from './MenuItem';
 import { SettingPageAbout } from './SettingPageAbout';
 
@@ -16,7 +16,7 @@ export interface SettingsProps {
 }
 
 export const SettingPages = (props: SettingsProps) => {
-  const [localState]: LocalProvider = React.useContext(LocalContext);
+  const [localState]: LocalProvider = React.useContext(localContext);
   let ActivePage;
   const pages = props.items.map((item, index) => {
     let Page;

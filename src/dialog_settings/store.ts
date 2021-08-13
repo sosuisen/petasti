@@ -4,14 +4,14 @@
  */
 import { applyMiddleware, combineReducers, createStore } from 'redux';
 import thunk from 'redux-thunk';
-import { English } from '../modules_common/i18n';
+import { ENGLISH } from '../modules_common/i18n';
 import { InfoState, SettingsState } from '../modules_common/store.types';
 import { InfoAction, SettingsAction } from './action';
 
 const infoReducer = (
   // eslint-disable-next-line default-param-last
   state: InfoState = {
-    messages: English,
+    messages: ENGLISH,
     appinfo: {
       name: '',
       version: '',

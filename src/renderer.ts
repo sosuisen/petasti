@@ -20,7 +20,7 @@ import {
   ICardEditor,
   InnerClickEvent,
 } from './modules_common/types_cardeditor';
-import { DialogButton } from './modules_common/const';
+import { DIALOG_BUTTON } from './modules_common/const';
 import { CardEditor } from './modules_renderer/editor';
 import {
   getRenderOffsetHeight,
@@ -162,12 +162,12 @@ const initializeUIEvents = () => {
       window.api
         .confirmDialog(avatarProp.url, ['btnCloseCard', 'btnCancel'], 'confirmClosing')
         .then((res: number) => {
-          if (res === DialogButton.Default) {
+          if (res === DIALOG_BUTTON.default) {
             // OK
             suppressFocusEvent = true; // Suppress focus event in order not to focus and save this card just after closing card window.
             deleteAvatar(avatarProp);
           }
-          else if (res === DialogButton.Cancel) {
+          else if (res === DIALOG_BUTTON.cancel) {
             // Cancel
           }
         })
@@ -299,7 +299,7 @@ const onload = async () => {
   const url = window.location.search;
   const arr = url.slice(1).split('&');
   const params: { [key: string]: string } = {};
-  for (var i = 0; i < arr.length; i++) {
+  for (let i = 0; i < arr.length; i++) {
     const pair = arr[i].split('=');
     params[pair[0]] = pair[1];
   }
@@ -426,10 +426,10 @@ const onMoveByHand = (newBounds: {
 
 // Render card data
 const onRenderCard = (avatar: Avatar) => {
-  const _prop: AvatarPropSerializable = {
+  const prop: AvatarPropSerializable = {
     ...avatar,
   };
-  avatarProp = AvatarProp.fromObject(_prop);
+  avatarProp = AvatarProp.fromObject(prop);
 
   initCardRenderer(avatarProp, cardCssStyle, cardEditor);
 

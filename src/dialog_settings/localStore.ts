@@ -12,11 +12,13 @@ export interface LocalState {
   activeSettingId: string;
   previousActiveSettingId: string;
 }
+
 export interface LocalAction {
   type: 'UpdateActiveSetting';
   activeSettingId: string;
 }
-export const LocalReducer = (state: LocalState, action: LocalAction) => {
+
+export const localReducer = (state: LocalState, action: LocalAction) => {
   if (action.type === 'UpdateActiveSetting') {
     const nextState: LocalState = {
       activeSettingId: action.activeSettingId,
@@ -26,5 +28,8 @@ export const LocalReducer = (state: LocalState, action: LocalAction) => {
   }
   return state;
 };
-export const LocalContext = React.createContext<LocalState | any>('');
+export const localContext = React.createContext<LocalState>({
+  activeSettingId: '',
+  previousActiveSettingId: '',
+});
 export type LocalProvider = [LocalState, React.Dispatch<LocalAction>];

@@ -3,7 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 import * as React from 'react';
-import { LocalAction, LocalContext, LocalProvider } from './localStore';
+import { LocalAction, localContext, LocalProvider } from './localStore';
 import { ColorName, uiColors } from '../modules_common/color';
 import { MenuItemProps } from './MenuItem';
 import './SettingPageTemplate.css';
@@ -16,7 +16,7 @@ export interface SettingPageTemplateProps {
 }
 
 export const SettingPageTemplate = (props: SettingPageTemplateProps) => {
-  const [localState, dispatch]: LocalProvider = React.useContext(LocalContext);
+  const [localState, dispatch]: LocalProvider = React.useContext(localContext);
   const style = (color: ColorName) => ({
     backgroundColor: uiColors[color],
     zIndex: localState.activeSettingId === props.item.id ? 200 : 150 - props.index,

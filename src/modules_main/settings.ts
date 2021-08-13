@@ -41,6 +41,7 @@ export const openSettings = () => {
 
   // hot reload
   if (!app.isPackaged && process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require('electron-connect').client.create(settingsDialog);
     settingsDialog.webContents.openDevTools();
   }

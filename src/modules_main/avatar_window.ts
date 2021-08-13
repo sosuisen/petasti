@@ -16,7 +16,7 @@ import {
 } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { DebounceQueue } from 'rx-queue';
-import { DialogButton } from '../modules_common/const';
+import { DIALOG_BUTTON } from '../modules_common/const';
 
 import { getIdFromUrl } from '../modules_common/avatar_url_utils';
 import { handlers } from './event';
@@ -281,7 +281,7 @@ export class AvatarWindow {
 
   public renderingCompleted = false;
 
-  public resetContextMenu: Function;
+  public resetContextMenu: () => void;
 
   private _debouncedAvatarPositionUpdateActionQueue = new DebounceQueue(1000);
   private _debouncedAvatarSizeUpdateActionQueue = new DebounceQueue(1000);
@@ -437,11 +437,11 @@ export class AvatarWindow {
           const res = dialog.showMessageBoxSync({
             type: 'question',
             buttons: [MESSAGE('btnAllow'), MESSAGE('btnCancel')],
-            defaultId: DialogButton.Default,
-            cancelId: DialogButton.Cancel,
+            defaultId: DIALOG_BUTTON.default,
+            cancelId: DIALOG_BUTTON.cancel,
             message: MESSAGE('securityPageNavigationAlert', navUrl),
           });
-          if (res === DialogButton.Default) {
+          if (res === DIALOG_BUTTON.default) {
             // Reload if permitted
             console.debug(`Allow ${domain}`);
             globalDispatch({
@@ -450,7 +450,7 @@ export class AvatarWindow {
             });
             this.window.webContents.reload();
           }
-          else if (res === DialogButton.Cancel) {
+          else if (res === DIALOG_BUTTON.cancel) {
             // Destroy if not permitted
             console.debug(`Deny ${domain}`);
             const id = getIdFromUrl(this.url);
@@ -570,13 +570,13 @@ export class AvatarWindow {
     await this._loadHTML(avatar).catch(e => {
       throw new Error(`Error in render(): ${e.message}`);
     });
-    console.debug('Start _renderCard()' + avatar.url);
-    await this._renderCard(avatar).catch(e => {
+    console.debug('Start renderCard()' + avatar.url);
+    await this.renderCard(avatar).catch(e => {
       throw new Error(`Error in _renderCard(): ${e.message}`);
     });
   };
 
-  _renderCard = (avatar: Avatar): Promise<void> => {
+  renderCard = (avatar: Avatar): Promise<void> => {
     return new Promise(resolve => {
       console.debug('setSize' + avatar.url);
       console.dir(avatar, { depth: null });
@@ -600,7 +600,7 @@ export class AvatarWindow {
     return new Promise((resolve, reject) => {
       const finishLoadListener = (event: Electron.IpcMainInvokeEvent) => {
         console.debug('loadHTML  ' + this.url);
-        const _finishReloadListener = () => {
+        const finishReloadListener = () => {
           console.debug('Reloaded: ' + this.url);
           this.window.webContents.send('render-card', avatar);
         };
@@ -610,7 +610,7 @@ export class AvatarWindow {
         //     this.window.webContents.on('did-finish-load', () => {
         const handler = 'finish-load-' + encodeURIComponent(this.url);
         handlers.push(handler);
-        ipcMain.handle(handler, _finishReloadListener);
+        ipcMain.handle(handler, finishReloadListener);
         resolve();
       };
       ipcMain.handleOnce('finish-load-' + encodeURIComponent(this.url), finishLoadListener);

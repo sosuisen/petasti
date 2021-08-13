@@ -37,7 +37,7 @@ import {
   availableLanguages,
   defaultLanguage,
   English,
-  Japanese,
+  JAPANESE,
   MessageLabel,
   Messages,
 } from '../modules_common/i18n';
@@ -90,7 +90,7 @@ class MainStore {
   }
 
   private _info: InfoState = {
-    messages: English,
+    messages: ENGLISH,
     appinfo: {
       name: app.getName(),
       version: app.getVersion(),
@@ -109,7 +109,7 @@ class MainStore {
   /**
    * I18n
    */
-  private _translations = translate(English).supporting('ja', Japanese);
+  private _translations = translate(ENGLISH).supporting('ja', Japanese);
   get translations (): Translator<Messages> {
     return this._translations;
   }

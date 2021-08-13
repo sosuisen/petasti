@@ -6,15 +6,15 @@
 import { AvatarProp, AvatarPropSerializable } from '../modules_common/cardprop';
 import { setTitleMessage } from './card_renderer';
 import { getCurrentDateAndTime } from '../modules_common/utils';
-import { DialogButton } from '../modules_common/const';
+import { DIALOG_BUTTON } from '../modules_common/const';
 import window from './window';
 
-type task = {
+type Task = {
   prop: AvatarPropSerializable;
   type: 'Save' | 'DeleteAvatar' | 'DeleteCard';
 };
 
-const unfinishedTasks: task[] = [];
+const unfinishedTasks: Task[] = [];
 
 export const waitUnfinishedTasks = (id: string): Promise<void> => {
   return new Promise((resolve, reject) => {
@@ -28,15 +28,15 @@ export const waitUnfinishedTasks = (id: string): Promise<void> => {
           await window.api
             .confirmDialog(id, ['btnOK', 'btnCancel'], 'confirmWaitMore')
             .then((res: number) => {
-              if (res === DialogButton.Default) {
+              if (res === DIALOG_BUTTON.default) {
                 // OK
                 timeoutCounter = 0;
               }
-              else if (res === DialogButton.Cancel) {
+              else if (res === DIALOG_BUTTON.cancel) {
                 // Cancel
                 reject(new Error('Canceled by user'));
               }
-              else if (res === DialogButton.Error) {
+              else if (res === DIALOG_BUTTON.error) {
                 console.error('Error in confirm-dialog');
               }
             })
