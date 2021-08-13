@@ -36,6 +36,7 @@ export const destroyTray = () => {
 
 let currentLanguage: string;
 let color = { ...cardColors };
+// @ts-ignore
 delete color.transparent;
 
 const createNewCard = () => {
@@ -46,6 +47,7 @@ const createNewCard = () => {
   let colorList = Object.entries(color);
   if (colorList.length === 0) {
     color = { ...cardColors };
+    // @ts-ignore
     delete color.transparent;
     colorList = Object.entries(color);
   }
