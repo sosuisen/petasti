@@ -1,5 +1,9 @@
 {
   "extends": "./tsconfig-base-renderer", 
+  "compilerOptions": {
+    "module": "commonjs",
+    "sourceMap": false,
+  },
   "include": [
     "src/iframe/contents_frame.ts",
     "src/iframe/contents_frame_initial.ts",    
