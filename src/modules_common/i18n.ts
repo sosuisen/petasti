@@ -36,17 +36,17 @@ type MessagesMain = {
   transparent: string;
 };
 
-type MessagesWorkspace = {
-  workspace: string;
-  workspaceNew: string;
-  workspaceName: string;
-  workspaceMove: string;
-  workspaceCopy: string;
-  workspaceAvatarExist: string;
-  workspaceRename: string;
-  workspaceDelete: string;
-  workspaceCannotDelete: string;
-  workspaceNewName: string;
+type MessagesNote = {
+  note: string;
+  noteNew: string;
+  noteName: string;
+  noteMove: string;
+  noteCopy: string;
+  noteAvatarExist: string;
+  noteRename: string;
+  noteDelete: string;
+  noteCannotDelete: string;
+  noteNewName: string;
 };
 
 type MessagesSettings = {
@@ -79,10 +79,7 @@ type MessagesLanguage = {
   ja: string;
 };
 
-export type Messages = MessagesMain &
-  MessagesWorkspace &
-  MessagesSettings &
-  MessagesLanguage;
+export type Messages = MessagesMain & MessagesNote & MessagesSettings & MessagesLanguage;
 
 export type MessageLabel = keyof Messages;
 
@@ -91,18 +88,18 @@ const LANGUAGES_COMMON: MessagesLanguage = {
   ja: '日本語(JAPANESE)',
 };
 
-const WORKSPACE_ENGLISH: MessagesWorkspace = {
-  workspace: 'Workspace',
-  workspaceNew: 'New workspace...',
-  workspaceName: 'Workspace $1',
-  workspaceMove: 'Move',
-  workspaceCopy: 'Copy Avatar',
-  workspaceAvatarExist: 'Avatar already exists on the workspace.',
-  workspaceRename: 'Rename this workspace',
-  workspaceDelete: 'Delete this workspace',
-  workspaceCannotDelete:
-    'To delete workspace, delete all visible cards or move them to another workspace.',
-  workspaceNewName: 'Enter new workspace name',
+const NOTE_ENGLISH: MessagesNote = {
+  note: 'Note',
+  noteNew: 'New note...',
+  noteName: 'Note $1',
+  noteMove: 'Move',
+  noteCopy: 'Copy Avatar',
+  noteAvatarExist: 'Avatar already exists on the note.',
+  noteRename: 'Rename this note',
+  noteDelete: 'Delete this note',
+  noteCannotDelete:
+    'To delete note, delete all visible cards or move them to another note.',
+  noteNewName: 'Enter new note name',
 };
 
 const SETTINGS_ENGLISH: MessagesSettings = {
@@ -133,7 +130,7 @@ const SETTINGS_ENGLISH: MessagesSettings = {
 };
 export const ENGLISH: Messages = {
   ...LANGUAGES_COMMON,
-  ...WORKSPACE_ENGLISH,
+  ...NOTE_ENGLISH,
   ...SETTINGS_ENGLISH,
   databaseCreateError: 'Error: Cannot create database',
   exit: 'Exit',
@@ -177,18 +174,18 @@ export const ENGLISH: Messages = {
   transparent: 'transparent',
 };
 
-const WORKSPACE_JAPANESE: MessagesWorkspace = {
-  workspace: 'ワークスペース',
-  workspaceNew: '新規ワークスペース...',
-  workspaceName: 'ワークスペース $1',
-  workspaceMove: '移動',
-  workspaceCopy: '分身をコピー',
-  workspaceAvatarExist: 'コピー先には既に分身があります。',
-  workspaceRename: 'ワークスペース名を変更',
-  workspaceDelete: 'このワークスペースを削除',
-  workspaceCannotDelete:
-    'ワークスペースを削除するには、表示されているカードを全て削除するか他のワークスペースへ移動してください。',
-  workspaceNewName: '新しいワークスペース名を入力してください',
+const NOTE_JAPANESE: MessagesNote = {
+  note: 'ノート',
+  noteNew: '新規ノート...',
+  noteName: 'ノート $1',
+  noteMove: '移動',
+  noteCopy: '分身をコピー',
+  noteAvatarExist: 'コピー先には既に分身があります。',
+  noteRename: 'ノート名を変更',
+  noteDelete: 'このノートを削除',
+  noteCannotDelete:
+    'ノートを削除するには、表示されているカードを全て削除するか他のノートへ移動してください。',
+  noteNewName: '新しいノート名を入力してください',
 };
 
 const SETTINGS_JAPANESE: MessagesSettings = {
@@ -219,7 +216,7 @@ const SETTINGS_JAPANESE: MessagesSettings = {
 };
 export const JAPANESE: Messages = {
   ...LANGUAGES_COMMON,
-  ...WORKSPACE_JAPANESE,
+  ...NOTE_JAPANESE,
   ...SETTINGS_JAPANESE,
   databaseCreateError: 'エラー：データベースを作成できませんでした。',
   exit: '終了',

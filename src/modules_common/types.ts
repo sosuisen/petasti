@@ -43,12 +43,12 @@ export type CardProp = {
   url: string;
   type: string;
   user: string;
-  data: string;
   geometry: Geometry;
   style: CardStyle;
   condition: CardCondition;
   date: CartaDate;
   version: string;
+  _body: string;
 };
 
 export type AvatarUrl = string;

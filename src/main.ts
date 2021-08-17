@@ -12,14 +12,16 @@ import {
   currentCardMap,
   deleteAvatar,
   deleteCardWithRetry,
+  getZIndexOfTopCard,
   setGlobalFocusEventListenerPermission,
+  setZIndexOfTopCard,
   updateAvatar,
 } from './modules_main/card';
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
 import { openSettings, settingsDialog } from './modules_main/settings';
 import { emitter, handlers } from './modules_main/event';
 import { getIdFromUrl } from './modules_common/avatar_url_utils';
-import { mainStore, MESSAGE } from './modules_main/store';
+import { mainStore, MESSAGE } from './modules_main/note_store';
 import { avatarDepthUpdateActionCreator } from './modules_common/actions';
 import { CardProp } from './modules_common/types';
 
@@ -33,9 +35,6 @@ if (require('electron-squirrel-startup')) {
 
 // Increase max listeners
 ipcMain.setMaxListeners(1000);
-
-// z-index
-let zIndexOfTopAvatar: number;
 
 /**
  * This method will be called when Electron has finished
@@ -61,13 +60,9 @@ app.on('ready', async () => {
     openSettings();
   }
 
-  const backToFront = Object.values(currentCardMap).sort((a, b) => {
-    if (a.geometry.z < b.geometry.z) {
-      return -1;
-    }
-    else if (a.geometry.z > b.geometry.z) {
-      return 1;
-    }
+  const backToFront = [...currentCardMap.values()].sort((a, b) => {
+    if (a.geometry.z > b.geometry.z) return 1;
+    else if (a.geometry.z < b.geometry.z) return -1;
     return 0;
   });
 
@@ -78,7 +73,7 @@ app.on('ready', async () => {
       zIndex = card.geometry.z;
     }
   });
-  zIndexOfTopAvatar = zIndex;
+  setZIndexOfTopCard(zIndex);
 
   const size = backToFront.length;
   console.debug(`Completed to load ${size} cards`);
@@ -273,7 +268,7 @@ ipcMain.handle('get-uuid', () => {
 
 ipcMain.handle('bring-to-front', (event, url: string, rearrange = false) => {
   // Database Update
-  const zIndex = zIndexOfTopAvatar + 1;
+  const zIndex = getZIndexOfTopCard() + 1;
   console.debug(`new zIndex: ${zIndex}`);
   const action = avatarDepthUpdateActionCreator(url, zIndex, false);
 
@@ -281,7 +276,7 @@ ipcMain.handle('bring-to-front', (event, url: string, rearrange = false) => {
 
   // persistentStoreActionDispatcher works synchronously,
   // so DB has been already updated here.
-  zIndexOfTopAvatar = zIndex;
+  setZIndexOfTopCard(zIndex);
 
   // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
   if (rearrange) {

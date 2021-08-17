@@ -44,7 +44,7 @@ import { scheme, settingsDbName } from '../modules_common/const';
 
 export const generateNewNoteId = () => {
   const ulid = monotonicFactory();
-  return 'c' + ulid(Date.now());
+  return 'n' + ulid(Date.now());
 };
 
 class MainStore {
@@ -236,7 +236,7 @@ class MainStore {
     selectPreferredLanguage(availableLanguages, [this._settings.language, defaultLanguage]);
     this._info.messages = this._translations.messages();
 
-    // Create all collections by one line
+    // Create collections
     this._cardCollection = this._bookDB.collection('card');
     this._noteCollection = this._bookDB.collection('note');
 
@@ -292,9 +292,9 @@ class MainStore {
 
   createNote = async (name?: string): Promise<NoteProp> => {
     if (!name) {
-      name = MESSAGE('workspaceName', (this._notePropMap.size + 1).toString());
+      name = MESSAGE('noteName', (this._notePropMap.size + 1).toString());
     }
-    const _id = 'w' + nanoid();
+    const _id = generateNewNoteId();
     const current = getCurrentDateAndTime();
 
     const newNote: NoteProp = {
@@ -392,7 +392,6 @@ class MainStore {
         url,
         type: cardBodyDoc.type,
         user: cardBodyDoc.user,
-        data: cardBodyDoc._body,
         geometry: cardDoc.geometry,
         style: cardDoc.style,
         condition: cardDoc.condition,
@@ -401,6 +400,7 @@ class MainStore {
           modifiedDate: cardBodyDoc.date,
         },
         version: cardBodyDoc.version,
+        _body: cardBodyDoc._body,
       };
 
       cardProps.push(cardProp);
@@ -412,10 +412,10 @@ class MainStore {
     if (this._settingsDB !== undefined) {
       await this._settingsDB.close();
     }
-    if (!this._bookDB) {
-      return Promise.resolve();
+    if (!this._bookDB !== undefined) {
+      return this._bookDB.close();
     }
-    return this._bookDB.close();
+    return Promise.resolve();
   };
 }
 

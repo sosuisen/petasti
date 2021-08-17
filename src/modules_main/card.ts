@@ -20,13 +20,8 @@ import { monotonicFactory } from 'ulid';
 import { getCurrentDateAndTime, sleep } from '../modules_common/utils';
 import { DIALOG_BUTTON, scheme } from '../modules_common/const';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
-import {
-  getIdFromUrl,
-  getLocationFromUrl,
-  getWorkspaceIdFromUrl,
-} from '../modules_common/avatar_url_utils';
 import { emitter, handlers } from './event';
-import { mainStore, MESSAGE } from './store';
+import { mainStore, MESSAGE } from './note_store';
 import {
   CardCondition,
   CardProp,
@@ -34,11 +29,6 @@ import {
   CartaDate,
   Geometry,
 } from '../modules_common/types';
-
-export const generateNewCardId = () => {
-  const ulid = monotonicFactory();
-  return 'c' + ulid(Date.now());
-};
 
 /**
  * Const
@@ -100,12 +90,26 @@ export const getGlobalFocusEventListenerPermission = () => {
 
 export const currentCardMap: Map<string, Card> = new Map();
 
+// z-index
+let zIndexOfTopCard: number;
+export const setZIndexOfTopCard = (zIndex: number) => {
+  zIndexOfTopCard = zIndex;
+};
+export const getZIndexOfTopCard = (): number => {
+  return zIndexOfTopCard;
+};
+
+export const generateNewCardId = () => {
+  const ulid = monotonicFactory();
+  return 'c' + ulid(Date.now());
+};
+
 export class Card {
   public loadOrCreateCardData: () => Promise<void>;
 
   public version = cardVersion;
   public url: string;
-  public data = '';
+  public _body = '';
   public type = 'text/html';
   public user = 'local';
   public status: CardStatus = 'Blurred';
@@ -182,7 +186,7 @@ export class Card {
       this.url = cardProp.url;
       this.type = cardProp.type;
       this.user = cardProp.user;
-      this.data = cardProp.data;
+      this._body = cardProp._body;
       this.version = cardProp.version;
     }
 
@@ -333,7 +337,7 @@ export class Card {
     return new Promise(resolve => {
       this.window.setSize(this.geometry.width, this.geometry.height);
       this.window.setPosition(this.geometry.x, this.geometry.y);
-      console.debug(`renderCard in main [${this.url}] ${this.data.substr(0, 40)}`);
+      console.debug(`renderCard in main [${this.url}] ${this._body.substr(0, 40)}`);
       this.window.showInactive();
       this.window.webContents.send('render-card', this.toObject()); // CardProp must be serialize because passing non-JavaScript objects to IPC methods is deprecated and will throw an exception beginning with Electron 9.
       const checkTimer = setInterval(() => {
@@ -391,7 +395,7 @@ export class Card {
       url: this.url,
       type: this.type,
       user: this.user,
-      data: this.data,
+      _body: this._body,
       geometry: this.geometry,
       style: this.style,
       condition: this.condition,
@@ -665,11 +669,11 @@ const setContextMenu = (card: Card) => {
     ],
     prepend: () => [
       {
-        label: MESSAGE('workspaceMove'),
+        label: MESSAGE('noteMove'),
         submenu: [...moveToWorkspaces],
       },
       {
-        label: MESSAGE('workspaceCopy'),
+        label: MESSAGE('noteCopy'),
         submenu: [...copyToWorkspaces],
       },
       {
