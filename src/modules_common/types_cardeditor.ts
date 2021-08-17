@@ -3,14 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { AvatarProp } from './cardprop';
-
-/**
- * CardInitializeType
- *  - 'Load': Load Card with a specified id
- *  - 'New': Create new Card with specified CardProp
- */
-export type CardInitializeType = 'Load' | 'New';
+import { CardProp } from './types';
 
 export interface ICardEditor {
   readonly hasCodeMode: boolean;
@@ -20,7 +13,7 @@ export interface ICardEditor {
   getImageTag(id: string, src: string, width: number, height: number, alt: string): string;
 
   loadUI(cardCssStyle: CardCssStyle): Promise<void>; // A Promise resolves when required initialization is finished.
-  setCard(prop: AvatarProp): void; // Loading a card after loadUI().
+  setCard(prop: CardProp): void; // Loading a card after loadUI().
 
   showEditor(): Promise<void>;
   hideEditor(): void;

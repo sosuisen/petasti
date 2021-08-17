@@ -6,20 +6,11 @@ import path from 'path';
 import prompt from 'electron-prompt';
 import { app, dialog, Menu, MenuItemConstructorOptions, Tray } from 'electron';
 import { closeSettings, openSettings, settingsDialog } from './settings';
-import { createCard } from './card';
+import { createCard, DEFAULT_CARD_GEOMETRY } from './card';
 import { emitter } from './event';
-import {
-  CardAvatars,
-  CardProp,
-  CardPropSerializable,
-  DEFAULT_CARD_GEOMETRY,
-  TransformableFeature,
-} from '../modules_common/cardprop';
 import { getRandomInt } from '../modules_common/utils';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
-import { addAvatarToWorkspace, setChangingToWorkspaceId } from './store_workspaces';
 import { appIcon } from '../modules_common/const';
-import { avatarWindows } from './avatar_window';
 import { mainStore, MESSAGE } from './store';
 
 /**
@@ -56,7 +47,6 @@ const createNewCard = () => {
 
   const bgColor: string = cardColors[newColor];
 
-  const newAvatars: CardAvatars = {};
   /** 
    * TODO: 
   
@@ -114,11 +104,11 @@ export const setTrayContextMenu = () => {
           click: () => {
             if (workspace._id !== currentWorkspace._id) {
               closeSettings();
-              if (Object.keys(mainStore.currentAvatarMap).length === 0) {
+              if (Object.keys(mainStore.currentCardMap).length === 0) {
                 emitter.emit('change-workspace', workspace._id);
               }
               else {
-                setChangingToWorkspaceId(workspace._id);
+//                setChangingToWorkspaceId(workspace._id);
                 try {
                   // Remove listeners firstly to avoid focus another card in closing process
                   /** 
@@ -269,16 +259,16 @@ export const setTrayContextMenu = () => {
         if (settingsDialog && !settingsDialog.isDestroyed()) {
           settingsDialog.close();
         }
-        setChangingToWorkspaceId('exit');
+//        setChangingToWorkspaceId('exit');
         closeSettings();
-        if (Object.keys(mainStore.currentAvatarMap).length === 0) {
+        if (Object.keys(mainStore.currentCardMap).length === 0) {
           emitter.emit('exit');
         }
         else {
           try {
-            for (const url in mainStore.currentAvatarMap) {
-              avatarWindows.get(url)!.window.webContents.send('card-close');
-            }
+            Object.values(mainStore.currentCardMap).forEach(card => {
+              card.window.webContents.send('card-close');
+            });
           } catch (e) {
             console.error(e);
             emitter.emit('exit');

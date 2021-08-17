@@ -15,11 +15,9 @@ import {
   Sync,
 } from 'git-documentdb';
 import { selectPreferredLanguage, translate, Translator } from 'typed-intl';
-import { CardProp } from '../modules_common/cardprop';
 import { getIdFromUrl } from '../modules_common/avatar_url_utils';
 import { generateId, getCurrentDateAndTime } from '../modules_common/utils';
-import { NoteProp } from '../modules_common/schema_workspace';
-import { Avatar, Geometry2D, GeometryXY } from '../modules_common/schema_avatar';
+import { CardProp, Geometry2D, GeometryXY, NoteProp } from '../modules_common/types';
 import {
   AvatarDepthUpdateAction,
   AvatarPositionUpdateAction,
@@ -42,6 +40,12 @@ import {
   Messages,
 } from '../modules_common/i18n';
 import { scheme, settingsDbName } from '../modules_common/const';
+import { monotonicFactory } from 'ulid';
+
+export const generateNewNoteId = () => {
+  const ulid = monotonicFactory();
+  return 'c' + ulid(Date.now());
+};
 
 class MainStore {
   constructor () {}
@@ -83,10 +87,13 @@ class MainStore {
   /**
    * Store
    */
-  private _notePropMap: { [_id: string]: NoteProp } = {};
-  private _currentAvatarMap: { [url: string]: Avatar } = {};
-  get currentAvatarMap (): { [url: string]: Avatar } {
-    return this._currentAvatarMap;
+  private _notePropMap: { [_id: string]: NoteProp } = {};  
+  get notePropMap (): { [_id: string]: NoteProp } {
+    return this._notePropMap;
+  }
+  private _currentCardPropMap: { [url: string]: CardProp } = {};
+  get currentCardPropMap () : { [url: string]: CardProp } {
+    return this._currentCardPropMap;
   }
 
   private _info: InfoState = {
@@ -115,10 +122,21 @@ class MainStore {
   }
 
   /**
+   * Note
+   */
+  _changingToNoteId = 'none'; // changingToNoteId stores next id while workspace is changing, 'none' or 'exit'
+  set changingToNoteId (noteId: string) {
+    this._changingToNoteId = noteId;
+  };
+  get changingToNoteId () {
+    return this._changingToNoteId;
+  };
+  
+  /**
    * loadNoteBook
    */
   // eslint-disable-next-line complexity
-  loadNotebook = async () => {
+  loadNotebook = async (): Promise<CardProp[]> => {
     // locale can be got after 'ready'
     const myLocale = app.getLocale();
     console.debug(`locale: ${myLocale}`);
@@ -242,20 +260,12 @@ class MainStore {
       this._notePropMap[prop._id] = prop;
     }
 
-    await this.loadCurrentNote();
+    return await this.loadCurrentNote();
 
     // setSyncEvents();
   };
 
-  getNotePropList = (): NoteProp[] => {
-    return Object.values(this._notePropMap);
-  };
-
-  getCurrentNoteProp = () => {
-    return this._notePropMap[this._settings.currentNoteId];
-  };
-
-  loadCurrentNote = async () => {
+  loadCurrentNote = async (): Promise<CardProp[]> => {
     // Create note if not exist.
 
     let createNoteFlag = false;
@@ -287,7 +297,7 @@ class MainStore {
 
     console.log('# currentNoteId: ' + this._settings.currentNoteId);
 
-    await this.loadCurrentAvatars();
+    return await this.loadCurrentCards();
   };
 
   createNote = async (name?: string): Promise<NoteProp> => {
@@ -366,23 +376,24 @@ class MainStore {
 */
   };
 
-  // ! Operations for avatars
-
+  // ! Operations for cards
   /**
-   * Avatar
+   * Card
    */
-  loadCurrentAvatars = async (): Promise<void> => {
-    const avatarDocs = await this._noteCollection.find({
+  loadCurrentCards = async (): Promise<CardProp[]> => {
+    const cardDocs = await this._noteCollection.find({
       prefix: this._settings.currentNoteId + '/c',
     });
-    for (const avatarDoc of avatarDocs) {
-      const url = `${scheme}://local/${avatarDoc._id}`;
+
+    const cardProps: CardProp[] = [];
+    for (const cardDoc of cardDocs) {
+      const url = `${scheme}://local/${cardDoc._id}`; // treestickies://local/noteID/(cardID|noteID)
       const cardId = getIdFromUrl(url);
       // eslint-disable-next-line no-await-in-loop
-      let cardDoc = await this._cardCollection.get(cardId);
-      if (cardDoc === undefined) {
+      let cardBodyDoc = await this._cardCollection.get(cardId);
+      if (cardBodyDoc === undefined) {
         const current = getCurrentDateAndTime();
-        cardDoc = {
+        cardBodyDoc = {
           _body: '',
           date: {
             createDate: current,
@@ -390,311 +401,24 @@ class MainStore {
           },
         };
       }
-      const avatar: Avatar = {
+      const cardProp: CardProp = {
         url,
-        data: cardDoc._body,
-        geometry: avatarDoc.geometry,
-        style: avatarDoc.style,
-        condition: avatarDoc.condition,
+        type: cardBodyDoc.type,
+        user: cardBodyDoc.user,
+        data: cardBodyDoc._body,
+        geometry: cardDoc.geometry,
+        style: cardDoc.style,
+        condition: cardDoc.condition,
         date: {
-          createdDate: cardDoc.date,
-          modifiedDate: cardDoc.date,
+          createdDate: cardBodyDoc.date,
+          modifiedDate: cardBodyDoc.date,
         },
+        version: cardBodyDoc.version,
       };
-      this._currentAvatarMap[url] = avatar;
+
+      cardProps.push(cardProp);
     }
-  };
-
-  addNewAvatar = () => {
-    /*
-    const card = new Card('New');
-    await card.loadOrCreateCardData().catch(e => {
-      throw e;
-    });
-    const avatarLocs = Object.keys(card.prop.avatars);
-    // eslint-disable-next-line require-atomic-updates
-    avatarIdArray = [];
-    avatarLocs.forEach(loc => {
-      const _url = loc + card.prop.id;
-      avatarIdArray.push(_url);
-      getCurrentWorkspace()!.avatars.push(_url);
-      CardIO.addAvatarUrl(getCurrentWorkspaceId(), _url);
-    });
-
-    cards.set(card.prop.id, card);
-    await CardIO.updateOrCreateCardData(card.prop).catch((e: Error) => {
-      console.error(e.message);
-    });
-    */
-  };
-
-  addAvatarUrl = async (workspaceId: string, avatarUrl: string) => {
-    /*
-  const wsObj: { _id: string; _rev: string } & Workspace = {
-    _id: workspaceId,
-    _rev: '',
-    name: '',
-    avatars: [avatarUrl],
-  };
-  await workspaceDB
-    .get(workspaceId)
-    .then(oldWS => {
-      // Update existing card
-      const { name, avatars } = (oldWS as unknown) as Workspace;
-      wsObj._rev = oldWS._rev;
-      wsObj.name = name;
-      wsObj.avatars.push(...avatars);
-    })
-    .catch(e => {
-      throw new Error(`Error in addAvatarUrl: ${e}`);
-    });
-
-  return workspaceDB
-    .put(wsObj)
-    .then(res => {
-      console.debug(`Workspace saved: ${res.id}`);
-    })
-    .catch(e => {
-      throw new Error(`Error in addAvatarUrl: ${e}`);
-    });
-    */
-  };
-
-  deleteAvatarUrl = async (workspaceId: string, avatarUrl: string) => {
-    /*
-  const wsObj: { _id: string; _rev: string } & Workspace = {
-    _id: workspaceId,
-    _rev: '',
-    name: '',
-    avatars: [],
-  };
-  const oldWS = await workspaceDB.get(workspaceId).catch(e => {
-    throw new Error(`Error in deleteAvatarUrl get: ${e}`);
-  });
-
-  // Update existing card
-  const { name, avatars } = (oldWS as unknown) as Workspace;
-  wsObj._rev = oldWS._rev;
-  wsObj.name = name;
-  wsObj.avatars = avatars.filter(url => url !== avatarUrl);
-
-  await workspaceDB.put(wsObj).catch(e => {
-    throw new Error(`Error in deleteAvatarUrl put: ${e}`);
-  });
-
-  console.debug(`Delete avatar: ${avatarUrl}`);
-*/
-  };
-
-  getCardIdList = (): Promise<string[]> => {
-    // returns all card ids.
-
-    return Promise.resolve([]);
-    /*
-  return new Promise((resolve, reject) => {
-    cardDB
-      .allDocs()
-      .then(res => {
-        resolve(res.rows.map(row => row.id));
-      })
-      .catch(err => {
-        reject(err);
-      });
-  });
-  */
-  };
-
-  deleteCardData = (id: string): Promise<string> => {
-    // for debug
-    // await sleep(60000);
-
-    return Promise.resolve('');
-    /*
-  const card = await cardDB.get(id);
-  await cardDB.remove(card).catch(e => {
-    throw new Error(`Error in deleteCardData: ${e}`);
-  });
-  return id;
-  */
-  };
-
-  getCardProp = (id: string): Promise<CardProp> => {
-    // for debug
-    // await sleep(60000);
-
-    return Promise.resolve(new CardProp());
-    /*
-  return new Promise((resolve, reject) => {
-    cardDB
-      .get(id)
-      .then(doc => {
-        const propsRequired: CardPropSerializable = new CardProp('').toObject();
-        // Check versions and compatibility
-        let isFirstVersion = false;
-        if (!Object.prototype.hasOwnProperty.call(doc, 'version')) {
-          isFirstVersion = true;
-        }
-
-        if (isFirstVersion) {
-          // The first version has no version property.
-          propsRequired.version = '1.0';
-
-          const { x, y, z, width, height } = (doc as unknown) as Geometry;
-          const geometry: Geometry = { x, y, z, width, height };
-
-          const {
-            uiColor,
-            backgroundColor,
-            opacity,
-            zoom,
-          } = (doc as unknown) as CardStyle;
-          const style: CardStyle = { uiColor, backgroundColor, opacity, zoom };
-
-          const condition: CardCondition = {
-            locked: false,
-          };
-
-          const { createdDate, modifiedDate } = (doc as unknown) as bookDate;
-          const date: bookDate = { createdDate, modifiedDate };
-
-          propsRequired.avatars[getCurrentWorkspaceUrl()] = new TransformableFeature(
-            geometry,
-            style,
-            condition,
-            date
-          );
-        }
-
-        // Checking properties retrieved from database
-        for (const key in propsRequired) {
-          if (key === 'id') {
-            // skip
-            // pouchDB does not have id but has _id.
-          }
-          // Don't use doc.hasOwnProperty(key)
-          // See eslint no-prototype-builtins
-          else if (!Object.prototype.hasOwnProperty.call(doc, key)) {
-            console.warn(`db entry id "${id}" lacks "${key}"`);
-          }
-          else {
-            // Type of doc cannot be resolved by @types/pouchdb-core
-            // @ts-ignore
-            propsRequired[key] = doc[key];
-          }
-        }
-
-        const prop = new CardProp(id);
-        prop.data = propsRequired.data;
-        prop.avatars = propsRequired.avatars;
-        console.dir(prop.avatars);
-        if (isFirstVersion) {
-          this.updateOrCreateCardData(prop);
-        }
-
-        resolve(prop);
-      })
-      .catch(e => {
-        reject(e);
-      });
-  });
-*/
-  };
-
-  updateOrCreateCardData = (prop: CardProp): Promise<string> => {
-    return Promise.resolve('');
-    /*
-  console.debug('Saving card...: ' + JSON.stringify(prop.toObject()));
-  // In PouchDB, _id must be used instead of id in document.
-  // Convert class to Object to serialize.
-  const propObj = Object.assign({ _id: prop.id, _rev: '' }, prop.toObject());
-  delete propObj.id;
-
-  // for debug
-  // await sleep(60000);
-
-  await cardDB
-    .get(prop.id)
-    .then(oldCard => {
-      // Update existing card
-      propObj._rev = oldCard._rev;
-    })
-    .catch(() => {
-      // Create new card
-    });
-
-  return cardDB
-    .put(propObj)
-    .then(res => {
-      console.debug(`Saved: ${res.id}`);
-      return res.id;
-    })
-    .catch(e => {
-      throw new Error(`Error in updateOrCreatebookDate: ${e.message}`);
-    });
-    */
-  };
-
-  avatarUpdater = (action: PersistentStoreAction, reducer: (avatar: Avatar) => Avatar) => {
-    const url: string = action.payload.url;
-    /*
-  const docRx: RxDocument = await rxdb.avatar.findOne(url).exec();
-  if (docRx) {
-    const avatarClone: Avatar = (docRx.toJSON() as unknown) as Avatar;
-    const newAvatar: AvatarWithSkipForward = reducer(avatarClone) as AvatarWithSkipForward;
-    newAvatar.skipForward = action.skipForward ?? false;
-    await docRx.atomicPatch(newAvatar).catch(e => console.error(e));
-  }
-  else {
-    console.error(`Error: ${url} does not exist in DB`);
-  }
-  */
-  };
-
-  avatarPositionUpdater = async (action: AvatarPositionUpdateAction) => {
-    const updatedGeometry: GeometryXY = action.payload.geometry;
-    await this.avatarUpdater(action, (avatar: Avatar) => {
-      avatar.geometry.x = updatedGeometry.x ?? avatar.geometry.x;
-      avatar.geometry.y = updatedGeometry.y ?? avatar.geometry.y;
-      return avatar;
-    });
-  };
-
-  avatarSizeUpdater = async (action: AvatarSizeUpdateAction) => {
-    const updatedGeometry: Geometry2D = action.payload.geometry;
-    await this.avatarUpdater(action, (avatar: Avatar) => {
-      avatar.geometry.x = updatedGeometry.x ?? avatar.geometry.x;
-      avatar.geometry.y = updatedGeometry.y ?? avatar.geometry.y;
-      avatar.geometry.width = updatedGeometry.width ?? avatar.geometry.width;
-      avatar.geometry.height = updatedGeometry.height ?? avatar.geometry.height;
-      return avatar;
-    });
-  };
-
-  avatarDepthUpdater = async (action: AvatarDepthUpdateAction) => {
-    const updatedZ: number = action.payload.z;
-    await this.avatarUpdater(action, (avatar: Avatar) => {
-      avatar.geometry.z = updatedZ ?? avatar.geometry.z;
-      return avatar;
-    });
-  };
-
-  storeUpdater = async (action: PersistentStoreAction) => {
-    switch (action.type) {
-      case 'avatar-position-update': {
-        await this.avatarPositionUpdater(action);
-        break;
-      }
-      case 'avatar-size-update': {
-        await this.avatarSizeUpdater(action);
-        break;
-      }
-      case 'avatar-depth-update': {
-        await this.avatarDepthUpdater(action);
-        break;
-      }
-      default:
-        break;
-    }
+    return cardProps;
   };
 
   closeDB = async () => {
