@@ -15,6 +15,7 @@ import {
   Sync,
 } from 'git-documentdb';
 import { selectPreferredLanguage, translate, Translator } from 'typed-intl';
+import { monotonicFactory } from 'ulid';
 import { getIdFromUrl } from '../modules_common/avatar_url_utils';
 import { generateId, getCurrentDateAndTime } from '../modules_common/utils';
 import { CardProp, Geometry2D, GeometryXY, NoteProp } from '../modules_common/types';
@@ -40,7 +41,6 @@ import {
   Messages,
 } from '../modules_common/i18n';
 import { scheme, settingsDbName } from '../modules_common/const';
-import { monotonicFactory } from 'ulid';
 
 export const generateNewNoteId = () => {
   const ulid = monotonicFactory();
@@ -85,17 +85,8 @@ class MainStore {
   }
 
   /**
-   * Store
+   * Info
    */
-  private _notePropMap: { [_id: string]: NoteProp } = {};  
-  get notePropMap (): { [_id: string]: NoteProp } {
-    return this._notePropMap;
-  }
-  private _currentCardPropMap: { [url: string]: CardProp } = {};
-  get currentCardPropMap () : { [url: string]: CardProp } {
-    return this._currentCardPropMap;
-  }
-
   private _info: InfoState = {
     messages: ENGLISH,
     appinfo: {
@@ -114,6 +105,16 @@ class MainStore {
   }
 
   /**
+   * Note
+   */
+  private _notePropMap: Map<string, NoteProp> = new Map();
+  get notePropMap (): Map<string, NoteProp> {
+    return this._notePropMap;
+  }
+
+  changingToNoteId = 'none'; // changingToNoteId stores next id while workspace is changing, 'none' or 'exit'
+
+  /**
    * I18n
    */
   private _translations = translate(ENGLISH).supporting('ja', JAPANESE);
@@ -121,17 +122,6 @@ class MainStore {
     return this._translations;
   }
 
-  /**
-   * Note
-   */
-  _changingToNoteId = 'none'; // changingToNoteId stores next id while workspace is changing, 'none' or 'exit'
-  set changingToNoteId (noteId: string) {
-    this._changingToNoteId = noteId;
-  };
-  get changingToNoteId () {
-    return this._changingToNoteId;
-  };
-  
   /**
    * loadNoteBook
    */
@@ -257,7 +247,7 @@ class MainStore {
       const prop: NoteProp = (await noteDir.get('prop')) as NoteProp;
       const pathArr = noteDir.collectionPath.split('/'); // collectionPath is note/nXXXXXX/
       prop._id = pathArr[1]; // Set note id instead of 'prop'.
-      this._notePropMap[prop._id] = prop;
+      this._notePropMap.set(prop._id, prop);
     }
 
     return await this.loadCurrentNote();
@@ -269,22 +259,22 @@ class MainStore {
     // Create note if not exist.
 
     let createNoteFlag = false;
-    if (Object.keys(this._notePropMap).length === 0) {
+    if (this._notePropMap.size === 0) {
       createNoteFlag = true;
     }
     else if (
       this._settings.currentNoteId === undefined ||
       this._settings.currentNoteId === ''
     ) {
-      const sortedNotePropList = Object.keys(this._notePropMap).sort((a, b) => {
-        if (this._notePropMap[a].name > this._notePropMap[b].name) return 1;
-        else if (this._notePropMap[a].name < this._notePropMap[b].name) return -1;
+      const sortedNotePropList = [...this._notePropMap.keys()].sort((a, b) => {
+        if (this._notePropMap.get(a).name > this._notePropMap.get(b).name) return 1;
+        else if (this._notePropMap.get(a).name < this._notePropMap.get(b).name) return -1;
         return 0;
       });
       this._settings.currentNoteId = sortedNotePropList[0];
       await this._settingsDB.put(this._settings);
     }
-    else if (this._notePropMap[this._settings.currentNoteId] === undefined) {
+    else if (this._notePropMap.get(this._settings.currentNoteId) === undefined) {
       createNoteFlag = true;
     }
 
@@ -302,10 +292,7 @@ class MainStore {
 
   createNote = async (name?: string): Promise<NoteProp> => {
     if (!name) {
-      name = MESSAGE(
-        'workspaceName',
-        (Object.keys(this._notePropMap).length + 1).toString()
-      );
+      name = MESSAGE('workspaceName', (this._notePropMap.size + 1).toString());
     }
     const _id = 'w' + nanoid();
     const current = getCurrentDateAndTime();

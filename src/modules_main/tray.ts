@@ -6,7 +6,7 @@ import path from 'path';
 import prompt from 'electron-prompt';
 import { app, dialog, Menu, MenuItemConstructorOptions, Tray } from 'electron';
 import { closeSettings, openSettings, settingsDialog } from './settings';
-import { createCard, DEFAULT_CARD_GEOMETRY } from './card';
+import { createCard, currentCardMap, DEFAULT_CARD_GEOMETRY } from './card';
 import { emitter } from './event';
 import { getRandomInt } from '../modules_common/utils';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
@@ -82,40 +82,37 @@ export const setTrayContextMenu = () => {
   if (!tray) {
     return;
   }
-  const currentWorkspace = mainStore.getCurrentNoteProp();
+  const currentNote = mainStore.notePropMap.get(mainStore.settings.currentNoteId);
 
-  let changeWorkspaces: MenuItemConstructorOptions[] = [];
-  if (currentWorkspace !== null) {
-    changeWorkspaces = [...mainStore.getNotePropList()]
+  let changeNotes: MenuItemConstructorOptions[] = [];
+  if (currentNote !== null) {
+    changeNotes = [...mainStore.notePropMap.values()]
       .sort(function (a, b) {
-        if (a.date.createdDate > b.date.createdDate) {
-          return 1;
-        }
-        else if (a.date.createdDate < b.date.createdDate) {
-          return -1;
-        }
+        if (a.name > b.name) return 1;
+        else if (a.name < b.name) return -1;
         return 0;
       })
-      .map(workspace => {
+      .map(note => {
         return {
-          label: `${workspace.name}`,
+          label: `${note.name}`,
           type: 'radio',
-          checked: workspace._id === currentWorkspace._id,
+          checked: note._id === mainStore.settings.currentNoteId,
           click: () => {
-            if (workspace._id !== currentWorkspace._id) {
+            if (note._id !== mainStore.settings.currentNoteId) {
               closeSettings();
-              if (Object.keys(mainStore.currentCardMap).length === 0) {
-                emitter.emit('change-workspace', workspace._id);
+              if (currentCardMap.size === 0) {
+                emitter.emit('change-workspace', note._id);
               }
               else {
-//                setChangingToWorkspaceId(workspace._id);
+                mainStore.changingToNoteId = note._id;
                 try {
                   // Remove listeners firstly to avoid focus another card in closing process
-                  /** 
-                 * TODO: 
-                currentWorkspace.avatars.forEach(avatar => avatar.removeWindowListenersExceptClosedEvent());
-                currentWorkspace.avatars.forEach(avatar => avatar.window.webContents.send('card-close'));
-                */
+                  currentCardMap.forEach(card =>
+                    card.removeWindowListenersExceptClosedEvent()
+                  );
+                  currentCardMap.forEach(card =>
+                    card.window.webContents.send('card-close')
+                  );
                 } catch (e) {
                   console.error(e);
                 }
@@ -126,8 +123,8 @@ export const setTrayContextMenu = () => {
         };
       });
   }
-  if (changeWorkspaces.length > 0) {
-    changeWorkspaces.unshift({
+  if (changeNotes.length > 0) {
+    changeNotes.unshift({
       type: 'separator',
     } as MenuItemConstructorOptions);
   }
@@ -240,7 +237,7 @@ export const setTrayContextMenu = () => {
       },
     },
   */
-    ...changeWorkspaces,
+    ...changeNotes,
     {
       type: 'separator',
     },
@@ -253,20 +250,17 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('exit'),
       click: () => {
-        if (!currentWorkspace) {
-          return;
-        }
         if (settingsDialog && !settingsDialog.isDestroyed()) {
           settingsDialog.close();
         }
-//        setChangingToWorkspaceId('exit');
+        //        setChangingToWorkspaceId('exit');
         closeSettings();
-        if (Object.keys(mainStore.currentCardMap).length === 0) {
+        if (currentCardMap.size === 0) {
           emitter.emit('exit');
         }
         else {
           try {
-            Object.values(mainStore.currentCardMap).forEach(card => {
+            currentCardMap.forEach(card => {
               card.window.webContents.send('card-close');
             });
           } catch (e) {

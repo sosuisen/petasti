@@ -3,7 +3,6 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { v4 as uuidv4 } from 'uuid';
 import { app, BrowserWindow, dialog, ipcMain, MouseInputEvent } from 'electron';
 import { DIALOG_BUTTON } from './modules_common/const';
 import { MessageLabel } from './modules_common/i18n';
@@ -35,14 +34,8 @@ if (require('electron-squirrel-startup')) {
 // Increase max listeners
 ipcMain.setMaxListeners(1000);
 
-
+// z-index
 let zIndexOfTopAvatar: number;
-export const setZIndexOfTopAvatar = (value: number) => {
-  zIndexOfTopAvatar = value;
-};
-export const getZIndexOfTopAvatar = () => {
-  return zIndexOfTopAvatar;
-};
 
 /**
  * This method will be called when Electron has finished
@@ -53,7 +46,7 @@ app.on('ready', async () => {
   // load workspaces
   const cardProps = await mainStore.loadNotebook();
 
-  const renderers: Promise<void>[] = [];  
+  const renderers: Promise<void>[] = [];
   cardProps.forEach(cardProp => {
     const card = new Card(cardProp);
     currentCardMap[cardProp.url] = card;
@@ -62,7 +55,6 @@ app.on('ready', async () => {
   await Promise.all(renderers).catch(e => {
     console.error(`Error while rendering cards in ready event: ${e.message}`);
   });
-
 
   // for debug
   if (!app.isPackaged && process.env.NODE_ENV === 'development') {
@@ -79,14 +71,14 @@ app.on('ready', async () => {
     return 0;
   });
 
-  let zIndexOfTopAvatar = 0;
+  let zIndex = 0;
   backToFront.forEach(card => {
     if (card.window && !card.window.isDestroyed()) {
       card.window.moveTop();
-      zIndexOfTopAvatar = card.geometry.z;
+      zIndex = card.geometry.z;
     }
   });
-  setZIndexOfTopAvatar(zIndexOfTopAvatar);
+  zIndexOfTopAvatar = zIndex;
 
   const size = backToFront.length;
   console.debug(`Completed to load ${size} cards`);
@@ -276,20 +268,20 @@ ipcMain.handle('set-window-position', (event, url: string, x: number, y: number)
 });
 
 ipcMain.handle('get-uuid', () => {
-  return uuidv4();
+  //  return uuidv4();
 });
 
 ipcMain.handle('bring-to-front', (event, url: string, rearrange = false) => {
   // Database Update
-  const zIndexOfTopAvatar = getZIndexOfTopAvatar() + 1;
-  console.debug(`new zIndex: ${zIndexOfTopAvatar}`);
-  const action = avatarDepthUpdateActionCreator(url, zIndexOfTopAvatar, false);
+  const zIndex = zIndexOfTopAvatar + 1;
+  console.debug(`new zIndex: ${zIndex}`);
+  const action = avatarDepthUpdateActionCreator(url, zIndex, false);
 
   //  persistentStoreActionDispatcher(action);
 
   // persistentStoreActionDispatcher works synchronously,
   // so DB has been already updated here.
-  setZIndexOfTopAvatar(zIndexOfTopAvatar);
+  zIndexOfTopAvatar = zIndex;
 
   // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
   if (rearrange) {
@@ -305,7 +297,7 @@ ipcMain.handle('bring-to-front', (event, url: string, rearrange = false) => {
 
     backToFront.forEach(card => {
       console.debug(`sorting zIndex..: ${card.geometry.z}`);
-      
+
       if (card.window && !card.window.isDestroyed()) {
         card.window.moveTop();
       }

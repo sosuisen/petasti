@@ -495,7 +495,7 @@ export const deleteCard = async (id: string) => {
     .catch((e: Error) => {
       throw new Error(`Error in destroy window: ${e.message}`);
     });
-    */    
+    */
 };
 
 export const deleteAvatar = async (_url: string) => {
@@ -540,7 +540,6 @@ export const updateAvatar = async (cardProp: CardProp) => {
   await saveCard(card.prop);
   */
 };
-
 
 /**
  * Context Menu
@@ -599,14 +598,14 @@ const setContextMenu = (card: Card) => {
     */
   };
 
-  const moveToWorkspaces: MenuItemConstructorOptions[] = Object.values(mainStore.notePropMap)
-  .sort((a, b) => {
-    if (a.name > b.name) return 1;
-    else if (a.name < b.name) return -1;
-    return 0;
-  })
-  .reduce((result, noteProp) => {
-    if (noteProp._id !== mainStore.settings.currentNoteId) {
+  const moveToWorkspaces: MenuItemConstructorOptions[] = [...mainStore.notePropMap.values()]
+    .sort((a, b) => {
+      if (a.name > b.name) return 1;
+      else if (a.name < b.name) return -1;
+      return 0;
+    })
+    .reduce((result, noteProp) => {
+      if (noteProp._id !== mainStore.settings.currentNoteId) {
         result.push({
           label: `${noteProp.name}`,
           click: () => {
@@ -617,14 +616,14 @@ const setContextMenu = (card: Card) => {
       return result;
     }, [] as MenuItemConstructorOptions[]);
 
-  const copyToWorkspaces: MenuItemConstructorOptions[] = Object.values(mainStore.notePropMap)
-  .sort((a, b) => {
-    if (a.name > b.name) return 1;
-    else if (a.name < b.name) return -1;
-    return 0;
-  })
-  .reduce((result, noteProp) => {
-    if (noteProp._id !== mainStore.settings.currentNoteId) {
+  const copyToWorkspaces: MenuItemConstructorOptions[] = [...mainStore.notePropMap.values()]
+    .sort((a, b) => {
+      if (a.name > b.name) return 1;
+      else if (a.name < b.name) return -1;
+      return 0;
+    })
+    .reduce((result, noteProp) => {
+      if (noteProp._id !== mainStore.settings.currentNoteId) {
         result.push({
           label: `${noteProp.name}`,
           click: () => {
