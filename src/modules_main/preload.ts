@@ -5,6 +5,7 @@
 
 import { contextBridge, ipcRenderer, MouseInputEvent } from 'electron';
 import { PersistentStoreAction } from '../modules_common/actions';
+import { CardProp } from '../modules_common/types';
 
 contextBridge.exposeInMainWorld('api', {
   /**
@@ -105,8 +106,8 @@ ipcRenderer.on(
   (event: Electron.IpcRendererEvent, bounds: Electron.Rectangle) =>
     window.postMessage({ command: 'move-by-hand', bounds }, 'file://')
 );
-ipcRenderer.on('render-card', (event: Electron.IpcRendererEvent, avatar: any) =>
-  window.postMessage({ command: 'render-card', avatar }, 'file://')
+ipcRenderer.on('render-card', (event: Electron.IpcRendererEvent, cardProp: CardProp) =>
+  window.postMessage({ command: 'render-card', cardProp }, 'file://')
 );
 ipcRenderer.on(
   'resize-by-hand',

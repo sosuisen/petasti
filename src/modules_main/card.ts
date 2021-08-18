@@ -6,7 +6,6 @@
 import url from 'url';
 import path from 'path';
 import contextMenu from 'electron-context-menu';
-
 import {
   app,
   BrowserWindow,
@@ -15,16 +14,24 @@ import {
   MenuItemConstructorOptions,
   shell,
 } from 'electron';
-
 import { monotonicFactory } from 'ulid';
 import { getCurrentDateAndTime, sleep } from '../modules_common/utils';
-import { DIALOG_BUTTON, scheme } from '../modules_common/const';
+import {
+  APP_ICON_NAME,
+  APP_SCHEME,
+  DEFAULT_CARD_CONDITION,
+  DEFAULT_CARD_GEOMETRY,
+  DIALOG_BUTTON,
+  MINIMUM_WINDOW_HEIGHT,
+  MINIMUM_WINDOW_WIDTH,
+} from '../modules_common/const';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
 import { emitter, handlers } from './event';
 import { mainStore, MESSAGE } from './note_store';
 import {
   CardCondition,
   CardProp,
+  CardStatus,
   CardStyle,
   CartaDate,
   Geometry,
@@ -33,37 +40,13 @@ import {
 /**
  * Const
  */
-const MINIMUM_WINDOW_WIDTH = 185; // 180 + shadowWidth
-const MINIMUM_WINDOW_HEIGHT = 80;
+export const CARD_VERSION = '1.0';
 
-export const cardVersion = '1.0';
-
-// Dragging is shaky when _DRAG_IMAGE_MARGIN is too small, especially just after loading a card.
-//  private _DRAG_IMAGE_MARGIN = 20;
-export const DRAG_IMAGE_MARGIN = 50;
-
-export type CardBase = {
-  _id: string;
-  data: string;
-};
-
-export type CardStatus = 'Focused' | 'Blurred';
-
-export const DEFAULT_CARD_GEOMETRY: Geometry = {
-  x: 70,
-  y: 70,
-  z: 0,
-  width: 300,
-  height: 300,
-};
 export const DEFAULT_CARD_STYLE: CardStyle = {
   uiColor: '',
   backgroundColor: cardColors.yellow,
   opacity: 1.0,
   zoom: 1.0,
-};
-export const DEFAULT_CARD_CONDITION: CardCondition = {
-  locked: false,
 };
 DEFAULT_CARD_STYLE.uiColor = darkenHexColor(DEFAULT_CARD_STYLE.backgroundColor);
 
@@ -71,9 +54,8 @@ DEFAULT_CARD_STYLE.uiColor = darkenHexColor(DEFAULT_CARD_STYLE.backgroundColor);
  * Focus control
  */
 let globalFocusListenerPermission = true;
-/**
- * Set permission to call focus event listener in all renderer processes.
- */
+
+// Set permission to call focus event listener in all renderer processes.
 export const setGlobalFocusEventListenerPermission = (
   canExecuteFocusEventListener: boolean
 ) => {
@@ -90,7 +72,9 @@ export const getGlobalFocusEventListenerPermission = () => {
 
 export const currentCardMap: Map<string, Card> = new Map();
 
-// z-index
+/**
+ * Manage z-index
+ */
 let zIndexOfTopCard: number;
 export const setZIndexOfTopCard = (zIndex: number) => {
   zIndexOfTopCard = zIndex;
@@ -99,20 +83,25 @@ export const getZIndexOfTopCard = (): number => {
   return zIndexOfTopCard;
 };
 
+/**
+ * Card ID
+ */
 export const generateNewCardId = () => {
   const ulid = monotonicFactory();
   return 'c' + ulid(Date.now());
 };
 
+/**
+ * Card class
+ */
 export class Card {
-  public loadOrCreateCardData: () => Promise<void>;
-
-  public version = cardVersion;
+  /**
+   * CardProp
+   */
+  public version = CARD_VERSION;
   public url: string;
-  public _body = '';
   public type = 'text/html';
   public user = 'local';
-  public status: CardStatus = 'Blurred';
   public geometry: Geometry = DEFAULT_CARD_GEOMETRY;
   public style: CardStyle = DEFAULT_CARD_STYLE;
   public condition: CardCondition = DEFAULT_CARD_CONDITION;
@@ -121,31 +110,52 @@ export class Card {
     modifiedDate: getCurrentDateAndTime(),
   };
 
+  public _body = '';
+
+  /**
+   * Temporal status
+   */
+  public status: CardStatus = 'Blurred';
+
+  /**
+   * Renderer
+   */
   public window: BrowserWindow;
   public indexUrl: string;
+  public renderingCompleted = false;
 
+  /**
+   * Focus control
+   */
   public suppressFocusEventOnce = false;
   public suppressBlurEventOnce = false;
   public recaptureGlobalFocusEventAfterLocalFocusEvent = false;
 
-  public renderingCompleted = false;
-
+  /**
+   * Context menu
+   */
   public resetContextMenu: () => void;
 
+  /**
+   * Constructor
+   */
   // eslint-disable-next-line complexity
   constructor (noteIdOrCardProp: string | CardProp) {
-    this.loadOrCreateCardData = () => {
-      return Promise.resolve();
-    };
     if (typeof noteIdOrCardProp === 'string') {
-      const noteId = noteIdOrCardProp;
       // Create card with default properties
+
+      const noteId = noteIdOrCardProp;
       const cardId = generateNewCardId();
-      this.url = `${scheme}://local/${noteId}/${cardId}`;
+      this.url = `${APP_SCHEME}://local/${noteId}/${cardId}`;
     }
     else {
-      const cardProp = noteIdOrCardProp;
       // Create card with specified CardProp
+
+      const cardProp = noteIdOrCardProp;
+      this.version = cardProp.version;
+      this.url = cardProp.url;
+      this.type = cardProp.type;
+      this.user = cardProp.user;
 
       if (
         cardProp.geometry !== undefined &&
@@ -183,11 +193,7 @@ export class Card {
         this.date = { ...cardProp.date };
       }
 
-      this.url = cardProp.url;
-      this.type = cardProp.type;
-      this.user = cardProp.user;
       this._body = cardProp._body;
-      this.version = cardProp.version;
     }
 
     this.indexUrl = url.format({
@@ -195,7 +201,7 @@ export class Card {
       protocol: 'file:',
       slashes: true,
       query: {
-        avatarUrl: this.url,
+        cardUrl: this.url,
       },
     });
 
@@ -215,13 +221,26 @@ export class Card {
       maximizable: false,
       fullscreenable: false,
 
-      icon: path.join(__dirname, '../assets/media_stickies_grad_icon.ico'),
+      icon: path.join(__dirname, `../assets/${APP_ICON_NAME}`),
     });
     this.window.setMaxListeners(20);
 
-    // this.window.webContents.openDevTools();
+    if (!app.isPackaged && process.env.NODE_ENV === 'development') {
+      this.window.webContents.openDevTools();
+    }
+
+    // Resized by hand
+    // will-resize is only emitted when the window is being resized manually.
+    // Resizing the window with setBounds/setSize will not emit this event.
+    this.window.on('will-resize', this._willResizeListener);
+
+    // Moved by hand
+    this.window.on('will-move', this._willMoveListener);
 
     this.window.on('closed', this._closedListener);
+
+    this.window.on('focus', this._focusListener);
+    this.window.on('blur', this._blurListener);
 
     this.resetContextMenu = setContextMenu(this);
 
@@ -269,7 +288,7 @@ export class Card {
     // when you should delete the corresponding element.
     this.removeWindowListeners();
 
-    delete currentCardMap[this.url];
+    currentCardMap.delete(this.url);
 
     // Emit window-all-closed event explicitly
     // because Electron sometimes does not emit it automatically.
@@ -379,28 +398,17 @@ export class Card {
     });
   };
 
-  static getPlainText = (data: string) => {
-    if (data === '') {
-      return '';
-    }
-
-    // Replace alt attributes
-    data = data.replace(/<[^>]+?alt=["'](.+?)["'][^>]+?>/g, '$1');
-
-    return data.replace(/<[^>]+?>/g, '').substr(0, 30);
-  };
-
   public toObject = (): CardProp => {
     return {
+      version: this.version,
       url: this.url,
       type: this.type,
       user: this.user,
-      _body: this._body,
       geometry: this.geometry,
       style: this.style,
       condition: this.condition,
       date: this.date,
-      version: this.version,
+      _body: this._body,
     };
   };
 }
@@ -414,14 +422,14 @@ export const createCard = async (cardProp: CardProp) => {
   const promises = [];
   for (const loc in card.prop.avatars) {
     if (loc.match(workspaceUrl)) {
-      const avatarUrl = loc + card.prop._id;
+      const cardUrl = loc + card.prop._id;
       const avatar = new Card(
-        new AvatarProp(avatarUrl, getCardData(avatarUrl), getAvatarProp(avatarUrl))
+        new AvatarProp(cardUrl, getCardData(cardUrl), getAvatarProp(cardUrl))
       );
-      avatars.set(avatarUrl, avatar);
+      avatars.set(cardUrl, avatar);
       promises.push(avatar.render());
-      getCurrentWorkspace()!.avatars.push(avatarUrl);
-      promises.push(mainStore.addAvatarUrl(getCurrentWorkspaceId(), avatarUrl));
+      getCurrentWorkspace()!.avatars.push(cardUrl);
+      promises.push(mainStore.addCardUrl(getCurrentWorkspaceId(), cardUrl));
     }
   }
   await Promise.all(promises).catch(e => {
@@ -468,19 +476,19 @@ export const deleteCard = async (id: string) => {
   // Delete all avatar cards
 
   for (const avatarLocation in card.prop.avatars) {
-    const avatarUrl = avatarLocation + id;
+    const cardUrl = avatarLocation + id;
     // eslint-disable-next-line no-await-in-loop
-    await mainStore.deleteAvatarUrl(getWorkspaceIdFromUrl(avatarUrl), avatarUrl); // Use await because there is race case.
+    await mainStore.deleteCardUrl(getWorkspaceIdFromUrl(cardUrl), cardUrl); // Use await because there is race case.
 
-    const avatar = avatars.get(avatarUrl);
+    const avatar = avatars.get(cardUrl);
     const ws = getCurrentWorkspace();
     if (avatar && ws) {
-      ws.avatars = ws.avatars.filter(_url => _url !== avatarUrl);
-      avatars.delete(avatarUrl);
+      ws.avatars = ws.avatars.filter(_url => _url !== cardUrl);
+      avatars.delete(cardUrl);
       avatar.window.destroy();
     }
     else {
-      removeAvatarFromWorkspace(getWorkspaceIdFromUrl(avatarUrl), avatarUrl);
+      removeAvatarFromWorkspace(getWorkspaceIdFromUrl(cardUrl), cardUrl);
     }
 
   }
@@ -510,10 +518,10 @@ export const deleteAvatar = async (_url: string) => {
     if (!avatar.window.isDestroyed()) {
       avatar.window.destroy();
     }
-    await mainStore.deleteAvatarUrl(getCurrentWorkspaceId(), _url);
+    await mainStore.deleteCardUrl(getCurrentWorkspaceId(), _url);
     const ws = getCurrentWorkspace();
     if (ws) {
-      ws.avatars = ws.avatars.filter(avatarUrl => avatarUrl !== _url);
+      ws.avatars = ws.avatars.filter(cardUrl => cardUrl !== _url);
     }
   }
   const card = getCardFromUrl(_url);
@@ -566,23 +574,23 @@ const setContextMenu = (card: Card) => {
   const moveAvatarToWorkspace = (workspaceId: string) => {
     /*
     removeAvatarFromWorkspace(getCurrentWorkspaceId(), card.url);
-    mainStore.deleteAvatarUrl(getCurrentWorkspaceId(), card.url);
-    const newAvatarUrl = getWorkspaceUrl(workspaceId) + getIdFromUrl(card.url);
-    addAvatarToWorkspace(workspaceId, newAvatarUrl);
-    mainStore.addAvatarUrl(workspaceId, newAvatarUrl);
+    mainStore.deleteCardUrl(getCurrentWorkspaceId(), card.url);
+    const newCardUrl = getWorkspaceUrl(workspaceId) + getIdFromUrl(card.url);
+    addAvatarToWorkspace(workspaceId, newCardUrl);
+    mainStore.addCardUrl(workspaceId, newCardUrl);
     card.window.webContents.send('card-close');
 
       const avatarProp = card.prop.avatars[getLocationFromUrl(prop.url)];
       delete card.prop.avatars[getLocationFromUrl(prop.url)];
-      card.prop.avatars[getLocationFromUrl(newAvatarUrl)] = avatarProp;
+      card.prop.avatars[getLocationFromUrl(newCardUrl)] = avatarProp;
       saveCard(card.prop);
     */
   };
 
   const copyAvatarToWorkspace = (workspaceId: string) => {
     /*
-    const newAvatarUrl = getWorkspaceUrl(workspaceId) + getIdFromUrl(prop.url);
-    if (workspaces.get(workspaceId)?.avatars.includes(newAvatarUrl)) {
+    const newCardUrl = getWorkspaceUrl(workspaceId) + getIdFromUrl(prop.url);
+    if (workspaces.get(workspaceId)?.avatars.includes(newCardUrl)) {
       dialog.showMessageBoxSync(settingsDialog, {
         type: 'question',
         buttons: ['OK'],
@@ -590,13 +598,13 @@ const setContextMenu = (card: Card) => {
       });
       return;
     }
-    addAvatarToWorkspace(workspaceId, newAvatarUrl);
-    mainStore.addAvatarUrl(workspaceId, newAvatarUrl);
+    addAvatarToWorkspace(workspaceId, newCardUrl);
+    mainStore.addCardUrl(workspaceId, newCardUrl);
 
     const card = getCardFromUrl(prop.url);
     if (card) {
       const avatarProp = card.prop.avatars[getLocationFromUrl(prop.url)];
-      card.prop.avatars[getLocationFromUrl(newAvatarUrl)] = avatarProp;
+      card.prop.avatars[getLocationFromUrl(newCardUrl)] = avatarProp;
       saveCard(card.prop);
     }
     */

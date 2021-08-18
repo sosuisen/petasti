@@ -6,12 +6,12 @@ import path from 'path';
 import prompt from 'electron-prompt';
 import { app, dialog, Menu, MenuItemConstructorOptions, Tray } from 'electron';
 import { closeSettings, openSettings, settingsDialog } from './settings';
-import { createCard, currentCardMap, DEFAULT_CARD_GEOMETRY } from './card';
+import { createCard, currentCardMap } from './card';
 import { emitter } from './event';
 import { getRandomInt } from '../modules_common/utils';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
-import { appIcon } from '../modules_common/const';
-import { mainStore, MESSAGE } from './store';
+import { APP_ICON_NAME, DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
+import { mainStore, MESSAGE } from './note_store';
 
 /**
  * Task tray
@@ -281,7 +281,7 @@ export const setTrayContextMenu = () => {
 };
 
 export const initializeTaskTray = () => {
-  tray = new Tray(path.join(__dirname, '../assets/' + appIcon));
+  tray = new Tray(path.join(__dirname, '../assets/' + APP_ICON_NAME));
   currentLanguage = mainStore.settings.language;
   setTrayContextMenu();
   /*

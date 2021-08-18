@@ -3,15 +3,14 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { AvatarProp, CardProp } from '../modules_common/cardprop';
+import { CardProp, CardPropStatus, Geometry } from '../modules_common/types';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
 import window from './window';
 import { getCtrlDown } from '../modules_common/keys';
-import { Avatar, Geometry } from '../modules_common/schema_avatar';
 
 let cardCssStyle: CardCssStyle;
-let avatarProp: AvatarProp;
+let cardPropStatus: CardPropStatus;
 let cardEditor: ICardEditor;
 
 export const shadowHeight = 5;
@@ -33,11 +32,11 @@ export const setRenderOffsetHeight = (h: number) => {
 };
 
 export const initCardRenderer = (
-  prop: AvatarProp,
+  prop: CardPropStatus,
   style: CardCssStyle,
   editor: ICardEditor
 ) => {
-  avatarProp = prop;
+  cardPropStatus = prop;
   cardCssStyle = style;
   cardEditor = editor;
 };
@@ -51,17 +50,29 @@ export type CardRenderOptions =
   | 'EditorStyle'
   | 'EditorRect';
 
+const getPlainText = (data: string) => {
+  if (data === '') {
+    return '';
+  }
+
+  // Replace alt attributes
+  data = data.replace(/<[^>]+?alt=["'](.+?)["'][^>]+?>/g, '$1');
+
+  return data.replace(/<[^>]+?>/g, '').substr(0, 30);
+};
+
 const setWindowTitle = () => {
-  window.api.setTitle(avatarProp.url, AvatarProp.getPlainText(avatarProp.data));
+  window.api.setTitle(cardPropStatus.url, getPlainText(cardPropStatus._body));
 };
 
 const renderTitleBar = () => {
-  const titleWidth = avatarProp.geometry.width - cardCssStyle.borderWidth * 2 - shadowWidth;
+  const titleWidth =
+    cardPropStatus.geometry.width - cardCssStyle.borderWidth * 2 - shadowWidth;
   document.getElementById('title')!.style.width = titleWidth + 'px';
   const closeBtnLeft = titleWidth - document.getElementById('closeBtn')!.offsetWidth;
   document.getElementById('closeBtn')!.style.left = closeBtnLeft + 'px';
 
-  if (getCtrlDown() || avatarProp.data === '') {
+  if (getCtrlDown() || cardPropStatus._body === '') {
     document.getElementById('closeIcon')!.className = 'far fa-trash-alt title-btn-icon';
   }
   else {
@@ -82,13 +93,13 @@ const renderTitleBar = () => {
     document.getElementById('codeBtn')!.style.visibility = 'hidden';
   }
   /**
-   * TODO: Update title when avatarProp.data changes
+   * TODO: Update title when cardPropStatus.data changes
    */
   setWindowTitle();
 };
 
 const renderTitleBarStyle = () => {
-  const darkerColor = darkenHexColor(avatarProp.style.backgroundColor, 0.6);
+  const darkerColor = darkenHexColor(cardPropStatus.style.backgroundColor, 0.6);
   document.getElementById('newBtn')!.style.color = darkerColor;
   document.getElementById('closeBtn')!.style.color = darkerColor;
 
@@ -113,7 +124,7 @@ const renderContentsData = (): Promise<void> => {
       <script type='text/javascript' src='./iframe/contents_frame.js'></script>
     </head>
     <body>
-      ${avatarProp.data}
+      ${cardPropStatus._body}
     </body>
   </html>`;
     try {
@@ -134,27 +145,27 @@ const renderContentsData = (): Promise<void> => {
 const renderCardAndContentsRect = () => {
   // cardOffset is adjustment for box-shadow
   let cardOffset = 0;
-  if (avatarProp.status === 'Blurred') {
+  if (cardPropStatus.status === 'Blurred') {
     cardOffset = cardCssStyle.borderWidth;
   }
   const cardWidth =
-    avatarProp.geometry.width - cardOffset - shadowWidth + getRenderOffsetWidth();
+    cardPropStatus.geometry.width - cardOffset - shadowWidth + getRenderOffsetWidth();
 
   const cardHeight =
-    avatarProp.geometry.height - cardOffset - shadowHeight + getRenderOffsetHeight();
+    cardPropStatus.geometry.height - cardOffset - shadowHeight + getRenderOffsetHeight();
 
   document.getElementById('card')!.style.width = cardWidth + 'px';
   document.getElementById('card')!.style.height = cardHeight + 'px';
 
-  // width of BrowserWindow (namely avatarProp.geometry.width) equals border + padding + content.
+  // width of BrowserWindow (namely cardPropStatus.geometry.width) equals border + padding + content.
   const contentsWidth =
-    avatarProp.geometry.width +
+    cardPropStatus.geometry.width +
     renderOffsetWidth -
     cardCssStyle.borderWidth * 2 -
     shadowWidth;
 
   const contentsHeight =
-    avatarProp.geometry.height +
+    cardPropStatus.geometry.height +
     renderOffsetHeight -
     cardCssStyle.borderWidth * 2 -
     document.getElementById('title')!.offsetHeight -
@@ -193,12 +204,12 @@ const renderCardAndContentsRect = () => {
 };
 
 const renderCardStyle = () => {
-  if (avatarProp.status === 'Focused') {
+  if (cardPropStatus.status === 'Focused') {
     document.getElementById(
       'card'
     )!.style.border = `${cardCssStyle.borderWidth}px solid red`;
   }
-  else if (avatarProp.status === 'Blurred') {
+  else if (cardPropStatus.status === 'Blurred') {
     document.getElementById(
       'card'
     )!.style.border = `${cardCssStyle.borderWidth}px solid transparent`;
@@ -211,38 +222,38 @@ const renderCardStyle = () => {
    * So, the user need to click twice when #title is hidden.
    * Use opacity instead of visible/hidden.
   document.getElementById('title')!.style.visibility = 'visible';
-  if (avatarProp.style.opacity === 0 && avatarProp.status === 'Blurred') {
+  if (cardPropStatus.style.opacity === 0 && cardPropStatus.status === 'Blurred') {
     document.getElementById('title')!.style.visibility = 'hidden';
   }
    */
   document.getElementById('title')!.style.opacity = '1.0';
-  if (avatarProp.style.opacity === 0 && avatarProp.status === 'Blurred') {
+  if (cardPropStatus.style.opacity === 0 && cardPropStatus.status === 'Blurred') {
     document.getElementById('title')!.style.opacity = '0.01';
   }
 
   // Set card properties
   const backgroundRgba = convertHexColorToRgba(
-    avatarProp.style.backgroundColor,
-    avatarProp.style.opacity
+    cardPropStatus.style.backgroundColor,
+    cardPropStatus.style.opacity
   );
   document.getElementById('contents')!.style.backgroundColor = backgroundRgba;
   const darkerRgba = convertHexColorToRgba(
-    darkenHexColor(avatarProp.style.backgroundColor),
-    avatarProp.style.opacity
+    darkenHexColor(cardPropStatus.style.backgroundColor),
+    cardPropStatus.style.opacity
   );
 
-  const uiRgba = convertHexColorToRgba(avatarProp.style.uiColor);
+  const uiRgba = convertHexColorToRgba(cardPropStatus.style.uiColor);
 
   document.getElementById('title')!.style.backgroundColor = uiRgba;
 
   let boxShadow = 'none';
-  if (avatarProp.style.opacity !== 0 || avatarProp.status === 'Focused') {
+  if (cardPropStatus.style.opacity !== 0 || cardPropStatus.status === 'Focused') {
     boxShadow = '5px 5px 3px 0px rgba(0,0,0, .2)';
   }
   document.getElementById('card')!.style.boxShadow = boxShadow;
 
   const scrollBarRgba = convertHexColorToRgba(
-    darkenHexColor(avatarProp.style.backgroundColor, 0.85)
+    darkenHexColor(cardPropStatus.style.backgroundColor, 0.85)
   );
 
   // eslint-disable-next-line no-useless-catch
@@ -260,7 +271,7 @@ const renderCardStyle = () => {
         '}';
       iframeDoc.head.appendChild(style);
 
-      iframeDoc.body.style.zoom = `${avatarProp.style.zoom}`;
+      iframeDoc.body.style.zoom = `${cardPropStatus.style.zoom}`;
     }
   } catch (e) {
     console.error(e);
@@ -332,15 +343,15 @@ export const onResizeByHand = (newBounds: {
   height: number;
 }) => {
   if (
-    avatarProp.geometry.x !== newBounds.x ||
-    avatarProp.geometry.y !== newBounds.y ||
-    avatarProp.geometry.width !== newBounds.width ||
-    avatarProp.geometry.height !== newBounds.height
+    cardPropStatus.geometry.x !== newBounds.x ||
+    cardPropStatus.geometry.y !== newBounds.y ||
+    cardPropStatus.geometry.width !== newBounds.width ||
+    cardPropStatus.geometry.height !== newBounds.height
   ) {
-    avatarProp.geometry.x = Math.round(newBounds.x);
-    avatarProp.geometry.y = Math.round(newBounds.y);
-    avatarProp.geometry.width = Math.round(newBounds.width - getRenderOffsetWidth());
-    avatarProp.geometry.height = Math.round(newBounds.height - getRenderOffsetHeight());
+    cardPropStatus.geometry.x = Math.round(newBounds.x);
+    cardPropStatus.geometry.y = Math.round(newBounds.y);
+    cardPropStatus.geometry.width = Math.round(newBounds.width - getRenderOffsetWidth());
+    cardPropStatus.geometry.height = Math.round(newBounds.height - getRenderOffsetHeight());
 
     render(['TitleBar', 'ContentsRect', 'EditorRect']);
   }
@@ -357,34 +368,34 @@ const dispatch = (event: MessageEvent) => {
   )
     return;
 
-  /* TODO:
-   * This will be replaced by React Virtual DOM
-   */
   if (!event.data.propertyName) {
     // Update whole document
-    const avatar = event.data.doc as Avatar;
+    const avatar = event.data.doc as CardPropStatus;
     onResizeByHand(avatar.geometry);
     // onMoveByHand(avatar.geometry);
     /**
-     * TODO: set updated state to avatarProp
+     * TODO: set updated state to cardProp
      */
   }
   else if (event.data.propertyName === 'geometry') {
     const geometry = event.data.doc as Geometry;
     if (
-      avatarProp.geometry.width !== geometry.width ||
-      avatarProp.geometry.height !== geometry.height
+      cardPropStatus.geometry.width !== geometry.width ||
+      cardPropStatus.geometry.height !== geometry.height
     ) {
       onResizeByHand(geometry);
     }
 
-    if (avatarProp.geometry.x !== geometry.x || avatarProp.geometry.y !== geometry.y) {
-      avatarProp.geometry.x = geometry.x;
-      avatarProp.geometry.y = geometry.y;
+    if (
+      cardPropStatus.geometry.x !== geometry.x ||
+      cardPropStatus.geometry.y !== geometry.y
+    ) {
+      cardPropStatus.geometry.x = geometry.x;
+      cardPropStatus.geometry.y = geometry.y;
     }
 
-    if (avatarProp.geometry.z !== geometry.z) {
-      avatarProp.geometry.z = geometry.z;
+    if (cardPropStatus.geometry.z !== geometry.z) {
+      cardPropStatus.geometry.z = geometry.z;
     }
   }
 };

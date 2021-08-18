@@ -3,14 +3,14 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { AvatarProp, AvatarPropSerializable } from '../modules_common/cardprop';
+import { CardPropStatus } from '../modules_common/types';
 import { setTitleMessage } from './card_renderer';
 import { getCurrentDateAndTime } from '../modules_common/utils';
 import { DIALOG_BUTTON } from '../modules_common/const';
 import window from './window';
 
 type Task = {
-  prop: AvatarPropSerializable;
+  prop: CardPropStatus;
   type: 'Save' | 'DeleteAvatar' | 'DeleteCard';
 };
 
@@ -98,7 +98,7 @@ const execTask = async () => {
 };
 
 export const saveCardColor = (
-  avatarProp: AvatarProp,
+  cardPropStatus: CardPropStatus,
   bgColor: string,
   uiColor?: string,
   opacity = 1.0
@@ -106,57 +106,58 @@ export const saveCardColor = (
   if (uiColor === undefined) {
     uiColor = bgColor;
   }
-  avatarProp.style.backgroundColor = bgColor;
-  avatarProp.style.uiColor = uiColor;
-  avatarProp.style.opacity = opacity;
+  cardPropStatus.style.backgroundColor = bgColor;
+  cardPropStatus.style.uiColor = uiColor;
+  cardPropStatus.style.opacity = opacity;
 
-  saveCard(avatarProp);
+  saveCard(cardPropStatus);
 };
 
-export const deleteCard = (avatarProp: AvatarProp) => {
-  avatarProp.date.modifiedDate = getCurrentDateAndTime();
-  const propObject = avatarProp.toObject();
+export const deleteCard = (cardPropStatus: CardPropStatus) => {
+  cardPropStatus.date.modifiedDate = getCurrentDateAndTime();
   while (unfinishedTasks.length > 1) {
     const poppedTask = unfinishedTasks.pop();
     console.debug(
       `Skip unfinishedTask: [${poppedTask?.type}] ${poppedTask?.prop.date.modifiedDate}`
     );
   }
-  console.debug(`Enqueue unfinishedTask: [Delete Card] ${propObject.date.modifiedDate}`);
+  console.debug(
+    `Enqueue unfinishedTask: [Delete Card] ${cardPropStatus.date.modifiedDate}`
+  );
   // Here, current length of unfinishedTasks should be 0 or 1.
-  unfinishedTasks.push({ prop: propObject, type: 'DeleteCard' });
+  unfinishedTasks.push({ prop: cardPropStatus, type: 'DeleteCard' });
   // Here, current length of unfinishedTasks is 1 or 2.
   execTask();
 };
 
-export const deleteAvatar = (avatarProp: AvatarProp) => {
-  avatarProp.date.modifiedDate = getCurrentDateAndTime();
-  const propObject = avatarProp.toObject();
+export const deleteAvatar = (cardPropStatus: CardPropStatus) => {
+  cardPropStatus.date.modifiedDate = getCurrentDateAndTime();
   while (unfinishedTasks.length > 1) {
     const poppedTask = unfinishedTasks.pop();
     console.debug(
       `Skip unfinishedTask: [${poppedTask?.type}] ${poppedTask?.prop.date.modifiedDate}`
     );
   }
-  console.debug(`Enqueue unfinishedTask: [Delete Avatar] ${propObject.date.modifiedDate}`);
+  console.debug(
+    `Enqueue unfinishedTask: [Delete Avatar] ${cardPropStatus.date.modifiedDate}`
+  );
   // Here, current length of unfinishedTasks should be 0 or 1.
-  unfinishedTasks.push({ prop: propObject, type: 'DeleteAvatar' });
+  unfinishedTasks.push({ prop: cardPropStatus, type: 'DeleteAvatar' });
   // Here, current length of unfinishedTasks is 1 or 2.
   execTask();
 };
 
-export const saveCard = (avatarProp: AvatarProp) => {
-  avatarProp.date.modifiedDate = getCurrentDateAndTime();
-  const propObject = avatarProp.toObject();
+export const saveCard = (cardPropStatus: CardPropStatus) => {
+  cardPropStatus.date.modifiedDate = getCurrentDateAndTime();
   while (unfinishedTasks.length > 1) {
     const poppedTask = unfinishedTasks.pop();
     console.debug(
       `Skip unfinishedTask: [${poppedTask?.type}] ${poppedTask?.prop.date.modifiedDate}`
     );
   }
-  console.debug(`Enqueue unfinishedTask: [Save] ${propObject.date.modifiedDate}`);
+  console.debug(`Enqueue unfinishedTask: [Save] ${cardPropStatus.date.modifiedDate}`);
   // Here, current length of unfinishedTasks should be 0 or 1.
-  unfinishedTasks.push({ prop: propObject, type: 'Save' });
+  unfinishedTasks.push({ prop: cardPropStatus, type: 'Save' });
   // Here, current length of unfinishedTasks is 1 or 2.
   execTask();
 };

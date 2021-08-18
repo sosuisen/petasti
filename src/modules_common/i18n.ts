@@ -42,7 +42,7 @@ type MessagesNote = {
   noteName: string;
   noteMove: string;
   noteCopy: string;
-  noteAvatarExist: string;
+  noteCardExist: string;
   noteRename: string;
   noteDelete: string;
   noteCannotDelete: string;
@@ -93,8 +93,8 @@ const NOTE_ENGLISH: MessagesNote = {
   noteNew: 'New note...',
   noteName: 'Note $1',
   noteMove: 'Move',
-  noteCopy: 'Copy Avatar',
-  noteAvatarExist: 'Avatar already exists on the note.',
+  noteCopy: 'Copy card',
+  noteCardExist: 'Card already exists on the note.',
   noteRename: 'Rename this note',
   noteDelete: 'Delete this note',
   noteCannotDelete:
@@ -180,7 +180,7 @@ const NOTE_JAPANESE: MessagesNote = {
   noteName: 'ノート $1',
   noteMove: '移動',
   noteCopy: '分身をコピー',
-  noteAvatarExist: 'コピー先には既に分身があります。',
+  noteCardExist: 'コピー先には既に分身があります。',
   noteRename: 'ノート名を変更',
   noteDelete: 'このノートを削除',
   noteCannotDelete:

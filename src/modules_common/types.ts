@@ -40,6 +40,7 @@ export type CardCondition = {
 
 // For TypeScript
 export type CardProp = {
+  version: string;
   url: string;
   type: string;
   user: string;
@@ -47,11 +48,10 @@ export type CardProp = {
   style: CardStyle;
   condition: CardCondition;
   date: CartaDate;
-  version: string;
   _body: string;
 };
 
-export type AvatarUrl = string;
+export type CardPropStatus = CardProp & { status: CardStatus };
 
 export type NoteProp = {
   _id: string;
@@ -59,3 +59,5 @@ export type NoteProp = {
   user: string;
   date: CartaDate;
 };
+
+export type CardStatus = 'Focused' | 'Blurred';

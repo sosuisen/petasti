@@ -3,15 +3,37 @@
  * © 2021 Hidekazu Kubota
  */
 
+import { CardCondition, Geometry } from './types';
+
 export const DIALOG_BUTTON = {
   error: -1,
   default: 0,
   cancel: 1,
 };
 
-export const notebookDbName = 'book001';
-export const settingsDbName = 'local_settings';
+export const notebookDbName = 'book001'; // This will be variable in the next version.
 
-export const scheme = 'treestickies';
+export const APP_ICON_NAME = 'tree-stickies-icon.ico';
+export const APP_SCHEME = 'treestickies';
 
-export const appIcon = 'tree-stickies-icon.ico';
+export const DEFAULT_CARD_GEOMETRY: Geometry = {
+  x: 70,
+  y: 70,
+  z: 0,
+  width: 300,
+  height: 300,
+};
+export const DEFAULT_CARD_CONDITION: CardCondition = {
+  locked: false,
+};
+
+// export const DEFAULT_CARD_STYLE is in modules_main/card.ts
+
+// Dragging is shaky when _DRAG_IMAGE_MARGIN is too small, especially just after loading a card.
+// private _DRAG_IMAGE_MARGIN = 20;
+export const DRAG_IMAGE_MARGIN = 50;
+
+export const MINIMUM_WINDOW_WIDTH = 185; // 180 + shadowWidth
+export const MINIMUM_WINDOW_HEIGHT = 80;
+
+export const SETTINGS_DB_NAME = 'local_settings';

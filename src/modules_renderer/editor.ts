@@ -3,7 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { AvatarProp, DRAG_IMAGE_MARGIN } from '../modules_common/cardprop';
+import { CardPropStatus } from '../modules_common/types';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
 import {
   getRenderOffsetHeight,
@@ -13,6 +13,7 @@ import {
   shadowHeight,
   shadowWidth,
 } from './card_renderer';
+import { DRAG_IMAGE_MARGIN } from '../modules_common/const';
 import { sleep } from '../modules_common/utils';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
 import { saveCard, saveCardColor } from './save';
@@ -28,7 +29,7 @@ export class CardEditor implements ICardEditor {
 
   private _startEditorFirstTime = true;
 
-  private _avatarProp: AvatarProp = new AvatarProp('');
+  private _cardPropStatus!: CardPropStatus;
 
   private _cardCssStyle!: CardCssStyle; // cardCssStyle is set by loadUI()
 
@@ -48,7 +49,7 @@ export class CardEditor implements ICardEditor {
    */
   execSaveCommandTimeout = 0;
   execSaveCommand = () => {
-    saveCard(this._avatarProp);
+    saveCard(this._cardPropStatus);
   };
 
   queueSaveCommand = () => {
@@ -121,10 +122,10 @@ export class CardEditor implements ICardEditor {
       return;
     }
 
-    await window.api.setWindowSize(this._avatarProp.url, windowWidth, windowHeight);
+    await window.api.setWindowSize(this._cardPropStatus.url, windowWidth, windowHeight);
 
-    this._avatarProp.geometry.width = geometryWidth;
-    this._avatarProp.geometry.height = geometryHeight;
+    this._cardPropStatus.geometry.width = geometryWidth;
+    this._cardPropStatus.geometry.height = geometryHeight;
 
     render(['TitleBar', 'EditorRect']);
   };
@@ -154,8 +155,8 @@ export class CardEditor implements ICardEditor {
 
         CKEDITOR.instances.editor.on('change', () => {
           const data = CKEDITOR.instances.editor.getData();
-          if (this._avatarProp.data !== data) {
-            this._avatarProp.data = data;
+          if (this._cardPropStatus._body !== data) {
+            this._cardPropStatus._body = data;
             render(['TitleBar']);
             this.queueSaveCommand();
           }
@@ -181,8 +182,8 @@ export class CardEditor implements ICardEditor {
     });
   };
 
-  setCard = (prop: AvatarProp): void => {
-    this._avatarProp = prop;
+  setCard = (prop: CardPropStatus): void => {
+    this._cardPropStatus = prop;
   };
 
   waitUntilActivationComplete = (): Promise<void> => {
@@ -205,13 +206,13 @@ export class CardEditor implements ICardEditor {
      * Expected behavior is that IME always work inline on CKEditor.
      * A silly workaround is to blur and focus this browser window.
      */
-    await window.api.blurAndFocusWithSuppressEvents(this._avatarProp.url);
+    await window.api.blurAndFocusWithSuppressEvents(this._cardPropStatus.url);
   };
 
   private _setData = (): Promise<void> => {
     return new Promise((resolve, reject) => {
       try {
-        CKEDITOR.instances.editor.setData(this._avatarProp.data, {
+        CKEDITOR.instances.editor.setData(this._cardPropStatus._body, {
           callback: () => {
             // setData may be fail. Watch out.
             resolve();
@@ -239,8 +240,8 @@ export class CardEditor implements ICardEditor {
             const height = dropImg.naturalHeight;
 
             let newImageWidth =
-              this._avatarProp.geometry.width -
-              (this._avatarProp.data === '' ? DRAG_IMAGE_MARGIN : 0) -
+              this._cardPropStatus.geometry.width -
+              (this._cardPropStatus._body === '' ? DRAG_IMAGE_MARGIN : 0) -
               this._cardCssStyle.borderWidth * 2;
 
             let newImageHeight = height;
@@ -275,28 +276,28 @@ export class CardEditor implements ICardEditor {
               shadowHeight;
             const geometryHeight = windowHeight - getRenderOffsetHeight();
 
-            if (this._avatarProp.data === '') {
-              this._avatarProp.geometry.height = geometryHeight;
+            if (this._cardPropStatus._body === '') {
+              this._cardPropStatus.geometry.height = geometryHeight;
             }
             else {
-              this._avatarProp.geometry.height =
-                this._avatarProp.geometry.height + newImageHeight;
-              windowHeight = this._avatarProp.geometry.height + getRenderOffsetHeight();
+              this._cardPropStatus.geometry.height =
+                this._cardPropStatus.geometry.height + newImageHeight;
+              windowHeight = this._cardPropStatus.geometry.height + getRenderOffsetHeight();
             }
 
-            window.api.setWindowSize(this._avatarProp.url, windowWidth, windowHeight);
+            window.api.setWindowSize(this._cardPropStatus.url, windowWidth, windowHeight);
 
             const data = this.endEdit();
-            this._avatarProp.data = data;
-            saveCard(this._avatarProp);
+            this._cardPropStatus._body = data;
+            saveCard(this._cardPropStatus);
             render();
             // Workaround for at bug that an image cannot be resizable just after created by drag and drop.
-            window.api.blurAndFocusWithSuppressFocusEvents(this._avatarProp.url);
+            window.api.blurAndFocusWithSuppressFocusEvents(this._cardPropStatus.url);
           };
           const imgTag = this.getImageTag(id, file!.path, 1, 1, file!.name);
           evt.data.dataValue = imgTag;
-          if (this._avatarProp.data === '') {
-            saveCardColor(this._avatarProp, '#ffffff', '#ffffff', 0.0);
+          if (this._cardPropStatus._body === '') {
+            saveCardColor(this._cardPropStatus, '#ffffff', '#ffffff', 0.0);
           }
 
           dropImg.src = file.path;
@@ -322,7 +323,7 @@ export class CardEditor implements ICardEditor {
         }
         else {
           // logger.error does not work in ipcRenderer event.
-          console.error(`Error in showEditor ${this._avatarProp.url}: ${err.message}`);
+          console.error(`Error in showEditor ${this._cardPropStatus.url}: ${err.message}`);
           cont = false;
         }
       });
@@ -330,12 +331,15 @@ export class CardEditor implements ICardEditor {
         cont = false;
         // logger.error does not work in ipcRenderer event.
         console.error(
-          `Error in showEditor ${this._avatarProp.url}: too many setData errors`
+          `Error in showEditor ${this._cardPropStatus.url}: too many setData errors`
         );
-        window.api.alertDialog(this._avatarProp.url, 'pleaseRestartErrorInOpeningEditor');
+        window.api.alertDialog(
+          this._cardPropStatus.url,
+          'pleaseRestartErrorInOpeningEditor'
+        );
       }
       if (cont) {
-        // console.debug(`re-trying setData for ${this._avatarProp.id}`);
+        // console.debug(`re-trying setData for ${this._cardPropStatus.id}`);
       }
       else {
         break;
@@ -381,10 +385,10 @@ export class CardEditor implements ICardEditor {
     }
 
     // Expand card to add toolbar.
-    const expandedHeight = this._avatarProp.geometry.height + this._toolBarHeight;
+    const expandedHeight = this._cardPropStatus.geometry.height + this._toolBarHeight;
     window.api.setWindowSize(
-      this._avatarProp.url,
-      this._avatarProp.geometry.width,
+      this._cardPropStatus.url,
+      this._cardPropStatus.geometry.width,
       expandedHeight
     );
     setRenderOffsetHeight(this._toolBarHeight);
@@ -408,12 +412,12 @@ export class CardEditor implements ICardEditor {
 
     clearTimeout(this.execSaveCommandTimeout);
 
-    saveCard(this._avatarProp);
+    saveCard(this._cardPropStatus);
 
     window.api.setWindowSize(
-      this._avatarProp.url,
-      this._avatarProp.geometry.width,
-      this._avatarProp.geometry.height
+      this._cardPropStatus.url,
+      this._cardPropStatus.geometry.width,
+      this._cardPropStatus.geometry.height
     );
     setRenderOffsetHeight(0);
     render(['ContentsRect']);
@@ -479,18 +483,18 @@ export class CardEditor implements ICardEditor {
   };
 
   setZoom = () => {
-    if (this._avatarProp) {
+    if (this._cardPropStatus) {
       if (CKEDITOR.instances.editor.document && CKEDITOR.instances.editor.document.$.body) {
-        CKEDITOR.instances.editor.document.$.body.style.zoom = `${this._avatarProp.style.zoom}`;
+        CKEDITOR.instances.editor.document.$.body.style.zoom = `${this._cardPropStatus.style.zoom}`;
       }
     }
   };
 
   setSize = (
-    width: number = this._avatarProp.geometry.width -
+    width: number = this._cardPropStatus.geometry.width -
       this._cardCssStyle.borderWidth * 2 -
       shadowWidth,
-    height: number = this._avatarProp.geometry.height -
+    height: number = this._cardPropStatus.geometry.height -
       this._cardCssStyle.borderWidth * 2 -
       shadowHeight -
       document.getElementById('title')!.offsetHeight
@@ -524,16 +528,16 @@ export class CardEditor implements ICardEditor {
 
   setColor = (): void => {
     let backgroundRgba = convertHexColorToRgba(
-      this._avatarProp.style.backgroundColor,
-      this._avatarProp.style.opacity
+      this._cardPropStatus.style.backgroundColor,
+      this._cardPropStatus.style.opacity
     );
     let darkerRgba = convertHexColorToRgba(
-      darkenHexColor(this._avatarProp.style.backgroundColor, 0.96),
-      this._avatarProp.style.opacity
+      darkenHexColor(this._cardPropStatus.style.backgroundColor, 0.96),
+      this._cardPropStatus.style.opacity
     );
-    let uiRgba = convertHexColorToRgba(this._avatarProp.style.uiColor);
+    let uiRgba = convertHexColorToRgba(this._cardPropStatus.style.uiColor);
 
-    if (this._avatarProp.style.opacity === 0 && this._isEditing) {
+    if (this._cardPropStatus.style.opacity === 0 && this._isEditing) {
       backgroundRgba = 'rgba(255, 255, 255, 1.0)';
       darkerRgba = 'rgba(250, 250, 250, 1.0)';
       uiRgba = 'rgba(204, 204, 204, 1.0)';
@@ -555,7 +559,7 @@ export class CardEditor implements ICardEditor {
       contents.style.backgroundColor = backgroundRgba;
     }
 
-    const scrollBarRgba = darkenHexColor(this._avatarProp.style.backgroundColor, 0.85);
+    const scrollBarRgba = darkenHexColor(this._cardPropStatus.style.backgroundColor, 0.85);
     const doc = CKEDITOR.instances.editor.document;
     if (doc) {
       const style = doc.$.createElement('style');

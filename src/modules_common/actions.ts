@@ -1,4 +1,4 @@
-import { Geometry2D, GeometryXY } from './schema_avatar';
+import { Geometry2D, GeometryXY } from './types';
 
 const actionTypes = [
   'avatar-position-update',

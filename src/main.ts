@@ -48,7 +48,7 @@ app.on('ready', async () => {
   const renderers: Promise<void>[] = [];
   cardProps.forEach(cardProp => {
     const card = new Card(cardProp);
-    currentCardMap[cardProp.url] = card;
+    currentCardMap.set(cardProp.url, card);
     renderers.push(card.render());
   });
   await Promise.all(renderers).catch(e => {

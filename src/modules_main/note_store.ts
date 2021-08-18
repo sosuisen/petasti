@@ -40,7 +40,7 @@ import {
   MessageLabel,
   Messages,
 } from '../modules_common/i18n';
-import { scheme, settingsDbName } from '../modules_common/const';
+import { APP_SCHEME, SETTINGS_DB_NAME } from '../modules_common/const';
 
 export const generateNewNoteId = () => {
   const ulid = monotonicFactory();
@@ -144,7 +144,7 @@ class MainStore {
     try {
       this._settingsDB = new GitDocumentDB({
         localDir: defaultDataDir,
-        dbName: settingsDbName,
+        dbName: SETTINGS_DB_NAME,
       });
       await this._settingsDB.open();
 
@@ -215,7 +215,7 @@ class MainStore {
     }
 
     if (!this._settingsDB || !this._bookDB) {
-      return;
+      return [];
     }
 
     if (this._remoteOptions) {
@@ -267,8 +267,8 @@ class MainStore {
       this._settings.currentNoteId === ''
     ) {
       const sortedNotePropList = [...this._notePropMap.keys()].sort((a, b) => {
-        if (this._notePropMap.get(a).name > this._notePropMap.get(b).name) return 1;
-        else if (this._notePropMap.get(a).name < this._notePropMap.get(b).name) return -1;
+        if (this._notePropMap.get(a)!.name > this._notePropMap.get(b)!.name) return 1;
+        else if (this._notePropMap.get(a)!.name < this._notePropMap.get(b)!.name) return -1;
         return 0;
       });
       this._settings.currentNoteId = sortedNotePropList[0];
@@ -374,7 +374,7 @@ class MainStore {
 
     const cardProps: CardProp[] = [];
     for (const cardDoc of cardDocs) {
-      const url = `${scheme}://local/${cardDoc._id}`; // treestickies://local/noteID/(cardID|noteID)
+      const url = `${APP_SCHEME}://local/${cardDoc._id}`; // treestickies://local/noteID/(cardID|noteID)
       const cardId = getIdFromUrl(url);
       // eslint-disable-next-line no-await-in-loop
       let cardBodyDoc = await this._cardCollection.get(cardId);

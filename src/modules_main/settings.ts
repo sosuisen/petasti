@@ -5,7 +5,7 @@
 import path from 'path';
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { selectPreferredLanguage } from 'typed-intl';
-import { mainStore } from './store';
+import { mainStore } from './note_store';
 import { DatabaseCommand } from '../modules_common/db.types';
 import { availableLanguages, defaultLanguage } from '../modules_common/i18n';
 
