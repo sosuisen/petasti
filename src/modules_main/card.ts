@@ -36,6 +36,7 @@ import {
   CartaDate,
   Geometry,
 } from '../modules_common/types';
+import { DebounceQueue } from 'rx-queue';
 
 /**
  * Const
@@ -268,18 +269,34 @@ export class Card {
       event.preventDefault();
       //      }
     });
+
+    this._debouncedCardPositionUpdateActionQueue.subscribe(rect => {
+      mainStore.updateWorkspaceCardDoc(this.toObject());
+    });
+    this._debouncedCardSizeUpdateActionQueue.subscribe(rect => {
+      mainStore.updateWorkspaceCardDoc(this.toObject());
+    });
   }
+
+  private _debouncedCardPositionUpdateActionQueue = new DebounceQueue(1000);
+  private _debouncedCardSizeUpdateActionQueue = new DebounceQueue(1000);
 
   private _willMoveListener = (event: Electron.Event, rect: Electron.Rectangle) => {
     // Update x and y
-    // this._debouncedAvatarPositionUpdateActionQueue.next(rect);
-    // this.reactiveForwarder({ propertyName: 'geometry', state: rect });
+    this.geometry.x = rect.x;
+    this.geometry.y = rect.y;
+    this._debouncedCardPositionUpdateActionQueue.next(rect);
+    this.window.webContents.send('move-by-hand', rect);
   };
 
   private _willResizeListener = (event: Electron.Event, rect: Electron.Rectangle) => {
     // Update x, y, width, height
-    // this._debouncedAvatarSizeUpdateActionQueue.next(rect);
-    // this.reactiveForwarder({ propertyName: 'geometry', state: rect });
+    this.geometry.x = rect.x;
+    this.geometry.y = rect.y;
+    this.geometry.width = rect.width;
+    this.geometry.height = rect.height;
+    this._debouncedCardSizeUpdateActionQueue.next(rect);
+    this.window.webContents.send('resize-by-hand', rect);
   };
 
   private _closedListener = () => {

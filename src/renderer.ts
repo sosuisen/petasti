@@ -37,7 +37,6 @@ import {
   waitUnfinishedTasks,
 } from './modules_renderer/save';
 import window from './modules_renderer/window';
-import { getLocationFromUrl } from './modules_common/avatar_url_utils';
 import { setAltDown, setCtrlDown, setMetaDown, setShiftDown } from './modules_common/keys';
 import { avatarSizeUpdateActionCreator } from './modules_common/actions';
 
@@ -342,13 +341,13 @@ window.addEventListener('message', event => {
       onChangeCardColor(event.data.backgroundColor, event.data.opacity);
       break;
     case 'move-by-hand':
-      // onMoveByHand(event.data.bounds);
+      onMoveByHand(event.data.bounds);
       break;
     case 'render-card':
       onRenderCard(event.data.cardProp);
       break;
     case 'resize-by-hand':
-      // onResizeByHand(event.data.bounds);
+      onResizeByHand(event.data.bounds);
       break;
     case 'send-to-back':
       onSendToBack();

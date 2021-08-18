@@ -122,10 +122,3 @@ ipcRenderer.on('set-lock', (event: Electron.IpcRendererEvent, locked: boolean) =
 });
 ipcRenderer.on('zoom-in', () => window.postMessage({ command: 'zoom-in' }, 'file://'));
 ipcRenderer.on('zoom-out', () => window.postMessage({ command: 'zoom-out' }, 'file://'));
-
-/**
- * Store Actions
- */
-ipcRenderer.on('reactive-forward', (event, propertyName, doc) => {
-  window.postMessage({ command: 'reactive-forward', propertyName, doc }, 'file://');
-});

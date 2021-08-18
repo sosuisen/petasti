@@ -38,7 +38,6 @@ export type CardCondition = {
   locked: boolean;
 };
 
-// For TypeScript
 export type CardProp = {
   version: string;
   url: string;
@@ -52,6 +51,22 @@ export type CardProp = {
 };
 
 export type CardPropStatus = CardProp & { status: CardStatus };
+
+export type CardDoc = {
+  version: string;
+  type: string;
+  user: string;
+  date: CartaDate;
+  _body: string;
+  _id: string;
+};
+
+export type WorkspaceCardDoc = {
+  geometry: Geometry;
+  style: CardStyle;
+  condition: CardCondition;
+  _id: string;
+};
 
 export type NoteProp = {
   _id: string;

@@ -20,10 +20,10 @@ import {
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
 import { openSettings, settingsDialog } from './modules_main/settings';
 import { emitter, handlers } from './modules_main/event';
-import { getIdFromUrl } from './modules_common/avatar_url_utils';
 import { mainStore, MESSAGE } from './modules_main/note_store';
 import { avatarDepthUpdateActionCreator } from './modules_common/actions';
 import { CardProp } from './modules_common/types';
+import { getCardIdFromUrl } from './modules_common/utils';
 
 // process.on('unhandledRejection', console.dir);
 
@@ -132,7 +132,7 @@ ipcMain.handle('delete-avatar', async (event, url: string) => {
 });
 
 ipcMain.handle('delete-card', async (event, url: string) => {
-  await deleteCardWithRetry(getIdFromUrl(url));
+  await deleteCardWithRetry(getCardIdFromUrl(url));
 });
 
 ipcMain.handle('finish-render-card', (event, url: string) => {

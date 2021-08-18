@@ -11,14 +11,26 @@ import {
   Collection,
   DatabaseOptions,
   GitDocumentDB,
+  JsonDoc,
   RemoteOptions,
   Sync,
 } from 'git-documentdb';
 import { selectPreferredLanguage, translate, Translator } from 'typed-intl';
 import { monotonicFactory } from 'ulid';
-import { getIdFromUrl } from '../modules_common/avatar_url_utils';
-import { generateId, getCurrentDateAndTime } from '../modules_common/utils';
-import { CardProp, Geometry2D, GeometryXY, NoteProp } from '../modules_common/types';
+import {
+  generateId,
+  getCardIdFromUrl,
+  getCurrentDateAndTime,
+  getNoteIdFromUrl,
+} from '../modules_common/utils';
+import {
+  CardDoc,
+  CardProp,
+  Geometry2D,
+  GeometryXY,
+  NoteProp,
+  WorkspaceCardDoc,
+} from '../modules_common/types';
 import {
   AvatarDepthUpdateAction,
   AvatarPositionUpdateAction,
@@ -375,7 +387,7 @@ class MainStore {
     const cardProps: CardProp[] = [];
     for (const cardDoc of cardDocs) {
       const url = `${APP_SCHEME}://local/${cardDoc._id}`; // treestickies://local/noteID/(cardID|noteID)
-      const cardId = getIdFromUrl(url);
+      const cardId = getCardIdFromUrl(url);
       // eslint-disable-next-line no-await-in-loop
       let cardBodyDoc = await this._cardCollection.get(cardId);
       if (cardBodyDoc === undefined) {
@@ -416,6 +428,38 @@ class MainStore {
       return this._bookDB.close();
     }
     return Promise.resolve();
+  };
+
+  updateCardDoc = async (prop: CardProp): Promise<void> => {
+    console.debug('Saving card...: ' + JSON.stringify(prop));
+    const clone: CardProp = JSON.parse(JSON.stringify(prop));
+    const cardId = getCardIdFromUrl(prop.url);
+    const cardDoc: CardDoc = {
+      version: clone.version,
+      type: clone.type,
+      user: clone.user,
+      date: clone.date,
+      _body: clone._body,
+      _id: cardId,
+    };
+    await this._cardCollection.put(cardDoc).catch(e => {
+      throw new Error(`Error in updateCardDoc: ${e.message}`);
+    });
+  };
+
+  updateWorkspaceCardDoc = async (prop: CardProp): Promise<void> => {
+    console.debug('Saving card...: ' + JSON.stringify(prop));
+    const clone: CardProp = JSON.parse(JSON.stringify(prop));
+    const cardId = getCardIdFromUrl(prop.url);
+    const noteCardDoc: WorkspaceCardDoc = {
+      geometry: clone.geometry,
+      style: clone.style,
+      condition: clone.condition,
+      _id: getNoteIdFromUrl(prop.url) + '/' + cardId,
+    };
+    await this._noteCollection.put(noteCardDoc).catch(e => {
+      throw new Error(`Error in updateWorkspaceCardDoc: ${e.message}`);
+    });
   };
 }
 
