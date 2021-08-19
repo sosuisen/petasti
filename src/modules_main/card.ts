@@ -169,7 +169,9 @@ export class Card {
         cardProp.geometry !== undefined &&
         cardProp.geometry.x !== undefined &&
         cardProp.geometry.y !== undefined &&
-        cardProp.geometry.z !== undefined
+        cardProp.geometry.z !== undefined &&
+        cardProp.geometry.width !== undefined &&
+        cardProp.geometry.height !== undefined
       ) {
         this.geometry = { ...cardProp.geometry };
         this.geometry.x = Math.round(this.geometry.x);
@@ -428,10 +430,10 @@ export class Card {
       url: this.url,
       type: this.type,
       user: this.user,
-      geometry: this.geometry,
-      style: this.style,
-      condition: this.condition,
-      date: this.date,
+      geometry: { ...this.geometry },
+      style: { ...this.style },
+      condition: { ...this.condition },
+      date: { ...this.date },
       _body: this._body,
     };
   };

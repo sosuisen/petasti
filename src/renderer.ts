@@ -96,7 +96,7 @@ const initializeUIEvents = () => {
       geometry: {
         x: geometry.x,
         y: geometry.y,
-        z: geometry.z + 1,
+        z: cardPropStatus.geometry.z + 1,
         width: geometry.width,
         height: geometry.height,
       },
@@ -158,6 +158,9 @@ const initializeUIEvents = () => {
   let isVerticalMoving = false;
 
   const onmousemove = (event: MouseEvent) => {
+    if (cardPropStatus === undefined) {
+      return;
+    }
     let newWidth = cardPropStatus.geometry.width + getRenderOffsetWidth();
     let newHeight = cardPropStatus.geometry.height + getRenderOffsetHeight();
     if (isHorizontalMoving) {

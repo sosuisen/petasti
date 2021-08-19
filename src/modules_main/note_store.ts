@@ -443,12 +443,11 @@ class MainStore {
 
   updateWorkspaceCardDoc = async (prop: CardProp): Promise<void> => {
     console.debug(`# Saving workspace card doc: ${prop.url}`);
-    const clone: CardProp = JSON.parse(JSON.stringify(prop));
     const cardId = getCardIdFromUrl(prop.url);
     const noteCardDoc: WorkspaceCardDoc = {
-      geometry: clone.geometry,
-      style: clone.style,
-      condition: clone.condition,
+      geometry: prop.geometry,
+      style: prop.style,
+      condition: prop.condition,
       _id: getNoteIdFromUrl(prop.url) + '/' + cardId,
     };
     await this._noteCollection.put(noteCardDoc).catch(e => {
