@@ -29,6 +29,7 @@ import {
   Geometry2D,
   GeometryXY,
   NoteProp,
+  SavingTarget,
   WorkspaceCardDoc,
 } from '../modules_common/types';
 import {
@@ -408,8 +409,8 @@ class MainStore {
         style: cardDoc.style,
         condition: cardDoc.condition,
         date: {
-          createdDate: cardBodyDoc.date,
-          modifiedDate: cardBodyDoc.date,
+          createdDate: cardBodyDoc.date.createdDate,
+          modifiedDate: cardBodyDoc.date.modifiedDate,
         },
         version: cardBodyDoc.version,
         _body: cardBodyDoc._body,
@@ -431,7 +432,7 @@ class MainStore {
   };
 
   updateCardDoc = async (prop: CardProp): Promise<void> => {
-    console.debug('Saving card...: ' + JSON.stringify(prop));
+    console.debug('Saving card doc...: ' + JSON.stringify(prop));
     const clone: CardProp = JSON.parse(JSON.stringify(prop));
     const cardId = getCardIdFromUrl(prop.url);
     const cardDoc: CardDoc = {
@@ -448,7 +449,7 @@ class MainStore {
   };
 
   updateWorkspaceCardDoc = async (prop: CardProp): Promise<void> => {
-    console.debug('Saving card...: ' + JSON.stringify(prop));
+    console.debug(`Saving workspace card doc: ${JSON.stringify(prop)}`);
     const clone: CardProp = JSON.parse(JSON.stringify(prop));
     const cardId = getCardIdFromUrl(prop.url);
     const noteCardDoc: WorkspaceCardDoc = {
@@ -460,6 +461,20 @@ class MainStore {
     await this._noteCollection.put(noteCardDoc).catch(e => {
       throw new Error(`Error in updateWorkspaceCardDoc: ${e.message}`);
     });
+    const currentNoteProp = this._notePropMap.get(this._settings.currentNoteId);
+    if (currentNoteProp !== undefined) {
+      currentNoteProp.date.modifiedDate = getCurrentDateAndTime();
+      // Overwrite _id
+      await this._noteCollection.put(
+        this._settings.currentNoteId + '/prop',
+        currentNoteProp
+      );
+    }
+    else {
+      throw new Error(
+        `Error in updateWorkspaceCardDoc: note ${this._settings.currentNoteId} does not exist.`
+      );
+    }
   };
 }
 

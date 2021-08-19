@@ -23,7 +23,6 @@ import {
   getRenderOffsetHeight,
   getRenderOffsetWidth,
   initCardRenderer,
-  onResizeByHand,
   render,
   shadowHeight,
   shadowWidth,
@@ -60,20 +59,6 @@ const close = async () => {
   });
   canClose = true;
   window.close();
-};
-
-/**
- * queueSaveCommand
- * Queuing and execute only last save command to avoid frequent save.
- */
-let execSaveCommandTimeout: NodeJS.Timeout;
-const execSaveCommand = () => {
-  saveCard(cardPropStatus);
-};
-
-export const queueSaveCommand = () => {
-  clearTimeout(execSaveCommandTimeout);
-  execSaveCommandTimeout = setTimeout(execSaveCommand, 1000);
 };
 
 /**
@@ -203,7 +188,7 @@ const initializeUIEvents = () => {
       };
       debouncedResizeQueue.next(rect);
       window.resizeTo(newWidth, newHeight);
-      onResizeByHand(rect);
+      onResizeByHand(rect, true);
     }
   };
   window.addEventListener('mousemove', onmousemove);
@@ -347,7 +332,7 @@ window.addEventListener('message', event => {
       onRenderCard(event.data.cardProp);
       break;
     case 'resize-by-hand':
-      onResizeByHand(event.data.bounds);
+      onResizeByHand(event.data.bounds, false);
       break;
     case 'send-to-back':
       onSendToBack();
@@ -365,6 +350,47 @@ window.addEventListener('message', event => {
       break;
   }
 });
+
+/**
+ * queueSaveCommand
+ * Queuing and execute only last save command to avoid frequent save.
+ */
+let execSaveCommandTimeout: NodeJS.Timeout;
+const execSaveCommand = () => {
+  saveCard(cardPropStatus, 'PropertyOnly');
+};
+
+export const queueSaveCommand = () => {
+  clearTimeout(execSaveCommandTimeout);
+  execSaveCommandTimeout = setTimeout(execSaveCommand, 1000);
+};
+
+const onResizeByHand = (
+  newBounds: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  },
+  sendToMain: boolean
+) => {
+  if (
+    cardPropStatus.geometry.x !== newBounds.x ||
+    cardPropStatus.geometry.y !== newBounds.y ||
+    cardPropStatus.geometry.width !== newBounds.width ||
+    cardPropStatus.geometry.height !== newBounds.height
+  ) {
+    cardPropStatus.geometry.x = Math.round(newBounds.x);
+    cardPropStatus.geometry.y = Math.round(newBounds.y);
+    cardPropStatus.geometry.width = Math.round(newBounds.width - getRenderOffsetWidth());
+    cardPropStatus.geometry.height = Math.round(newBounds.height - getRenderOffsetHeight());
+
+    render(['TitleBar', 'ContentsRect', 'EditorRect']);
+  }
+  if (sendToMain) {
+    queueSaveCommand();
+  }
+};
 
 const onCardClose = () => {
   close();
@@ -415,8 +441,6 @@ const onMoveByHand = (newBounds: {
 }) => {
   cardPropStatus.geometry.x = Math.round(newBounds.x);
   cardPropStatus.geometry.y = Math.round(newBounds.y);
-
-  // queueSaveCommand();
 };
 
 // Render card data
@@ -451,7 +475,7 @@ const onSendToBack = async () => {
   const newZ = await window.api.sendToBack(cardPropStatus.url);
   // eslint-disable-next-line require-atomic-updates
   cardPropStatus.geometry.z = newZ;
-  saveCard(cardPropStatus);
+  saveCard(cardPropStatus, 'PropertyOnly');
 };
 
 const onSetLock = (locked: boolean) => {
@@ -473,7 +497,7 @@ const onZoomIn = () => {
   }
   render(['CardStyle', 'EditorStyle']);
 
-  saveCard(cardPropStatus);
+  saveCard(cardPropStatus, 'PropertyOnly');
 };
 
 const onZoomOut = () => {
@@ -488,7 +512,7 @@ const onZoomOut = () => {
   }
   render(['CardStyle', 'EditorStyle']);
 
-  saveCard(cardPropStatus);
+  saveCard(cardPropStatus, 'PropertyOnly');
 };
 
 const filterContentsFrameMessage = (event: MessageEvent): ContentsFrameMessage => {
@@ -610,7 +634,7 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
       saveCardColor(cardPropStatus, '#ffffff', '#ffffff', 0.0);
     }
     else {
-      saveCard(cardPropStatus);
+      saveCard(cardPropStatus, 'PropertyOnly');
     }
     render(['TitleBar', 'CardStyle', 'ContentsData', 'ContentsRect']);
 

@@ -21,7 +21,7 @@ import { openSettings, settingsDialog } from './modules_main/settings';
 import { emitter, handlers } from './modules_main/event';
 import { mainStore, MESSAGE } from './modules_main/note_store';
 import { avatarDepthUpdateActionCreator } from './modules_common/actions';
-import { CardProp } from './modules_common/types';
+import { CardProp, SavingTarget } from './modules_common/types';
 import { getCardIdFromUrl } from './modules_common/utils';
 
 // process.on('unhandledRejection', console.dir);
@@ -122,9 +122,17 @@ app.on('window-all-closed', () => {
  * ipcMain handles
  */
 
-ipcMain.handle('update-card', async (event, cardProp: CardProp) => {
-  await mainStore.updateWorkspaceCardDoc(cardProp);
-});
+ipcMain.handle(
+  'update-card',
+  async (event, cardProp: CardProp, savingTarget: SavingTarget) => {
+    if (savingTarget === 'BodyOnly' || savingTarget === 'Card') {
+      await mainStore.updateCardDoc(cardProp);
+    }
+    if (savingTarget === 'PropertyOnly' || savingTarget === 'Card') {
+      await mainStore.updateWorkspaceCardDoc(cardProp);
+    }
+  }
+);
 
 ipcMain.handle('delete-avatar', async (event, url: string) => {
   await deleteAvatar(url);

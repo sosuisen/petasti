@@ -49,7 +49,7 @@ export class CardEditor implements ICardEditor {
    */
   execSaveCommandTimeout = 0;
   execSaveCommand = () => {
-    saveCard(this._cardPropStatus);
+    saveCard(this._cardPropStatus, 'BodyOnly');
   };
 
   queueSaveCommand = () => {
@@ -289,7 +289,7 @@ export class CardEditor implements ICardEditor {
 
             const data = this.endEdit();
             this._cardPropStatus._body = data;
-            saveCard(this._cardPropStatus);
+            saveCard(this._cardPropStatus, 'Card');
             render();
             // Workaround for at bug that an image cannot be resizable just after created by drag and drop.
             window.api.blurAndFocusWithSuppressFocusEvents(this._cardPropStatus.url);
@@ -412,7 +412,7 @@ export class CardEditor implements ICardEditor {
 
     clearTimeout(this.execSaveCommandTimeout);
 
-    saveCard(this._cardPropStatus);
+    saveCard(this._cardPropStatus, 'BodyOnly');
 
     window.api.setWindowSize(
       this._cardPropStatus.url,

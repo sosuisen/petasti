@@ -336,28 +336,7 @@ export const render = async (
   }
 };
 
-export const onResizeByHand = (newBounds: {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}) => {
-  if (
-    cardPropStatus.geometry.x !== newBounds.x ||
-    cardPropStatus.geometry.y !== newBounds.y ||
-    cardPropStatus.geometry.width !== newBounds.width ||
-    cardPropStatus.geometry.height !== newBounds.height
-  ) {
-    cardPropStatus.geometry.x = Math.round(newBounds.x);
-    cardPropStatus.geometry.y = Math.round(newBounds.y);
-    cardPropStatus.geometry.width = Math.round(newBounds.width - getRenderOffsetWidth());
-    cardPropStatus.geometry.height = Math.round(newBounds.height - getRenderOffsetHeight());
-
-    render(['TitleBar', 'ContentsRect', 'EditorRect']);
-  }
-  //  queueSaveCommand();
-};
-
+/*
 // eslint-disable-next-line complexity
 const dispatch = (event: MessageEvent) => {
   if (
@@ -373,9 +352,7 @@ const dispatch = (event: MessageEvent) => {
     const avatar = event.data.doc as CardPropStatus;
     onResizeByHand(avatar.geometry);
     // onMoveByHand(avatar.geometry);
-    /**
-     * TODO: set updated state to cardProp
-     */
+
   }
   else if (event.data.propertyName === 'geometry') {
     const geometry = event.data.doc as Geometry;
@@ -383,7 +360,7 @@ const dispatch = (event: MessageEvent) => {
       cardPropStatus.geometry.width !== geometry.width ||
       cardPropStatus.geometry.height !== geometry.height
     ) {
-      onResizeByHand(geometry);
+      onResizeByHand(geometry, false);
     }
 
     if (
@@ -405,3 +382,4 @@ window.addEventListener('message', dispatch);
 const cleanup = () => {
   window.removeEventListener('message', dispatch);
 };
+*/

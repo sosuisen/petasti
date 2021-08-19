@@ -3,18 +3,13 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { CardPropStatus } from '../modules_common/types';
+import { CardPropStatus, SavingTarget, Task } from '../modules_common/types';
 import { setTitleMessage } from './card_renderer';
 import { getCurrentDateAndTime } from '../modules_common/utils';
 import { DIALOG_BUTTON } from '../modules_common/const';
 import window from './window';
 
-type Task = {
-  prop: CardPropStatus;
-  type: 'Save' | 'DeleteAvatar' | 'DeleteCard';
-};
-
-const unfinishedTasks: Task[] = [];
+let unfinishedTasks: Task[] = [];
 
 export const waitUnfinishedTasks = (id: string): Promise<void> => {
   return new Promise((resolve, reject) => {
@@ -67,7 +62,7 @@ const execTask = async () => {
 
     // Execute the first task
     if (task.type === 'Save') {
-      await window.api.updateCard(task.prop).catch(e => {
+      await window.api.updateCard(task.prop, task.target!).catch(e => {
         // TODO: Handle save error.
         console.error('Error in execTask:' + e);
       });
@@ -87,7 +82,7 @@ const execTask = async () => {
 
     const finishedTask = unfinishedTasks.shift();
     console.debug(
-      `Dequeue unfinishedTask: [${finishedTask?.type}] ${finishedTask?.prop.date.modifiedDate}`
+      `Dequeue unfinishedTask: [${finishedTask?.type}: ${finishedTask?.target}] ${finishedTask?.prop.date.modifiedDate}`
     );
     clearTimeout(timeout);
     setTitleMessage('');
@@ -110,7 +105,7 @@ export const saveCardColor = (
   cardPropStatus.style.uiColor = uiColor;
   cardPropStatus.style.opacity = opacity;
 
-  saveCard(cardPropStatus);
+  saveCard(cardPropStatus, 'PropertyOnly');
 };
 
 export const deleteCard = (cardPropStatus: CardPropStatus) => {
@@ -147,17 +142,44 @@ export const deleteAvatar = (cardPropStatus: CardPropStatus) => {
   execTask();
 };
 
-export const saveCard = (cardPropStatus: CardPropStatus) => {
-  cardPropStatus.date.modifiedDate = getCurrentDateAndTime();
-  while (unfinishedTasks.length > 1) {
-    const poppedTask = unfinishedTasks.pop();
-    console.debug(
-      `Skip unfinishedTask: [${poppedTask?.type}] ${poppedTask?.prop.date.modifiedDate}`
-    );
+export const saveCard = (cardPropStatus: CardPropStatus, target: SavingTarget) => {
+  console.log(JSON.stringify(cardPropStatus));
+  if (target === 'BodyOnly' || target === 'Card') {
+    // Update modifiedDate of Card when _body is changed.
+    cardPropStatus.date.modifiedDate = getCurrentDateAndTime();
   }
-  console.debug(`Enqueue unfinishedTask: [Save] ${cardPropStatus.date.modifiedDate}`);
+  else {
+    // Update modifiedDate of Note when other properties are changed.
+  }
+  // eslint-disable-next-line complexity
+  unfinishedTasks = unfinishedTasks.filter(task => {
+    let bool = true;
+    if (task.target === undefined) bool = false;
+    else if (
+      task.target === 'BodyOnly' &&
+      (task.target === 'BodyOnly' || task.target === 'Card')
+    )
+      bool = false;
+    else if (
+      task.target === 'PropertyOnly' &&
+      (task.target === 'PropertyOnly' || task.target === 'Card')
+    )
+      bool = false;
+    else if (task.target === 'Card' && task.target === 'Card') bool = false;
+
+    if (!bool) {
+      console.debug(
+        `Skip unfinishedTask: [${task.type}: ${task.target}] ${task.prop.date.modifiedDate}`
+      );
+    }
+    return bool;
+  });
+
+  console.debug(
+    `Enqueue unfinishedTask: [Save: ${target}] ${cardPropStatus.date.modifiedDate}`
+  );
   // Here, current length of unfinishedTasks should be 0 or 1.
-  unfinishedTasks.push({ prop: cardPropStatus, type: 'Save' });
+  unfinishedTasks.push({ prop: cardPropStatus, type: 'Save', target });
   // Here, current length of unfinishedTasks is 1 or 2.
   execTask();
 };

@@ -76,3 +76,11 @@ export type NoteProp = {
 };
 
 export type CardStatus = 'Focused' | 'Blurred';
+
+export type SavingTarget = 'BodyOnly' | 'PropertyOnly' | 'Card';
+
+export type Task = {
+  prop: CardPropStatus;
+  type: 'Save' | 'DeleteAvatar' | 'DeleteCard';
+  target?: SavingTarget;
+};

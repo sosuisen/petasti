@@ -5,7 +5,7 @@
 
 import { contextBridge, ipcRenderer, MouseInputEvent } from 'electron';
 import { PersistentStoreAction } from '../modules_common/actions';
-import { CardProp } from '../modules_common/types';
+import { CardProp, SavingTarget } from '../modules_common/types';
 
 contextBridge.exposeInMainWorld('api', {
   /**
@@ -50,8 +50,8 @@ contextBridge.exposeInMainWorld('api', {
   persistentStoreActionDispatcherFromRenderer: (action: PersistentStoreAction) => {
     return ipcRenderer.invoke('persistent-store-dispatch', action);
   },
-  updateCard: (cardProp: CardProp) => {
-    return ipcRenderer.invoke('update-card', cardProp);
+  updateCard: (cardProp: CardProp, target: SavingTarget) => {
+    return ipcRenderer.invoke('update-card', cardProp, target);
   },
   sendLeftMouseDown: (url: string, x: number, y: number) => {
     const leftMouseDown: MouseInputEvent = {

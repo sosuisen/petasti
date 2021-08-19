@@ -4,7 +4,7 @@
  */
 
 import { MessageLabel } from '../modules_common/i18n';
-import { CardProp, CardPropStatus } from '../modules_common/types';
+import { CardProp, CardPropStatus, SavingTarget } from '../modules_common/types';
 import { PersistentStoreAction } from '../modules_common/actions';
 
 interface WindowWithAPI extends Window {
@@ -28,7 +28,7 @@ interface WindowWithAPI extends Window {
     persistentStoreActionDispatcherFromRenderer: (
       action: PersistentStoreAction
     ) => Promise<void>;
-    updateCard: (cardProp: CardProp) => Promise<void>;
+    updateCard: (cardProp: CardProp, target: SavingTarget) => Promise<void>;
     sendLeftMouseDown: (url: string, x: number, y: number) => Promise<void>;
     sendToBack: (url: string) => Promise<number>;
     setTitle: (url: string, title: string) => Promise<void>;
