@@ -50,8 +50,8 @@ contextBridge.exposeInMainWorld('api', {
   persistentStoreActionDispatcherFromRenderer: (action: PersistentStoreAction) => {
     return ipcRenderer.invoke('persistent-store-dispatch', action);
   },
-  updateAvatar: (avatarPropSerializable: Record<string, any>) => {
-    return ipcRenderer.invoke('update-avatar', avatarPropSerializable);
+  updateCard: (cardProp: CardProp) => {
+    return ipcRenderer.invoke('update-card', cardProp);
   },
   sendLeftMouseDown: (url: string, x: number, y: number) => {
     const leftMouseDown: MouseInputEvent = {

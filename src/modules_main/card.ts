@@ -550,26 +550,6 @@ export const deleteAvatar = async (_url: string) => {
   */
 };
 
-export const updateAvatar = async (cardProp: CardProp) => {
-  /*
-  const prop = AvatarProp.fromObject(avatarPropObj);
-  const card = getCardFromUrl(prop.url);
-  if (!card) {
-    throw new Error('The card is not registered in cards: ' + prop.url);
-  }
-  const feature: TransformableFeature = {
-    geometry: prop.geometry,
-    style: prop.style,
-    condition: prop.condition,
-    date: prop.date,
-  };
-  card.prop.data = prop.data;
-  card.prop.avatars[getLocationFromUrl(prop.url)] = feature;
-
-  await saveCard(card.prop);
-  */
-};
-
 /**
  * Context Menu
  */

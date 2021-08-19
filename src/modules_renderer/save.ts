@@ -67,7 +67,7 @@ const execTask = async () => {
 
     // Execute the first task
     if (task.type === 'Save') {
-      await window.api.updateAvatar(task.prop).catch(e => {
+      await window.api.updateCard(task.prop).catch(e => {
         // TODO: Handle save error.
         console.error('Error in execTask:' + e);
       });

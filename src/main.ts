@@ -15,7 +15,6 @@ import {
   getZIndexOfTopCard,
   setGlobalFocusEventListenerPermission,
   setZIndexOfTopCard,
-  updateAvatar,
 } from './modules_main/card';
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
 import { openSettings, settingsDialog } from './modules_main/settings';
@@ -123,8 +122,8 @@ app.on('window-all-closed', () => {
  * ipcMain handles
  */
 
-ipcMain.handle('update-avatar', async (event, cardProp: CardProp) => {
-  await updateAvatar(cardProp);
+ipcMain.handle('update-card', async (event, cardProp: CardProp) => {
+  await mainStore.updateWorkspaceCardDoc(cardProp);
 });
 
 ipcMain.handle('delete-avatar', async (event, url: string) => {
