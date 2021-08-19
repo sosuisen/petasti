@@ -56,7 +56,11 @@ app.on('ready', async () => {
   });
 
   // for debug
-  if (!app.isPackaged && process.env.NODE_ENV === 'development') {
+  if (
+    !app.isPackaged &&
+    process.env.NODE_ENV === 'development' &&
+    process.env.SETTINGS_DIALOG === 'open'
+  ) {
     openSettings();
   }
 

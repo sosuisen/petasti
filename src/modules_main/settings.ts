@@ -39,14 +39,17 @@ export const openSettings = () => {
     icon: path.join(__dirname, '../../assets/media_stickies_grad_icon.ico'),
   });
 
+  settingsDialog.loadFile(path.join(__dirname, '../settings/settings.html'));
+
   // hot reload
   if (!app.isPackaged && process.env.NODE_ENV === 'development') {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     require('electron-connect').client.create(settingsDialog);
-    settingsDialog.webContents.openDevTools();
+    if (process.env.SETTINGS_DIALOG === 'open') {
+      settingsDialog.webContents.openDevTools();
+    }
   }
 
-  settingsDialog.loadURL(path.join(__dirname, '../settings/settings.html'));
   settingsDialog.webContents.on('did-finish-load', () => {
     settingsDialog.webContents.send('initialize-store', noteStore.info, noteStore.settings);
   });
