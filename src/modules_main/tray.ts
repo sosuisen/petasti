@@ -6,12 +6,13 @@ import path from 'path';
 import prompt from 'electron-prompt';
 import { app, dialog, Menu, MenuItemConstructorOptions, Tray } from 'electron';
 import { closeSettings, openSettings, settingsDialog } from './settings';
-import { createCard, currentCardMap } from './card';
+import { createCard, currentCardMap, generateNewCardId, getZIndexOfTopCard } from './card';
 import { emitter } from './event';
-import { getRandomInt } from '../modules_common/utils';
+import { getCurrentDateAndTime, getRandomInt } from '../modules_common/utils';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
-import { APP_ICON_NAME, DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
-import { noteStore, MESSAGE } from './note_store';
+import { APP_ICON_NAME, APP_SCHEME, DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
+import { generateNewNoteId, MESSAGE, noteStore } from './note_store';
+import { CardProp, NoteProp } from '../modules_common/types';
 
 /**
  * Task tray
@@ -30,7 +31,7 @@ let color = { ...cardColors };
 // @ts-ignore
 delete color.transparent;
 
-const createNewCard = () => {
+const createNewCard = async () => {
   const geometry = { ...DEFAULT_CARD_GEOMETRY };
   geometry.x += getRandomInt(30, 100);
   geometry.y += getRandomInt(30, 100);
@@ -47,35 +48,19 @@ const createNewCard = () => {
 
   const bgColor: string = cardColors[newColor];
 
-  /** 
-   * TODO: 
-  
-  newAvatars[getCurrentWorkspaceUrl()] = new TransformableFeature(
-    {
-      x: geometry.x,
-      y: geometry.y,
-      z: geometry.z,
-      width: geometry.width,
-      height: geometry.height,
-    },
-    {
+  const cardId = generateNewCardId();
+  const cardProp: Partial<CardProp> = {
+    url: `${APP_SCHEME}://local/${noteStore.settings.currentNoteId}/${cardId}`,
+    geometry,
+    style: {
       uiColor: darkenHexColor(bgColor),
       backgroundColor: bgColor,
       opacity: 1.0,
       zoom: 1.0,
-    }
-  );
+    },
+  };
 
-  const id = await createCard(
-    CardProp.fromObject(({
-      avatars: newAvatars,
-    } as unknown) as CardPropSerializable)
-  );
-   const newAvatar = avatars.get(getCurrentWorkspaceUrl() + id);
-  if (newAvatar) {
-    newAvatar.window.focus();
-  }
- */
+  await createCard(cardProp);
 };
 
 export const setTrayContextMenu = () => {
@@ -130,7 +115,6 @@ export const setTrayContextMenu = () => {
   }
 
   const contextMenu = Menu.buildFromTemplate([
-    /*
     {
       label: MESSAGE('newCard'),
       click: () => {
@@ -141,13 +125,13 @@ export const setTrayContextMenu = () => {
       type: 'separator',
     },
     {
-      label: MESSAGE('workspaceNew'),
+      label: MESSAGE('noteNew'),
       click: async () => {
-        const newId = getNextWorkspaceId();
+        const newId = generateNewNoteId();
         const newName: string | void | null = await prompt({
-          title: MESSAGE('workspace'),
-          label: MESSAGE('workspaceNewName'),
-          value: `${MESSAGE('workspaceName', String(workspaces.size + 1))}`,
+          title: MESSAGE('note'),
+          label: MESSAGE('noteNewName'),
+          value: `${MESSAGE('noteName', String(noteStore.notePropMap.size + 1))}`,
           inputAttrs: {
             type: 'text',
             required: true,
@@ -163,31 +147,46 @@ export const setTrayContextMenu = () => {
         ) {
           return;
         }
-        const workspace: Workspace = {
+        const current = getCurrentDateAndTime();
+        const newNote: NoteProp = {
+          date: {
+            createdDate: current,
+            modifiedDate: current,
+          },
           name: newName as string,
-          avatars: [],
+          user: 'local',
+          _id: newId,
         };
-        workspaces.set(newId, workspace);
-        await CardIO.createWorkspace(newId, workspace).catch((e: Error) =>
-          console.error(e.message)
-        );
+        await noteStore.updateNoteDoc(newNote);
+
         closeSettings();
-        if (avatars.size === 0) {
+
+        if (currentCardMap.size === 0) {
           emitter.emit('change-workspace', newId);
         }
         else {
-          setChangingToWorkspaceId(newId);
-          avatars.forEach(avatar => avatar.window.webContents.send('card-close'));
+          // eslint-disable-next-line require-atomic-updates
+          noteStore.changingToNoteId = newId;
+          try {
+            // Remove listeners firstly to avoid focus another card in closing process
+            currentCardMap.forEach(card => card.removeWindowListenersExceptClosedEvent());
+            currentCardMap.forEach(card => card.window.webContents.send('card-close'));
+          } catch (e) {
+            console.error(e);
+          }
+          // wait 'window-all-closed' event
         }
       },
     },
     {
-      label: MESSAGE('workspaceRename'),
+      label: MESSAGE('noteRename'),
       click: async () => {
+        const noteProp = noteStore.notePropMap.get(noteStore.settings.currentNoteId)!;
+
         const newName: string | void | null = await prompt({
-          title: MESSAGE('workspace'),
-          label: MESSAGE('workspaceNewName'),
-          value: getCurrentWorkspace().name,
+          title: MESSAGE('note'),
+          label: MESSAGE('noteNewName'),
+          value: noteProp!.name,
           inputAttrs: {
             type: 'text',
             required: true,
@@ -204,39 +203,36 @@ export const setTrayContextMenu = () => {
           return;
         }
 
-        const workspace = getCurrentWorkspace();
-        workspace.name = newName as string;
-        await CardIO.updateWorkspace(getCurrentWorkspaceId(), workspace).catch((e: Error) =>
-          console.error(e.message)
-        );
+        noteProp.name = newName as string;
+        await noteStore.updateNoteDoc(noteProp!);
+
         setTrayContextMenu();
-        avatars.forEach(avatar => avatar.resetContextMenu());
+        currentCardMap.forEach(card => card.resetContextMenu());
       },
     },
     {
-      label: MESSAGE('workspaceDelete'),
-      enabled: workspaces.size > 1,
+      label: MESSAGE('noteDelete'),
+      enabled: noteStore.notePropMap.size > 1,
       click: async () => {
-        if (workspaces.size <= 1) {
+        if (noteStore.notePropMap.size <= 1) {
           return;
         }
-        if (getCurrentWorkspace().avatars.length > 0) {
+        if (currentCardMap.size > 0) {
           dialog.showMessageBox({
             type: 'info',
             buttons: ['OK'],
-            message: MESSAGE('workspaceCannotDelete'),
+            message: MESSAGE('noteCannotDelete'),
           });
           return;
         }
-        workspaces.delete(getCurrentWorkspaceId());
-        await CardIO.deleteWorkspace(getCurrentWorkspaceId()).catch((e: Error) =>
-          console.error(`Error in workspaceDelete: ${e.message}`)
-        );
-        setTrayContextMenu();
-        emitter.emit('change-workspace', '0');
+        // Delete current note
+        await noteStore.deleteNoteDoc(noteStore.settings.currentNoteId);
+        noteStore.notePropMap.delete(noteStore.settings.currentNoteId);
+
+        noteStore.settings.currentNoteId = noteStore.getSortedNoteIdList()[0];
+        emitter.emit('change-workspace', noteStore.settings.currentNoteId);
       },
     },
-  */
     ...changeNotes,
     {
       type: 'separator',
@@ -284,11 +280,10 @@ export const initializeTaskTray = () => {
   tray = new Tray(path.join(__dirname, '../assets/' + APP_ICON_NAME));
   currentLanguage = noteStore.settings.language;
   setTrayContextMenu();
-  /*
+
   tray.on('click', () => {
     createNewCard();
   });
-  */
 };
 
 emitter.on('updateTrayContextMenu', () => {

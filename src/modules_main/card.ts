@@ -318,7 +318,7 @@ export class Card {
 
     // Emit window-all-closed event explicitly
     // because Electron sometimes does not emit it automatically.
-    if (Object.keys(currentCardMap).length === 0) {
+    if (currentCardMap.size === 0) {
       app.emit('window-all-closed');
     }
   };
@@ -439,7 +439,11 @@ export class Card {
   };
 }
 
-export const createCard = async (partialCardProp: Partial<CardProp>): Promise<string> => {
+export const createCard = async (partialCardProp: Partial<CardProp>): Promise<void> => {
+  // Overwrite z
+  if (partialCardProp.geometry !== undefined) {
+    partialCardProp.geometry.z = getZIndexOfTopCard() + 1;
+  }
   const card = new Card(partialCardProp);
 
   currentCardMap.set(card.url, card);
@@ -453,8 +457,8 @@ export const createCard = async (partialCardProp: Partial<CardProp>): Promise<st
   await noteStore.updateWorkspaceCardDoc(newCardProp);
 
   await card.render();
-
-  return card.url;
+  console.debug(`focus in createCard: ${card.url}`);
+  card.window.focus();
 };
 
 export const deleteCard = async (workspaceCardUrl: string) => {

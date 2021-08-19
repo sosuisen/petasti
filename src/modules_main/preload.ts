@@ -22,7 +22,7 @@ contextBridge.exposeInMainWorld('api', {
   bringToFront: (cardProp: CardProp): Promise<number> => {
     return ipcRenderer.invoke('bring-to-front', cardProp);
   },
-  createCard: (cardProp: Partial<CardProp>) => {
+  createCard: (cardProp: Partial<CardProp>): Promise<void> => {
     return ipcRenderer.invoke('create-card', cardProp);
   },
   confirmDialog: (url: string, buttonLabels: string[], message: string) => {

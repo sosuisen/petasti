@@ -54,7 +54,7 @@ export const generateNewNoteId = () => {
   return 'n' + ulid(Date.now());
 };
 
-class MainStore {
+class NoteStore {
   constructor () {}
   /**
    * GitDocumentDB
@@ -262,6 +262,15 @@ class MainStore {
     // setSyncEvents();
   };
 
+  getSortedNoteIdList = (): string[] => {
+    const sortedNoteIdList = [...this._notePropMap.keys()].sort((a, b) => {
+      if (this._notePropMap.get(a)!.name > this._notePropMap.get(b)!.name) return 1;
+      else if (this._notePropMap.get(a)!.name < this._notePropMap.get(b)!.name) return -1;
+      return 0;
+    });
+    return sortedNoteIdList;
+  };
+
   loadCurrentNote = async (): Promise<CardProp[]> => {
     // Create note if not exist.
 
@@ -273,12 +282,7 @@ class MainStore {
       this._settings.currentNoteId === undefined ||
       this._settings.currentNoteId === ''
     ) {
-      const sortedNotePropList = [...this._notePropMap.keys()].sort((a, b) => {
-        if (this._notePropMap.get(a)!.name > this._notePropMap.get(b)!.name) return 1;
-        else if (this._notePropMap.get(a)!.name < this._notePropMap.get(b)!.name) return -1;
-        return 0;
-      });
-      this._settings.currentNoteId = sortedNotePropList[0];
+      this._settings.currentNoteId = this.getSortedNoteIdList()[0];
       await this._settingsDB.put(this._settings);
     }
     else if (this._notePropMap.get(this._settings.currentNoteId) === undefined) {
@@ -297,6 +301,14 @@ class MainStore {
     return await this.loadCurrentCards();
   };
 
+  deleteNoteDoc = async (url: string) => {
+    await this._noteCollection.delete(getNoteIdFromUrl(url));
+  };
+
+  updateNoteDoc = async (noteProp: NoteProp) => {
+    await this._noteCollection.put(noteProp);
+  };
+
   createNote = async (name?: string): Promise<NoteProp> => {
     if (!name) {
       name = MESSAGE('noteName', (this._notePropMap.size + 1).toString());
@@ -313,7 +325,7 @@ class MainStore {
       user: 'local',
       _id,
     };
-    await this._noteCollection.put(newNote);
+    await this.updateNoteDoc(newNote);
 
     return newNote;
   };
@@ -323,8 +335,7 @@ class MainStore {
   const wsObj: { _id: string; _rev: string } & Workspace = {
     _id: workspaceId,
     _rev: '',
-    ...workspace,
-  };
+    ...workspace,  };
   await workspaceDB
     .get(workspaceId)
     .then(oldWS => {
@@ -353,21 +364,6 @@ class MainStore {
     throw new Error(`Error in deleteWorkspace: ${e}`);
   });
   */
-  };
-
-  updateWorkspaceStatus = async () => {
-    /*
-  const currentId = await workspaceDB.get('currentId').catch(() => undefined);
-  let currentIdRev = '';
-  if (currentId) {
-    currentIdRev = currentId._rev;
-  }
-  workspaceDB.put({
-    _id: 'currentId',
-    _rev: currentIdRev,
-    currentId: getCurrentWorkspaceId(),
-  });
-*/
   };
 
   // ! Operations for cards
@@ -500,7 +496,7 @@ class MainStore {
   };
 }
 
-export const noteStore = new MainStore();
+export const noteStore = new NoteStore();
 
 const showErrorDialog = (label: MessageLabel, msg: string) => {
   dialog.showMessageBoxSync({

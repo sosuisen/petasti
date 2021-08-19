@@ -74,7 +74,7 @@
   "dependencies": {
     "babel-plugin-react-css-modules": "^5.2.6",
     "electron-context-menu": "^2.3.0",
-    "electron-prompt": "^1.6.0",
+    "electron-prompt": "^1.6.2",
     "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^9.0.1",
     "git-documentdb": "^0.4.3",

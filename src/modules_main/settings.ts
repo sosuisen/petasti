@@ -8,6 +8,7 @@ import { selectPreferredLanguage } from 'typed-intl';
 import { noteStore } from './note_store';
 import { DatabaseCommand } from '../modules_common/db.types';
 import { availableLanguages, defaultLanguage } from '../modules_common/i18n';
+import { emitter } from './event';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let settingsDialog: BrowserWindow;
@@ -84,6 +85,8 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
       ]);
       noteStore.info.messages = noteStore.translations.messages();
       settingsDialog.webContents.send('update-info', noteStore.info);
+
+      emitter.emit('updateTrayContextMenu');
 
       await noteStore.settingsDB.put(noteStore.settings);
 

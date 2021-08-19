@@ -89,14 +89,14 @@ const initializeUIEvents = () => {
   document.getElementById('newBtn')?.addEventListener('click', async () => {
     // Position of a new card is relative to this card.
 
-    const geometry = DEFAULT_CARD_GEOMETRY;
+    const geometry = { ...DEFAULT_CARD_GEOMETRY };
     geometry.x = cardPropStatus.geometry.x + 30;
     geometry.y = cardPropStatus.geometry.y + 30;
     const cardProp: Partial<CardProp> = {
       geometry: {
         x: geometry.x,
         y: geometry.y,
-        z: cardPropStatus.geometry.z + 1,
+        z: geometry.z, // z will be overwritten in createCard()
         width: geometry.width,
         height: geometry.height,
       },
@@ -107,8 +107,7 @@ const initializeUIEvents = () => {
         zoom: cardPropStatus.style.zoom,
       },
     };
-    const newUrl = await window.api.createCard(cardProp);
-    window.api.focus(newUrl);
+    await window.api.createCard(cardProp);
   });
 
   // eslint-disable-next-line no-unused-expressions

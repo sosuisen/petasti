@@ -12,7 +12,7 @@ interface WindowWithAPI extends Window {
     blurAndFocusWithSuppressEvents: (url: string) => Promise<void>;
     blurAndFocusWithSuppressFocusEvents: (url: string) => Promise<void>;
     bringToFront: (cardProp: CardProp) => Promise<number>;
-    createCard: (cardProp: Partial<CardProp>) => Promise<string>;
+    createCard: (cardProp: Partial<CardProp>) => Promise<void>;
     confirmDialog: (
       url: string,
       buttonLabels: MessageLabel[],
