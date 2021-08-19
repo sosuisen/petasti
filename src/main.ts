@@ -12,15 +12,16 @@ import {
   currentCardMap,
   deleteAvatar,
   deleteCardWithRetry,
+  getZIndexOfBottomCard,
   getZIndexOfTopCard,
   setGlobalFocusEventListenerPermission,
+  setZIndexOfBottomCard,
   setZIndexOfTopCard,
 } from './modules_main/card';
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
 import { openSettings, settingsDialog } from './modules_main/settings';
 import { emitter, handlers } from './modules_main/event';
-import { mainStore, MESSAGE } from './modules_main/note_store';
-import { avatarDepthUpdateActionCreator } from './modules_common/actions';
+import { MESSAGE, noteStore } from './modules_main/note_store';
 import { CardProp, SavingTarget } from './modules_common/types';
 import { getCardIdFromUrl } from './modules_common/utils';
 
@@ -42,7 +43,7 @@ ipcMain.setMaxListeners(1000);
  */
 app.on('ready', async () => {
   // load workspaces
-  const cardProps = await mainStore.loadNotebook();
+  const cardProps = await noteStore.loadNotebook();
 
   const renderers: Promise<void>[] = [];
   cardProps.forEach(cardProp => {
@@ -64,15 +65,13 @@ app.on('ready', async () => {
     else if (a.geometry.z < b.geometry.z) return -1;
     return 0;
   });
-
-  let zIndex = 0;
+  setZIndexOfTopCard(backToFront[backToFront.length - 1].geometry.z);
+  setZIndexOfBottomCard(backToFront[0].geometry.z);
   backToFront.forEach(card => {
     if (card.window && !card.window.isDestroyed()) {
       card.window.moveTop();
-      zIndex = card.geometry.z;
     }
   });
-  setZIndexOfTopCard(zIndex);
 
   const size = backToFront.length;
   console.debug(`Completed to load ${size} cards`);
@@ -93,7 +92,7 @@ app.on('ready', async () => {
  * Exit app
  */
 emitter.on('exit', () => {
-  mainStore.closeDB();
+  noteStore.closeDB();
   destroyTray();
   app.quit();
 });
@@ -102,20 +101,20 @@ emitter.on('change-workspace', (nextNoteId: string) => {
   handlers.forEach(channel => ipcMain.removeHandler(channel));
   handlers.length = 0; // empty
   currentCardMap.clear();
-  mainStore.settings.currentNoteId = nextNoteId;
+  noteStore.settings.currentNoteId = nextNoteId;
   setTrayContextMenu();
-  mainStore.updateWorkspaceStatus();
-  mainStore.loadCurrentNote();
+  noteStore.updateWorkspaceStatus();
+  noteStore.loadCurrentNote();
 });
 
 app.on('window-all-closed', () => {
-  if (mainStore.changingToNoteId === 'exit') {
+  if (noteStore.changingToNoteId === 'exit') {
     emitter.emit('exit');
   }
-  else if (mainStore.changingToNoteId !== 'none') {
-    emitter.emit('change-workspace', mainStore.changingToNoteId);
+  else if (noteStore.changingToNoteId !== 'none') {
+    emitter.emit('change-workspace', noteStore.changingToNoteId);
   }
-  mainStore.changingToNoteId = 'none';
+  noteStore.changingToNoteId = 'none';
 });
 
 /**
@@ -125,11 +124,24 @@ app.on('window-all-closed', () => {
 ipcMain.handle(
   'update-card',
   async (event, cardProp: CardProp, savingTarget: SavingTarget) => {
+    const card = currentCardMap.get(cardProp.url);
     if (savingTarget === 'BodyOnly' || savingTarget === 'Card') {
-      await mainStore.updateCardDoc(cardProp);
+      await noteStore.updateCardDoc(cardProp);
+
+      // Update currentCardMap
+      card!.version = cardProp.version;
+      card!.type = cardProp.type;
+      card!.user = cardProp.user;
+      card!.date = cardProp.date;
+      card!._body = cardProp._body;
     }
     if (savingTarget === 'PropertyOnly' || savingTarget === 'Card') {
-      await mainStore.updateWorkspaceCardDoc(cardProp);
+      await noteStore.updateWorkspaceCardDoc(cardProp);
+
+      // Update currentCardMap
+      card!.geometry = cardProp.geometry;
+      card!.style = cardProp.style;
+      card!.condition = cardProp.condition;
     }
   }
 );
@@ -273,30 +285,37 @@ ipcMain.handle('get-uuid', () => {
   //  return uuidv4();
 });
 
-ipcMain.handle('bring-to-front', (event, url: string, rearrange = false) => {
+ipcMain.handle('bring-to-front', (event, cardProp: CardProp, rearrange = false): number => {
   // Database Update
+  if (cardProp.geometry.z === getZIndexOfTopCard()) {
+    // console.log('skip: ' + cardProp.geometry.z);
+    // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
+    return cardProp.geometry.z;
+  }
+
+  // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
+
   const zIndex = getZIndexOfTopCard() + 1;
-  console.debug(`new zIndex: ${zIndex}`);
-  const action = avatarDepthUpdateActionCreator(url, zIndex, false);
+  // console.debug(`new zIndex: ${zIndex}`);
 
-  //  persistentStoreActionDispatcher(action);
+  // Async
+  cardProp.geometry.z = zIndex;
+  noteStore.updateWorkspaceCardDoc(cardProp);
 
-  // persistentStoreActionDispatcher works synchronously,
-  // so DB has been already updated here.
-  setZIndexOfTopCard(zIndex);
+  // Update card
+  currentCardMap.get(cardProp.url)!.geometry.z = zIndex;
+
+  // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
 
   // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
+  const backToFront = [...currentCardMap.values()].sort((a, b) => {
+    if (a.geometry.z > b.geometry.z) return 1;
+    if (a.geometry.z < b.geometry.z) return -1;
+    return 0;
+  });
+  setZIndexOfTopCard(backToFront[backToFront.length - 1].geometry.z);
+  setZIndexOfBottomCard(backToFront[0].geometry.z);
   if (rearrange) {
-    const backToFront = Object.values(currentCardMap).sort((a, b) => {
-      if (a.geometry.z < b.geometry.z) {
-        return -1;
-      }
-      else if (a.geometry.z > b.geometry.z) {
-        return 1;
-      }
-      return 0;
-    });
-
     backToFront.forEach(card => {
       console.debug(`sorting zIndex..: ${card.geometry.z}`);
 
@@ -305,37 +324,7 @@ ipcMain.handle('bring-to-front', (event, url: string, rearrange = false) => {
       }
     });
   }
-});
-
-ipcMain.handle('send-to-back', (event, url: string) => {
-  const backToFront = Object.values(currentCardMap).sort((a, b) => {
-    if (a.geometry.z < b.geometry.z) {
-      return -1;
-    }
-    else if (a.geometry.z > b.geometry.z) {
-      return 1;
-    }
-    return 0;
-  });
-
-  // Database Update
-  const zIndexOfBottomAvatar = backToFront[0].geometry.z - 1;
-  console.debug(`new zIndex: ${zIndexOfBottomAvatar}`);
-  const action = avatarDepthUpdateActionCreator(url, zIndexOfBottomAvatar, false);
-
-  // persistentStoreActionDispatcher(action);
-
-  // persistentStoreActionDispatcher works synchronously,
-  // so DB has been already updated here.
-
-  backToFront.forEach(card => {
-    console.debug(`sorting zIndex..: ${card.geometry.z}`);
-    const avatarWin = currentCardMap.get(card.url);
-    if (avatarWin && !avatarWin.window.isDestroyed()) {
-      avatarWin!.suppressFocusEventOnce = true;
-      avatarWin!.window.focus();
-    }
-  });
+  return zIndex;
 });
 
 ipcMain.handle(

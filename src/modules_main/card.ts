@@ -15,6 +15,7 @@ import {
   shell,
 } from 'electron';
 import { monotonicFactory } from 'ulid';
+import { DebounceQueue } from 'rx-queue';
 import { getCurrentDateAndTime, sleep } from '../modules_common/utils';
 import {
   APP_ICON_NAME,
@@ -27,7 +28,7 @@ import {
 } from '../modules_common/const';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
 import { emitter, handlers } from './event';
-import { mainStore, MESSAGE } from './note_store';
+import { MESSAGE, noteStore } from './note_store';
 import {
   CardCondition,
   CardProp,
@@ -36,7 +37,6 @@ import {
   CartaDate,
   Geometry,
 } from '../modules_common/types';
-import { DebounceQueue } from 'rx-queue';
 
 /**
  * Const
@@ -77,11 +77,18 @@ export const currentCardMap: Map<string, Card> = new Map();
  * Manage z-index
  */
 let zIndexOfTopCard: number;
+let zIndexOfBottomCard: number;
 export const setZIndexOfTopCard = (zIndex: number) => {
   zIndexOfTopCard = zIndex;
 };
 export const getZIndexOfTopCard = (): number => {
   return zIndexOfTopCard;
+};
+export const setZIndexOfBottomCard = (zIndex: number) => {
+  zIndexOfBottomCard = zIndex;
+};
+export const getZIndexOfBottomCard = (): number => {
+  return zIndexOfBottomCard;
 };
 
 /**
@@ -271,10 +278,10 @@ export class Card {
     });
 
     this._debouncedCardPositionUpdateActionQueue.subscribe(rect => {
-      mainStore.updateWorkspaceCardDoc(this.toObject());
+      noteStore.updateWorkspaceCardDoc(this.toObject());
     });
     this._debouncedCardSizeUpdateActionQueue.subscribe(rect => {
-      mainStore.updateWorkspaceCardDoc(this.toObject());
+      noteStore.updateWorkspaceCardDoc(this.toObject());
     });
   }
 
@@ -332,7 +339,7 @@ export class Card {
       console.debug(`focus event listener is suppressed ${this.url}`);
     }
     else {
-      console.debug(`focus ${this.url}`);
+      console.debug(`# focus ${this.url}`);
       this.window.webContents.send('card-focused');
     }
   };
@@ -343,7 +350,7 @@ export class Card {
       this.suppressBlurEventOnce = false;
     }
     else {
-      console.debug(`blur ${this.url}`);
+      console.debug(`# blur ${this.url}`);
       this.window.webContents.send('card-blurred');
     }
   };
@@ -446,7 +453,7 @@ export const createCard = async (cardProp: CardProp) => {
       avatars.set(cardUrl, avatar);
       promises.push(avatar.render());
       getCurrentWorkspace()!.avatars.push(cardUrl);
-      promises.push(mainStore.addCardUrl(getCurrentWorkspaceId(), cardUrl));
+      promises.push(noteStore.addCardUrl(getCurrentWorkspaceId(), cardUrl));
     }
   }
   await Promise.all(promises).catch(e => {
@@ -459,7 +466,7 @@ export const createCard = async (cardProp: CardProp) => {
 
 const saveCard = async (cardProp: CardProp) => {
   /*
-  await mainStore.updateOrCreateCardData(cardProp).catch((e: Error) => {
+  await noteStore.updateOrCreateCardData(cardProp).catch((e: Error) => {
     console.error(`Error in saveCard: ${e.message}`);
   });
   */
@@ -495,7 +502,7 @@ export const deleteCard = async (id: string) => {
   for (const avatarLocation in card.prop.avatars) {
     const cardUrl = avatarLocation + id;
     // eslint-disable-next-line no-await-in-loop
-    await mainStore.deleteCardUrl(getWorkspaceIdFromUrl(cardUrl), cardUrl); // Use await because there is race case.
+    await noteStore.deleteCardUrl(getWorkspaceIdFromUrl(cardUrl), cardUrl); // Use await because there is race case.
 
     const avatar = avatars.get(cardUrl);
     const ws = getCurrentWorkspace();
@@ -511,7 +518,7 @@ export const deleteCard = async (id: string) => {
   }
 
   // Delete actual card
-  await mainStore
+  await noteStore
     .deleteCardData(id)
     .catch((e: Error) => {
       throw new Error(`Error in delete-card: ${e.message}`);
@@ -535,7 +542,7 @@ export const deleteAvatar = async (_url: string) => {
     if (!avatar.window.isDestroyed()) {
       avatar.window.destroy();
     }
-    await mainStore.deleteCardUrl(getCurrentWorkspaceId(), _url);
+    await noteStore.deleteCardUrl(getCurrentWorkspaceId(), _url);
     const ws = getCurrentWorkspace();
     if (ws) {
       ws.avatars = ws.avatars.filter(cardUrl => cardUrl !== _url);
@@ -571,10 +578,10 @@ const setContextMenu = (card: Card) => {
   const moveAvatarToWorkspace = (workspaceId: string) => {
     /*
     removeAvatarFromWorkspace(getCurrentWorkspaceId(), card.url);
-    mainStore.deleteCardUrl(getCurrentWorkspaceId(), card.url);
+    noteStore.deleteCardUrl(getCurrentWorkspaceId(), card.url);
     const newCardUrl = getWorkspaceUrl(workspaceId) + getIdFromUrl(card.url);
     addAvatarToWorkspace(workspaceId, newCardUrl);
-    mainStore.addCardUrl(workspaceId, newCardUrl);
+    noteStore.addCardUrl(workspaceId, newCardUrl);
     card.window.webContents.send('card-close');
 
       const avatarProp = card.prop.avatars[getLocationFromUrl(prop.url)];
@@ -596,7 +603,7 @@ const setContextMenu = (card: Card) => {
       return;
     }
     addAvatarToWorkspace(workspaceId, newCardUrl);
-    mainStore.addCardUrl(workspaceId, newCardUrl);
+    noteStore.addCardUrl(workspaceId, newCardUrl);
 
     const card = getCardFromUrl(prop.url);
     if (card) {
@@ -607,14 +614,14 @@ const setContextMenu = (card: Card) => {
     */
   };
 
-  const moveToWorkspaces: MenuItemConstructorOptions[] = [...mainStore.notePropMap.values()]
+  const moveToWorkspaces: MenuItemConstructorOptions[] = [...noteStore.notePropMap.values()]
     .sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;
       return 0;
     })
     .reduce((result, noteProp) => {
-      if (noteProp._id !== mainStore.settings.currentNoteId) {
+      if (noteProp._id !== noteStore.settings.currentNoteId) {
         result.push({
           label: `${noteProp.name}`,
           click: () => {
@@ -625,14 +632,14 @@ const setContextMenu = (card: Card) => {
       return result;
     }, [] as MenuItemConstructorOptions[]);
 
-  const copyToWorkspaces: MenuItemConstructorOptions[] = [...mainStore.notePropMap.values()]
+  const copyToWorkspaces: MenuItemConstructorOptions[] = [...noteStore.notePropMap.values()]
     .sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;
       return 0;
     })
     .reduce((result, noteProp) => {
-      if (noteProp._id !== mainStore.settings.currentNoteId) {
+      if (noteProp._id !== noteStore.settings.currentNoteId) {
         result.push({
           label: `${noteProp.name}`,
           click: () => {
@@ -696,7 +703,41 @@ const setContextMenu = (card: Card) => {
       {
         label: MESSAGE('sendToBack'),
         click: () => {
-          card.window.webContents.send('send-to-back');
+          const cardProp = card.toObject();
+
+          // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
+
+          // Database Update
+          if (card.geometry.z === getZIndexOfBottomCard()) {
+            return cardProp.geometry.z;
+          }
+
+          const zIndex = getZIndexOfBottomCard() - 1;
+          // console.debug(`new zIndex: ${zIndex}`);
+
+          // Async
+          noteStore.updateWorkspaceCardDoc(cardProp);
+
+          // Update card
+          card.geometry.z = zIndex;
+
+          // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
+
+          const backToFront: Card[] = [...currentCardMap.values()].sort((a, b) => {
+            if (a.geometry.z > b.geometry.z) return 1;
+            if (a.geometry.z < b.geometry.z) return -1;
+            return 0;
+          });
+          setZIndexOfTopCard(backToFront[backToFront.length - 1].geometry.z);
+          setZIndexOfBottomCard(backToFront[0].geometry.z);
+          backToFront.forEach(myCard => {
+            if (myCard.window && !myCard.window.isDestroyed()) {
+              myCard!.suppressFocusEventOnce = true;
+              myCard!.window.focus();
+            }
+          });
+
+          card.window.webContents.send('send-to-back', zIndex);
         },
       },
       {

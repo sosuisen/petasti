@@ -11,7 +11,7 @@ import { emitter } from './event';
 import { getRandomInt } from '../modules_common/utils';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
 import { APP_ICON_NAME, DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
-import { mainStore, MESSAGE } from './note_store';
+import { noteStore, MESSAGE } from './note_store';
 
 /**
  * Task tray
@@ -82,11 +82,11 @@ export const setTrayContextMenu = () => {
   if (!tray) {
     return;
   }
-  const currentNote = mainStore.notePropMap.get(mainStore.settings.currentNoteId);
+  const currentNote = noteStore.notePropMap.get(noteStore.settings.currentNoteId);
 
   let changeNotes: MenuItemConstructorOptions[] = [];
   if (currentNote !== null) {
-    changeNotes = [...mainStore.notePropMap.values()]
+    changeNotes = [...noteStore.notePropMap.values()]
       .sort(function (a, b) {
         if (a.name > b.name) return 1;
         else if (a.name < b.name) return -1;
@@ -96,15 +96,15 @@ export const setTrayContextMenu = () => {
         return {
           label: `${note.name}`,
           type: 'radio',
-          checked: note._id === mainStore.settings.currentNoteId,
+          checked: note._id === noteStore.settings.currentNoteId,
           click: () => {
-            if (note._id !== mainStore.settings.currentNoteId) {
+            if (note._id !== noteStore.settings.currentNoteId) {
               closeSettings();
               if (currentCardMap.size === 0) {
                 emitter.emit('change-workspace', note._id);
               }
               else {
-                mainStore.changingToNoteId = note._id;
+                noteStore.changingToNoteId = note._id;
                 try {
                   // Remove listeners firstly to avoid focus another card in closing process
                   currentCardMap.forEach(card =>
@@ -282,7 +282,7 @@ export const setTrayContextMenu = () => {
 
 export const initializeTaskTray = () => {
   tray = new Tray(path.join(__dirname, '../assets/' + APP_ICON_NAME));
-  currentLanguage = mainStore.settings.language;
+  currentLanguage = noteStore.settings.language;
   setTrayContextMenu();
   /*
   tray.on('click', () => {
@@ -292,7 +292,7 @@ export const initializeTaskTray = () => {
 };
 
 emitter.on('updateTrayContextMenu', () => {
-  const newLanguage = mainStore.settings.language;
+  const newLanguage = noteStore.settings.language;
   if (currentLanguage !== newLanguage) {
     currentLanguage = newLanguage;
     setTrayContextMenu();

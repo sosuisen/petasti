@@ -32,12 +32,6 @@ import {
   SavingTarget,
   WorkspaceCardDoc,
 } from '../modules_common/types';
-import {
-  AvatarDepthUpdateAction,
-  AvatarPositionUpdateAction,
-  AvatarSizeUpdateAction,
-  PersistentStoreAction,
-} from '../modules_common/actions';
 import { emitter } from './event';
 import {
   defaultDataDir,
@@ -432,15 +426,14 @@ class MainStore {
   };
 
   updateCardDoc = async (prop: CardProp): Promise<void> => {
-    console.debug('Saving card doc...: ' + JSON.stringify(prop));
-    const clone: CardProp = JSON.parse(JSON.stringify(prop));
+    console.debug(`# Saving card doc: ${prop.url}`);
     const cardId = getCardIdFromUrl(prop.url);
     const cardDoc: CardDoc = {
-      version: clone.version,
-      type: clone.type,
-      user: clone.user,
-      date: clone.date,
-      _body: clone._body,
+      version: prop.version,
+      type: prop.type,
+      user: prop.user,
+      date: prop.date,
+      _body: prop._body,
       _id: cardId,
     };
     await this._cardCollection.put(cardDoc).catch(e => {
@@ -449,7 +442,7 @@ class MainStore {
   };
 
   updateWorkspaceCardDoc = async (prop: CardProp): Promise<void> => {
-    console.debug(`Saving workspace card doc: ${JSON.stringify(prop)}`);
+    console.debug(`# Saving workspace card doc: ${prop.url}`);
     const clone: CardProp = JSON.parse(JSON.stringify(prop));
     const cardId = getCardIdFromUrl(prop.url);
     const noteCardDoc: WorkspaceCardDoc = {
@@ -478,7 +471,7 @@ class MainStore {
   };
 }
 
-export const mainStore = new MainStore();
+export const noteStore = new MainStore();
 
 const showErrorDialog = (label: MessageLabel, msg: string) => {
   dialog.showMessageBoxSync({
@@ -490,7 +483,7 @@ const showErrorDialog = (label: MessageLabel, msg: string) => {
 
 // Utility for i18n
 export const MESSAGE = (label: MessageLabel, ...args: string[]) => {
-  let message: string = mainStore.info.messages[label];
+  let message: string = noteStore.info.messages[label];
   if (args) {
     args.forEach((replacement, index) => {
       const variable = '$' + (index + 1); // $1, $2, ...

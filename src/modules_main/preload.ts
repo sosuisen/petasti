@@ -4,7 +4,6 @@
  */
 
 import { contextBridge, ipcRenderer, MouseInputEvent } from 'electron';
-import { PersistentStoreAction } from '../modules_common/actions';
 import { CardProp, SavingTarget } from '../modules_common/types';
 
 contextBridge.exposeInMainWorld('api', {
@@ -20,8 +19,8 @@ contextBridge.exposeInMainWorld('api', {
   blurAndFocusWithSuppressFocusEvents: (url: string) => {
     return ipcRenderer.invoke('blur-and-focus-with-suppress-focus-events', url);
   },
-  bringToFront: (url: string) => {
-    return ipcRenderer.invoke('bring-to-front', url);
+  bringToFront: (cardProp: CardProp): Promise<number> => {
+    return ipcRenderer.invoke('bring-to-front', cardProp);
   },
   createCard: (subsetOfCardPropSerializable: Record<string, any>) => {
     return ipcRenderer.invoke('create-card', subsetOfCardPropSerializable);
@@ -47,9 +46,6 @@ contextBridge.exposeInMainWorld('api', {
   getUuid: () => {
     return ipcRenderer.invoke('get-uuid');
   },
-  persistentStoreActionDispatcherFromRenderer: (action: PersistentStoreAction) => {
-    return ipcRenderer.invoke('persistent-store-dispatch', action);
-  },
   updateCard: (cardProp: CardProp, target: SavingTarget) => {
     return ipcRenderer.invoke('update-card', cardProp, target);
   },
@@ -61,9 +57,6 @@ contextBridge.exposeInMainWorld('api', {
       y: y,
     };
     return ipcRenderer.invoke('send-mouse-input', url, leftMouseDown);
-  },
-  sendToBack: (url: string) => {
-    return ipcRenderer.invoke('send-to-back', url);
   },
   setWindowSize: (url: string, width: number, height: number) => {
     return ipcRenderer.invoke('set-window-size', url, width, height);
@@ -114,8 +107,8 @@ ipcRenderer.on(
   (event: Electron.IpcRendererEvent, bounds: Electron.Rectangle) =>
     window.postMessage({ command: 'resize-by-hand', bounds }, 'file://')
 );
-ipcRenderer.on('send-to-back', () =>
-  window.postMessage({ command: 'send-to-back' }, 'file://')
+ipcRenderer.on('send-to-back', (event: Electron.IpcRendererEvent, zIndex: number) =>
+  window.postMessage({ command: 'send-to-back', zIndex }, 'file://')
 );
 ipcRenderer.on('set-lock', (event: Electron.IpcRendererEvent, locked: boolean) => {
   window.postMessage({ command: 'set-lock', locked }, 'file://');

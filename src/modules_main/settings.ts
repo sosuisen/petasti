@@ -5,7 +5,7 @@
 import path from 'path';
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { selectPreferredLanguage } from 'typed-intl';
-import { mainStore } from './note_store';
+import { noteStore } from './note_store';
 import { DatabaseCommand } from '../modules_common/db.types';
 import { availableLanguages, defaultLanguage } from '../modules_common/i18n';
 
@@ -48,7 +48,7 @@ export const openSettings = () => {
 
   settingsDialog.loadURL(path.join(__dirname, '../settings/settings.html'));
   settingsDialog.webContents.on('did-finish-load', () => {
-    settingsDialog.webContents.send('initialize-store', mainStore.info, mainStore.settings);
+    settingsDialog.webContents.send('initialize-store', noteStore.info, noteStore.settings);
   });
   settingsDialog.webContents.on('new-window', (e, _url) => {
     e.preventDefault();
@@ -66,7 +66,7 @@ ipcMain.handle('open-file-selector-dialog', (event, message: string) => {
 });
 
 ipcMain.handle('close-cardio', async event => {
-  await mainStore.closeDB();
+  await noteStore.closeDB();
 });
 
 // eslint-disable-next-line complexity
@@ -74,46 +74,46 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
   // eslint-disable-next-line default-case
   switch (command.command) {
     case 'db-language-update': {
-      mainStore.settings.language = command.data;
+      noteStore.settings.language = command.data;
       selectPreferredLanguage(availableLanguages, [
-        mainStore.settings.language,
+        noteStore.settings.language,
         defaultLanguage,
       ]);
-      mainStore.info.messages = mainStore.translations.messages();
-      settingsDialog.webContents.send('update-info', mainStore.info);
+      noteStore.info.messages = noteStore.translations.messages();
+      settingsDialog.webContents.send('update-info', noteStore.info);
 
-      await mainStore.settingsDB.put(mainStore.settings);
+      await noteStore.settingsDB.put(noteStore.settings);
 
       break;
     }
     case 'db-data-store-path-update': {
-      mainStore.settings.dataStorePath = command.data;
+      noteStore.settings.dataStorePath = command.data;
 
       break;
     }
     case 'db-sync-remote-url-update': {
       if (command.data === '') {
-        if (mainStore.sync !== undefined) {
-          mainStore.bookDB.removeSync(mainStore.sync.remoteURL);
-          mainStore.sync = undefined;
+        if (noteStore.sync !== undefined) {
+          noteStore.bookDB.removeSync(noteStore.sync.remoteURL);
+          noteStore.sync = undefined;
         }
       }
-      mainStore.settings.sync.remoteUrl = command.data;
-      await mainStore.settingsDB.put(mainStore.settings);
+      noteStore.settings.sync.remoteUrl = command.data;
+      await noteStore.settingsDB.put(noteStore.settings);
       break;
     }
     case 'db-sync-personal-access-token-update': {
-      mainStore.settings.sync.connection.personalAccessToken = command.data;
-      await mainStore.settingsDB.put(mainStore.settings);
+      noteStore.settings.sync.connection.personalAccessToken = command.data;
+      await noteStore.settingsDB.put(noteStore.settings);
       break;
     }
     case 'db-sync-interval-update': {
-      mainStore.settings.sync.interval = command.data;
-      if (mainStore.sync !== undefined) {
-        mainStore.sync.pause();
-        mainStore.sync.resume({ interval: mainStore.settings.sync.interval });
+      noteStore.settings.sync.interval = command.data;
+      if (noteStore.sync !== undefined) {
+        noteStore.sync.pause();
+        noteStore.sync.resume({ interval: noteStore.settings.sync.interval });
       }
-      await mainStore.settingsDB.put(mainStore.settings);
+      await noteStore.settingsDB.put(noteStore.settings);
       break;
     }
   }

@@ -37,7 +37,6 @@ import {
 } from './modules_renderer/save';
 import window from './modules_renderer/window';
 import { setAltDown, setCtrlDown, setMetaDown, setShiftDown } from './modules_common/keys';
-import { avatarSizeUpdateActionCreator } from './modules_common/actions';
 
 let cardPropStatus: CardPropStatus;
 
@@ -161,11 +160,6 @@ const initializeUIEvents = () => {
   let prevMouseY: number;
   let isHorizontalMoving = false;
   let isVerticalMoving = false;
-  const debouncedResizeQueue = new DebounceQueue(1000);
-  debouncedResizeQueue.subscribe(rect => {
-    const action = avatarSizeUpdateActionCreator(cardPropStatus.url, rect, true);
-    window.api.persistentStoreActionDispatcherFromRenderer(action);
-  });
 
   const onmousemove = (event: MouseEvent) => {
     let newWidth = cardPropStatus.geometry.width + getRenderOffsetWidth();
@@ -186,7 +180,6 @@ const initializeUIEvents = () => {
         width: newWidth,
         height: newHeight,
       };
-      debouncedResizeQueue.next(rect);
       window.resizeTo(newWidth, newHeight);
       onResizeByHand(rect, true);
     }
@@ -335,7 +328,7 @@ window.addEventListener('message', event => {
       onResizeByHand(event.data.bounds, false);
       break;
     case 'send-to-back':
-      onSendToBack();
+      onSendToBack(event.data.zIndex);
       break;
     case 'set-lock':
       onSetLock(event.data.locked);
@@ -404,27 +397,21 @@ const onCardFocused = async () => {
   cardPropStatus.status = 'Focused';
   render(['CardStyle', 'ContentsRect']);
 
-  await window.api.bringToFront(cardPropStatus.url);
-  // const newZ = await window.api.bringToFront(cardPropStatus.url);
+  const newZ = await window.api.bringToFront(cardPropStatus);
   // eslint-disable-next-line require-atomic-updates
-  // cardPropStatus.geometry.z = newZ;
-  /** 
-  saveCard(cardPropStatus);
-  */
+  cardPropStatus.geometry.z = newZ;
 };
 
 const onCardBlurred = () => {
   cardPropStatus.status = 'Blurred';
   render(['CardStyle', 'ContentsRect']);
 
-  /*
   if (cardEditor.isOpened) {
     if (cardEditor.isCodeMode) {
       return;
     }
     endEditor();
   }
-  */
 };
 
 const onChangeCardColor = (backgroundColor: string, opacity = 1.0) => {
@@ -471,11 +458,9 @@ const onRenderCard = (cardProp: CardProp) => {
   });
 };
 
-const onSendToBack = async () => {
-  const newZ = await window.api.sendToBack(cardPropStatus.url);
+const onSendToBack = (zIndex: number) => {
   // eslint-disable-next-line require-atomic-updates
-  cardPropStatus.geometry.z = newZ;
-  saveCard(cardPropStatus, 'PropertyOnly');
+  cardPropStatus.geometry.z = zIndex;
 };
 
 const onSetLock = (locked: boolean) => {
@@ -483,6 +468,7 @@ const onSetLock = (locked: boolean) => {
   if (cardEditor.isOpened) {
     endEditor();
   }
+  saveCard(cardPropStatus, 'PropertyOnly');
 };
 
 const onZoomIn = () => {

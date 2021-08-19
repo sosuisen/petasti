@@ -4,15 +4,14 @@
  */
 
 import { MessageLabel } from '../modules_common/i18n';
-import { CardProp, CardPropStatus, SavingTarget } from '../modules_common/types';
-import { PersistentStoreAction } from '../modules_common/actions';
+import { CardProp, SavingTarget } from '../modules_common/types';
 
 interface WindowWithAPI extends Window {
   api: {
     alertDialog: (url: string, label: MessageLabel) => Promise<void>;
     blurAndFocusWithSuppressEvents: (url: string) => Promise<void>;
     blurAndFocusWithSuppressFocusEvents: (url: string) => Promise<void>;
-    bringToFront: (url: string) => Promise<number>;
+    bringToFront: (cardProp: CardProp) => Promise<number>;
     createCard: (subsetOfCardPropSerializable: Record<string, any>) => Promise<string>;
     confirmDialog: (
       url: string,
@@ -25,12 +24,8 @@ interface WindowWithAPI extends Window {
     finishRenderCard: (url: string) => Promise<void>;
     focus: (url: string) => Promise<void>;
     getUuid: () => Promise<string>;
-    persistentStoreActionDispatcherFromRenderer: (
-      action: PersistentStoreAction
-    ) => Promise<void>;
     updateCard: (cardProp: CardProp, target: SavingTarget) => Promise<void>;
     sendLeftMouseDown: (url: string, x: number, y: number) => Promise<void>;
-    sendToBack: (url: string) => Promise<number>;
     setTitle: (url: string, title: string) => Promise<void>;
     setWindowSize: (
       url: string,
