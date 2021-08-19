@@ -469,6 +469,36 @@ class MainStore {
       );
     }
   };
+
+  deleteCardDoc = async (url: string) => {
+    console.debug(`# Deleting card doc: ${url}`);
+    await this._cardCollection.delete(getCardIdFromUrl(url)).catch(e => {
+      throw new Error(`Error in deletingCardDoc: ${e.message}`);
+    });
+  };
+
+  deleteWorkspaceCardDoc = async (url: string) => {
+    console.debug(`# Deleting workspace card doc: ${url}`);
+    await this._noteCollection
+      .delete(getNoteIdFromUrl(url) + '/' + getCardIdFromUrl(url))
+      .catch(e => {
+        throw new Error(`Error in deletingWorkspaceCardDoc: ${e.message}`);
+      });
+    const currentNoteProp = this._notePropMap.get(this._settings.currentNoteId);
+    if (currentNoteProp !== undefined) {
+      currentNoteProp.date.modifiedDate = getCurrentDateAndTime();
+      // Overwrite _id
+      await this._noteCollection.put(
+        this._settings.currentNoteId + '/prop',
+        currentNoteProp
+      );
+    }
+    else {
+      throw new Error(
+        `Error in updateWorkspaceCardDoc: note ${this._settings.currentNoteId} does not exist.`
+      );
+    }
+  };
 }
 
 export const noteStore = new MainStore();

@@ -29,8 +29,8 @@ import {
 } from './modules_renderer/card_renderer';
 import { darkenHexColor } from './modules_common/color';
 import {
-  deleteAvatar,
   deleteCard,
+  deleteWorkspaceCard,
   saveCard,
   saveCardColor,
   waitUnfinishedTasks,
@@ -88,31 +88,27 @@ const initializeUIEvents = () => {
   // eslint-disable-next-line no-unused-expressions
   document.getElementById('newBtn')?.addEventListener('click', async () => {
     // Position of a new card is relative to this card.
-    /*
+
     const geometry = DEFAULT_CARD_GEOMETRY;
     geometry.x = cardPropStatus.geometry.x + 30;
     geometry.y = cardPropStatus.geometry.y + 30;
-    const avatars: CardAvatars = {};
-    avatars[getLocationFromUrl(cardPropStatus.url)] = new TransformableFeature(
-      {
+    const cardProp: Partial<CardProp> = {
+      geometry: {
         x: geometry.x,
         y: geometry.y,
         z: geometry.z + 1,
         width: geometry.width,
         height: geometry.height,
       },
-      {
+      style: {
         uiColor: cardPropStatus.style.uiColor,
         backgroundColor: cardPropStatus.style.backgroundColor,
         opacity: cardPropStatus.style.opacity,
         zoom: cardPropStatus.style.zoom,
-      }
-    );
-    const newId = await window.api.createCard({
-      avatars: avatars,
-    });
-    window.api.focus(getCurrentWorkspaceUrl() + newId);
-    */
+      },
+    };
+    const newUrl = await window.api.createCard(cardProp);
+    window.api.focus(newUrl);
   });
 
   // eslint-disable-next-line no-unused-expressions
@@ -144,7 +140,7 @@ const initializeUIEvents = () => {
           if (res === DIALOG_BUTTON.default) {
             // OK
             suppressFocusEvent = true; // Suppress focus event in order not to focus and save this card just after closing card window.
-            deleteAvatar(cardPropStatus);
+            deleteWorkspaceCard(cardPropStatus);
           }
           else if (res === DIALOG_BUTTON.cancel) {
             // Cancel

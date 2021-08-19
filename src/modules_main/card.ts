@@ -148,7 +148,7 @@ export class Card {
    * Constructor
    */
   // eslint-disable-next-line complexity
-  constructor (noteIdOrCardProp: string | CardProp) {
+  constructor (noteIdOrCardProp: string | Partial<CardProp>) {
     if (typeof noteIdOrCardProp === 'string') {
       // Create card with default properties
 
@@ -160,10 +160,10 @@ export class Card {
       // Create card with specified CardProp
 
       const cardProp = noteIdOrCardProp;
-      this.version = cardProp.version;
-      this.url = cardProp.url;
-      this.type = cardProp.type;
-      this.user = cardProp.user;
+      this.version = cardProp.version ?? this.version!;
+      this.url = cardProp.url!;
+      this.type = cardProp.type ?? this.type!;
+      this.user = cardProp.user ?? this.user!;
 
       if (
         cardProp.geometry !== undefined &&
@@ -201,7 +201,7 @@ export class Card {
         this.date = { ...cardProp.date };
       }
 
-      this._body = cardProp._body;
+      this._body = cardProp._body ?? this._body!;
     }
 
     this.indexUrl = url.format({
@@ -437,124 +437,40 @@ export class Card {
   };
 }
 
-export const createCard = async (cardProp: CardProp) => {
-  /*
-  const card = new Card(cardProp);
-  cards.set(card.prop._id, card);
+export const createCard = async (partialCardProp: Partial<CardProp>): Promise<string> => {
+  const card = new Card(partialCardProp);
 
-  const workspaceUrl = getCurrentWorkspaceUrl();
-  const promises = [];
-  for (const loc in card.prop.avatars) {
-    if (loc.match(workspaceUrl)) {
-      const cardUrl = loc + card.prop._id;
-      const avatar = new Card(
-        new AvatarProp(cardUrl, getCardData(cardUrl), getAvatarProp(cardUrl))
-      );
-      avatars.set(cardUrl, avatar);
-      promises.push(avatar.render());
-      getCurrentWorkspace()!.avatars.push(cardUrl);
-      promises.push(noteStore.addCardUrl(getCurrentWorkspaceId(), cardUrl));
-    }
-  }
-  await Promise.all(promises).catch(e => {
-    console.error(`Error in createCard: ${e.message}`);
-  });
-  await saveCard(card.prop);
-  return prop._id;
-*/
+  currentCardMap.set(card.url, card);
+
+  const newCardProp = card.toObject();
+
+  // Async
+  noteStore.updateCardDoc(newCardProp);
+
+  // Sync
+  await noteStore.updateWorkspaceCardDoc(newCardProp);
+
+  await card.render();
+
+  return card.url;
 };
 
-const saveCard = async (cardProp: CardProp) => {
-  /*
-  await noteStore.updateOrCreateCardData(cardProp).catch((e: Error) => {
-    console.error(`Error in saveCard: ${e.message}`);
-  });
-  */
+export const deleteCard = async (workspaceCardUrl: string) => {
+  await noteStore.deleteCardDoc(workspaceCardUrl);
 };
 
-export const deleteCardWithRetry = async (id: string) => {
-  for (let i = 0; i < 5; i++) {
-    let doRetry = false;
-    // eslint-disable-next-line no-await-in-loop
-    await deleteCard(id).catch(e => {
-      console.error(`Error in deleteCardWithRetry: ${e.message}`);
-      doRetry = true;
-    });
-    if (!doRetry) {
-      break;
+export const deleteWorkspaceCard = async (workspaceCardUrl: string) => {
+  const card = currentCardMap.get(workspaceCardUrl);
+
+  if (card !== undefined) {
+    if (!card.window.isDestroyed()) {
+      card.window.destroy();
     }
-    // eslint-disable-next-line no-await-in-loop
-    await sleep(1000);
-    console.debug('retrying delete card ...');
+    await noteStore.deleteWorkspaceCardDoc(workspaceCardUrl);
   }
-};
-
-export const deleteCard = async (id: string) => {
-  /*
-  const card = cards.get(id);
-  if (!card) {
-    console.error(`Error in deleteCard: card does not exist: ${id}`);
-    return;
+  else {
+    console.error(`${workspaceCardUrl} does not exist`);
   }
-
-  // Delete all avatar cards
-
-  for (const avatarLocation in card.prop.avatars) {
-    const cardUrl = avatarLocation + id;
-    // eslint-disable-next-line no-await-in-loop
-    await noteStore.deleteCardUrl(getWorkspaceIdFromUrl(cardUrl), cardUrl); // Use await because there is race case.
-
-    const avatar = avatars.get(cardUrl);
-    const ws = getCurrentWorkspace();
-    if (avatar && ws) {
-      ws.avatars = ws.avatars.filter(_url => _url !== cardUrl);
-      avatars.delete(cardUrl);
-      avatar.window.destroy();
-    }
-    else {
-      removeAvatarFromWorkspace(getWorkspaceIdFromUrl(cardUrl), cardUrl);
-    }
-
-  }
-
-  // Delete actual card
-  await noteStore
-    .deleteCardData(id)
-    .catch((e: Error) => {
-      throw new Error(`Error in delete-card: ${e.message}`);
-    })
-    .then(() => {
-      console.debug(`deleted : ${id}`);
-      // eslint-disable-next-line no-unused-expressions
-      cards.delete(id);
-    })
-    .catch((e: Error) => {
-      throw new Error(`Error in destroy window: ${e.message}`);
-    });
-    */
-};
-
-export const deleteAvatar = async (_url: string) => {
-  /*
-  const avatar = avatars.get(_url);
-  if (avatar) {
-    avatars.delete(_url);
-    if (!avatar.window.isDestroyed()) {
-      avatar.window.destroy();
-    }
-    await noteStore.deleteCardUrl(getCurrentWorkspaceId(), _url);
-    const ws = getCurrentWorkspace();
-    if (ws) {
-      ws.avatars = ws.avatars.filter(cardUrl => cardUrl !== _url);
-    }
-  }
-  const card = getCardFromUrl(_url);
-  if (!card) {
-    return;
-  }
-  delete card.prop.avatars[getLocationFromUrl(_url)];
-  await saveCard(card.prop);
-  */
 };
 
 /**

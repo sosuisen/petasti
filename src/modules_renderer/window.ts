@@ -12,13 +12,13 @@ interface WindowWithAPI extends Window {
     blurAndFocusWithSuppressEvents: (url: string) => Promise<void>;
     blurAndFocusWithSuppressFocusEvents: (url: string) => Promise<void>;
     bringToFront: (cardProp: CardProp) => Promise<number>;
-    createCard: (subsetOfCardPropSerializable: Record<string, any>) => Promise<string>;
+    createCard: (cardProp: Partial<CardProp>) => Promise<string>;
     confirmDialog: (
       url: string,
       buttonLabels: MessageLabel[],
       label: MessageLabel
     ) => Promise<number>;
-    deleteAvatar: (url: string) => Promise<void>;
+    deleteWorkspaceCard: (url: string) => Promise<void>;
     deleteCard: (url: string) => Promise<void>;
     finishLoad: (url: string) => Promise<void>;
     finishRenderCard: (url: string) => Promise<void>;

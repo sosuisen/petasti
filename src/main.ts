@@ -4,15 +4,15 @@
  */
 
 import { app, BrowserWindow, dialog, ipcMain, MouseInputEvent } from 'electron';
-import { DIALOG_BUTTON } from './modules_common/const';
+import { APP_SCHEME, DIALOG_BUTTON } from './modules_common/const';
 import { MessageLabel } from './modules_common/i18n';
 import {
   Card,
   createCard,
   currentCardMap,
-  deleteAvatar,
-  deleteCardWithRetry,
-  getZIndexOfBottomCard,
+  deleteCard,
+  deleteWorkspaceCard,
+  generateNewCardId,
   getZIndexOfTopCard,
   setGlobalFocusEventListenerPermission,
   setZIndexOfBottomCard,
@@ -146,12 +146,13 @@ ipcMain.handle(
   }
 );
 
-ipcMain.handle('delete-avatar', async (event, url: string) => {
-  await deleteAvatar(url);
+ipcMain.handle('delete-workspace-card', async (event, url: string) => {
+  await deleteWorkspaceCard(url);
 });
 
 ipcMain.handle('delete-card', async (event, url: string) => {
-  await deleteCardWithRetry(getCardIdFromUrl(url));
+  await deleteWorkspaceCard(url);
+  await deleteCard(getCardIdFromUrl(url));
 });
 
 ipcMain.handle('finish-render-card', (event, url: string) => {
@@ -162,8 +163,12 @@ ipcMain.handle('finish-render-card', (event, url: string) => {
 });
 
 ipcMain.handle('create-card', async (event, cardProp: CardProp) => {
-  const id = await createCard(cardProp);
-  return id;
+  if (cardProp.url === undefined) {
+    const cardId = generateNewCardId();
+    cardProp.url = `${APP_SCHEME}://local/${noteStore.settings.currentNoteId}/${cardId}`;
+  }
+  const url = await createCard(cardProp);
+  return url;
 });
 
 ipcMain.handle('blur-and-focus-with-suppress-events', (event, url: string) => {

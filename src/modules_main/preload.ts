@@ -22,14 +22,14 @@ contextBridge.exposeInMainWorld('api', {
   bringToFront: (cardProp: CardProp): Promise<number> => {
     return ipcRenderer.invoke('bring-to-front', cardProp);
   },
-  createCard: (subsetOfCardPropSerializable: Record<string, any>) => {
-    return ipcRenderer.invoke('create-card', subsetOfCardPropSerializable);
+  createCard: (cardProp: Partial<CardProp>) => {
+    return ipcRenderer.invoke('create-card', cardProp);
   },
   confirmDialog: (url: string, buttonLabels: string[], message: string) => {
     return ipcRenderer.invoke('confirm-dialog', url, buttonLabels, message);
   },
-  deleteAvatar: (url: string) => {
-    return ipcRenderer.invoke('delete-avatar', url);
+  deleteWorkspaceCard: (url: string) => {
+    return ipcRenderer.invoke('delete-workspace-card', url);
   },
   deleteCard: (url: string) => {
     return ipcRenderer.invoke('delete-card', url);
