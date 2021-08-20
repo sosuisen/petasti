@@ -61,7 +61,7 @@ export type CardDoc = {
   _id: string;
 };
 
-export type WorkspaceCardDoc = {
+export type SketchDoc = {
   geometry: Geometry;
   style: CardStyle;
   condition: CardCondition;
@@ -81,6 +81,6 @@ export type SavingTarget = 'BodyOnly' | 'PropertyOnly' | 'Card';
 
 export type Task = {
   prop: CardPropStatus;
-  type: 'Save' | 'DeleteWorkspaceCard' | 'DeleteCard';
+  type: 'Save' | 'DeleteSketch' | 'DeleteCard';
   target?: SavingTarget;
 };

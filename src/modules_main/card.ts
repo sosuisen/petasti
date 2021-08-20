@@ -6,17 +6,14 @@
 import url from 'url';
 import path from 'path';
 import contextMenu from 'electron-context-menu';
-import {
-  app,
-  BrowserWindow,
-  dialog,
-  ipcMain,
-  MenuItemConstructorOptions,
-  shell,
-} from 'electron';
-import { monotonicFactory } from 'ulid';
+import { app, BrowserWindow, ipcMain, MenuItemConstructorOptions, shell } from 'electron';
 import { DebounceQueue } from 'rx-queue';
-import { generateNewCardId, getCurrentDateAndTime, sleep } from '../modules_common/utils';
+import {
+  generateNewCardId,
+  getCardIdFromUrl,
+  getCurrentDateAndTime,
+  getNoteIdFromUrl,
+} from '../modules_common/utils';
 import {
   APP_ICON_NAME,
   APP_SCHEME,
@@ -24,12 +21,11 @@ import {
   DEFAULT_CARD_CONDITION,
   DEFAULT_CARD_GEOMETRY,
   DEFAULT_CARD_STYLE,
-  DIALOG_BUTTON,
   MINIMUM_WINDOW_HEIGHT,
   MINIMUM_WINDOW_WIDTH,
 } from '../modules_common/const';
-import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
-import { emitter, handlers } from './event';
+import { cardColors, ColorName } from '../modules_common/color';
+import { handlers } from './event';
 import { MESSAGE, noteStore } from './note_store';
 import {
   CardCondition,
@@ -261,10 +257,10 @@ export class Card {
     });
 
     this._debouncedCardPositionUpdateActionQueue.subscribe(rect => {
-      noteStore.updateWorkspaceCardDoc(this.toObject());
+      noteStore.updateSketchDoc(this.toObject());
     });
     this._debouncedCardSizeUpdateActionQueue.subscribe(rect => {
-      noteStore.updateWorkspaceCardDoc(this.toObject());
+      noteStore.updateSketchDoc(this.toObject());
     });
   }
 
@@ -435,28 +431,29 @@ export const createCard = async (partialCardProp: Partial<CardProp>): Promise<vo
   noteStore.updateCardDoc(newCardProp);
 
   // Sync
-  await noteStore.updateWorkspaceCardDoc(newCardProp);
+  await noteStore.updateSketchDoc(newCardProp);
 
   await card.render();
   console.debug(`focus in createCard: ${card.url}`);
   card.window.focus();
 };
 
-export const deleteCard = async (workspaceCardUrl: string) => {
-  await noteStore.deleteCardDoc(workspaceCardUrl);
+export const deleteCard = async (sketchUrl: string) => {
+  await noteStore.deleteCardDoc(sketchUrl);
 };
 
-export const deleteWorkspaceCard = async (workspaceCardUrl: string) => {
-  const card = currentCardMap.get(workspaceCardUrl);
+export const deleteSketch = async (sketchUrl: string) => {
+  const card = currentCardMap.get(sketchUrl);
 
   if (card !== undefined) {
     if (!card.window.isDestroyed()) {
       card.window.destroy();
     }
-    await noteStore.deleteWorkspaceCardDoc(workspaceCardUrl);
+    await noteStore.deleteSketchDoc(sketchUrl);
+    currentCardMap.delete(sketchUrl);
   }
   else {
-    console.error(`${workspaceCardUrl} does not exist`);
+    console.error(`${sketchUrl} does not exist`);
   }
 };
 
@@ -478,46 +475,27 @@ const setContextMenu = (card: Card) => {
     };
   };
 
-  const moveAvatarToWorkspace = (workspaceId: string) => {
-    /*
-    removeAvatarFromWorkspace(getCurrentWorkspaceId(), card.url);
-    noteStore.deleteCardUrl(getCurrentWorkspaceId(), card.url);
-    const newCardUrl = getWorkspaceUrl(workspaceId) + getIdFromUrl(card.url);
-    addAvatarToWorkspace(workspaceId, newCardUrl);
-    noteStore.addCardUrl(workspaceId, newCardUrl);
-    card.window.webContents.send('card-close');
+  const moveCardToNote = async (noteId: string) => {
+    const newCardProp: CardProp = card.toObject();
+    newCardProp.url = `${APP_SCHEME}://local/${noteId}/${getCardIdFromUrl(card.url)}`;
+    // Overwrite z
+    newCardProp.geometry.z = (await noteStore.getZIndexOfTopCard(noteId)) + 1;
 
-      const avatarProp = card.prop.avatars[getLocationFromUrl(prop.url)];
-      delete card.prop.avatars[getLocationFromUrl(prop.url)];
-      card.prop.avatars[getLocationFromUrl(newCardUrl)] = avatarProp;
-      saveCard(card.prop);
-    */
+    await noteStore.updateSketchDoc(newCardProp);
+
+    await deleteSketch(card.url);
   };
 
-  const copyAvatarToWorkspace = (workspaceId: string) => {
-    /*
-    const newCardUrl = getWorkspaceUrl(workspaceId) + getIdFromUrl(prop.url);
-    if (workspaces.get(workspaceId)?.avatars.includes(newCardUrl)) {
-      dialog.showMessageBoxSync(settingsDialog, {
-        type: 'question',
-        buttons: ['OK'],
-        message: MESSAGE('workspaceAvatarExist'),
-      });
-      return;
-    }
-    addAvatarToWorkspace(workspaceId, newCardUrl);
-    noteStore.addCardUrl(workspaceId, newCardUrl);
+  const copyCardToNote = async (noteId: string) => {
+    const newCardProp: CardProp = card.toObject();
+    newCardProp.url = `${APP_SCHEME}://local/${noteId}/${getCardIdFromUrl(card.url)}`;
+    // Overwrite z
+    newCardProp.geometry.z = (await noteStore.getZIndexOfTopCard(noteId)) + 1;
 
-    const card = getCardFromUrl(prop.url);
-    if (card) {
-      const avatarProp = card.prop.avatars[getLocationFromUrl(prop.url)];
-      card.prop.avatars[getLocationFromUrl(newCardUrl)] = avatarProp;
-      saveCard(card.prop);
-    }
-    */
+    await noteStore.updateSketchDoc(newCardProp);
   };
 
-  const moveToWorkspaces: MenuItemConstructorOptions[] = [...noteStore.notePropMap.values()]
+  const moveToNotes: MenuItemConstructorOptions[] = [...noteStore.notePropMap.values()]
     .sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;
@@ -528,14 +506,14 @@ const setContextMenu = (card: Card) => {
         result.push({
           label: `${noteProp.name}`,
           click: () => {
-            moveAvatarToWorkspace(noteProp._id);
+            moveCardToNote(noteProp._id);
           },
         });
       }
       return result;
     }, [] as MenuItemConstructorOptions[]);
 
-  const copyToWorkspaces: MenuItemConstructorOptions[] = [...noteStore.notePropMap.values()]
+  const copyToNotes: MenuItemConstructorOptions[] = [...noteStore.notePropMap.values()]
     .sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;
@@ -546,7 +524,7 @@ const setContextMenu = (card: Card) => {
         result.push({
           label: `${noteProp.name}`,
           click: () => {
-            copyAvatarToWorkspace(noteProp._id);
+            copyCardToNote(noteProp._id);
           },
         });
       }
@@ -585,11 +563,11 @@ const setContextMenu = (card: Card) => {
     prepend: () => [
       {
         label: MESSAGE('noteMove'),
-        submenu: [...moveToWorkspaces],
+        submenu: [...moveToNotes],
       },
       {
         label: MESSAGE('noteCopy'),
-        submenu: [...copyToWorkspaces],
+        submenu: [...copyToNotes],
       },
       {
         label: MESSAGE('zoomIn'),
@@ -619,7 +597,7 @@ const setContextMenu = (card: Card) => {
           // console.debug(`new zIndex: ${zIndex}`);
 
           // Async
-          noteStore.updateWorkspaceCardDoc(cardProp);
+          noteStore.updateSketchDoc(cardProp);
 
           // Update card
           card.geometry.z = zIndex;

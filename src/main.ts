@@ -11,7 +11,7 @@ import {
   createCard,
   currentCardMap,
   deleteCard,
-  deleteWorkspaceCard,
+  deleteSketch,
   getZIndexOfTopCard,
   setGlobalFocusEventListenerPermission,
   setZIndexOfBottomCard,
@@ -170,7 +170,7 @@ ipcMain.handle(
       card!._body = cardProp._body;
     }
     if (savingTarget === 'PropertyOnly' || savingTarget === 'Card') {
-      await noteStore.updateWorkspaceCardDoc(cardProp);
+      await noteStore.updateSketchDoc(cardProp);
 
       // Update currentCardMap
       card!.geometry = cardProp.geometry;
@@ -181,11 +181,11 @@ ipcMain.handle(
 );
 
 ipcMain.handle('delete-workspace-card', async (event, url: string) => {
-  await deleteWorkspaceCard(url);
+  await deleteSketch(url);
 });
 
 ipcMain.handle('delete-card', async (event, url: string) => {
-  await deleteWorkspaceCard(url);
+  await deleteSketch(url);
   await deleteCard(getCardIdFromUrl(url));
 });
 
@@ -341,7 +341,7 @@ ipcMain.handle('bring-to-front', (event, cardProp: CardProp, rearrange = false):
 
   // Async
   cardProp.geometry.z = zIndex;
-  noteStore.updateWorkspaceCardDoc(cardProp);
+  noteStore.updateSketchDoc(cardProp);
 
   // Update card
   currentCardMap.get(cardProp.url)!.geometry.z = zIndex;

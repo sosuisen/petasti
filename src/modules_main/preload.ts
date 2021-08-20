@@ -28,7 +28,7 @@ contextBridge.exposeInMainWorld('api', {
   confirmDialog: (url: string, buttonLabels: string[], message: string) => {
     return ipcRenderer.invoke('confirm-dialog', url, buttonLabels, message);
   },
-  deleteWorkspaceCard: (url: string) => {
+  deleteSketch: (url: string) => {
     return ipcRenderer.invoke('delete-workspace-card', url);
   },
   deleteCard: (url: string) => {

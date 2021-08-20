@@ -4,14 +4,12 @@
  * © 2021 Hidekazu Kubota
  */
 import path from 'path';
-import { nanoid } from 'nanoid';
 
 import { app, dialog, nativeImage } from 'electron';
 import {
   Collection,
   DatabaseOptions,
   GitDocumentDB,
-  JsonDoc,
   RemoteOptions,
   Sync,
 } from 'git-documentdb';
@@ -24,16 +22,7 @@ import {
   getCurrentDateAndTime,
   getNoteIdFromUrl,
 } from '../modules_common/utils';
-import {
-  CardDoc,
-  CardProp,
-  Geometry2D,
-  GeometryXY,
-  NoteProp,
-  SavingTarget,
-  WorkspaceCardDoc,
-} from '../modules_common/types';
-import { emitter } from './event';
+import { CardDoc, CardProp, NoteProp, SketchDoc } from '../modules_common/types';
 import {
   defaultDataDir,
   InfoState,
@@ -320,7 +309,7 @@ class NoteStore {
 
       // Async
       this.updateCardDoc(firstCardProp);
-      this.updateWorkspaceCardDoc(firstCardProp);
+      this.updateSketchDoc(firstCardProp);
       return [firstCardProp];
     }
     console.log('# currentNoteId: ' + this._settings.currentNoteId);
@@ -358,40 +347,17 @@ class NoteStore {
     return newNote;
   };
 
-  updateWorkspace = async (workspaceId: string, note: NoteProp) => {
-    /*
-  const wsObj: { _id: string; _rev: string } & Workspace = {
-    _id: workspaceId,
-    _rev: '',
-    ...workspace,  };
-  await workspaceDB
-    .get(workspaceId)
-    .then(oldWS => {
-      // Update existing card
-      wsObj._rev = oldWS._rev;
-    })
-    .catch(e => {
-      throw new Error(`Error in updateWorkspace: ${e.message}`);
+  getZIndexOfTopCard = async (noteId: string) => {
+    const cardDocs = await this._noteCollection.find({
+      prefix: noteId + '/c',
     });
-
-  return workspaceDB
-    .put(wsObj)
-    .then(res => {
-      console.debug(`Workspace saved: ${res.id}`);
-    })
-    .catch(e => {
-      throw new Error(`Error in updateWorkspace: ${e.message}`);
+    let maxZIndex: number | undefined;
+    cardDocs.forEach(cardDoc => {
+      if (maxZIndex === undefined || cardDoc.geometry.z > maxZIndex)
+        maxZIndex = cardDoc.geometry.z;
     });
-  */
-  };
-
-  deleteWorkspace = async (workspaceId: string) => {
-    /*
-  const workspace = await workspaceDB.get(workspaceId);
-  await workspaceDB.remove(workspace).catch(e => {
-    throw new Error(`Error in deleteWorkspace: ${e}`);
-  });
-  */
+    if (maxZIndex === undefined) return 0;
+    return maxZIndex;
   };
 
   // ! Operations for cards
@@ -465,27 +431,26 @@ class NoteStore {
     });
   };
 
-  updateWorkspaceCardDoc = async (prop: CardProp): Promise<void> => {
-    console.debug(`# Saving workspace card doc: ${prop.url}`);
+  updateSketchDoc = async (prop: CardProp): Promise<void> => {
+    console.debug(`# Saving sketch doc: ${prop.url}`);
     const cardId = getCardIdFromUrl(prop.url);
-    const noteCardDoc: WorkspaceCardDoc = {
+    const noteCardDoc: SketchDoc = {
       geometry: prop.geometry,
       style: prop.style,
       condition: prop.condition,
       _id: getNoteIdFromUrl(prop.url) + '/' + cardId,
     };
     await this._noteCollection.put(noteCardDoc).catch(e => {
-      throw new Error(`Error in updateWorkspaceCardDoc: ${e.message}`);
+      throw new Error(`Error in updateSketchDoc: ${e.message}`);
     });
-    const currentNoteProp = this._notePropMap.get(this._settings.currentNoteId);
-    if (currentNoteProp !== undefined) {
-      currentNoteProp.date.modifiedDate = getCurrentDateAndTime();
-      await this.updateNoteDoc(currentNoteProp);
+    const noteId = getNoteIdFromUrl(prop.url);
+    const noteProp = this._notePropMap.get(noteId);
+    if (noteProp !== undefined) {
+      noteProp.date.modifiedDate = getCurrentDateAndTime();
+      await this.updateNoteDoc(noteProp);
     }
     else {
-      throw new Error(
-        `Error in updateWorkspaceCardDoc: note ${this._settings.currentNoteId} does not exist.`
-      );
+      throw new Error(`Error in updateSketchDoc: note ${noteId} does not exist.`);
     }
   };
 
@@ -496,22 +461,22 @@ class NoteStore {
     });
   };
 
-  deleteWorkspaceCardDoc = async (url: string) => {
-    console.debug(`# Deleting workspace card doc: ${url}`);
+  deleteSketchDoc = async (url: string) => {
+    console.debug(`# Deleting sketch doc: ${url}`);
     await this._noteCollection
       .delete(getNoteIdFromUrl(url) + '/' + getCardIdFromUrl(url))
       .catch(e => {
-        throw new Error(`Error in deletingWorkspaceCardDoc: ${e.message}`);
+        throw new Error(`Error in deletingSketchDoc: ${e.message}`);
       });
-    const currentNoteProp = this._notePropMap.get(this._settings.currentNoteId);
-    if (currentNoteProp !== undefined) {
-      currentNoteProp.date.modifiedDate = getCurrentDateAndTime();
-      await this.updateNoteDoc(currentNoteProp);
+
+    const noteId = getNoteIdFromUrl(url);
+    const noteProp = this._notePropMap.get(noteId);
+    if (noteProp !== undefined) {
+      noteProp.date.modifiedDate = getCurrentDateAndTime();
+      await this.updateNoteDoc(noteProp);
     }
     else {
-      throw new Error(
-        `Error in updateWorkspaceCardDoc: note ${this._settings.currentNoteId} does not exist.`
-      );
+      throw new Error(`Error in deleteSketchDoc: note ${noteId} does not exist.`);
     }
   };
 }
