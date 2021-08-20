@@ -6,13 +6,17 @@ import path from 'path';
 import prompt from 'electron-prompt';
 import { app, dialog, Menu, MenuItemConstructorOptions, Tray } from 'electron';
 import { closeSettings, openSettings, settingsDialog } from './settings';
-import { createCard, currentCardMap, generateNewCardId, getZIndexOfTopCard } from './card';
+import { Card, createCard, currentCardMap } from './card';
 import { emitter } from './event';
-import { getCurrentDateAndTime, getRandomInt } from '../modules_common/utils';
+import {
+  generateNewCardId,
+  getCurrentDateAndTime,
+  getRandomInt,
+} from '../modules_common/utils';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
 import { APP_ICON_NAME, APP_SCHEME, DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
-import { generateNewNoteId, MESSAGE, noteStore } from './note_store';
-import { CardProp, NoteProp } from '../modules_common/types';
+import { MESSAGE, noteStore } from './note_store';
+import { CardProp } from '../modules_common/types';
 
 /**
  * Task tray
@@ -31,7 +35,7 @@ let color = { ...cardColors };
 // @ts-ignore
 delete color.transparent;
 
-const createNewCard = async () => {
+const createRandomColorCard = async () => {
   const geometry = { ...DEFAULT_CARD_GEOMETRY };
   geometry.x += getRandomInt(30, 100);
   geometry.y += getRandomInt(30, 100);
@@ -86,7 +90,7 @@ export const setTrayContextMenu = () => {
             if (note._id !== noteStore.settings.currentNoteId) {
               closeSettings();
               if (currentCardMap.size === 0) {
-                emitter.emit('change-workspace', note._id);
+                emitter.emit('change-note', note._id);
               }
               else {
                 noteStore.changingToNoteId = note._id;
@@ -118,7 +122,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('newCard'),
       click: () => {
-        createNewCard();
+        createRandomColorCard();
       },
     },
     {
@@ -127,7 +131,6 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('noteNew'),
       click: async () => {
-        const newId = generateNewNoteId();
         const newName: string | void | null = await prompt({
           title: MESSAGE('note'),
           label: MESSAGE('noteNewName'),
@@ -147,26 +150,22 @@ export const setTrayContextMenu = () => {
         ) {
           return;
         }
-        const current = getCurrentDateAndTime();
-        const newNote: NoteProp = {
-          date: {
-            createdDate: current,
-            modifiedDate: current,
-          },
-          name: newName as string,
-          user: 'local',
-          _id: newId,
-        };
-        await noteStore.updateNoteDoc(newNote);
+        const newNoteProp = await noteStore.createNote(newName as string);
+
+        const firstCard = new Card(newNoteProp._id);
+        const firstCardProp = firstCard.toObject();
+        // Async
+        await noteStore.updateCardDoc(firstCardProp);
+        await noteStore.updateWorkspaceCardDoc(firstCardProp);
 
         closeSettings();
 
         if (currentCardMap.size === 0) {
-          emitter.emit('change-workspace', newId);
+          emitter.emit('change-note', newNoteProp._id);
         }
         else {
           // eslint-disable-next-line require-atomic-updates
-          noteStore.changingToNoteId = newId;
+          noteStore.changingToNoteId = newNoteProp._id;
           try {
             // Remove listeners firstly to avoid focus another card in closing process
             currentCardMap.forEach(card => card.removeWindowListenersExceptClosedEvent());
@@ -204,7 +203,8 @@ export const setTrayContextMenu = () => {
         }
 
         noteProp.name = newName as string;
-        await noteStore.updateNoteDoc(noteProp!);
+        noteProp.date.modifiedDate = getCurrentDateAndTime();
+        await noteStore.updateNoteDoc(noteProp);
 
         setTrayContextMenu();
         currentCardMap.forEach(card => card.resetContextMenu());
@@ -230,7 +230,7 @@ export const setTrayContextMenu = () => {
         noteStore.notePropMap.delete(noteStore.settings.currentNoteId);
 
         noteStore.settings.currentNoteId = noteStore.getSortedNoteIdList()[0];
-        emitter.emit('change-workspace', noteStore.settings.currentNoteId);
+        emitter.emit('change-note', noteStore.settings.currentNoteId);
       },
     },
     ...changeNotes,
@@ -282,7 +282,7 @@ export const initializeTaskTray = () => {
   setTrayContextMenu();
 
   tray.on('click', () => {
-    createNewCard();
+    createRandomColorCard();
   });
 };
 

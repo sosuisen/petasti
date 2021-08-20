@@ -27,6 +27,10 @@ export const generateId = () => {
   return ulid(Date.now());
 };
 
+export const generateNewCardId = () => {
+  return 'c' + ulid(Date.now());
+};
+
 export const getLocationFromUrl = (cardUrl: string): string => {
   const rex = new RegExp(`^(${APP_SCHEME}:\\/\\/.+/)[^/]+?$`);
   const result = cardUrl.match(rex);

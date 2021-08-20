@@ -3,7 +3,8 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { CardCondition, Geometry } from './types';
+import { cardColors, darkenHexColor } from './color';
+import { CardCondition, CardStyle, Geometry } from './types';
 
 export const DIALOG_BUTTON = {
   error: -1,
@@ -16,6 +17,7 @@ export const notebookDbName = 'book001'; // This will be variable in the next ve
 export const APP_ICON_NAME = 'tree-stickies-icon.ico';
 export const APP_SCHEME = 'treestickies';
 
+export const CARD_VERSION = '1.0';
 export const DEFAULT_CARD_GEOMETRY: Geometry = {
   x: 70,
   y: 70,
@@ -25,6 +27,13 @@ export const DEFAULT_CARD_GEOMETRY: Geometry = {
 };
 export const DEFAULT_CARD_CONDITION: CardCondition = {
   locked: false,
+};
+
+export const DEFAULT_CARD_STYLE: CardStyle = {
+  uiColor: darkenHexColor(cardColors.yellow),
+  backgroundColor: cardColors.yellow,
+  opacity: 1.0,
+  zoom: 1.0,
 };
 
 // export const DEFAULT_CARD_STYLE is in modules_main/card.ts

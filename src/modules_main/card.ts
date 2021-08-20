@@ -16,12 +16,14 @@ import {
 } from 'electron';
 import { monotonicFactory } from 'ulid';
 import { DebounceQueue } from 'rx-queue';
-import { getCurrentDateAndTime, sleep } from '../modules_common/utils';
+import { generateNewCardId, getCurrentDateAndTime, sleep } from '../modules_common/utils';
 import {
   APP_ICON_NAME,
   APP_SCHEME,
+  CARD_VERSION,
   DEFAULT_CARD_CONDITION,
   DEFAULT_CARD_GEOMETRY,
+  DEFAULT_CARD_STYLE,
   DIALOG_BUTTON,
   MINIMUM_WINDOW_HEIGHT,
   MINIMUM_WINDOW_WIDTH,
@@ -37,19 +39,6 @@ import {
   CartaDate,
   Geometry,
 } from '../modules_common/types';
-
-/**
- * Const
- */
-export const CARD_VERSION = '1.0';
-
-export const DEFAULT_CARD_STYLE: CardStyle = {
-  uiColor: '',
-  backgroundColor: cardColors.yellow,
-  opacity: 1.0,
-  zoom: 1.0,
-};
-DEFAULT_CARD_STYLE.uiColor = darkenHexColor(DEFAULT_CARD_STYLE.backgroundColor);
 
 /**
  * Focus control
@@ -89,14 +78,6 @@ export const setZIndexOfBottomCard = (zIndex: number) => {
 };
 export const getZIndexOfBottomCard = (): number => {
   return zIndexOfBottomCard;
-};
-
-/**
- * Card ID
- */
-export const generateNewCardId = () => {
-  const ulid = monotonicFactory();
-  return 'c' + ulid(Date.now());
 };
 
 /**

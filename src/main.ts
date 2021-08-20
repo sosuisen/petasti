@@ -12,7 +12,6 @@ import {
   currentCardMap,
   deleteCard,
   deleteWorkspaceCard,
-  generateNewCardId,
   getZIndexOfTopCard,
   setGlobalFocusEventListenerPermission,
   setZIndexOfBottomCard,
@@ -23,7 +22,7 @@ import { openSettings, settingsDialog } from './modules_main/settings';
 import { emitter, handlers } from './modules_main/event';
 import { MESSAGE, noteStore } from './modules_main/note_store';
 import { CardProp, SavingTarget } from './modules_common/types';
-import { getCardIdFromUrl } from './modules_common/utils';
+import { generateNewCardId, getCardIdFromUrl } from './modules_common/utils';
 
 // process.on('unhandledRejection', console.dir);
 
@@ -103,7 +102,7 @@ emitter.on('exit', () => {
   app.quit();
 });
 
-emitter.on('change-workspace', async (nextNoteId: string) => {
+emitter.on('change-note', async (nextNoteId: string) => {
   handlers.forEach(channel => ipcMain.removeHandler(channel));
   handlers.length = 0; // empty
   currentCardMap.clear();
@@ -147,7 +146,7 @@ app.on('window-all-closed', () => {
     emitter.emit('exit');
   }
   else if (noteStore.changingToNoteId !== 'none') {
-    emitter.emit('change-workspace', noteStore.changingToNoteId);
+    emitter.emit('change-note', noteStore.changingToNoteId);
   }
   noteStore.changingToNoteId = 'none';
 });

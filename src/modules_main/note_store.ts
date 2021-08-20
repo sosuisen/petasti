@@ -19,6 +19,7 @@ import { selectPreferredLanguage, translate, Translator } from 'typed-intl';
 import { monotonicFactory } from 'ulid';
 import {
   generateId,
+  generateNewCardId,
   getCardIdFromUrl,
   getCurrentDateAndTime,
   getNoteIdFromUrl,
@@ -47,7 +48,14 @@ import {
   MessageLabel,
   Messages,
 } from '../modules_common/i18n';
-import { APP_SCHEME, SETTINGS_DB_NAME } from '../modules_common/const';
+import {
+  APP_SCHEME,
+  CARD_VERSION,
+  DEFAULT_CARD_CONDITION,
+  DEFAULT_CARD_GEOMETRY,
+  DEFAULT_CARD_STYLE,
+  SETTINGS_DB_NAME,
+} from '../modules_common/const';
 
 export const generateNewNoteId = () => {
   const ulid = monotonicFactory();
@@ -294,19 +302,37 @@ class NoteStore {
       // eslint-disable-next-line require-atomic-updates
       this._settings.currentNoteId = currentNoteProp._id;
       await this._settingsDB.put(this._settings);
+
+      const firstCardProp: CardProp = {
+        version: CARD_VERSION,
+        url: `${APP_SCHEME}://local/${currentNoteProp._id}/${generateNewCardId()}`,
+        type: 'text/html',
+        user: 'local',
+        geometry: DEFAULT_CARD_GEOMETRY,
+        style: DEFAULT_CARD_STYLE,
+        condition: DEFAULT_CARD_CONDITION,
+        date: {
+          createdDate: getCurrentDateAndTime(),
+          modifiedDate: getCurrentDateAndTime(),
+        },
+        _body: '',
+      };
+
+      // Async
+      this.updateCardDoc(firstCardProp);
+      this.updateWorkspaceCardDoc(firstCardProp);
+      return [firstCardProp];
     }
-
     console.log('# currentNoteId: ' + this._settings.currentNoteId);
-
     return await this.loadCurrentCards();
   };
 
-  deleteNoteDoc = async (url: string) => {
-    await this._noteCollection.delete(getNoteIdFromUrl(url));
+  deleteNoteDoc = async (noteId: string) => {
+    await this._noteCollection.delete(noteId + '/prop');
   };
 
   updateNoteDoc = async (noteProp: NoteProp) => {
-    await this._noteCollection.put(noteProp);
+    await this._noteCollection.put(noteProp._id + '/prop', noteProp);
   };
 
   createNote = async (name?: string): Promise<NoteProp> => {
@@ -326,6 +352,8 @@ class NoteStore {
       _id,
     };
     await this.updateNoteDoc(newNote);
+
+    this._notePropMap.set(newNote._id, newNote);
 
     return newNote;
   };
@@ -452,11 +480,7 @@ class NoteStore {
     const currentNoteProp = this._notePropMap.get(this._settings.currentNoteId);
     if (currentNoteProp !== undefined) {
       currentNoteProp.date.modifiedDate = getCurrentDateAndTime();
-      // Overwrite _id
-      await this._noteCollection.put(
-        this._settings.currentNoteId + '/prop',
-        currentNoteProp
-      );
+      await this.updateNoteDoc(currentNoteProp);
     }
     else {
       throw new Error(
@@ -482,11 +506,7 @@ class NoteStore {
     const currentNoteProp = this._notePropMap.get(this._settings.currentNoteId);
     if (currentNoteProp !== undefined) {
       currentNoteProp.date.modifiedDate = getCurrentDateAndTime();
-      // Overwrite _id
-      await this._noteCollection.put(
-        this._settings.currentNoteId + '/prop',
-        currentNoteProp
-      );
+      await this.updateNoteDoc(currentNoteProp);
     }
     else {
       throw new Error(
