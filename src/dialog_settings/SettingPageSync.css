@@ -10,3 +10,128 @@
 .urls::-webkit-scrollbar-thumb { 
   background-color: #d090d0;
 }
+
+
+.syncSettings {
+  margin-top: 0px;
+}
+
+.syncSettingsHeader {
+  font-size: 16px; 
+  background-color: #e0e0ff;
+  padding: 7px;
+  width: 100%;
+}
+
+.syncRemoteUrl {
+  margin-top: 3px;
+}
+
+.syncRemoteUrlHeader {
+  width: 160px;
+  font-size: 14px;
+  margin: 5px 5px 5px 12px;
+  border-bottom: 1px dashed;
+  float: left;
+}
+
+.syncRemoteUrlInput {
+  width: 320px;
+  margin: 5px 0px 5px 12px;
+  float: left;
+}
+
+.syncRemoteUrlAlert {
+  clear: both;
+  color: red;
+  margin: 0px 0px 0px 16px;
+}
+
+.syncRemoteUrlFooter {
+  clear: both;  
+  font-size: 12px;
+  color: #606060;
+  margin: 0px 0px 0px 16px;
+}
+
+.syncPersonalAccessToken {
+  margin-top: 3px;
+}
+
+.syncPersonalAccessTokenHeader {
+  width: 160px;
+  font-size: 14px;
+  margin: 5px 5px 5px 12px;
+  border-bottom: 1px dashed;
+  float: left;
+}
+
+.syncPersonalAccessTokenInput {
+  width: 320px;
+  margin: 5px 0px 5px 12px;
+  float: left;
+}
+
+.syncPersonalAccessTokenAlert {
+  clear: both;
+  color: red;
+  margin: 0px 0px 0px 16px;
+}
+
+.syncPersonalAccessTokenFooter {
+  clear: both;  
+  font-size: 12px;
+  color: #606060;
+  margin: 0px 0px 0px 16px;
+}
+
+.syncInterval {
+  margin-top: 3px;
+}
+
+.syncIntervalHeader {
+  width: 160px;
+  font-size: 14px;
+  margin: 5px 5px 5px 12px;
+  border-bottom: 1px dashed;
+  float: left;
+}
+
+.syncIntervalInput {
+  width: 50px;
+  margin: 5px 0px 5px 0px;
+  float: left;
+}
+
+.syncIntervalAlert {
+  clear: both;
+  color: red;
+  font-size: 12px;
+  margin: 0px 0px 0px 16px;
+}
+
+.syncIntervalFooter {
+  float: left;
+  font-size: 12px;
+  color: #606060;
+  margin: 8px 0px 0px 16px;
+}
+
+
+.testSyncDialog {
+  width: 300px;
+  height: 50px;
+}
+
+.testSyncDialogCloseButton {
+  float: right;
+  font-size: 18px;
+  margin-top: -20px;
+}
+
+.testSyncDialogMessage {
+  float: left;
+  width: 260px;
+  font-size: 14px;
+}
+

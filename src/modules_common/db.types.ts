@@ -2,6 +2,11 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
+
+export type DatabaseExecSync = {
+  command: 'db-exec-sync';
+};
+
 export type DatabaseSyncRemoteUrlUpdate = {
   command: 'db-sync-remote-url-update';
   data: string;
@@ -27,9 +32,25 @@ export type DatabaseDataStorePathUpdate = {
   data: string;
 };
 
+export type DatabaseTestSync = {
+  command: 'db-test-sync';
+};
+
+export type DatabasePauseSync = {
+  command: 'db-pause-sync';
+};
+
+export type DatabaseResumeSync = {
+  command: 'db-resume-sync';
+};
+
 export type DatabaseCommand =
+  | DatabaseExecSync
   | DatabaseSyncRemoteUrlUpdate
   | DatabaseSyncPersonalAccessTokenUpdate
   | DatabaseSyncIntervalUpdate
   | DatabaseLanguageUpdate
-  | DatabaseDataStorePathUpdate;
+  | DatabaseDataStorePathUpdate
+  | DatabaseTestSync
+  | DatabasePauseSync
+  | DatabaseResumeSync;

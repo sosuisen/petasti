@@ -46,7 +46,7 @@ window.addEventListener('message', event => {
               height: 220,
             },
             {
-              id: 'security',
+              id: 'sync',
               label: 'settingPageSync',
               icon: 'fas fa-shield-alt',
               color: 'purple',

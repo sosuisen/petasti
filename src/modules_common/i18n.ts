@@ -72,6 +72,16 @@ type MessagesSettings = {
   securityNoUrl: string;
   aboutCopyright: string;
   aboutAppUrl: string;
+  testingSync: string;
+  syncRemoteUrlHeader: string;
+  syncRemoteUrlFooter: string;
+  syncRemoteUrlPlaceholder: string;
+  syncPersonalAccessTokenHeader: string;
+  syncPersonalAccessTokenFooter: string;
+  syncPersonalAccessTokenPlaceholder: string;
+  syncIntervalHeader: string;
+  syncIntervalFooter: string;
+  syncIntervalAlert: string;
 };
 
 type MessagesLanguage = {
@@ -127,6 +137,18 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   securityNoUrl: 'No URL allowed',
   aboutCopyright: '© 2021 Hidekazu Kubota',
   aboutAppUrl: 'https://github.com/sosuisen/',
+  testingSync: 'Testing synchronization...',
+  syncRemoteUrlHeader: 'Remote URL',
+  syncRemoteUrlFooter: 'Please enter your GitHub repository.',
+  syncRemoteUrlPlaceholder: 'e.g.) https://github.com/your_account/your_repository',
+  syncPersonalAccessTokenHeader: 'Personal Access Token',
+  syncPersonalAccessTokenFooter:
+    'Enter <a target="_blank" href="https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token">your personal access token</a>.',
+  syncPersonalAccessTokenPlaceholder: 'e.g) ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+  syncIntervalHeader: 'Interval (sec)',
+  syncIntervalFooter:
+    'Please enter sync interval time greater than or equal to 10 seconds.',
+  syncIntervalAlert: 'Please enter a number greater than or equal to 10.',
 };
 export const ENGLISH: Messages = {
   ...LANGUAGES_COMMON,
@@ -213,6 +235,17 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   securityNoUrl: '許可されたサイトはありません',
   aboutCopyright: '© 2021 Hidekazu Kubota',
   aboutAppUrl: 'https://github.com/sosuisen/',
+  testingSync: '同期のテスト中...',
+  syncRemoteUrlHeader: '同期先のURL',
+  syncRemoteUrlFooter: 'あなたの GitHub リポジトリ名を入力してください。',
+  syncRemoteUrlPlaceholder: '例) https://github.com/your_account/your_repository',
+  syncPersonalAccessTokenHeader: '個人アクセストークン',
+  syncPersonalAccessTokenFooter:
+    'あなたの<a target="_blank" href="https://docs.github.com/ja/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token">個人アクセストークン</a>を入力してください。',
+  syncPersonalAccessTokenPlaceholder: '例) ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+  syncIntervalHeader: '間隔（秒）',
+  syncIntervalFooter: '同期間隔（10秒以上）を入力してください。',
+  syncIntervalAlert: '10以上の値を入力してください',
 };
 export const JAPANESE: Messages = {
   ...LANGUAGES_COMMON,
