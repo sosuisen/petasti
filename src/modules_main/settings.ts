@@ -9,6 +9,7 @@ import { noteStore } from './note_store';
 import { DatabaseCommand } from '../modules_common/db.types';
 import { availableLanguages, defaultLanguage } from '../modules_common/i18n';
 import { emitter } from './event';
+import { Sync, SyncResult } from 'git-documentdb';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let settingsDialog: BrowserWindow;
@@ -125,6 +126,49 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
         noteStore.sync.resume({ interval: noteStore.settings.sync.interval });
       }
       await noteStore.settingsDB.put(noteStore.settings);
+      break;
+    }
+    case 'db-test-sync': {
+      if (noteStore.sync !== undefined) {
+        noteStore.bookDB.removeSync(noteStore.sync.remoteURL);
+      }
+      noteStore.remoteOptions = {
+        remoteUrl: noteStore.settings.sync.remoteUrl,
+        connection: noteStore.settings.sync.connection,
+        interval: noteStore.settings.sync.interval,
+        conflictResolutionStrategy: 'ours-diff',
+        live: true,
+      };
+      console.log(noteStore.remoteOptions);
+      // eslint-disable-next-line require-atomic-updates
+      const syncOrError: [Sync, SyncResult] | Error = await noteStore.bookDB
+        .sync(noteStore.remoteOptions, true)
+        .catch(err => {
+          return err;
+        });
+      if (syncOrError instanceof Error) {
+        return syncOrError.name;
+      }
+      // eslint-disable-next-line require-atomic-updates
+      noteStore.sync = syncOrError[0];
+      const syncResult = syncOrError[1];
+      if (syncResult.action === 'combine database') {
+        await loadData();
+        mainWindow.webContents.send('initialize-store', items, boxes, info, settings);
+      }
+      setSyncEvents();
+      return 'succeed';
+    }
+    case 'db-pause-sync': {
+      if (noteStore.sync !== undefined) {
+        noteStore.sync.pause();
+      }
+      break;
+    }
+    case 'db-resume-sync': {
+      if (noteStore.sync !== undefined) {
+        noteStore.sync.resume();
+      }
       break;
     }
   }

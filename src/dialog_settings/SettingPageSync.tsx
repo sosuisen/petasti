@@ -58,16 +58,18 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
   };
 
   const saveSyncSettings = async () => {
-    if (syncIntervalAlertValue !== '') {
+    if (!canSaveSyncSettings()) {
       return;
     }
-    if (syncRemoteUrlValue === '') {
-      // nop
-    }
-    else if (
+
+    if (
       syncRemoteUrlValue !== settings.sync.remoteUrl ||
       syncPersonalAccessTokenValue !== settings.sync.connection.personalAccessToken
     ) {
+      await window.api.db({
+        command: 'db-pause-sync',
+      });
+
       if (syncRemoteUrlValue !== settings.sync.remoteUrl) {
         dispatch(settingsSyncRemoteUrlUpdateCreator(syncRemoteUrlValue));
       }
@@ -96,11 +98,15 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
       // Success
       setTestSyncDialogMessage('');
       setIsTestSyncDialogOpen(false);
-      dispatch(settingsSyncEnableUpdateCreator(syncEnabledValue));
+      dispatch(settingsSyncEnableUpdateCreator(true));
+
+      window.api.db({
+        command: 'db-resume-sync',
+      });
     }
-    window.api.db({
-      command: 'db-resume-sync',
-    });
+    else {
+      dispatch(settingsSyncEnableUpdateCreator(true));
+    }
   };
 
   const changeSyncInterval = (e: ChangeEvent<HTMLInputElement>) => {
@@ -125,6 +131,14 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
 
   const toggleOnChange = (syncEnable: boolean) => {
     setSyncEnabledValue(syncEnable);
+    if (syncEnable) {
+      if (canSaveSyncSettings) {
+        dispatch(settingsSyncEnableUpdateCreator(true));
+      }
+    }
+    else {
+      dispatch(settingsSyncEnableUpdateCreator(false));
+    }
   };
 
   const buttonStyle = (color: ColorName) => ({

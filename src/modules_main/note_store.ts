@@ -83,6 +83,14 @@ class NoteStore {
   }
 
   private _remoteOptions: RemoteOptions | undefined;
+  get remoteOptions (): RemoteOptions | undefined {
+    return this._remoteOptions;
+  }
+
+  set remoteOptions (options: RemoteOptions | undefined) {
+    this._remoteOptions = options;
+  }
+
   private _settings: SettingsState = initialSettingsState;
   get settings (): SettingsState {
     return this._settings;
