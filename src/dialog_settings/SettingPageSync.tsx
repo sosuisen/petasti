@@ -5,7 +5,7 @@
 import * as React from 'react';
 import './SettingPageSync.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import {
   settingsSyncEnableUpdateCreator,
   settingsSyncIntervalUpdateCreator,
@@ -22,6 +22,8 @@ import { Toggle } from './Toggle';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const styles = require('./SettingPageSync.css');
+
+const MINIMUM_INTERVAL = 10;
 
 export interface SettingPageSecurityProps {
   item: MenuItemProps;
@@ -43,6 +45,17 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
   const [syncIntervalAlertValue, setSyncIntervalAlertValue] = useState('');
   const [isTestSyncDialogOpen, setIsTestSyncDialogOpen] = useState(false);
   const [testSyncDialogMessage, setTestSyncDialogMessage] = useState(messages.testingSync);
+
+  const [isChanged, setIsChanged] = useState(false);
+
+  const canSaveSyncSettings = () => {
+    if (syncRemoteUrlValue === '') return false;
+    if (syncPersonalAccessTokenValue === '') return false;
+    if (syncIntervalValue < MINIMUM_INTERVAL) return false;
+    if (!syncEnabledValue) return false;
+    if (!isChanged) return false;
+    return true;
+  };
 
   const saveSyncSettings = async () => {
     if (syncIntervalAlertValue !== '') {
@@ -90,12 +103,22 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
     });
   };
 
-  const changeSyncInterval = () => {
-    if (syncIntervalValue < 10) {
+  const changeSyncInterval = (e: ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseInt(e.target.value, 10);
+    setSyncIntervalValue(newValue);
+
+    if (newValue < MINIMUM_INTERVAL) {
       setSyncIntervalAlertValue(messages.syncIntervalAlert);
     }
     else {
       setSyncIntervalAlertValue('');
+      dispatch(settingsSyncIntervalUpdateCreator(newValue));
+    }
+    setIsChanged(true);
+  };
+
+  const saveSyncInterval = () => {
+    if (syncIntervalValue >= MINIMUM_INTERVAL) {
       dispatch(settingsSyncIntervalUpdateCreator(syncIntervalValue));
     }
   };
@@ -106,9 +129,9 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
 
   const buttonStyle = (color: ColorName) => ({
     backgroundColor: uiColors[color],
-    color: syncEnabledValue ? '#000000' : '#606060',
-    boxShadow: syncEnabledValue ? styles.saveSyncSettingsButton.boxShadow : 'none',
-    cursor: syncEnabledValue ? 'pointer' : 'auto',
+    color: canSaveSyncSettings() ? '#000000' : '#606060',
+    boxShadow: canSaveSyncSettings() ? styles.saveSyncSettingsButton.boxShadow : 'none',
+    cursor: canSaveSyncSettings() ? 'pointer' : 'auto',
   });
 
   return (
@@ -135,7 +158,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
         styleName='saveSyncSettingsButton'
         onClick={saveSyncSettings}
         style={buttonStyle('yellow')}
-        disabled={!syncEnabledValue}
+        disabled={!canSaveSyncSettings()}
       >
         {messages.saveSyncSettingsButton}
       </button>
@@ -153,7 +176,10 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
             styleName='syncRemoteUrlInput'
             value={syncRemoteUrlValue}
             placeholder={messages.syncRemoteUrlPlaceholder}
-            onChange={e => setSyncRemoteUrlValue(e.target.value)}
+            onChange={e => {
+              setSyncRemoteUrlValue(e.target.value);
+              setIsChanged(true);
+            }}
           ></input>
           <div styleName='syncRemoteUrlAlert'></div>
           <div styleName='syncRemoteUrlFooter'>{messages.syncRemoteUrlFooter}</div>
@@ -169,7 +195,10 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
             styleName='syncPersonalAccessTokenInput'
             value={syncPersonalAccessTokenValue}
             placeholder={messages.syncPersonalAccessTokenPlaceholder}
-            onChange={e => setSyncPersonalAccessTokenValue(e.target.value)}
+            onChange={e => {
+              setSyncPersonalAccessTokenValue(e.target.value);
+              setIsChanged(true);
+            }}
           ></input>
           <div styleName='syncPersonalAccessTokenAlert'></div>
           <div
@@ -186,8 +215,8 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
             id='syncIntervalInput'
             styleName='syncIntervalInput'
             value={syncIntervalValue}
-            onChange={e => setSyncIntervalValue(parseInt(e.target.value, 10))}
-            onBlur={changeSyncInterval}
+            onChange={changeSyncInterval}
+            onBlur={saveSyncInterval}
           ></input>
           <div styleName='syncIntervalFooter'>{messages.syncIntervalFooter}</div>
           <div styleName='syncIntervalAlert'>{syncIntervalAlertValue}</div>
