@@ -16,6 +16,7 @@ type ToggleProps = {
   onChange: (bool: boolean) => void;
   checked: boolean;
   color: string;
+  activeColor: string;
 };
 export function Toggle (props: ToggleProps) {
   const [toggleValue, setToggleValue] = useState(props.checked);
@@ -34,7 +35,10 @@ export function Toggle (props: ToggleProps) {
       styleName={props.checked ? 'toggled toggle-switch' : 'toggle-switch'}
       style={{ borderColor: props.color }}
     >
-      <span styleName='toggle' style={{ backgroundColor: props.color }}></span>
+      <span
+        styleName='toggle'
+        style={{ backgroundColor: props.checked ? props.activeColor : props.color }}
+      ></span>
     </span>
   );
 }

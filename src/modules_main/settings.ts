@@ -97,13 +97,18 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
 
       break;
     }
-    case 'db-sync-remote-url-update': {
-      if (command.data === '') {
+    case 'db-sync-enabled-update': {
+      if (!command.data) {
         if (noteStore.sync !== undefined) {
           noteStore.bookDB.removeSync(noteStore.sync.remoteURL);
           noteStore.sync = undefined;
         }
       }
+      noteStore.settings.sync.enabled = command.data;
+      await noteStore.settingsDB.put(noteStore.settings);
+      break;
+    }
+    case 'db-sync-remote-url-update': {
       noteStore.settings.sync.remoteUrl = command.data;
       await noteStore.settingsDB.put(noteStore.settings);
       break;

@@ -50,6 +50,7 @@ export type SettingsState = {
   currentNoteId: string;
   currentNotebookName: string;
   sync: {
+    enabled: boolean;
     remoteUrl: string;
     connection: {
       type: 'github';
@@ -72,6 +73,7 @@ export const initialSettingsState: SettingsState = {
   currentNoteId: '',
   currentNotebookName: notebookDbName,
   sync: {
+    enabled: false,
     remoteUrl: '',
     connection: {
       type: 'github',

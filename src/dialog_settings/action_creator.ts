@@ -6,6 +6,7 @@ import { Dispatch } from 'redux';
 import {
   DatabaseDataStorePathUpdate,
   DatabaseLanguageUpdate,
+  DatabaseSyncEnabledUpdate,
   DatabaseSyncIntervalUpdate,
   DatabaseSyncPersonalAccessTokenUpdate,
   DatabaseSyncRemoteUrlUpdate,
@@ -14,6 +15,7 @@ import { SettingsDialogState } from '../modules_common/store.types';
 import {
   SettingsDataStorePathUpdateAction,
   SettingsLanguageUpdateAction,
+  SettingsSyncEnabledUpdateAction,
   SettingsSyncIntervalUpdateAction,
   SettingsSyncPersonalAccessTokenUpdateAction,
   SettingsSyncRemoteUrlUpdateAction,
@@ -30,6 +32,21 @@ export const settingsLanguageUpdateCreator = (lang: string) => {
     const cmd: DatabaseLanguageUpdate = {
       command: 'db-language-update',
       data: lang,
+    };
+    await window.api.db(cmd);
+  };
+};
+
+export const settingsSyncEnableUpdateCreator = (bool: boolean) => {
+  return async function (dispatch: Dispatch<any>, getState: () => SettingsDialogState) {
+    const settingsAction: SettingsSyncEnabledUpdateAction = {
+      type: 'settings-sync-enabled-update',
+      payload: bool,
+    };
+    dispatch(settingsAction);
+    const cmd: DatabaseSyncEnabledUpdate = {
+      command: 'db-sync-enabled-update',
+      data: bool,
     };
     await window.api.db(cmd);
   };

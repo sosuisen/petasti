@@ -37,6 +37,7 @@ const settingsReducer = (
     currentNoteId: '',
     currentNotebookName: '',
     sync: {
+      enabled: false,
       remoteUrl: '',
       connection: {
         type: 'github',
@@ -54,6 +55,11 @@ const settingsReducer = (
     case 'settings-language-update': {
       const newState = JSON.parse(JSON.stringify(state));
       newState.language = action.payload;
+      return newState;
+    }
+    case 'settings-sync-enabled-update': {
+      const newState = JSON.parse(JSON.stringify(state));
+      newState.sync.enabled = action.payload;
       return newState;
     }
     case 'settings-sync-remote-url-update': {

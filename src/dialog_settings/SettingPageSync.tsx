@@ -7,6 +7,7 @@ import './SettingPageSync.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
 import {
+  settingsSyncEnableUpdateCreator,
   settingsSyncIntervalUpdateCreator,
   settingsSyncPersonalAccessTokenUpdateCreator,
   settingsSyncRemoteUrlUpdateCreator,
@@ -19,6 +20,9 @@ import window from './window';
 import { ColorName, uiColors } from '../modules_common/color';
 import { Toggle } from './Toggle';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const styles = require('./SettingPageSync.css');
+
 export interface SettingPageSecurityProps {
   item: MenuItemProps;
   index: number;
@@ -30,6 +34,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
   const messages = useSelector(selectorMessages);
   const settings = useSelector(selectorSettings);
 
+  const [syncEnabledValue, setSyncEnabledValue] = useState(settings.sync.enabled);
   const [syncRemoteUrlValue, setSyncRemoteUrlValue] = useState(settings.sync.remoteUrl);
   const [syncPersonalAccessTokenValue, setSyncPersonalAccessTokenValue] = useState(
     settings.sync.connection.personalAccessToken
@@ -78,6 +83,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
       // Success
       setTestSyncDialogMessage('');
       setIsTestSyncDialogOpen(false);
+      dispatch(settingsSyncEnableUpdateCreator(syncEnabledValue));
     }
     window.api.db({
       command: 'db-resume-sync',
@@ -95,11 +101,14 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
   };
 
   const toggleOnChange = (syncEnable: boolean) => {
-    console.log(syncEnable);
+    setSyncEnabledValue(syncEnable);
   };
 
   const buttonStyle = (color: ColorName) => ({
     backgroundColor: uiColors[color],
+    color: syncEnabledValue ? '#000000' : '#606060',
+    boxShadow: syncEnabledValue ? styles.saveSyncSettingsButton.boxShadow : 'none',
+    cursor: syncEnabledValue ? 'pointer' : 'auto',
   });
 
   return (
@@ -116,22 +125,29 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
       <div styleName='syncToggleButton'>
         <Toggle
           color={uiColors.yellow}
-          checked={false}
+          activeColor={uiColors.green}
+          checked={syncEnabledValue}
           onChange={bool => toggleOnChange(bool)}
         />
       </div>
+      <div styleName='syncToggleLabel'>{syncEnabledValue ? 'On' : 'Off'}</div>
       <button
         styleName='saveSyncSettingsButton'
         onClick={saveSyncSettings}
         style={buttonStyle('yellow')}
+        disabled={!syncEnabledValue}
       >
         {messages.saveSyncSettingsButton}
       </button>
 
-      <div styleName='syncSettings'>
+      <div
+        styleName='syncSettings'
+        style={{ color: syncEnabledValue ? '#000000' : '#606060' }}
+      >
         <div styleName='syncRemoteUrl'>
           <div styleName='syncRemoteUrlHeader'>{messages.syncRemoteUrlHeader}</div>
           <input
+            disabled={!syncEnabledValue}
             type='text'
             id='syncRemoteUrlInput'
             styleName='syncRemoteUrlInput'
@@ -147,6 +163,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
             {messages.syncPersonalAccessTokenHeader}
           </div>
           <input
+            disabled={!syncEnabledValue}
             type='text'
             id='syncPersonalAccessTokenInput'
             styleName='syncPersonalAccessTokenInput'
@@ -164,6 +181,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
         <div styleName='syncInterval'>
           <div styleName='syncIntervalHeader'>{messages.syncIntervalHeader}</div>
           <input
+            disabled={!syncEnabledValue}
             type='number'
             id='syncIntervalInput'
             styleName='syncIntervalInput'

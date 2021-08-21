@@ -21,6 +21,11 @@ export interface SettingsLanguageUpdateAction {
   payload: string;
 }
 
+export interface SettingsSyncEnabledUpdateAction {
+  type: 'settings-sync-enabled-update';
+  payload: boolean;
+}
+
 export interface SettingsSyncRemoteUrlUpdateAction {
   type: 'settings-sync-remote-url-update';
   payload: string;
@@ -44,6 +49,7 @@ export interface SettingsDataStorePathUpdateAction {
 export type SettingsAction =
   | SettingsInitAction
   | SettingsLanguageUpdateAction
+  | SettingsSyncEnabledUpdateAction
   | SettingsSyncRemoteUrlUpdateAction
   | SettingsSyncPersonalAccessTokenUpdateAction
   | SettingsSyncIntervalUpdateAction

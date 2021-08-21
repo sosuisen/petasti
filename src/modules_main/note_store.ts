@@ -200,10 +200,7 @@ class NoteStore {
         this._bookDB.committer = this._bookDB.author;
       }
 
-      if (
-        this._settings.sync.remoteUrl &&
-        this._settings.sync.connection.personalAccessToken
-      ) {
+      if (this._settings.sync.enabled) {
         this._remoteOptions = {
           remoteUrl: this._settings.sync.remoteUrl,
           connection: this._settings.sync.connection,

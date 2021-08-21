@@ -7,6 +7,11 @@ export type DatabaseExecSync = {
   command: 'db-exec-sync';
 };
 
+export type DatabaseSyncEnabledUpdate = {
+  command: 'db-sync-enabled-update';
+  data: boolean;
+};
+
 export type DatabaseSyncRemoteUrlUpdate = {
   command: 'db-sync-remote-url-update';
   data: string;
@@ -46,6 +51,7 @@ export type DatabaseResumeSync = {
 
 export type DatabaseCommand =
   | DatabaseExecSync
+  | DatabaseSyncEnabledUpdate
   | DatabaseSyncRemoteUrlUpdate
   | DatabaseSyncPersonalAccessTokenUpdate
   | DatabaseSyncIntervalUpdate
