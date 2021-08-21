@@ -16,6 +16,8 @@ import { SettingPageTemplate } from './SettingPageTemplate';
 import { selectorMessages, selectorSettings } from './selector';
 
 import window from './window';
+import { ColorName, uiColors } from '../modules_common/color';
+import { Toggle } from './Toggle';
 
 export interface SettingPageSecurityProps {
   item: MenuItemProps;
@@ -37,7 +39,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
   const [isTestSyncDialogOpen, setIsTestSyncDialogOpen] = useState(false);
   const [testSyncDialogMessage, setTestSyncDialogMessage] = useState(messages.testingSync);
 
-  const applyAndCloseSettings = async () => {
+  const saveSyncSettings = async () => {
     if (syncIntervalAlertValue !== '') {
       return;
     }
@@ -92,6 +94,14 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
     }
   };
 
+  const toggleOnChange = (syncEnable: boolean) => {
+    console.log(syncEnable);
+  };
+
+  const buttonStyle = (color: ColorName) => ({
+    backgroundColor: uiColors[color],
+  });
+
   return (
     <SettingPageTemplate item={props.item} index={props.index}>
       <dialog id='testSyncDialog' styleName='testSyncDialog' open={isTestSyncDialogOpen}>
@@ -103,6 +113,21 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
         </div>
         <div styleName='testSyncDialogMessage'>{testSyncDialogMessage}</div>
       </dialog>
+      <div styleName='syncToggleButton'>
+        <Toggle
+          color={uiColors.yellow}
+          checked={false}
+          onChange={bool => toggleOnChange(bool)}
+        />
+      </div>
+      <button
+        styleName='saveSyncSettingsButton'
+        onClick={saveSyncSettings}
+        style={buttonStyle('yellow')}
+      >
+        {messages.saveSyncSettingsButton}
+      </button>
+
       <div styleName='syncSettings'>
         <div styleName='syncRemoteUrl'>
           <div styleName='syncRemoteUrlHeader'>{messages.syncRemoteUrlHeader}</div>

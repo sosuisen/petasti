@@ -1,29 +1,9 @@
-.urls {
-  height: 150px;
-  overflow-y: scroll;
-}
-
-.urls::-webkit-scrollbar { 
-  width: 7px;
-  background-color: #ffd0ff;
-}
-.urls::-webkit-scrollbar-thumb { 
-  background-color: #d090d0;
-}
-
-
 .syncSettings {
   margin-top: 0px;
 }
 
-.syncSettingsHeader {
-  font-size: 16px; 
-  background-color: #e0e0ff;
-  padding: 7px;
-  width: 100%;
-}
-
 .syncRemoteUrl {
+  clear: both;
   margin-top: 3px;
 }
 
@@ -135,3 +115,17 @@
   font-size: 14px;
 }
 
+.syncToggleButton {
+  float:left;
+}
+
+.saveSyncSettingsButton {
+  float: left;
+  height: 30px;
+  margin-left: 20px;
+  border-radius: 7px;
+  border: 0px;
+  cursor: pointer;
+  box-shadow: 3px 3px 10px 0 rgba(128, 96, 96, 0.7);  
+  font-weight: bold;  
+}
