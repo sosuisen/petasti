@@ -3,7 +3,6 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { DebounceQueue } from 'rx-queue';
 import { CardProp, CardPropStatus } from './modules_common/types';
 import {
   CardCssStyle,

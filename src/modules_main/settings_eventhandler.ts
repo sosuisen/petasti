@@ -2,19 +2,20 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-import { dialog, ipcMain } from 'electron';
+import { BrowserWindow, dialog, ipcMain } from 'electron';
 import { selectPreferredLanguage } from 'typed-intl';
 import { Sync, SyncResult } from 'git-documentdb';
-import { MESSAGE, noteStore } from './note_store';
 import { DatabaseCommand } from '../modules_common/db.types';
-import { availableLanguages, defaultLanguage } from '../modules_common/i18n';
-import { emitter, handlers } from './event';
-import { initNotebook } from './init';
-import { currentCardMap } from './card';
-import { destroyTray, initializeTaskTray } from './tray';
+import { availableLanguages, defaultLanguage, MessageLabel } from '../modules_common/i18n';
+import { emitter } from './event';
 import { settingsDialog } from './settings';
+import { DIALOG_BUTTON } from '../modules_common/const';
+import { currentCardMap } from './card_map';
+import { MESSAGE, setMessages } from './messages';
+import { showDialog } from './utils_main';
+import { INoteStore } from './note_store_types';
 
-export const addSettingsHandler = () => {
+export const addSettingsHandler = (noteStore: INoteStore) => {
   // Request from settings dialog
   ipcMain.handle('open-directory-selector-dialog', (event, message: string) => {
     return openDirectorySelectorDialog(message);
@@ -39,6 +40,7 @@ export const addSettingsHandler = () => {
           defaultLanguage,
         ]);
         noteStore.info.messages = noteStore.translations.messages();
+        setMessages(noteStore.info.messages);
         settingsDialog.webContents.send('update-info', noteStore.info);
 
         emitter.emit('updateTrayContextMenu');
@@ -107,30 +109,7 @@ export const addSettingsHandler = () => {
         noteStore.sync = syncOrError[0];
         const syncResult = syncOrError[1];
         if (syncResult.action === 'combine database') {
-          dialog.showMessageBoxSync(settingsDialog, {
-            type: 'info',
-            buttons: ['OK'],
-            message: MESSAGE('reloadNotebookByCombine'),
-          });
-
-          settingsDialog.close();
-
-          try {
-            // Remove listeners firstly to avoid focus another card in closing process
-            currentCardMap.forEach(card => card.removeWindowListenersExceptClosedEvent());
-            currentCardMap.forEach(card => card.window.webContents.send('card-close'));
-          } catch (error) {
-            console.error(error);
-          }
-          await noteStore.closeDB();
-          destroyTray();
-
-          handlers.forEach(channel => ipcMain.removeHandler(channel));
-          handlers.length = 0; // empty
-          currentCardMap.clear();
-
-          await initNotebook();
-          initializeTaskTray();
+          await noteStore.combineDB(settingsDialog);
         }
         else {
           settingsDialog.webContents.send(
@@ -178,3 +157,44 @@ const openFileSelectorDialog = (message: string) => {
   });
   return file;
 };
+
+ipcMain.handle('alert-dialog', (event, url: string, label: MessageLabel) => {
+  let win: BrowserWindow;
+  if (url === 'settingsDialog') {
+    win = settingsDialog;
+  }
+  else {
+    const card = currentCardMap.get(url);
+    if (!card) {
+      return;
+    }
+    win = card.window;
+  }
+  showDialog(win, 'question', label);
+});
+
+ipcMain.handle(
+  'confirm-dialog',
+  (event, url: string, buttonLabels: MessageLabel[], label: MessageLabel) => {
+    let win: BrowserWindow;
+    if (url === 'settingsDialog') {
+      win = settingsDialog;
+    }
+    else {
+      const card = currentCardMap.get(url);
+      if (!card) {
+        return;
+      }
+      win = card.window;
+    }
+
+    const buttons: string[] = buttonLabels.map(buttonLabel => MESSAGE(buttonLabel));
+    return dialog.showMessageBoxSync(win, {
+      type: 'question',
+      buttons: buttons,
+      defaultId: DIALOG_BUTTON.default,
+      cancelId: DIALOG_BUTTON.cancel,
+      message: MESSAGE(label),
+    });
+  }
+);

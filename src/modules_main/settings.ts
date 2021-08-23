@@ -3,8 +3,8 @@
  * © 2021 Hidekazu Kubota
  */
 import path from 'path';
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
-import { noteStore } from './note_store';
+import { app, BrowserWindow, shell } from 'electron';
+import { INoteStore } from './note_store_types';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let settingsDialog: BrowserWindow;
@@ -15,7 +15,7 @@ export const closeSettings = () => {
   }
 };
 
-export const openSettings = () => {
+export const openSettings = (noteStore: INoteStore) => {
   if (settingsDialog !== undefined && !settingsDialog.isDestroyed()) {
     return;
   }
@@ -36,6 +36,15 @@ export const openSettings = () => {
     icon: path.join(__dirname, '../../assets/media_stickies_grad_icon.ico'),
   });
 
+  settingsDialog.webContents.on('did-finish-load', () => {
+    settingsDialog.webContents.send('initialize-store', noteStore.info, noteStore.settings);
+  });
+
+  settingsDialog.webContents.on('new-window', (e, _url) => {
+    e.preventDefault();
+    shell.openExternal(_url);
+  });
+
   settingsDialog.loadFile(path.join(__dirname, '../settings/settings.html'));
 
   // hot reload
@@ -46,12 +55,4 @@ export const openSettings = () => {
       settingsDialog.webContents.openDevTools();
     }
   }
-
-  settingsDialog.webContents.on('did-finish-load', () => {
-    settingsDialog.webContents.send('initialize-store', noteStore.info, noteStore.settings);
-  });
-  settingsDialog.webContents.on('new-window', (e, _url) => {
-    e.preventDefault();
-    shell.openExternal(_url);
-  });
 };

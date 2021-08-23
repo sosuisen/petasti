@@ -5,7 +5,7 @@
  */
 import path from 'path';
 
-import { app, dialog, nativeImage } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeImage } from 'electron';
 import {
   Collection,
   DatabaseOptions,
@@ -34,7 +34,6 @@ import {
   defaultLanguage,
   ENGLISH,
   JAPANESE,
-  MessageLabel,
   Messages,
 } from '../modules_common/i18n';
 import {
@@ -46,12 +45,20 @@ import {
   SETTINGS_DB_NAME,
 } from '../modules_common/const';
 
+import { handlers } from './event';
+import { showDialog } from './utils_main';
+import { initSync } from './sync';
+import { MESSAGE, setMessages } from './messages';
+import { destroyTray, initializeTaskTray } from './tray';
+import { currentCardMap } from './card_map';
+import { INoteStore } from './note_store_types';
+
 export const generateNewNoteId = () => {
   const ulid = monotonicFactory();
   return 'n' + ulid(Date.now());
 };
 
-class NoteStore {
+class NoteStore implements INoteStore {
   constructor () {}
   /**
    * GitDocumentDB
@@ -67,7 +74,14 @@ class NoteStore {
   }
 
   private _noteCollection!: Collection;
+  get noteCollection (): Collection {
+    return this._noteCollection;
+  }
+
   private _cardCollection!: Collection;
+  get cardCollection (): Collection {
+    return this.cardCollection;
+  }
 
   /**
    * Sync
@@ -151,6 +165,7 @@ class NoteStore {
 
     // Set i18n from locale (for initial errors)
     this._info.messages = this._translations.messages();
+    setMessages(this._info.messages);
 
     // Open databases
     try {
@@ -211,20 +226,13 @@ class NoteStore {
         };
       }
     } catch (err) {
-      showErrorDialog('databaseCreateError', err.message);
+      showDialog(undefined, 'error', 'databaseCreateError', err.message);
       console.log(err);
       app.exit();
     }
 
     if (!this._settingsDB || !this._bookDB) {
       return [];
-    }
-
-    if (this._remoteOptions) {
-      this._sync = await this._bookDB.sync(this._remoteOptions).catch(err => {
-        showErrorDialog('syncError', err.message);
-        return undefined;
-      });
     }
 
     if (this._settings.language === '') {
@@ -237,6 +245,7 @@ class NoteStore {
      */
     selectPreferredLanguage(availableLanguages, [this._settings.language, defaultLanguage]);
     this._info.messages = this._translations.messages();
+    setMessages(noteStore.info.messages);
 
     // Create collections
     this._cardCollection = this._bookDB.collection('card');
@@ -252,9 +261,9 @@ class NoteStore {
       this._notePropMap.set(prop._id, prop);
     }
 
-    return await this.loadCurrentNote();
+    this._sync = await initSync(this);
 
-    // setSyncEvents();
+    return await this.loadCurrentNote();
   };
 
   getSortedNoteIdList = (): string[] => {
@@ -477,26 +486,41 @@ class NoteStore {
       throw new Error(`Error in deleteSketchDoc: note ${noteId} does not exist.`);
     }
   };
+
+  deleteSketch = async (sketchUrl: string) => {
+    const card = currentCardMap.get(sketchUrl);
+
+    if (card !== undefined) {
+      if (!card.window.isDestroyed()) {
+        card.window.destroy();
+      }
+      await this.deleteSketchDoc(sketchUrl);
+      currentCardMap.delete(sketchUrl);
+    }
+    else {
+      console.error(`${sketchUrl} does not exist`);
+    }
+  };
+
+  combineDB = async (target: BrowserWindow | undefined) => {
+    showDialog(target, 'info', 'reloadNotebookByCombine');
+
+    try {
+      // Remove listeners firstly to avoid focus another card in closing process
+      currentCardMap.forEach(card => card.removeWindowListenersExceptClosedEvent());
+      currentCardMap.forEach(card => card.window.webContents.send('card-close'));
+    } catch (error) {
+      console.error(error);
+    }
+    await this.closeDB();
+    destroyTray();
+
+    handlers.forEach(channel => ipcMain.removeHandler(channel));
+    handlers.length = 0; // empty
+    currentCardMap.clear();
+
+    initializeTaskTray(this);
+  };
 }
 
 export const noteStore = new NoteStore();
-
-const showErrorDialog = (label: MessageLabel, msg: string) => {
-  dialog.showMessageBoxSync({
-    type: 'error',
-    buttons: ['OK'],
-    message: MESSAGE(label) + '(' + msg + ')',
-  });
-};
-
-// Utility for i18n
-export const MESSAGE = (label: MessageLabel, ...args: string[]) => {
-  let message: string = noteStore.info.messages[label];
-  if (args) {
-    args.forEach((replacement, index) => {
-      const variable = '$' + (index + 1); // $1, $2, ...
-      message = message.replace(variable, replacement);
-    });
-  }
-  return message;
-};

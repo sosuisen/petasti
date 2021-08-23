@@ -2,18 +2,11 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-
 import url from 'url';
 import path from 'path';
-import contextMenu from 'electron-context-menu';
-import { app, BrowserWindow, ipcMain, MenuItemConstructorOptions, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { DebounceQueue } from 'rx-queue';
-import {
-  generateNewCardId,
-  getCardIdFromUrl,
-  getCurrentDateAndTime,
-  getNoteIdFromUrl,
-} from '../modules_common/utils';
+import { generateNewCardId, getCurrentDateAndTime } from '../modules_common/utils';
 import {
   APP_ICON_NAME,
   APP_SCHEME,
@@ -24,9 +17,7 @@ import {
   MINIMUM_WINDOW_HEIGHT,
   MINIMUM_WINDOW_WIDTH,
 } from '../modules_common/const';
-import { cardColors, ColorName } from '../modules_common/color';
 import { handlers } from './event';
-import { MESSAGE, noteStore } from './note_store';
 import {
   CardCondition,
   CardProp,
@@ -34,7 +25,11 @@ import {
   CardStyle,
   CartaDate,
   Geometry,
+  ICard,
 } from '../modules_common/types';
+import { currentCardMap } from './card_map';
+import { setContextMenu } from './card_context_menu';
+import { INoteStore } from './note_store_types';
 
 /**
  * Focus control
@@ -53,33 +48,9 @@ export const getGlobalFocusEventListenerPermission = () => {
 };
 
 /**
- * Card
- */
-
-export const currentCardMap: Map<string, Card> = new Map();
-
-/**
- * Manage z-index
- */
-let zIndexOfTopCard: number;
-let zIndexOfBottomCard: number;
-export const setZIndexOfTopCard = (zIndex: number) => {
-  zIndexOfTopCard = zIndex;
-};
-export const getZIndexOfTopCard = (): number => {
-  return zIndexOfTopCard;
-};
-export const setZIndexOfBottomCard = (zIndex: number) => {
-  zIndexOfBottomCard = zIndex;
-};
-export const getZIndexOfBottomCard = (): number => {
-  return zIndexOfBottomCard;
-};
-
-/**
  * Card class
  */
-export class Card {
+export class Card implements ICard {
   /**
    * CardProp
    */
@@ -125,7 +96,7 @@ export class Card {
    * Constructor
    */
   // eslint-disable-next-line complexity
-  constructor (noteIdOrCardProp: string | Partial<CardProp>) {
+  constructor (noteStore: INoteStore, noteIdOrCardProp: string | Partial<CardProp>) {
     if (typeof noteIdOrCardProp === 'string') {
       // Create card with default properties
 
@@ -229,7 +200,7 @@ export class Card {
     this.window.on('focus', this._focusListener);
     this.window.on('blur', this._blurListener);
 
-    this.resetContextMenu = setContextMenu(this);
+    this.resetContextMenu = setContextMenu(noteStore, this);
 
     // Open hyperlink on external browser window
     // by preventing to open it on new electron window
@@ -415,239 +386,3 @@ export class Card {
     };
   };
 }
-
-export const createCard = async (partialCardProp: Partial<CardProp>): Promise<void> => {
-  // Overwrite z
-  if (partialCardProp.geometry !== undefined) {
-    partialCardProp.geometry.z = getZIndexOfTopCard() + 1;
-  }
-  const card = new Card(partialCardProp);
-
-  currentCardMap.set(card.url, card);
-
-  const newCardProp = card.toObject();
-
-  // Async
-  noteStore.updateCardDoc(newCardProp);
-
-  // Sync
-  await noteStore.updateSketchDoc(newCardProp);
-
-  await card.render();
-  console.debug(`focus in createCard: ${card.url}`);
-  card.window.focus();
-};
-
-export const deleteCard = async (sketchUrl: string) => {
-  await noteStore.deleteCardDoc(sketchUrl);
-};
-
-export const deleteSketch = async (sketchUrl: string) => {
-  const card = currentCardMap.get(sketchUrl);
-
-  if (card !== undefined) {
-    if (!card.window.isDestroyed()) {
-      card.window.destroy();
-    }
-    await noteStore.deleteSketchDoc(sketchUrl);
-    currentCardMap.delete(sketchUrl);
-  }
-  else {
-    console.error(`${sketchUrl} does not exist`);
-  }
-};
-
-/**
- * Context Menu
- */
-const setContextMenu = (card: Card) => {
-  const setColor = (name: ColorName) => {
-    return {
-      label: MESSAGE(name),
-      click: () => {
-        if (name === 'transparent') {
-          card.window.webContents.send('change-card-color', cardColors[name], 0.0);
-        }
-        else {
-          card.window.webContents.send('change-card-color', cardColors[name]);
-        }
-      },
-    };
-  };
-
-  const moveCardToNote = async (noteId: string) => {
-    const newCardProp: CardProp = card.toObject();
-    newCardProp.url = `${APP_SCHEME}://local/${noteId}/${getCardIdFromUrl(card.url)}`;
-    // Overwrite z
-    newCardProp.geometry.z = (await noteStore.getZIndexOfTopCard(noteId)) + 1;
-
-    await noteStore.updateSketchDoc(newCardProp);
-
-    await deleteSketch(card.url);
-  };
-
-  const copyCardToNote = async (noteId: string) => {
-    const newCardProp: CardProp = card.toObject();
-    newCardProp.url = `${APP_SCHEME}://local/${noteId}/${getCardIdFromUrl(card.url)}`;
-    // Overwrite z
-    newCardProp.geometry.z = (await noteStore.getZIndexOfTopCard(noteId)) + 1;
-
-    await noteStore.updateSketchDoc(newCardProp);
-  };
-
-  const moveToNotes: MenuItemConstructorOptions[] = [...noteStore.notePropMap.values()]
-    .sort((a, b) => {
-      if (a.name > b.name) return 1;
-      else if (a.name < b.name) return -1;
-      return 0;
-    })
-    .reduce((result, noteProp) => {
-      if (noteProp._id !== noteStore.settings.currentNoteId) {
-        result.push({
-          label: `${noteProp.name}`,
-          click: () => {
-            moveCardToNote(noteProp._id);
-          },
-        });
-      }
-      return result;
-    }, [] as MenuItemConstructorOptions[]);
-
-  const copyToNotes: MenuItemConstructorOptions[] = [...noteStore.notePropMap.values()]
-    .sort((a, b) => {
-      if (a.name > b.name) return 1;
-      else if (a.name < b.name) return -1;
-      return 0;
-    })
-    .reduce((result, noteProp) => {
-      if (noteProp._id !== noteStore.settings.currentNoteId) {
-        result.push({
-          label: `${noteProp.name}`,
-          click: () => {
-            copyCardToNote(noteProp._id);
-          },
-        });
-      }
-      return result;
-    }, [] as MenuItemConstructorOptions[]);
-
-  const dispose = contextMenu({
-    window: card.window,
-    showSaveImageAs: true,
-    showInspectElement: false,
-    menu: actions => [
-      actions.searchWithGoogle({}),
-      actions.separator(),
-      {
-        label: MESSAGE('cut'),
-        role: 'cut',
-      },
-      {
-        label: MESSAGE('copy'),
-        role: 'copy',
-      },
-      {
-        label: MESSAGE('paste'),
-        role: 'paste',
-      },
-      {
-        label: MESSAGE('pasteAndMatchStyle'),
-        role: 'pasteAndMatchStyle',
-      },
-      actions.separator(),
-      actions.saveImageAs({}),
-      actions.separator(),
-      actions.copyLink({}),
-      actions.separator(),
-    ],
-    prepend: () => [
-      {
-        label: MESSAGE('noteMove'),
-        submenu: [...moveToNotes],
-      },
-      {
-        label: MESSAGE('noteCopy'),
-        submenu: [...copyToNotes],
-      },
-      {
-        label: MESSAGE('zoomIn'),
-        click: () => {
-          card.window.webContents.send('zoom-in');
-        },
-      },
-      {
-        label: MESSAGE('zoomOut'),
-        click: () => {
-          card.window.webContents.send('zoom-out');
-        },
-      },
-      {
-        label: MESSAGE('sendToBack'),
-        click: () => {
-          const cardProp = card.toObject();
-
-          // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
-
-          // Database Update
-          if (card.geometry.z === getZIndexOfBottomCard()) {
-            return cardProp.geometry.z;
-          }
-
-          const zIndex = getZIndexOfBottomCard() - 1;
-          // console.debug(`new zIndex: ${zIndex}`);
-
-          // Async
-          noteStore.updateSketchDoc(cardProp);
-
-          // Update card
-          card.geometry.z = zIndex;
-
-          // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
-
-          const backToFront: Card[] = [...currentCardMap.values()].sort((a, b) => {
-            if (a.geometry.z > b.geometry.z) return 1;
-            if (a.geometry.z < b.geometry.z) return -1;
-            return 0;
-          });
-          setZIndexOfTopCard(backToFront[backToFront.length - 1].geometry.z);
-          setZIndexOfBottomCard(backToFront[0].geometry.z);
-          backToFront.forEach(myCard => {
-            if (myCard.window && !myCard.window.isDestroyed()) {
-              myCard!.suppressFocusEventOnce = true;
-              myCard!.window.focus();
-            }
-          });
-
-          card.window.webContents.send('send-to-back', zIndex);
-        },
-      },
-      {
-        label: card.condition.locked ? MESSAGE('unlockCard') : MESSAGE('lockCard'),
-        click: () => {
-          card.condition.locked = !card.condition.locked;
-          card.window.webContents.send('set-lock', card.condition.locked);
-          resetContextMenu();
-        },
-      },
-    ],
-    append: () => [
-      setColor('yellow'),
-      setColor('red'),
-      setColor('green'),
-      setColor('blue'),
-      setColor('orange'),
-      setColor('purple'),
-      setColor('white'),
-      setColor('gray'),
-      setColor('transparent'),
-    ],
-  });
-
-  const resetContextMenu = () => {
-    // @ts-ignore
-    dispose();
-    setContextMenu(card);
-  };
-
-  return resetContextMenu;
-};

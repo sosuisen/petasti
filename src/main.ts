@@ -3,28 +3,22 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { app, BrowserWindow, dialog, ipcMain, MouseInputEvent } from 'electron';
-import { APP_SCHEME, DIALOG_BUTTON } from './modules_common/const';
-import { MessageLabel } from './modules_common/i18n';
-import {
-  Card,
-  createCard,
-  currentCardMap,
-  deleteCard,
-  deleteSketch,
-  getZIndexOfTopCard,
-  setGlobalFocusEventListenerPermission,
-  setZIndexOfBottomCard,
-  setZIndexOfTopCard,
-} from './modules_main/card';
+import { app, ipcMain, MouseInputEvent } from 'electron';
+import { APP_SCHEME } from './modules_common/const';
+import { Card, setGlobalFocusEventListenerPermission } from './modules_main/card';
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
-import { openSettings, settingsDialog } from './modules_main/settings';
 import { emitter, handlers } from './modules_main/event';
-import { MESSAGE, noteStore } from './modules_main/note_store';
+import { noteStore } from './modules_main/note_store';
 import { CardProp, SavingTarget } from './modules_common/types';
 import { generateNewCardId, getCardIdFromUrl } from './modules_common/utils';
-import { initNotebook } from './modules_main/init';
 import { addSettingsHandler } from './modules_main/settings_eventhandler';
+import { currentCardMap } from './modules_main/card_map';
+import {
+  getZIndexOfTopCard,
+  setZIndexOfBottomCard,
+  setZIndexOfTopCard,
+} from './modules_main/card_zindex';
+import { createCard } from './modules_main/card_create';
 
 // process.on('unhandledRejection', console.dir);
 
@@ -43,21 +37,43 @@ ipcMain.setMaxListeners(1000);
  * Some APIs can only be used after this event occurs.
  */
 app.on('ready', async () => {
-  await initNotebook();
-  // for debug
-  if (
-    !app.isPackaged &&
-    process.env.NODE_ENV === 'development' &&
-    process.env.SETTINGS_DIALOG === 'open'
-  ) {
-    openSettings();
+  // load workspaces
+  const cardProps = await noteStore.loadNotebook();
+
+  const renderers: Promise<void>[] = [];
+  cardProps.forEach(cardProp => {
+    const card = new Card(noteStore, cardProp);
+    currentCardMap.set(cardProp.url, card);
+    renderers.push(card.render());
+  });
+  await Promise.all(renderers).catch(e => {
+    console.error(`Error while rendering cards in ready event: ${e.message}`);
+  });
+
+  const backToFront = [...currentCardMap.values()].sort((a, b) => {
+    if (a.geometry.z > b.geometry.z) return 1;
+    else if (a.geometry.z < b.geometry.z) return -1;
+    return 0;
+  });
+  if (currentCardMap.size > 0) {
+    setZIndexOfTopCard(backToFront[backToFront.length - 1].geometry.z);
+    setZIndexOfBottomCard(backToFront[0].geometry.z);
   }
-  addSettingsHandler();
+  backToFront.forEach(card => {
+    if (card.window && !card.window.isDestroyed()) {
+      card.window.moveTop();
+    }
+  });
+
+  const size = backToFront.length;
+  console.debug(`Completed to load ${size} cards`);
+
+  addSettingsHandler(noteStore);
 
   /**
    * Add task tray
    */
-  initializeTaskTray();
+  initializeTaskTray(noteStore);
 });
 
 /**
@@ -83,7 +99,7 @@ emitter.on('change-note', async (nextNoteId: string) => {
 
   const renderers: Promise<void>[] = [];
   cardProps.forEach(cardProp => {
-    const card = new Card(cardProp);
+    const card = new Card(noteStore, cardProp);
     currentCardMap.set(cardProp.url, card);
     renderers.push(card.render());
   });
@@ -148,12 +164,12 @@ ipcMain.handle(
 );
 
 ipcMain.handle('delete-workspace-card', async (event, url: string) => {
-  await deleteSketch(url);
+  await noteStore.deleteSketch(url);
 });
 
 ipcMain.handle('delete-card', async (event, url: string) => {
-  await deleteSketch(url);
-  await deleteCard(getCardIdFromUrl(url));
+  await noteStore.deleteSketch(url);
+  await noteStore.deleteCardDoc(getCardIdFromUrl(url));
 });
 
 ipcMain.handle('finish-render-card', (event, url: string) => {
@@ -170,7 +186,7 @@ ipcMain.handle(
       const cardId = generateNewCardId();
       cardProp.url = `${APP_SCHEME}://local/${noteStore.settings.currentNoteId}/${cardId}`;
     }
-    await createCard(cardProp);
+    await createCard(noteStore, cardProp);
   }
 );
 
@@ -228,52 +244,6 @@ ipcMain.handle('set-title', (event, url: string, title: string) => {
     card.window.setTitle(title);
   }
 });
-
-ipcMain.handle('alert-dialog', (event, url: string, label: MessageLabel) => {
-  let win: BrowserWindow;
-  if (url === 'settingsDialog') {
-    win = settingsDialog;
-  }
-  else {
-    const card = currentCardMap.get(url);
-    if (!card) {
-      return;
-    }
-    win = card.window;
-  }
-
-  dialog.showMessageBoxSync(win, {
-    type: 'question',
-    buttons: ['OK'],
-    message: MESSAGE(label),
-  });
-});
-
-ipcMain.handle(
-  'confirm-dialog',
-  (event, url: string, buttonLabels: MessageLabel[], label: MessageLabel) => {
-    let win: BrowserWindow;
-    if (url === 'settingsDialog') {
-      win = settingsDialog;
-    }
-    else {
-      const card = currentCardMap.get(url);
-      if (!card) {
-        return;
-      }
-      win = card.window;
-    }
-
-    const buttons: string[] = buttonLabels.map(buttonLabel => MESSAGE(buttonLabel));
-    return dialog.showMessageBoxSync(win, {
-      type: 'question',
-      buttons: buttons,
-      defaultId: DIALOG_BUTTON.default,
-      cancelId: DIALOG_BUTTON.cancel,
-      message: MESSAGE(label),
-    });
-  }
-);
 
 ipcMain.handle('set-window-size', (event, url: string, width: number, height: number) => {
   const card = currentCardMap.get(url);

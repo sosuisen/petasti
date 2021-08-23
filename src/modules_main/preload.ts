@@ -2,7 +2,6 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-
 import { contextBridge, ipcRenderer, MouseInputEvent } from 'electron';
 import { CardProp, SavingTarget } from '../modules_common/types';
 

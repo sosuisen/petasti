@@ -3,6 +3,8 @@
  * © 2021 Hidekazu Kubota
  */
 
+import { BrowserWindow } from 'electron';
+
 export type CartaDate = {
   createdDate: string;
   modifiedDate: string;
@@ -84,3 +86,34 @@ export type Task = {
   type: 'Save' | 'DeleteSketch' | 'DeleteCard';
   target?: SavingTarget;
 };
+
+export interface ICard {
+  version: string;
+  url: string;
+  type: string;
+  user: string;
+  geometry: Geometry;
+  style: CardStyle;
+  condition: CardCondition;
+  date: CartaDate;
+
+  _body: string;
+
+  status: CardStatus;
+
+  removeWindowListenersExceptClosedEvent: () => void;
+  removeWindowListeners: () => void;
+  window: BrowserWindow;
+
+  resetContextMenu: () => void;
+
+  toObject: () => CardProp;
+
+  suppressFocusEventOnce: boolean;
+  suppressBlurEventOnce: boolean;
+
+  renderingCompleted: boolean;
+  recaptureGlobalFocusEventAfterLocalFocusEvent: boolean;
+}
+
+export type CardMap = Map<string, ICard>;

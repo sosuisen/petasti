@@ -4,9 +4,9 @@
  */
 import path from 'path';
 import prompt from 'electron-prompt';
-import { app, dialog, Menu, MenuItemConstructorOptions, Tray } from 'electron';
+import { app, Menu, MenuItemConstructorOptions, Tray } from 'electron';
 import { closeSettings, openSettings, settingsDialog } from './settings';
-import { Card, createCard, currentCardMap } from './card';
+import { Card } from './card';
 import { emitter } from './event';
 import {
   generateNewCardId,
@@ -15,17 +15,23 @@ import {
 } from '../modules_common/utils';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
 import { APP_ICON_NAME, APP_SCHEME, DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
-import { MESSAGE, noteStore } from './note_store';
 import { CardProp } from '../modules_common/types';
+import { MESSAGE } from './messages';
+import { currentCardMap } from './card_map';
+import { createCard } from './card_create';
+import { INoteStore } from './note_store_types';
+import { showDialog } from './utils_main';
 
 /**
  * Task tray
  */
+let noteStore: INoteStore;
 
 // Ensure a reference to Tray object is retained, or it will be GC'ed.
 let tray: Tray;
 export const destroyTray = () => {
   if (tray !== undefined && !tray.isDestroyed()) {
+    emitter.off('updateTrayContextMenu', updateTrayContextMenu);
     tray.destroy();
   }
 };
@@ -64,7 +70,7 @@ const createRandomColorCard = async () => {
     },
   };
 
-  await createCard(cardProp);
+  await createCard(noteStore, cardProp);
 };
 
 export const setTrayContextMenu = () => {
@@ -152,7 +158,7 @@ export const setTrayContextMenu = () => {
         }
         const newNoteProp = await noteStore.createNote(newName as string);
 
-        const firstCard = new Card(newNoteProp._id);
+        const firstCard = new Card(noteStore, newNoteProp._id);
         const firstCardProp = firstCard.toObject();
         // Async
         await noteStore.updateCardDoc(firstCardProp);
@@ -218,11 +224,7 @@ export const setTrayContextMenu = () => {
           return;
         }
         if (currentCardMap.size > 0) {
-          dialog.showMessageBox({
-            type: 'info',
-            buttons: ['OK'],
-            message: MESSAGE('noteCannotDelete'),
-          });
+          showDialog(undefined, 'info', 'noteCannotDelete');
           return;
         }
         // Delete current note
@@ -240,7 +242,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('settings'),
       click: () => {
-        openSettings();
+        openSettings(noteStore);
       },
     },
     {
@@ -276,20 +278,32 @@ export const setTrayContextMenu = () => {
   tray.setToolTip(taskTrayToolTip);
 };
 
-export const initializeTaskTray = () => {
+export const initializeTaskTray = (store: INoteStore) => {
+  noteStore = store;
+
+  emitter.on('updateTrayContextMenu', updateTrayContextMenu);
+
   tray = new Tray(path.join(__dirname, '../assets/' + APP_ICON_NAME));
   currentLanguage = noteStore.settings.language;
   setTrayContextMenu();
-
   tray.on('click', () => {
     createRandomColorCard();
   });
+
+  // for debug
+  if (
+    !app.isPackaged &&
+    process.env.NODE_ENV === 'development' &&
+    process.env.SETTINGS_DIALOG === 'open'
+  ) {
+    openSettings(noteStore);
+  }
 };
 
-emitter.on('updateTrayContextMenu', () => {
+const updateTrayContextMenu = () => {
   const newLanguage = noteStore.settings.language;
   if (currentLanguage !== newLanguage) {
     currentLanguage = newLanguage;
     setTrayContextMenu();
   }
-});
+};
