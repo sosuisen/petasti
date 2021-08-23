@@ -48,10 +48,15 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
 
   const [isChanged, setIsChanged] = useState(false);
 
-  const canSaveSyncSettings = () => {
+  const validateForm = () => {
     if (syncRemoteUrlValue === '') return false;
     if (syncPersonalAccessTokenValue === '') return false;
     if (syncIntervalValue < MINIMUM_INTERVAL) return false;
+    return true;
+  };
+
+  const canSaveSyncSettings = () => {
+    if (!validateForm()) return false;
     if (!syncEnabledValue) return false;
     if (!isChanged) return false;
     if (
@@ -139,7 +144,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
   const toggleOnChange = (syncEnable: boolean) => {
     setSyncEnabledValue(syncEnable);
     if (syncEnable) {
-      if (canSaveSyncSettings()) {
+      if (validateForm()) {
         dispatch(settingsSyncEnableUpdateCreator(true));
       }
     }
