@@ -80,7 +80,7 @@ class NoteStore implements INoteStore {
 
   private _cardCollection!: Collection;
   get cardCollection (): Collection {
-    return this.cardCollection;
+    return this._cardCollection;
   }
 
   /**
