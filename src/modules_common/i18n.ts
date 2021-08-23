@@ -83,6 +83,7 @@ type MessagesSettings = {
   syncIntervalFooter: string;
   syncIntervalAlert: string;
   saveSyncSettingsButton: string;
+  reloadNotebookByCombine: string;
 };
 
 type MessagesLanguage = {
@@ -150,7 +151,8 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   syncIntervalFooter:
     'Please enter sync interval time greater than or equal to 10 seconds.',
   syncIntervalAlert: 'Please enter a number greater than or equal to 10.',
-  saveSyncSettingsButton: 'Appy sync settings',
+  saveSyncSettingsButton: 'Apply sync settings',
+  reloadNotebookByCombine: 'App will be restarted to update the database.',
 };
 export const ENGLISH: Messages = {
   ...LANGUAGES_COMMON,
@@ -249,6 +251,7 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   syncIntervalFooter: '同期間隔（10秒以上）を入力してください。',
   syncIntervalAlert: '10以上の値を入力してください',
   saveSyncSettingsButton: '同期設定を保存',
+  reloadNotebookByCombine: 'データベース更新のためアプリが再起動されます。',
 };
 export const JAPANESE: Messages = {
   ...LANGUAGES_COMMON,

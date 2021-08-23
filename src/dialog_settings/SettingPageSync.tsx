@@ -54,6 +54,12 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
     if (syncIntervalValue < MINIMUM_INTERVAL) return false;
     if (!syncEnabledValue) return false;
     if (!isChanged) return false;
+    if (
+      syncRemoteUrlValue === settings.sync.remoteUrl &&
+      syncPersonalAccessTokenValue === settings.sync.connection.personalAccessToken
+    )
+      return false;
+
     return true;
   };
 
@@ -97,6 +103,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
       }
       // Success
       setTestSyncDialogMessage('');
+      setIsChanged(false);
       setIsTestSyncDialogOpen(false);
       dispatch(settingsSyncEnableUpdateCreator(true));
 
@@ -132,7 +139,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
   const toggleOnChange = (syncEnable: boolean) => {
     setSyncEnabledValue(syncEnable);
     if (syncEnable) {
-      if (canSaveSyncSettings) {
+      if (canSaveSyncSettings()) {
         dispatch(settingsSyncEnableUpdateCreator(true));
       }
     }

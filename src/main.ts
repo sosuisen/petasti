@@ -23,6 +23,8 @@ import { emitter, handlers } from './modules_main/event';
 import { MESSAGE, noteStore } from './modules_main/note_store';
 import { CardProp, SavingTarget } from './modules_common/types';
 import { generateNewCardId, getCardIdFromUrl } from './modules_common/utils';
+import { initNotebook } from './modules_main/init';
+import { addSettingsHandler } from './modules_main/settings_eventhandler';
 
 // process.on('unhandledRejection', console.dir);
 
@@ -41,19 +43,7 @@ ipcMain.setMaxListeners(1000);
  * Some APIs can only be used after this event occurs.
  */
 app.on('ready', async () => {
-  // load workspaces
-  const cardProps = await noteStore.loadNotebook();
-
-  const renderers: Promise<void>[] = [];
-  cardProps.forEach(cardProp => {
-    const card = new Card(cardProp);
-    currentCardMap.set(cardProp.url, card);
-    renderers.push(card.render());
-  });
-  await Promise.all(renderers).catch(e => {
-    console.error(`Error while rendering cards in ready event: ${e.message}`);
-  });
-
+  await initNotebook();
   // for debug
   if (
     !app.isPackaged &&
@@ -62,34 +52,11 @@ app.on('ready', async () => {
   ) {
     openSettings();
   }
+  addSettingsHandler();
 
-  const backToFront = [...currentCardMap.values()].sort((a, b) => {
-    if (a.geometry.z > b.geometry.z) return 1;
-    else if (a.geometry.z < b.geometry.z) return -1;
-    return 0;
-  });
-  if (currentCardMap.size > 0) {
-    setZIndexOfTopCard(backToFront[backToFront.length - 1].geometry.z);
-    setZIndexOfBottomCard(backToFront[0].geometry.z);
-  }
-  backToFront.forEach(card => {
-    if (card.window && !card.window.isDestroyed()) {
-      card.window.moveTop();
-    }
-  });
-
-  const size = backToFront.length;
-  console.debug(`Completed to load ${size} cards`);
-
-  /*
-  if (size === 0) {
-    addNewAvatar();
-    console.debug(`Added initial card`);
-  }
-  */
   /**
    * Add task tray
-   **/
+   */
   initializeTaskTray();
 });
 

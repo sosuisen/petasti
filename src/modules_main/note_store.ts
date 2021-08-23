@@ -173,13 +173,6 @@ class NoteStore {
       const bookDbOption: DatabaseOptions = {
         localDir: this._settings.dataStorePath,
         dbName: this._settings.currentNotebookName,
-        schema: {
-          json: {
-            plainTextProperties: {
-              name: true,
-            },
-          },
-        },
       };
 
       this._bookDB = new GitDocumentDB(bookDbOption);
