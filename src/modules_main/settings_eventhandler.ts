@@ -95,7 +95,6 @@ export const addSettingsHandler = (noteStore: INoteStore) => {
           conflictResolutionStrategy: 'ours-diff',
           live: true,
         };
-        console.log(noteStore.remoteOptions);
         // eslint-disable-next-line require-atomic-updates
         const syncOrError: [Sync, SyncResult] | Error = await noteStore.bookDB
           .sync(noteStore.remoteOptions, true)
