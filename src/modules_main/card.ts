@@ -69,6 +69,12 @@ export class Card implements ICard {
   public _body = '';
 
   /**
+   * Time stamps
+   */
+  public bodyLastUpdate = '';
+  public propLastUpdate = '';
+ 
+  /**
    * Temporal status
    */
   public status: CardStatus = 'Blurred';
@@ -228,10 +234,10 @@ export class Card implements ICard {
     });
 
     this._debouncedCardPositionUpdateActionQueue.subscribe(rect => {
-      noteStore.updateSketchDoc(this.toObject());
+      noteStore.updateCardDoc(this.toObject());
     });
     this._debouncedCardSizeUpdateActionQueue.subscribe(rect => {
-      noteStore.updateSketchDoc(this.toObject());
+      noteStore.updateCardDoc(this.toObject());
     });
   }
 

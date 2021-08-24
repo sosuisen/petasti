@@ -12,6 +12,8 @@ import {
   GitDocumentDB,
   RemoteOptions,
   Sync,
+  TaskMetadata,
+  TaskQueue,
 } from 'git-documentdb';
 import { selectPreferredLanguage, translate, Translator } from 'typed-intl';
 import { monotonicFactory } from 'ulid';
@@ -22,7 +24,7 @@ import {
   getCurrentDateAndTime,
   getNoteIdFromUrl,
 } from '../modules_common/utils';
-import { CardDoc, CardProp, NoteProp, SketchDoc } from '../modules_common/types';
+import { CardBody, CardDoc, CardProp, NoteProp } from '../modules_common/types';
 import {
   defaultDataDir,
   InfoState,
@@ -132,6 +134,10 @@ class NoteStore implements INoteStore {
 
   /**
    * Note
+   *
+   * @remarks
+   * - key: noteId
+   * - value: NoteProp
    */
   private _notePropMap: Map<string, NoteProp> = new Map();
   get notePropMap (): Map<string, NoteProp> {
@@ -315,20 +321,44 @@ class NoteStore implements INoteStore {
       };
 
       // Async
+      this.updateCardBody(firstCardProp);
       this.updateCardDoc(firstCardProp);
-      this.updateSketchDoc(firstCardProp);
       return [firstCardProp];
     }
     console.log('# currentNoteId: ' + this._settings.currentNoteId);
     return await this.loadCurrentCards();
   };
 
-  deleteNoteDoc = async (noteId: string) => {
-    await this._noteCollection.delete(noteId + '/prop');
+  deleteNoteDoc = async (noteId: string): Promise<void> => {
+    const task = await new Promise((resolve, reject) => {
+      this._noteCollection
+        .delete(noteId + '/prop', {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            resolve(taskMetadata);
+          },
+        })
+        .catch(err => reject(err));
+    }).catch((err: Error) => console.log(err.message + ', ' + noteId + '/prop'));
+    if (this._sync) {
+      this._sync.trySync();
+    }
+    return (task as unknown) as TaskMetadata;
   };
 
-  updateNoteDoc = async (noteProp: NoteProp) => {
-    await this._noteCollection.put(noteProp._id + '/prop', noteProp);
+  updateNoteDoc = async (noteProp: NoteProp): Promise<TaskMetadata> => {
+    const task = await new Promise((resolve, reject) => {
+      this._noteCollection
+        .put(noteProp._id + '/prop', noteProp, {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            resolve(taskMetadata);
+          },
+        })
+        .catch(err => reject(err));
+    }).catch((err: Error) => console.log(err.message + ', ' + noteProp._id));
+    if (this._sync) {
+      this._sync.trySync();
+    }
+    return (task as unknown) as TaskMetadata;
   };
 
   createNote = async (name?: string): Promise<NoteProp> => {
@@ -422,10 +452,10 @@ class NoteStore implements INoteStore {
     return Promise.resolve();
   };
 
-  updateCardDoc = async (prop: CardProp): Promise<void> => {
+  updateCardBody = async (prop: CardProp): Promise<void> => {
     console.debug(`# Saving card doc: ${prop.url}`);
     const cardId = getCardIdFromUrl(prop.url);
-    const cardDoc: CardDoc = {
+    const cardDoc: CardBody = {
       version: prop.version,
       type: prop.type,
       user: prop.user,
@@ -434,21 +464,21 @@ class NoteStore implements INoteStore {
       _id: cardId,
     };
     await this._cardCollection.put(cardDoc).catch(e => {
-      throw new Error(`Error in updateCardDoc: ${e.message}`);
+      throw new Error(`Error in updateCardBody: ${e.message}`);
     });
   };
 
-  updateSketchDoc = async (prop: CardProp): Promise<void> => {
-    console.debug(`# Saving sketch doc: ${prop.url}`);
+  updateCardDoc = async (prop: CardProp): Promise<void> => {
+    console.debug(`# Saving card doc: ${prop.url}`);
     const cardId = getCardIdFromUrl(prop.url);
-    const noteCardDoc: SketchDoc = {
+    const noteCardBody: CardDoc = {
       geometry: prop.geometry,
       style: prop.style,
       condition: prop.condition,
       _id: getNoteIdFromUrl(prop.url) + '/' + cardId,
     };
-    await this._noteCollection.put(noteCardDoc).catch(e => {
-      throw new Error(`Error in updateSketchDoc: ${e.message}`);
+    await this._noteCollection.put(noteCardBody).catch(e => {
+      throw new Error(`Error in updateCardDoc: ${e.message}`);
     });
     const noteId = getNoteIdFromUrl(prop.url);
     const noteProp = this._notePropMap.get(noteId);
@@ -457,23 +487,23 @@ class NoteStore implements INoteStore {
       await this.updateNoteDoc(noteProp);
     }
     else {
-      throw new Error(`Error in updateSketchDoc: note ${noteId} does not exist.`);
+      throw new Error(`Error in updateCardDoc: note ${noteId} does not exist.`);
     }
+  };
+
+  deleteCardBody = async (url: string) => {
+    console.debug(`# Deleting card doc: ${url}`);
+    await this._cardCollection.delete(getCardIdFromUrl(url)).catch(e => {
+      throw new Error(`Error in deletingCardBody: ${e.message}`);
+    });
   };
 
   deleteCardDoc = async (url: string) => {
     console.debug(`# Deleting card doc: ${url}`);
-    await this._cardCollection.delete(getCardIdFromUrl(url)).catch(e => {
-      throw new Error(`Error in deletingCardDoc: ${e.message}`);
-    });
-  };
-
-  deleteSketchDoc = async (url: string) => {
-    console.debug(`# Deleting sketch doc: ${url}`);
     await this._noteCollection
       .delete(getNoteIdFromUrl(url) + '/' + getCardIdFromUrl(url))
       .catch(e => {
-        throw new Error(`Error in deletingSketchDoc: ${e.message}`);
+        throw new Error(`Error in deletingCardDoc: ${e.message}`);
       });
 
     const noteId = getNoteIdFromUrl(url);
@@ -483,22 +513,22 @@ class NoteStore implements INoteStore {
       await this.updateNoteDoc(noteProp);
     }
     else {
-      throw new Error(`Error in deleteSketchDoc: note ${noteId} does not exist.`);
+      throw new Error(`Error in deleteCardDoc: note ${noteId} does not exist.`);
     }
   };
 
-  deleteSketch = async (sketchUrl: string) => {
-    const card = currentCardMap.get(sketchUrl);
+  deleteCard = async (cardUrl: string) => {
+    const card = currentCardMap.get(cardUrl);
 
     if (card !== undefined) {
       if (!card.window.isDestroyed()) {
         card.window.destroy();
       }
-      await this.deleteSketchDoc(sketchUrl);
-      currentCardMap.delete(sketchUrl);
+      await this.deleteCardDoc(cardUrl);
+      currentCardMap.delete(cardUrl);
     }
     else {
-      console.error(`${sketchUrl} does not exist`);
+      console.error(`${cardUrl} does not exist`);
     }
   };
 

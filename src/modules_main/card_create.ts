@@ -24,10 +24,10 @@ export const createCard = async (
   const newCardProp = card.toObject();
 
   // Async
-  noteStore.updateCardDoc(newCardProp);
+  noteStore.updateCardBody(newCardProp);
 
   // Sync
-  await noteStore.updateSketchDoc(newCardProp);
+  await noteStore.updateCardDoc(newCardProp);
 
   await card.render();
   console.debug(`focus in createCard: ${card.url}`);

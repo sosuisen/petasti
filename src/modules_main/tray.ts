@@ -161,8 +161,8 @@ export const setTrayContextMenu = () => {
         const firstCard = new Card(noteStore, newNoteProp._id);
         const firstCardProp = firstCard.toObject();
         // Async
+        await noteStore.updateCardBody(firstCardProp);
         await noteStore.updateCardDoc(firstCardProp);
-        await noteStore.updateSketchDoc(firstCardProp);
 
         closeSettings();
 

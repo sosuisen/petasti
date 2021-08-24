@@ -41,9 +41,9 @@ export const setContextMenu = (noteStore: INoteStore, card: ICard) => {
     // Overwrite z
     newCardProp.geometry.z = (await noteStore.getZIndexOfTopCard(noteId)) + 1;
 
-    await noteStore.updateSketchDoc(newCardProp);
+    await noteStore.updateCardDoc(newCardProp);
 
-    await noteStore.deleteSketch(card.url);
+    await noteStore.deleteCard(card.url);
   };
 
   const copyCardToNote = async (noteId: string) => {
@@ -52,7 +52,7 @@ export const setContextMenu = (noteStore: INoteStore, card: ICard) => {
     // Overwrite z
     newCardProp.geometry.z = (await noteStore.getZIndexOfTopCard(noteId)) + 1;
 
-    await noteStore.updateSketchDoc(newCardProp);
+    await noteStore.updateCardDoc(newCardProp);
   };
 
   const moveToNotes: MenuItemConstructorOptions[] = [...noteStore.notePropMap.values()]
@@ -157,7 +157,7 @@ export const setContextMenu = (noteStore: INoteStore, card: ICard) => {
           // console.debug(`new zIndex: ${zIndex}`);
 
           // Async
-          noteStore.updateSketchDoc(cardProp);
+          noteStore.updateCardDoc(cardProp);
 
           // Update card
           card.geometry.z = zIndex;

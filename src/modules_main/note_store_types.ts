@@ -3,7 +3,13 @@
  * © 2021 Hidekazu Kubota
  */
 import { BrowserWindow } from 'electron';
-import { Collection, GitDocumentDB, RemoteOptions, Sync } from 'git-documentdb';
+import {
+  Collection,
+  GitDocumentDB,
+  RemoteOptions,
+  Sync,
+  TaskMetadata,
+} from 'git-documentdb';
 import { Translator } from 'typed-intl';
 import { Messages } from '../modules_common/i18n';
 import { InfoState, SettingsState } from '../modules_common/store.types';
@@ -26,14 +32,17 @@ export interface INoteStore {
 
   closeDB: () => Promise<void>;
 
-  deleteNoteDoc: (noteId: string) => Promise<void>;
   updateNoteDoc: (noteProp: NoteProp) => Promise<void>;
+  deleteNoteDoc: (noteId: string) => Promise<void>;
+
+  updateCardBody: (prop: CardProp) => Promise<void>;
+  updateCardDoc: (prop: CardProp) => Promise<void>;
+
+  deleteCard: (cardUrl: string) => Promise<void>;
+
   notePropMap: Map<string, NoteProp>;
   getSortedNoteIdList: () => string[];
   changingToNoteId: string;
-  updateCardDoc: (prop: CardProp) => Promise<void>;
-  updateSketchDoc: (prop: CardProp) => Promise<void>;
   createNote: (name?: string) => Promise<NoteProp>;
-  deleteSketch: (sketchUrl: string) => Promise<void>;
   getZIndexOfTopCard: (noteId: string) => Promise<number>;
 }

@@ -4,4 +4,11 @@
  */
 import { ICard } from '../modules_common/types';
 
-export const currentCardMap: Map<string, ICard> = new Map();
+/**
+ * currentCardMap
+ *
+ * @remarks
+ * - key: cardUrl
+ * - value: Card
+ */
+export const currentCardMap: Map<string, ICard> = new Map(); // means { [cardUrl: string]: ICard] }

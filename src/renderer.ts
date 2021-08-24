@@ -29,7 +29,7 @@ import {
 import { darkenHexColor } from './modules_common/color';
 import {
   deleteCard,
-  deleteSketch,
+  deleteCard,
   saveCard,
   saveCardColor,
   waitUnfinishedTasks,
@@ -138,7 +138,7 @@ const initializeUIEvents = () => {
           if (res === DIALOG_BUTTON.default) {
             // OK
             suppressFocusEvent = true; // Suppress focus event in order not to focus and save this card just after closing card window.
-            deleteSketch(cardPropStatus);
+            deleteCard(cardPropStatus);
           }
           else if (res === DIALOG_BUTTON.cancel) {
             // Cancel

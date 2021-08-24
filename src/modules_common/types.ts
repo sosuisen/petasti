@@ -54,7 +54,7 @@ export type CardProp = {
 
 export type CardPropStatus = CardProp & { status: CardStatus };
 
-export type CardDoc = {
+export type CardBody = {
   version: string;
   type: string;
   user: string;
@@ -63,7 +63,7 @@ export type CardDoc = {
   _id: string;
 };
 
-export type SketchDoc = {
+export type CardDoc = {
   geometry: Geometry;
   style: CardStyle;
   condition: CardCondition;
@@ -83,7 +83,7 @@ export type SavingTarget = 'BodyOnly' | 'PropertyOnly' | 'Card';
 
 export type Task = {
   prop: CardPropStatus;
-  type: 'Save' | 'DeleteSketch' | 'DeleteCard';
+  type: 'Save' | 'DeleteCard' | 'DeleteCard';
   target?: SavingTarget;
 };
 
@@ -98,6 +98,9 @@ export interface ICard {
   date: CartaDate;
 
   _body: string;
+
+  bodyLastUpdate: string;
+  propLastUpdate: string;
 
   status: CardStatus;
 

@@ -143,7 +143,7 @@ ipcMain.handle(
   async (event, cardProp: CardProp, savingTarget: SavingTarget) => {
     const card = currentCardMap.get(cardProp.url);
     if (savingTarget === 'BodyOnly' || savingTarget === 'Card') {
-      await noteStore.updateCardDoc(cardProp);
+      await noteStore.updateCardBody(cardProp);
 
       // Update currentCardMap
       card!.version = cardProp.version;
@@ -153,7 +153,7 @@ ipcMain.handle(
       card!._body = cardProp._body;
     }
     if (savingTarget === 'PropertyOnly' || savingTarget === 'Card') {
-      await noteStore.updateSketchDoc(cardProp);
+      await noteStore.updateCardDoc(cardProp);
 
       // Update currentCardMap
       card!.geometry = cardProp.geometry;
@@ -164,12 +164,12 @@ ipcMain.handle(
 );
 
 ipcMain.handle('delete-workspace-card', async (event, url: string) => {
-  await noteStore.deleteSketch(url);
+  await noteStore.deleteCard(url);
 });
 
 ipcMain.handle('delete-card', async (event, url: string) => {
-  await noteStore.deleteSketch(url);
-  await noteStore.deleteCardDoc(getCardIdFromUrl(url));
+  await noteStore.deleteCard(url);
+  await noteStore.deleteCardBody(getCardIdFromUrl(url));
 });
 
 ipcMain.handle('finish-render-card', (event, url: string) => {
@@ -278,7 +278,7 @@ ipcMain.handle('bring-to-front', (event, cardProp: CardProp, rearrange = false):
 
   // Async
   cardProp.geometry.z = zIndex;
-  noteStore.updateSketchDoc(cardProp);
+  noteStore.updateCardDoc(cardProp);
 
   // Update card
   currentCardMap.get(cardProp.url)!.geometry.z = zIndex;
