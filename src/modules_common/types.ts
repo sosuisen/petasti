@@ -99,9 +99,6 @@ export interface ICard {
 
   _body: string;
 
-  bodyLastUpdate: string;
-  propLastUpdate: string;
-
   status: CardStatus;
 
   removeWindowListenersExceptClosedEvent: () => void;

@@ -14,6 +14,7 @@ import { showDialog } from './utils_main';
 import { INoteStore } from './note_store_types';
 import { NoteProp } from '../modules_common/types';
 import { currentCardMap } from './card_map';
+import { setTrayContextMenu } from './tray';
 
 export const initSync = async (noteStore: INoteStore): Promise<Sync | undefined> => {
   let sync: Sync | undefined;
@@ -40,17 +41,6 @@ export const initSync = async (noteStore: INoteStore): Promise<Sync | undefined>
           cardBodyId = (changedFile.new.doc as JsonDoc)._id;
           // TODO: Update body, date of target Card if currentCardMap contains it.
           const card = currentCardMap.get(cardBodyId);
-          if (card && taskMetadata.enqueueTime > card.bodyLastUpdate) {
-            card.bodyLastUpdate = taskMetadata.enqueueTime;
-            card._body = (changedFile.new.doc as JsonDoc)._body;
-            card.date.createdDate = (changedFile.new.doc as JsonDoc).date.created_date;
-            card.date.modifiedDate = (changedFile.new.doc as JsonDoc).date.modified_date;
-            card.version = (changedFile.new.doc as JsonDoc).date.version;
-            card.type = (changedFile.new.doc as JsonDoc).date.type;
-            card.user = (changedFile.new.doc as JsonDoc).date.user;
-            // 
-          }
-
         }
         else if (changedFile.operation === 'delete') {
           cardBodyId = (changedFile.old.doc as JsonDoc)._id;
@@ -68,56 +58,46 @@ export const initSync = async (noteStore: INoteStore): Promise<Sync | undefined>
     // eslint-disable-next-line complexity
     (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
       for (const changedFile of changes) {
-        let cardBodyId: string;
+        let cardId: string;
         let noteId: string;
         let fileId: string;
         if (changedFile.operation === 'insert') {
-          cardBodyId = (changedFile.new as FatJsonDoc)._id;
-          const idArray = cardBodyId.split('/');
+          cardId = (changedFile.new as FatJsonDoc)._id;
+          const idArray = cardId.split('/');
           noteId = idArray[0];
           fileId = idArray[1];
         }
         else if (changedFile.operation === 'update') {
-          cardBodyId = (changedFile.new as FatJsonDoc)._id;
-          const idArray = cardBodyId.split('/');
+          cardId = (changedFile.new as FatJsonDoc)._id;
+          const idArray = cardId.split('/');
           noteId = idArray[0];
           fileId = idArray[1];
         }
         else if (changedFile.operation === 'delete') {
-          cardBodyId = (changedFile.old as FatJsonDoc)._id;
-          const idArray = cardBodyId.split('/');
+          cardId = (changedFile.old as FatJsonDoc)._id;
+          const idArray = cardId.split('/');
           noteId = idArray[0];
           fileId = idArray[1];
         }
 
-        if (changedFile.operation === 'insert') {
-          if (fileId === 'prop') {
+        if (fileId === 'prop') {
+          if (changedFile.operation === 'insert') {
             const prop = changedFile.new.doc as NoteProp;
             prop._id = noteId; // Set note id instead of 'prop'.
             noteStore.notePropMap.set(noteId, prop);
-            // TODO: Add new note into context menu on Tray and Card
-            // TODO: Update if already exists
+
+            setTrayContextMenu();
+            currentCardMap.forEach(card => card.resetContextMenu());
           }
-          else {
-            // TODO: Create new Card if noteId is currentNoteId.
-            // TODO: Create new note (with default props) if not exits
-          }
-        }
-        else if (changedFile.operation === 'update') {
-          if (fileId === 'prop') {
+          else if (changedFile.operation === 'update') {
             const prop = changedFile.new.doc as NoteProp;
             prop._id = noteId; // Set note id instead of 'prop'.
             // TaskQueue の日時をチェックして、すでに新しい noteProp 修正コマンドが出ていたらそこでキャンセル
             // noteStore.notePropMap.set(noteId, prop);
             // TODO: Update note in context menu on Tray and Card
+            // すでに削除されたノートに対する更新は、新規ノート作成
           }
-          else {
-            // TaskQueue の日時をチェックして、すでに新しい cardProp 修正コマンドが出ていたらそこでキャンセル
-            // TODO: Update new Card if noteId is currentNoteId.
-          }
-        }
-        else if (changedFile.operation === 'delete') {
-          if (fileId === 'prop') {
+          else if (changedFile.operation === 'delete') {
             // TaskQueue の日時をチェックして、すでに新しい noteProp 修正コマンドが出ていたらそこでキャンセル
             // TODO: First, check cards under the note directory.
             // TODO: If card does not exist:
@@ -127,11 +107,28 @@ export const initSync = async (noteStore: INoteStore): Promise<Sync | undefined>
             // コンフリクトに注意。なお ours 戦略なので、こちらでノートの更新日付修正があれば削除はされない。
             // もしカードがある場合は、削除されたノートを復活させる。
           }
-          else {
-            // TaskQueue の日時をチェックして、すでに新しい cardProp 修正コマンドが出ていたらそこでキャンセル
-            // TODO: Delete card if noteId is currentNoteId
-            // コンフリクトに注意。なお ours 戦略なので、こちらでカードの更新日付修正があれば削除はされない。
+        }
+        else {
+          const card = currentCardMap.get(cardId);
+          if (card) {
+            card.window.webContents.send('sync-card', changes, taskMetadata);
           }
+          /*
+        if (changedFile.operation === 'insert') {
+          // TODO: Create new Card if noteId is currentNoteId.
+          // TODO: Create new note (with default props) if not exits
+        }
+        else if (changedFile.operation === 'update') {
+          // TaskQueue の日時をチェックして、すでに新しい cardProp 修正コマンドが出ていたらそこでキャンセル
+          // TODO: Update new Card if noteId is currentNoteId.
+          // すでに削除されたノートに対する更新は、新規ノート作成
+        }
+        else if (changedFile.operation === 'delete') {
+          // TaskQueue の日時をチェックして、すでに新しい cardProp 修正コマンドが出ていたらそこでキャンセル
+          // TODO: Delete card if noteId is currentNoteId
+          // コンフリクトに注意。なお ours 戦略なので、こちらでカードの更新日付修正があれば削除はされない。
+        }
+        */
         }
       }
     }

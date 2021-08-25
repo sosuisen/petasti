@@ -329,7 +329,7 @@ class NoteStore implements INoteStore {
     return await this.loadCurrentCards();
   };
 
-  deleteNoteDoc = async (noteId: string): Promise<void> => {
+  deleteNoteDoc = async (noteId: string): Promise<TaskMetadata> => {
     const task = await new Promise((resolve, reject) => {
       this._noteCollection
         .delete(noteId + '/prop', {

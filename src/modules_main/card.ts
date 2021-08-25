@@ -69,12 +69,6 @@ export class Card implements ICard {
   public _body = '';
 
   /**
-   * Time stamps
-   */
-  public bodyLastUpdate = '';
-  public propLastUpdate = '';
- 
-  /**
    * Temporal status
    */
   public status: CardStatus = 'Blurred';

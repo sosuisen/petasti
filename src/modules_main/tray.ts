@@ -181,6 +181,8 @@ export const setTrayContextMenu = () => {
           }
           // wait 'window-all-closed' event
         }
+
+        // setTrayContextMenu() will be called in change-note event.
       },
     },
     {
@@ -233,6 +235,8 @@ export const setTrayContextMenu = () => {
 
         noteStore.settings.currentNoteId = noteStore.getSortedNoteIdList()[0];
         emitter.emit('change-note', noteStore.settings.currentNoteId);
+
+        // setTrayContextMenu() will be called in change-note event.
       },
     },
     ...changeNotes,
