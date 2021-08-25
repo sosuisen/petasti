@@ -29,7 +29,7 @@ import {
 } from '../modules_common/types';
 import { currentCardMap } from './card_map';
 import { setContextMenu } from './card_context_menu';
-import { INoteStore } from './note_store_types';
+import { INote } from './note_types';
 
 /**
  * Focus control
@@ -96,7 +96,7 @@ export class Card implements ICard {
    * Constructor
    */
   // eslint-disable-next-line complexity
-  constructor (noteStore: INoteStore, noteIdOrCardProp: string | Partial<CardProp>) {
+  constructor (note: INote, noteIdOrCardProp: string | Partial<CardProp>) {
     if (typeof noteIdOrCardProp === 'string') {
       // Create card with default properties
 
@@ -200,7 +200,7 @@ export class Card implements ICard {
     this.window.on('focus', this._focusListener);
     this.window.on('blur', this._blurListener);
 
-    this.resetContextMenu = setContextMenu(noteStore, this);
+    this.resetContextMenu = setContextMenu(note, this);
 
     // Open hyperlink on external browser window
     // by preventing to open it on new electron window
@@ -228,10 +228,10 @@ export class Card implements ICard {
     });
 
     this._debouncedCardPositionUpdateActionQueue.subscribe(rect => {
-      noteStore.updateCardDoc(this.toObject());
+      note.updateCardDoc(this.toObject());
     });
     this._debouncedCardSizeUpdateActionQueue.subscribe(rect => {
-      noteStore.updateCardDoc(this.toObject());
+      note.updateCardDoc(this.toObject());
     });
   }
 

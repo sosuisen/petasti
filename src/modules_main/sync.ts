@@ -11,15 +11,15 @@ import {
   TaskMetadata,
 } from 'git-documentdb';
 import { showDialog } from './utils_main';
-import { INoteStore } from './note_store_types';
+import { INote } from './note_types';
 import { NoteProp } from '../modules_common/types';
 import { currentCardMap } from './card_map';
 import { setTrayContextMenu } from './tray';
 
-export const initSync = async (noteStore: INoteStore): Promise<Sync | undefined> => {
+export const initSync = async (note: INote): Promise<Sync | undefined> => {
   let sync: Sync | undefined;
-  if (noteStore.remoteOptions) {
-    sync = await noteStore.bookDB.sync(noteStore.remoteOptions).catch(err => {
+  if (note.remoteOptions) {
+    sync = await note.bookDB.sync(note.remoteOptions).catch(err => {
       showDialog(undefined, 'error', 'syncError', err.message);
       return undefined;
     });
@@ -27,7 +27,7 @@ export const initSync = async (noteStore: INoteStore): Promise<Sync | undefined>
 
   if (sync === undefined) return undefined;
 
-  noteStore.cardCollection.onSyncEvent(
+  note.cardCollection.onSyncEvent(
     sync,
     'localChange',
     (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
@@ -52,15 +52,15 @@ export const initSync = async (noteStore: INoteStore): Promise<Sync | undefined>
     }
   );
 
-  noteStore.noteCollection.onSyncEvent(
+  note.noteCollection.onSyncEvent(
     sync,
     'localChange',
     // eslint-disable-next-line complexity
     (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
       for (const changedFile of changes) {
-        let cardId: string;
-        let noteId: string;
-        let fileId: string;
+        let cardId = '';
+        let noteId = '';
+        let fileId = '';
         if (changedFile.operation === 'insert') {
           cardId = (changedFile.new as FatJsonDoc)._id;
           const idArray = cardId.split('/');
@@ -84,7 +84,7 @@ export const initSync = async (noteStore: INoteStore): Promise<Sync | undefined>
           if (changedFile.operation === 'insert') {
             const prop = changedFile.new.doc as NoteProp;
             prop._id = noteId; // Set note id instead of 'prop'.
-            noteStore.notePropMap.set(noteId, prop);
+            note.notePropMap.set(noteId, prop);
 
             setTrayContextMenu();
             currentCardMap.forEach(card => card.resetContextMenu());
@@ -93,7 +93,7 @@ export const initSync = async (noteStore: INoteStore): Promise<Sync | undefined>
             const prop = changedFile.new.doc as NoteProp;
             prop._id = noteId; // Set note id instead of 'prop'.
             // TaskQueue の日時をチェックして、すでに新しい noteProp 修正コマンドが出ていたらそこでキャンセル
-            // noteStore.notePropMap.set(noteId, prop);
+            // note.notePropMap.set(noteId, prop);
             // TODO: Update note in context menu on Tray and Card
             // すでに削除されたノートに対する更新は、新規ノート作成
           }
@@ -135,7 +135,7 @@ export const initSync = async (noteStore: INoteStore): Promise<Sync | undefined>
   );
 
   sync.on('combine', async (duplicatedFiles: DuplicatedFile[]) => {
-    await noteStore.combineDB(undefined);
+    await note.combineDB(undefined);
   });
 
   sync.on('start', () => {

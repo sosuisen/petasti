@@ -8,7 +8,7 @@ import { APP_SCHEME } from './modules_common/const';
 import { Card, setGlobalFocusEventListenerPermission } from './modules_main/card';
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
 import { emitter, handlers } from './modules_main/event';
-import { noteStore } from './modules_main/note_store';
+import { note } from './modules_main/note';
 import { CardProp, SavingTarget } from './modules_common/types';
 import { generateNewCardId, getCardIdFromUrl } from './modules_common/utils';
 import { addSettingsHandler } from './modules_main/settings_eventhandler';
@@ -38,11 +38,11 @@ ipcMain.setMaxListeners(1000);
  */
 app.on('ready', async () => {
   // load workspaces
-  const cardProps = await noteStore.loadNotebook();
+  const cardProps = await note.loadNotebook();
 
   const renderers: Promise<void>[] = [];
   cardProps.forEach(cardProp => {
-    const card = new Card(noteStore, cardProp);
+    const card = new Card(note, cardProp);
     currentCardMap.set(cardProp.url, card);
     renderers.push(card.render());
   });
@@ -68,19 +68,19 @@ app.on('ready', async () => {
   const size = backToFront.length;
   console.debug(`Completed to load ${size} cards`);
 
-  addSettingsHandler(noteStore);
+  addSettingsHandler(note);
 
   /**
    * Add task tray
    */
-  initializeTaskTray(noteStore);
+  initializeTaskTray(note);
 });
 
 /**
  * Exit app
  */
 emitter.on('exit', () => {
-  noteStore.closeDB();
+  note.closeDB();
   destroyTray();
   app.quit();
 });
@@ -90,16 +90,16 @@ emitter.on('change-note', async (nextNoteId: string) => {
   handlers.length = 0; // empty
   currentCardMap.clear();
 
-  noteStore.settings.currentNoteId = nextNoteId;
-  await noteStore.settingsDB.put(noteStore.settings);
+  note.settings.currentNoteId = nextNoteId;
+  await note.settingsDB.put(note.settings);
 
   setTrayContextMenu();
 
-  const cardProps = await noteStore.loadCurrentNote();
+  const cardProps = await note.loadCurrentNote();
 
   const renderers: Promise<void>[] = [];
   cardProps.forEach(cardProp => {
-    const card = new Card(noteStore, cardProp);
+    const card = new Card(note, cardProp);
     currentCardMap.set(cardProp.url, card);
     renderers.push(card.render());
   });
@@ -125,13 +125,13 @@ emitter.on('change-note', async (nextNoteId: string) => {
 });
 
 app.on('window-all-closed', () => {
-  if (noteStore.changingToNoteId === 'exit') {
+  if (note.changingToNoteId === 'exit') {
     emitter.emit('exit');
   }
-  else if (noteStore.changingToNoteId !== 'none') {
-    emitter.emit('change-note', noteStore.changingToNoteId);
+  else if (note.changingToNoteId !== 'none') {
+    emitter.emit('change-note', note.changingToNoteId);
   }
-  noteStore.changingToNoteId = 'none';
+  note.changingToNoteId = 'none';
 });
 
 /**
@@ -143,7 +143,7 @@ ipcMain.handle(
   async (event, cardProp: CardProp, savingTarget: SavingTarget) => {
     const card = currentCardMap.get(cardProp.url);
     if (savingTarget === 'BodyOnly' || savingTarget === 'Card') {
-      await noteStore.updateCardBody(cardProp);
+      await note.updateCardBody(cardProp);
 
       // Update currentCardMap
       card!.version = cardProp.version;
@@ -153,7 +153,7 @@ ipcMain.handle(
       card!._body = cardProp._body;
     }
     if (savingTarget === 'PropertyOnly' || savingTarget === 'Card') {
-      await noteStore.updateCardDoc(cardProp);
+      await note.updateCardDoc(cardProp);
 
       // Update currentCardMap
       card!.geometry = cardProp.geometry;
@@ -163,13 +163,9 @@ ipcMain.handle(
   }
 );
 
-ipcMain.handle('delete-workspace-card', async (event, url: string) => {
-  await noteStore.deleteCard(url);
-});
-
 ipcMain.handle('delete-card', async (event, url: string) => {
-  await noteStore.deleteCard(url);
-  await noteStore.deleteCardBody(getCardIdFromUrl(url));
+  await note.deleteCard(url);
+  await note.deleteCardBody(getCardIdFromUrl(url));
 });
 
 ipcMain.handle('finish-render-card', (event, url: string) => {
@@ -184,9 +180,9 @@ ipcMain.handle(
   async (event, cardProp: CardProp): Promise<void> => {
     if (cardProp.url === undefined) {
       const cardId = generateNewCardId();
-      cardProp.url = `${APP_SCHEME}://local/${noteStore.settings.currentNoteId}/${cardId}`;
+      cardProp.url = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
     }
-    await createCard(noteStore, cardProp);
+    await createCard(note, cardProp);
   }
 );
 
@@ -278,7 +274,7 @@ ipcMain.handle('bring-to-front', (event, cardProp: CardProp, rearrange = false):
 
   // Async
   cardProp.geometry.z = zIndex;
-  noteStore.updateCardDoc(cardProp);
+  note.updateCardDoc(cardProp);
 
   // Update card
   currentCardMap.get(cardProp.url)!.geometry.z = zIndex;

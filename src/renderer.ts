@@ -29,7 +29,6 @@ import {
 import { darkenHexColor } from './modules_common/color';
 import {
   deleteCard,
-  deleteCard,
   saveCard,
   saveCardColor,
   waitUnfinishedTasks,

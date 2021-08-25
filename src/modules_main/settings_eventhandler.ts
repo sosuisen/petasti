@@ -13,9 +13,9 @@ import { DIALOG_BUTTON } from '../modules_common/const';
 import { currentCardMap } from './card_map';
 import { MESSAGE, setMessages } from './messages';
 import { showDialog } from './utils_main';
-import { INoteStore } from './note_store_types';
+import { INote } from './note_types';
 
-export const addSettingsHandler = (noteStore: INoteStore) => {
+export const addSettingsHandler = (note: INote) => {
   // Request from settings dialog
   ipcMain.handle('open-directory-selector-dialog', (event, message: string) => {
     return openDirectorySelectorDialog(message);
@@ -26,7 +26,7 @@ export const addSettingsHandler = (noteStore: INoteStore) => {
   });
 
   ipcMain.handle('close-cardio', async event => {
-    await noteStore.closeDB();
+    await note.closeDB();
   });
 
   // eslint-disable-next-line complexity
@@ -34,70 +34,70 @@ export const addSettingsHandler = (noteStore: INoteStore) => {
     // eslint-disable-next-line default-case
     switch (command.command) {
       case 'db-language-update': {
-        noteStore.settings.language = command.data;
+        note.settings.language = command.data;
         selectPreferredLanguage(availableLanguages, [
-          noteStore.settings.language,
+          note.settings.language,
           defaultLanguage,
         ]);
-        noteStore.info.messages = noteStore.translations.messages();
-        setMessages(noteStore.info.messages);
-        settingsDialog.webContents.send('update-info', noteStore.info);
+        note.info.messages = note.translations.messages();
+        setMessages(note.info.messages);
+        settingsDialog.webContents.send('update-info', note.info);
 
         emitter.emit('updateTrayContextMenu');
 
-        await noteStore.settingsDB.put(noteStore.settings);
+        await note.settingsDB.put(note.settings);
 
         break;
       }
       case 'db-data-store-path-update': {
-        noteStore.settings.dataStorePath = command.data;
+        note.settings.dataStorePath = command.data;
 
         break;
       }
       case 'db-sync-enabled-update': {
         if (!command.data) {
-          if (noteStore.sync !== undefined) {
-            noteStore.bookDB.removeSync(noteStore.sync.remoteURL);
-            noteStore.sync = undefined;
+          if (note.sync !== undefined) {
+            note.bookDB.removeSync(note.sync.remoteURL);
+            note.sync = undefined;
           }
         }
-        noteStore.settings.sync.enabled = command.data;
-        await noteStore.settingsDB.put(noteStore.settings);
+        note.settings.sync.enabled = command.data;
+        await note.settingsDB.put(note.settings);
         break;
       }
       case 'db-sync-remote-url-update': {
-        noteStore.settings.sync.remoteUrl = command.data;
-        await noteStore.settingsDB.put(noteStore.settings);
+        note.settings.sync.remoteUrl = command.data;
+        await note.settingsDB.put(note.settings);
         break;
       }
       case 'db-sync-personal-access-token-update': {
-        noteStore.settings.sync.connection.personalAccessToken = command.data;
-        await noteStore.settingsDB.put(noteStore.settings);
+        note.settings.sync.connection.personalAccessToken = command.data;
+        await note.settingsDB.put(note.settings);
         break;
       }
       case 'db-sync-interval-update': {
-        noteStore.settings.sync.interval = command.data;
-        if (noteStore.sync !== undefined) {
-          noteStore.sync.pause();
-          noteStore.sync.resume({ interval: noteStore.settings.sync.interval });
+        note.settings.sync.interval = command.data;
+        if (note.sync !== undefined) {
+          note.sync.pause();
+          note.sync.resume({ interval: note.settings.sync.interval });
         }
-        await noteStore.settingsDB.put(noteStore.settings);
+        await note.settingsDB.put(note.settings);
         break;
       }
       case 'db-test-sync': {
-        if (noteStore.sync !== undefined) {
-          noteStore.bookDB.removeSync(noteStore.sync.remoteURL);
+        if (note.sync !== undefined) {
+          note.bookDB.removeSync(note.sync.remoteURL);
         }
-        noteStore.remoteOptions = {
-          remoteUrl: noteStore.settings.sync.remoteUrl,
-          connection: noteStore.settings.sync.connection,
-          interval: noteStore.settings.sync.interval,
+        note.remoteOptions = {
+          remoteUrl: note.settings.sync.remoteUrl,
+          connection: note.settings.sync.connection,
+          interval: note.settings.sync.interval,
           conflictResolutionStrategy: 'ours-diff',
           live: true,
         };
         // eslint-disable-next-line require-atomic-updates
-        const syncOrError: [Sync, SyncResult] | Error = await noteStore.bookDB
-          .sync(noteStore.remoteOptions, true)
+        const syncOrError: [Sync, SyncResult] | Error = await note.bookDB
+          .sync(note.remoteOptions, true)
           .catch(err => {
             return err;
           });
@@ -105,29 +105,29 @@ export const addSettingsHandler = (noteStore: INoteStore) => {
           return syncOrError.name;
         }
         // eslint-disable-next-line require-atomic-updates
-        noteStore.sync = syncOrError[0];
+        note.sync = syncOrError[0];
         const syncResult = syncOrError[1];
         if (syncResult.action === 'combine database') {
-          await noteStore.combineDB(settingsDialog);
+          await note.combineDB(settingsDialog);
         }
         else {
           settingsDialog.webContents.send(
             'initialize-store',
-            noteStore.info,
-            noteStore.settings
+            note.info,
+            note.settings
           );
         }
         return 'succeed';
       }
       case 'db-pause-sync': {
-        if (noteStore.sync !== undefined) {
-          noteStore.sync.pause();
+        if (note.sync !== undefined) {
+          note.sync.pause();
         }
         break;
       }
       case 'db-resume-sync': {
-        if (noteStore.sync !== undefined) {
-          noteStore.sync.resume();
+        if (note.sync !== undefined) {
+          note.sync.resume();
         }
         break;
       }

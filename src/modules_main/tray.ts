@@ -19,13 +19,13 @@ import { CardProp } from '../modules_common/types';
 import { MESSAGE } from './messages';
 import { currentCardMap } from './card_map';
 import { createCard } from './card_create';
-import { INoteStore } from './note_store_types';
+import { INote } from './note_types';
 import { showDialog } from './utils_main';
 
 /**
  * Task tray
  */
-let noteStore: INoteStore;
+let note: INote;
 
 // Ensure a reference to Tray object is retained, or it will be GC'ed.
 let tray: Tray;
@@ -60,7 +60,7 @@ const createRandomColorCard = async () => {
 
   const cardId = generateNewCardId();
   const cardProp: Partial<CardProp> = {
-    url: `${APP_SCHEME}://local/${noteStore.settings.currentNoteId}/${cardId}`,
+    url: `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`,
     geometry,
     style: {
       uiColor: darkenHexColor(bgColor),
@@ -70,36 +70,36 @@ const createRandomColorCard = async () => {
     },
   };
 
-  await createCard(noteStore, cardProp);
+  await createCard(note, cardProp);
 };
 
 export const setTrayContextMenu = () => {
   if (!tray) {
     return;
   }
-  const currentNote = noteStore.notePropMap.get(noteStore.settings.currentNoteId);
+  const currentNote = note.notePropMap.get(note.settings.currentNoteId);
 
   let changeNotes: MenuItemConstructorOptions[] = [];
   if (currentNote !== null) {
-    changeNotes = [...noteStore.notePropMap.values()]
+    changeNotes = [...note.notePropMap.values()]
       .sort(function (a, b) {
         if (a.name > b.name) return 1;
         else if (a.name < b.name) return -1;
         return 0;
       })
-      .map(note => {
+      .map(noteProp => {
         return {
-          label: `${note.name}`,
+          label: `${noteProp.name}`,
           type: 'radio',
-          checked: note._id === noteStore.settings.currentNoteId,
+          checked: noteProp._id === note.settings.currentNoteId,
           click: () => {
-            if (note._id !== noteStore.settings.currentNoteId) {
+            if (noteProp._id !== note.settings.currentNoteId) {
               closeSettings();
               if (currentCardMap.size === 0) {
-                emitter.emit('change-note', note._id);
+                emitter.emit('change-note', noteProp._id);
               }
               else {
-                noteStore.changingToNoteId = note._id;
+                note.changingToNoteId = noteProp._id;
                 try {
                   // Remove listeners firstly to avoid focus another card in closing process
                   currentCardMap.forEach(card =>
@@ -140,7 +140,7 @@ export const setTrayContextMenu = () => {
         const newName: string | void | null = await prompt({
           title: MESSAGE('note'),
           label: MESSAGE('noteNewName'),
-          value: `${MESSAGE('noteName', String(noteStore.notePropMap.size + 1))}`,
+          value: `${MESSAGE('noteName', String(note.notePropMap.size + 1))}`,
           inputAttrs: {
             type: 'text',
             required: true,
@@ -156,13 +156,13 @@ export const setTrayContextMenu = () => {
         ) {
           return;
         }
-        const newNoteProp = await noteStore.createNote(newName as string);
+        const newNoteProp = await note.createNote(newName as string);
 
-        const firstCard = new Card(noteStore, newNoteProp._id);
+        const firstCard = new Card(note, newNoteProp._id);
         const firstCardProp = firstCard.toObject();
         // Async
-        await noteStore.updateCardBody(firstCardProp);
-        await noteStore.updateCardDoc(firstCardProp);
+        await note.updateCardBody(firstCardProp);
+        await note.updateCardDoc(firstCardProp);
 
         closeSettings();
 
@@ -171,7 +171,7 @@ export const setTrayContextMenu = () => {
         }
         else {
           // eslint-disable-next-line require-atomic-updates
-          noteStore.changingToNoteId = newNoteProp._id;
+          note.changingToNoteId = newNoteProp._id;
           try {
             // Remove listeners firstly to avoid focus another card in closing process
             currentCardMap.forEach(card => card.removeWindowListenersExceptClosedEvent());
@@ -188,7 +188,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('noteRename'),
       click: async () => {
-        const noteProp = noteStore.notePropMap.get(noteStore.settings.currentNoteId)!;
+        const noteProp = note.notePropMap.get(note.settings.currentNoteId)!;
 
         const newName: string | void | null = await prompt({
           title: MESSAGE('note'),
@@ -212,7 +212,7 @@ export const setTrayContextMenu = () => {
 
         noteProp.name = newName as string;
         noteProp.date.modifiedDate = getCurrentDateAndTime();
-        await noteStore.updateNoteDoc(noteProp);
+        await note.updateNoteDoc(noteProp);
 
         setTrayContextMenu();
         currentCardMap.forEach(card => card.resetContextMenu());
@@ -220,9 +220,9 @@ export const setTrayContextMenu = () => {
     },
     {
       label: MESSAGE('noteDelete'),
-      enabled: noteStore.notePropMap.size > 1,
+      enabled: note.notePropMap.size > 1,
       click: async () => {
-        if (noteStore.notePropMap.size <= 1) {
+        if (note.notePropMap.size <= 1) {
           return;
         }
         if (currentCardMap.size > 0) {
@@ -230,11 +230,11 @@ export const setTrayContextMenu = () => {
           return;
         }
         // Delete current note
-        await noteStore.deleteNoteDoc(noteStore.settings.currentNoteId);
-        noteStore.notePropMap.delete(noteStore.settings.currentNoteId);
+        await note.deleteNoteDoc(note.settings.currentNoteId);
+        note.notePropMap.delete(note.settings.currentNoteId);
 
-        noteStore.settings.currentNoteId = noteStore.getSortedNoteIdList()[0];
-        emitter.emit('change-note', noteStore.settings.currentNoteId);
+        note.settings.currentNoteId = note.getSortedNoteIdList()[0];
+        emitter.emit('change-note', note.settings.currentNoteId);
 
         // setTrayContextMenu() will be called in change-note event.
       },
@@ -246,7 +246,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('settings'),
       click: () => {
-        openSettings(noteStore);
+        openSettings(note);
       },
     },
     {
@@ -282,13 +282,13 @@ export const setTrayContextMenu = () => {
   tray.setToolTip(taskTrayToolTip);
 };
 
-export const initializeTaskTray = (store: INoteStore) => {
-  noteStore = store;
+export const initializeTaskTray = (store: INote) => {
+  note = store;
 
   emitter.on('updateTrayContextMenu', updateTrayContextMenu);
 
   tray = new Tray(path.join(__dirname, '../assets/' + APP_ICON_NAME));
-  currentLanguage = noteStore.settings.language;
+  currentLanguage = note.settings.language;
   setTrayContextMenu();
   tray.on('click', () => {
     createRandomColorCard();
@@ -300,12 +300,12 @@ export const initializeTaskTray = (store: INoteStore) => {
     process.env.NODE_ENV === 'development' &&
     process.env.SETTINGS_DIALOG === 'open'
   ) {
-    openSettings(noteStore);
+    openSettings(note);
   }
 };
 
 const updateTrayContextMenu = () => {
-  const newLanguage = noteStore.settings.language;
+  const newLanguage = note.settings.language;
   if (currentLanguage !== newLanguage) {
     currentLanguage = newLanguage;
     setTrayContextMenu();

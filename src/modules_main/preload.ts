@@ -28,9 +28,6 @@ contextBridge.exposeInMainWorld('api', {
     return ipcRenderer.invoke('confirm-dialog', url, buttonLabels, message);
   },
   deleteCard: (url: string) => {
-    return ipcRenderer.invoke('delete-workspace-card', url);
-  },
-  deleteCard: (url: string) => {
     return ipcRenderer.invoke('delete-card', url);
   },
   finishLoad: (url: string) => {

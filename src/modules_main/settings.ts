@@ -4,7 +4,7 @@
  */
 import path from 'path';
 import { app, BrowserWindow, shell } from 'electron';
-import { INoteStore } from './note_store_types';
+import { INote } from './note_types';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let settingsDialog: BrowserWindow;
@@ -15,7 +15,7 @@ export const closeSettings = () => {
   }
 };
 
-export const openSettings = (noteStore: INoteStore) => {
+export const openSettings = (note: INote) => {
   if (settingsDialog !== undefined && !settingsDialog.isDestroyed()) {
     return;
   }
@@ -37,7 +37,7 @@ export const openSettings = (noteStore: INoteStore) => {
   });
 
   settingsDialog.webContents.on('did-finish-load', () => {
-    settingsDialog.webContents.send('initialize-store', noteStore.info, noteStore.settings);
+    settingsDialog.webContents.send('initialize-store', note.info, note.settings);
   });
 
   settingsDialog.webContents.on('new-window', (e, _url) => {

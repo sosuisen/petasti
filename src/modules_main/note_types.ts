@@ -15,7 +15,7 @@ import { Messages } from '../modules_common/i18n';
 import { InfoState, SettingsState } from '../modules_common/store.types';
 import { CardProp, NoteProp } from '../modules_common/types';
 
-export interface INoteStore {
+export interface INote {
   remoteOptions: RemoteOptions | undefined;
   bookDB: GitDocumentDB;
   settingsDB: GitDocumentDB;

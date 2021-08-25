@@ -15,12 +15,12 @@ import {
 } from './card_zindex';
 import { currentCardMap } from './card_map';
 import { MESSAGE } from './messages';
-import { INoteStore } from './note_store_types';
+import { INote } from './note_types';
 
 /**
  * Context Menu
  */
-export const setContextMenu = (noteStore: INoteStore, card: ICard) => {
+export const setContextMenu = (note: INote, card: ICard) => {
   const setColor = (name: ColorName) => {
     return {
       label: MESSAGE(name),
@@ -39,30 +39,30 @@ export const setContextMenu = (noteStore: INoteStore, card: ICard) => {
     const newCardProp: CardProp = card.toObject();
     newCardProp.url = `${APP_SCHEME}://local/${noteId}/${getCardIdFromUrl(card.url)}`;
     // Overwrite z
-    newCardProp.geometry.z = (await noteStore.getZIndexOfTopCard(noteId)) + 1;
+    newCardProp.geometry.z = (await note.getZIndexOfTopCard(noteId)) + 1;
 
-    await noteStore.updateCardDoc(newCardProp);
+    await note.updateCardDoc(newCardProp);
 
-    await noteStore.deleteCard(card.url);
+    await note.deleteCard(card.url);
   };
 
   const copyCardToNote = async (noteId: string) => {
     const newCardProp: CardProp = card.toObject();
     newCardProp.url = `${APP_SCHEME}://local/${noteId}/${getCardIdFromUrl(card.url)}`;
     // Overwrite z
-    newCardProp.geometry.z = (await noteStore.getZIndexOfTopCard(noteId)) + 1;
+    newCardProp.geometry.z = (await note.getZIndexOfTopCard(noteId)) + 1;
 
-    await noteStore.updateCardDoc(newCardProp);
+    await note.updateCardDoc(newCardProp);
   };
 
-  const moveToNotes: MenuItemConstructorOptions[] = [...noteStore.notePropMap.values()]
+  const moveToNotes: MenuItemConstructorOptions[] = [...note.notePropMap.values()]
     .sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;
       return 0;
     })
     .reduce((result, noteProp) => {
-      if (noteProp._id !== noteStore.settings.currentNoteId) {
+      if (noteProp._id !== note.settings.currentNoteId) {
         result.push({
           label: `${noteProp.name}`,
           click: () => {
@@ -73,14 +73,14 @@ export const setContextMenu = (noteStore: INoteStore, card: ICard) => {
       return result;
     }, [] as MenuItemConstructorOptions[]);
 
-  const copyToNotes: MenuItemConstructorOptions[] = [...noteStore.notePropMap.values()]
+  const copyToNotes: MenuItemConstructorOptions[] = [...note.notePropMap.values()]
     .sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;
       return 0;
     })
     .reduce((result, noteProp) => {
-      if (noteProp._id !== noteStore.settings.currentNoteId) {
+      if (noteProp._id !== note.settings.currentNoteId) {
         result.push({
           label: `${noteProp.name}`,
           click: () => {
@@ -157,7 +157,7 @@ export const setContextMenu = (noteStore: INoteStore, card: ICard) => {
           // console.debug(`new zIndex: ${zIndex}`);
 
           // Async
-          noteStore.updateCardDoc(cardProp);
+          note.updateCardDoc(cardProp);
 
           // Update card
           card.geometry.z = zIndex;
@@ -206,7 +206,7 @@ export const setContextMenu = (noteStore: INoteStore, card: ICard) => {
   const resetContextMenu = () => {
     // @ts-ignore
     dispose();
-    setContextMenu(noteStore, card);
+    setContextMenu(note, card);
   };
 
   return resetContextMenu;
