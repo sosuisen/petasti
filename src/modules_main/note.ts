@@ -53,7 +53,10 @@ import { initSync } from './sync';
 import { MESSAGE, setMessages } from './messages';
 import { destroyTray, initializeTaskTray } from './tray';
 import { currentCardMap } from './card_map';
-import { INote } from './note_types';
+import { INote, NoteState } from './note_types';
+import { noteStore } from './note_store';
+import { noteCreateCreator, noteInitCreator } from './note_action_creator';
+import { NoteInitAction } from './note_action';
 
 export const generateNewNoteId = () => {
   const ulid = monotonicFactory();
@@ -134,15 +137,7 @@ class Note implements INote {
 
   /**
    * Note
-   *
-   * @remarks
-   * - key: noteId
-   * - value: NoteProp
    */
-  private _notePropMap: Map<string, NoteProp> = new Map();
-  get notePropMap (): Map<string, NoteProp> {
-    return this._notePropMap;
-  }
 
   changingToNoteId = 'none'; // changingToNoteId stores next id while workspace is changing, 'none' or 'exit'
 
@@ -259,13 +254,15 @@ class Note implements INote {
 
     // Load note properties
     const noteDirList = await this._noteCollection.getCollections();
+    const initialNoteState: NoteState = new Map();
     for (const noteDir of noteDirList) {
       // eslint-disable-next-line no-await-in-loop
       const prop: NoteProp = (await noteDir.get('prop')) as NoteProp;
       const pathArr = noteDir.collectionPath.split('/'); // collectionPath is note/nXXXXXX/
       prop._id = pathArr[1]; // Set note id instead of 'prop'.
-      this._notePropMap.set(prop._id, prop);
+      initialNoteState.set(prop._id, prop);
     }
+    noteStore.dispatch(noteInitCreator(initialNoteState));
 
     this._sync = await initSync(this);
 
@@ -273,9 +270,10 @@ class Note implements INote {
   };
 
   getSortedNoteIdList = (): string[] => {
-    const sortedNoteIdList = [...this._notePropMap.keys()].sort((a, b) => {
-      if (this._notePropMap.get(a)!.name > this._notePropMap.get(b)!.name) return 1;
-      else if (this._notePropMap.get(a)!.name < this._notePropMap.get(b)!.name) return -1;
+    const sortedNoteIdList = [...noteStore.getState().keys()].sort((a, b) => {
+      if (noteStore.getState().get(a)!.name > noteStore.getState().get(b)!.name) return 1;
+      else if (noteStore.getState().get(a)!.name < noteStore.getState().get(b)!.name)
+        return -1;
       return 0;
     });
     return sortedNoteIdList;
@@ -285,7 +283,7 @@ class Note implements INote {
     // Create note if not exist.
 
     let createNoteFlag = false;
-    if (this._notePropMap.size === 0) {
+    if (noteStore.getState().size === 0) {
       createNoteFlag = true;
     }
     else if (
@@ -295,12 +293,12 @@ class Note implements INote {
       this._settings.currentNoteId = this.getSortedNoteIdList()[0];
       await this._settingsDB.put(this._settings);
     }
-    else if (this._notePropMap.get(this._settings.currentNoteId) === undefined) {
+    else if (noteStore.getState().get(this._settings.currentNoteId) === undefined) {
       createNoteFlag = true;
     }
 
     if (createNoteFlag) {
-      const currentNoteProp = await this.createNote();
+      const currentNoteProp = this.createNote();
       // eslint-disable-next-line require-atomic-updates
       this._settings.currentNoteId = currentNoteProp._id;
       await this._settingsDB.put(this._settings);
@@ -361,9 +359,9 @@ class Note implements INote {
     return (task as unknown) as TaskMetadata;
   };
 
-  createNote = async (name?: string): Promise<NoteProp> => {
+  createNote = (name?: string): NoteProp => {
     if (!name) {
-      name = MESSAGE('noteName', (this._notePropMap.size + 1).toString());
+      name = MESSAGE('noteName', (noteStore.getState().size + 1).toString());
     }
     const _id = generateNewNoteId();
     const current = getCurrentDateAndTime();
@@ -377,9 +375,9 @@ class Note implements INote {
       user: 'local',
       _id,
     };
-    await this.updateNoteDoc(newNote);
-
-    this._notePropMap.set(newNote._id, newNote);
+    // tsc cannot check redux-thunk middleware
+    // @ts-ignore
+    noteStore.dispatch(noteCreateCreator(this, newNote));
 
     return newNote;
   };
@@ -481,7 +479,7 @@ class Note implements INote {
       throw new Error(`Error in updateCardDoc: ${e.message}`);
     });
     const noteId = getNoteIdFromUrl(prop.url);
-    const noteProp = this._notePropMap.get(noteId);
+    const noteProp = noteStore.getState().get(noteId);
     if (noteProp !== undefined) {
       noteProp.date.modifiedDate = getCurrentDateAndTime();
       await this.updateNoteDoc(noteProp);
@@ -507,7 +505,7 @@ class Note implements INote {
       });
 
     const noteId = getNoteIdFromUrl(url);
-    const noteProp = this._notePropMap.get(noteId);
+    const noteProp = noteStore.getState().get(noteId);
     if (noteProp !== undefined) {
       noteProp.date.modifiedDate = getCurrentDateAndTime();
       await this.updateNoteDoc(noteProp);

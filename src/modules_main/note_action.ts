@@ -1,4 +1,14 @@
+/**
+ * TreeStickies
+ * © 2021 Hidekazu Kubota
+ */
 import { NoteProp } from '../modules_common/types';
+import { NoteState } from './note_types';
+
+export interface NoteInitAction {
+  type: 'note-init';
+  payload: NoteState;
+}
 
 export interface NoteCreateAction {
   type: 'note-create';
@@ -15,4 +25,8 @@ export interface NoteDeleteAction {
   payload: string; // NoteProp._id
 }
 
-export type NoteAction = NoteCreateAction | NoteUpdateAction | NoteDeleteAction;
+export type NoteAction =
+  | NoteInitAction
+  | NoteCreateAction
+  | NoteUpdateAction
+  | NoteDeleteAction;

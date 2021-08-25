@@ -1,14 +1,22 @@
+/**
+ * TreeStickies
+ * © 2021 Hidekazu Kubota
+ */
 import { applyMiddleware, createStore } from 'redux';
 import thunk from 'redux-thunk';
-import { NoteProp } from '../modules_common/types';
 import { NoteAction } from './note_action';
+import { NoteState } from './note_types';
 
 const noteReducer = (
   // eslint-disable-next-line default-param-last
-  state: Map<string, NoteProp> = new Map(),
+  state: NoteState = new Map(),
   action: NoteAction
 ) => {
   switch (action.type) {
+    case 'note-init': {
+      const newState = new Map(action.payload);
+      return newState;
+    }
     case 'note-create': {
       const newState = new Map(state);
       newState.set(action.payload._id, action.payload);

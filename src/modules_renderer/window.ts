@@ -19,7 +19,6 @@ interface WindowWithAPI extends Window {
       label: MessageLabel
     ) => Promise<number>;
     deleteCard: (url: string) => Promise<void>;
-    deleteCard: (url: string) => Promise<void>;
     finishLoad: (url: string) => Promise<void>;
     finishRenderCard: (url: string) => Promise<void>;
     focus: (url: string) => Promise<void>;

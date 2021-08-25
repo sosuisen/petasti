@@ -16,6 +16,7 @@ import {
 import { currentCardMap } from './card_map';
 import { MESSAGE } from './messages';
 import { INote } from './note_types';
+import { noteStore } from './note_store';
 
 /**
  * Context Menu
@@ -55,7 +56,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
     await note.updateCardDoc(newCardProp);
   };
 
-  const moveToNotes: MenuItemConstructorOptions[] = [...note.notePropMap.values()]
+  const moveToNotes: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
     .sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;
@@ -73,7 +74,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
       return result;
     }, [] as MenuItemConstructorOptions[]);
 
-  const copyToNotes: MenuItemConstructorOptions[] = [...note.notePropMap.values()]
+  const copyToNotes: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
     .sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;

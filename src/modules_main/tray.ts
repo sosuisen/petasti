@@ -21,6 +21,7 @@ import { currentCardMap } from './card_map';
 import { createCard } from './card_create';
 import { INote } from './note_types';
 import { showDialog } from './utils_main';
+import { noteStore } from './note_store';
 
 /**
  * Task tray
@@ -77,11 +78,11 @@ export const setTrayContextMenu = () => {
   if (!tray) {
     return;
   }
-  const currentNote = note.notePropMap.get(note.settings.currentNoteId);
+  const currentNote = noteStore.getState().get(note.settings.currentNoteId);
 
   let changeNotes: MenuItemConstructorOptions[] = [];
   if (currentNote !== null) {
-    changeNotes = [...note.notePropMap.values()]
+    changeNotes = [...noteStore.getState().values()]
       .sort(function (a, b) {
         if (a.name > b.name) return 1;
         else if (a.name < b.name) return -1;
@@ -140,7 +141,7 @@ export const setTrayContextMenu = () => {
         const newName: string | void | null = await prompt({
           title: MESSAGE('note'),
           label: MESSAGE('noteNewName'),
-          value: `${MESSAGE('noteName', String(note.notePropMap.size + 1))}`,
+          value: `${MESSAGE('noteName', String(noteStore.getState().size + 1))}`,
           inputAttrs: {
             type: 'text',
             required: true,
@@ -188,7 +189,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('noteRename'),
       click: async () => {
-        const noteProp = note.notePropMap.get(note.settings.currentNoteId)!;
+        const noteProp = noteStore.getState().get(note.settings.currentNoteId)!;
 
         const newName: string | void | null = await prompt({
           title: MESSAGE('note'),
@@ -220,9 +221,9 @@ export const setTrayContextMenu = () => {
     },
     {
       label: MESSAGE('noteDelete'),
-      enabled: note.notePropMap.size > 1,
+      enabled: noteStore.getState().size > 1,
       click: async () => {
-        if (note.notePropMap.size <= 1) {
+        if (noteStore.getState().size <= 1) {
           return;
         }
         if (currentCardMap.size > 0) {
@@ -231,7 +232,7 @@ export const setTrayContextMenu = () => {
         }
         // Delete current note
         await note.deleteNoteDoc(note.settings.currentNoteId);
-        note.notePropMap.delete(note.settings.currentNoteId);
+        noteStore.getState().delete(note.settings.currentNoteId);
 
         note.settings.currentNoteId = note.getSortedNoteIdList()[0];
         emitter.emit('change-note', note.settings.currentNoteId);

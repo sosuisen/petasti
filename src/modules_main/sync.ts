@@ -15,6 +15,8 @@ import { INote } from './note_types';
 import { NoteProp } from '../modules_common/types';
 import { currentCardMap } from './card_map';
 import { setTrayContextMenu } from './tray';
+import { noteStore } from './note_store';
+import { noteCreateCreator } from './note_action_creator';
 
 export const initSync = async (note: INote): Promise<Sync | undefined> => {
   let sync: Sync | undefined;
@@ -84,7 +86,10 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           if (changedFile.operation === 'insert') {
             const prop = changedFile.new.doc as NoteProp;
             prop._id = noteId; // Set note id instead of 'prop'.
-            note.notePropMap.set(noteId, prop);
+            noteStore.dispatch(
+              // @ts-ignore
+              noteCreateCreator(note, prop, taskMetadata.enqueueTime, 'remote')
+            );
 
             setTrayContextMenu();
             currentCardMap.forEach(card => card.resetContextMenu());
@@ -93,7 +98,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
             const prop = changedFile.new.doc as NoteProp;
             prop._id = noteId; // Set note id instead of 'prop'.
             // TaskQueue の日時をチェックして、すでに新しい noteProp 修正コマンドが出ていたらそこでキャンセル
-            // note.notePropMap.set(noteId, prop);
+
             // TODO: Update note in context menu on Tray and Card
             // すでに削除されたノートに対する更新は、新規ノート作成
           }

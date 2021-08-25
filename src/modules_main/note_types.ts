@@ -15,6 +15,8 @@ import { Messages } from '../modules_common/i18n';
 import { InfoState, SettingsState } from '../modules_common/store.types';
 import { CardProp, NoteProp } from '../modules_common/types';
 
+export type NoteState = Map<string, NoteProp>;
+
 export interface INote {
   remoteOptions: RemoteOptions | undefined;
   bookDB: GitDocumentDB;
@@ -40,9 +42,8 @@ export interface INote {
 
   deleteCard: (cardUrl: string) => Promise<void>;
 
-  notePropMap: Map<string, NoteProp>;
   getSortedNoteIdList: () => string[];
   changingToNoteId: string;
-  createNote: (name?: string) => Promise<NoteProp>;
+  createNote: (name?: string) => NoteProp;
   getZIndexOfTopCard: (noteId: string) => Promise<number>;
 }
