@@ -22,6 +22,7 @@ import { createCard } from './card_create';
 import { INote } from './note_types';
 import { showDialog } from './utils_main';
 import { noteStore } from './note_store';
+import { noteDeleteCreator } from './note_action_creator';
 
 /**
  * Task tray
@@ -231,8 +232,8 @@ export const setTrayContextMenu = () => {
           return;
         }
         // Delete current note
-        await note.deleteNoteDoc(note.settings.currentNoteId);
-        noteStore.getState().delete(note.settings.currentNoteId);
+        // @ts-ignore
+        noteStore.dispatch(noteDeleteCreator(note, note.settings.currentNoteId));
 
         note.settings.currentNoteId = note.getSortedNoteIdList()[0];
         emitter.emit('change-note', note.settings.currentNoteId);

@@ -16,7 +16,13 @@ import { NoteProp } from '../modules_common/types';
 import { currentCardMap } from './card_map';
 import { setTrayContextMenu } from './tray';
 import { noteStore } from './note_store';
-import { noteCreateCreator } from './note_action_creator';
+import {
+  noteCreateCreator,
+  noteDeleteCreator,
+  noteInitCreator,
+  noteUpdateCreator,
+} from './note_action_creator';
+import { emitter } from './event';
 
 export const initSync = async (note: INote): Promise<Sync | undefined> => {
   let sync: Sync | undefined;
@@ -58,7 +64,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
     sync,
     'localChange',
     // eslint-disable-next-line complexity
-    (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
+    async (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
       for (const changedFile of changes) {
         let cardId = '';
         let noteId = '';
@@ -88,7 +94,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
             prop._id = noteId; // Set note id instead of 'prop'.
             noteStore.dispatch(
               // @ts-ignore
-              noteCreateCreator(note, prop, taskMetadata.enqueueTime, 'remote')
+              noteCreateCreator(note, prop, 'remote')
             );
 
             setTrayContextMenu();
@@ -97,20 +103,57 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           else if (changedFile.operation === 'update') {
             const prop = changedFile.new.doc as NoteProp;
             prop._id = noteId; // Set note id instead of 'prop'.
-            // TaskQueue の日時をチェックして、すでに新しい noteProp 修正コマンドが出ていたらそこでキャンセル
+            // Deleted note will be created again.
+            // Expired update will be skipped.
+            noteStore.dispatch(
+              // @ts-ignore
+              noteUpdateCreator(note, prop, 'remote', taskMetadata.enqueueTime)
+            );
 
-            // TODO: Update note in context menu on Tray and Card
-            // すでに削除されたノートに対する更新は、新規ノート作成
+            setTrayContextMenu();
+            currentCardMap.forEach(card => card.resetContextMenu());
           }
           else if (changedFile.operation === 'delete') {
-            // TaskQueue の日時をチェックして、すでに新しい noteProp 修正コマンドが出ていたらそこでキャンセル
-            // TODO: First, check cards under the note directory.
-            // TODO: If card does not exist:
-            // TODO: - Delete background note.
-            // TODO: - Delete current note if noteId is currentNoteId
-            // TODO: - Delete note in context menu on Tray and Card if exists.
-            // コンフリクトに注意。なお ours 戦略なので、こちらでノートの更新日付修正があれば削除はされない。
-            // もしカードがある場合は、削除されたノートを復活させる。
+            // eslint-disable-next-line no-await-in-loop
+            const cardDocs = await note.noteCollection.find({
+              prefix: noteId + '/c',
+            });
+            if (cardDocs.length === 0) {
+              // Expired update will be skipped.
+              noteStore.dispatch(
+                // @ts-ignore
+                noteDeleteCreator(note, noteId, 'remote', taskMetadata.enqueueTime)
+              );
+              if (noteId === note.settings.currentNoteId) {
+                note.settings.currentNoteId = note.getSortedNoteIdList()[0];
+                emitter.emit('change-note', note.settings.currentNoteId);
+                // setTrayContextMenu() will be called in change-note event.
+              }
+              else {
+                setTrayContextMenu();
+                currentCardMap.forEach(card => card.resetContextMenu());
+              }
+            }
+            else {
+              // Card exists. Revert deleted note
+              note.noteCollection
+                .getOldRevision(noteId, 0, {
+                  filter: [{ author: { name: note.bookDB.author.name } }],
+                })
+                .then(revertedNote => {
+                  if (revertedNote) {
+                    note.noteCollection.put(revertedNote);
+                  }
+                  else throw new Error('backNumber does not found');
+                })
+                .then(() => {
+                  if (sync) {
+                    sync.trySync();
+                  }
+                })
+                .catch((err: Error) => console.log(err.message));
+              break;
+            }
           }
         }
         else {

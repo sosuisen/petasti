@@ -75,6 +75,8 @@ export type NoteProp = {
   name: string;
   user: string;
   date: CartaDate;
+
+  updatedTime?: string; // only for redux-thunk
 };
 
 export type CardStatus = 'Focused' | 'Blurred';

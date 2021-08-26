@@ -344,9 +344,12 @@ class Note implements INote {
   };
 
   updateNoteDoc = async (noteProp: NoteProp): Promise<TaskMetadata> => {
+    const serializingProp = JSON.parse(JSON.stringify(noteProp));
+    delete serializingProp.updatedTime;
+
     const task = await new Promise((resolve, reject) => {
       this._noteCollection
-        .put(noteProp._id + '/prop', noteProp, {
+        .put(noteProp._id + '/prop', serializingProp, {
           enqueueCallback: (taskMetadata: TaskMetadata) => {
             resolve(taskMetadata);
           },
