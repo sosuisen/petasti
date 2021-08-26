@@ -3,6 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 import { contextBridge, ipcRenderer, MouseInputEvent } from 'electron';
+import { ChangedFile, TaskMetadata } from 'git-documentdb';
 import { CardProp, SavingTarget } from '../modules_common/types';
 
 contextBridge.exposeInMainWorld('api', {
@@ -29,6 +30,9 @@ contextBridge.exposeInMainWorld('api', {
   },
   deleteCard: (url: string) => {
     return ipcRenderer.invoke('delete-card', url);
+  },
+  deleteCardBody: (url: string) => {
+    return ipcRenderer.invoke('delete-card-body', url);
   },
   finishLoad: (url: string) => {
     return ipcRenderer.invoke('finish-load-' + url);
@@ -111,3 +115,15 @@ ipcRenderer.on('set-lock', (event: Electron.IpcRendererEvent, locked: boolean) =
 });
 ipcRenderer.on('zoom-in', () => window.postMessage({ command: 'zoom-in' }, 'file://'));
 ipcRenderer.on('zoom-out', () => window.postMessage({ command: 'zoom-out' }, 'file://'));
+
+ipcRenderer.on(
+  'sync-card',
+  (event: Electron.IpcRendererEvent, changedFile: ChangedFile, enqueueTime: string) =>
+    window.postMessage({ command: 'sync-card', changedFile, enqueueTime }, 'file://')
+);
+
+ipcRenderer.on(
+  'sync-card-body',
+  (event: Electron.IpcRendererEvent, changedFile: ChangedFile, enqueueTime: string) =>
+    window.postMessage({ command: 'sync-card-body', changedFile, enqueueTime }, 'file://')
+);

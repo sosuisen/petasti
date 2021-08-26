@@ -85,7 +85,7 @@ export type SavingTarget = 'BodyOnly' | 'PropertyOnly' | 'Card';
 
 export type Task = {
   prop: CardPropStatus;
-  type: 'Save' | 'DeleteCard' | 'DeleteCard';
+  type: 'Save' | 'DeleteCard' | 'DeleteCardBody';
   target?: SavingTarget;
 };
 

@@ -18,11 +18,11 @@ import { APP_ICON_NAME, APP_SCHEME, DEFAULT_CARD_GEOMETRY } from '../modules_com
 import { CardProp } from '../modules_common/types';
 import { MESSAGE } from './messages';
 import { currentCardMap } from './card_map';
-import { createCard } from './card_create';
+import { createCardWindow } from './card_create';
 import { INote } from './note_types';
 import { showDialog } from './utils_main';
 import { noteStore } from './note_store';
-import { noteDeleteCreator } from './note_action_creator';
+import { noteDeleteCreator, noteUpdateCreator } from './note_action_creator';
 
 /**
  * Task tray
@@ -72,7 +72,7 @@ const createRandomColorCard = async () => {
     },
   };
 
-  await createCard(note, cardProp);
+  await createCardWindow(note, cardProp);
 };
 
 export const setTrayContextMenu = () => {
@@ -214,7 +214,10 @@ export const setTrayContextMenu = () => {
 
         noteProp.name = newName as string;
         noteProp.date.modifiedDate = getCurrentDateAndTime();
-        await note.updateNoteDoc(noteProp);
+        noteStore.dispatch(
+          // @ts-ignore
+          noteUpdateCreator(note, prop)
+        );
 
         setTrayContextMenu();
         currentCardMap.forEach(card => card.resetContextMenu());
@@ -223,7 +226,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('noteDelete'),
       enabled: noteStore.getState().size > 1,
-      click: async () => {
+      click: () => {
         if (noteStore.getState().size <= 1) {
           return;
         }

@@ -18,7 +18,7 @@ import {
   setZIndexOfBottomCard,
   setZIndexOfTopCard,
 } from './modules_main/card_zindex';
-import { createCard } from './modules_main/card_create';
+import { createCardWindow } from './modules_main/card_create';
 
 // process.on('unhandledRejection', console.dir);
 
@@ -163,9 +163,13 @@ ipcMain.handle(
   }
 );
 
+ipcMain.handle('delete-card-body', async (event, url: string) => {
+  await note.deleteCard(url);
+  await note.deleteCardBodyDoc(getCardIdFromUrl(url));
+});
+
 ipcMain.handle('delete-card', async (event, url: string) => {
   await note.deleteCard(url);
-  await note.deleteCardBody(getCardIdFromUrl(url));
 });
 
 ipcMain.handle('finish-render-card', (event, url: string) => {
@@ -182,7 +186,7 @@ ipcMain.handle(
       const cardId = generateNewCardId();
       cardProp.url = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
     }
-    await createCard(note, cardProp);
+    await createCardWindow(note, cardProp);
   }
 );
 

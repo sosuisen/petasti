@@ -55,8 +55,11 @@ import { destroyTray, initializeTaskTray } from './tray';
 import { currentCardMap } from './card_map';
 import { INote, NoteState } from './note_types';
 import { noteStore } from './note_store';
-import { noteCreateCreator, noteInitCreator } from './note_action_creator';
-import { NoteInitAction } from './note_action';
+import {
+  noteCreateCreator,
+  noteInitCreator,
+  noteUpdateCreator,
+} from './note_action_creator';
 
 export const generateNewNoteId = () => {
   const ulid = monotonicFactory();
@@ -456,7 +459,7 @@ class Note implements INote {
   updateCardBody = async (prop: CardProp): Promise<void> => {
     console.debug(`# Saving card doc: ${prop.url}`);
     const cardId = getCardIdFromUrl(prop.url);
-    const cardDoc: CardBody = {
+    const cardBodyDoc: CardBody = {
       version: prop.version,
       type: prop.type,
       user: prop.user,
@@ -464,36 +467,51 @@ class Note implements INote {
       _body: prop._body,
       _id: cardId,
     };
-    await this._cardCollection.put(cardDoc).catch(e => {
+    await this._cardCollection.put(cardBodyDoc).catch(e => {
       throw new Error(`Error in updateCardBody: ${e.message}`);
     });
+    // Update currentCardMap
+    const newCard = currentCardMap.get(prop.url);
+    newCard.version = cardBodyDoc.version;
+    newCard.type = cardBodyDoc.type;
+    newCard.user = cardBodyDoc.user;
+    newCard.date = cardBodyDoc.date;
+    newCard._body = cardBodyDoc._body;
   };
 
   updateCardDoc = async (prop: CardProp): Promise<void> => {
     console.debug(`# Saving card doc: ${prop.url}`);
     const cardId = getCardIdFromUrl(prop.url);
-    const noteCardBody: CardDoc = {
+    const cardDoc: CardDoc = {
       geometry: prop.geometry,
       style: prop.style,
       condition: prop.condition,
       _id: getNoteIdFromUrl(prop.url) + '/' + cardId,
     };
-    await this._noteCollection.put(noteCardBody).catch(e => {
+    await this._noteCollection.put(cardDoc).catch(e => {
       throw new Error(`Error in updateCardDoc: ${e.message}`);
     });
+    // Update currentCardMap
+    const newCard = currentCardMap.get(prop.url);
+    newCard.geometry = cardDoc.geometry;
+    newCard.style = cardDoc.style;
+    newCard.condition = cardDoc.condition;
+
+    // Update note store & DB
     const noteId = getNoteIdFromUrl(prop.url);
     const noteProp = noteStore.getState().get(noteId);
     if (noteProp !== undefined) {
       noteProp.date.modifiedDate = getCurrentDateAndTime();
-      await this.updateNoteDoc(noteProp);
+      // @ts-ignore
+      noteStore.dispatch(noteUpdateCreator(this, noteProp));
     }
     else {
       throw new Error(`Error in updateCardDoc: note ${noteId} does not exist.`);
     }
   };
 
-  deleteCardBody = async (url: string) => {
-    console.debug(`# Deleting card doc: ${url}`);
+  deleteCardBodyDoc = async (url: string) => {
+    console.debug(`# Deleting card body doc: ${url}`);
     await this._cardCollection.delete(getCardIdFromUrl(url)).catch(e => {
       throw new Error(`Error in deletingCardBody: ${e.message}`);
     });
@@ -507,11 +525,13 @@ class Note implements INote {
         throw new Error(`Error in deletingCardDoc: ${e.message}`);
       });
 
+    // Update note store & DB
     const noteId = getNoteIdFromUrl(url);
     const noteProp = noteStore.getState().get(noteId);
     if (noteProp !== undefined) {
       noteProp.date.modifiedDate = getCurrentDateAndTime();
-      await this.updateNoteDoc(noteProp);
+      // @ts-ignore
+      noteStore.dispatch(noteUpdateCreator(this, noteProp));
     }
     else {
       throw new Error(`Error in deleteCardDoc: note ${noteId} does not exist.`);

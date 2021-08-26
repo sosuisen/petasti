@@ -9,7 +9,7 @@ import { currentCardMap } from './card_map';
 import { getZIndexOfTopCard } from './card_zindex';
 import { INote } from './note_types';
 
-export const createCard = async (
+export const createCardWindow = async (
   note: INote,
   partialCardProp: Partial<CardProp>
 ): Promise<void> => {
@@ -22,14 +22,11 @@ export const createCard = async (
   currentCardMap.set(card.url, card);
 
   const newCardProp = card.toObject();
-
   // Async
   note.updateCardBody(newCardProp);
-
-  // Sync
-  await note.updateCardDoc(newCardProp);
+  note.updateCardDoc(newCardProp);
 
   await card.render();
-  console.debug(`focus in createCard: ${card.url}`);
+  console.debug(`focus in createCardWindow: ${card.url}`);
   card.window.focus();
 };

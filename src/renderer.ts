@@ -3,6 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 
+import { ChangedFile } from 'git-documentdb';
 import { CardProp, CardPropStatus } from './modules_common/types';
 import {
   CardCssStyle,
@@ -29,6 +30,7 @@ import {
 import { darkenHexColor } from './modules_common/color';
 import {
   deleteCard,
+  deleteCardBody,
   saveCard,
   saveCardColor,
   waitUnfinishedTasks,
@@ -123,7 +125,7 @@ const initializeUIEvents = () => {
     }
 
     if (cardPropStatus._body === '' || event.ctrlKey) {
-      deleteCard(cardPropStatus);
+      deleteCardBody(cardPropStatus);
     }
     else {
       /**
@@ -335,6 +337,12 @@ window.addEventListener('message', event => {
     case 'zoom-out':
       onZoomOut();
       break;
+    case 'sync-card':
+      onSyncCard(event.data.changedFile, event.data.enqueueTime);
+      break;
+    case 'sync-card-body':
+      onSyncCardBody(event.data.changedFile, event.data.enqueueTime);
+      break;
     default:
       break;
   }
@@ -495,6 +503,35 @@ const onZoomOut = () => {
   render(['CardStyle', 'EditorStyle']);
 
   saveCard(cardPropStatus, 'PropertyOnly');
+};
+
+const onSyncCard = (changedFile: ChangedFile, enqueueTime: string) => {
+  if (changedFile.operation === 'insert') {
+    // TODO: Create new Card if noteId is currentNoteId.
+    // TODO: Create new note (with default props) if not exits
+  }
+  else if (changedFile.operation === 'update') {
+    // TaskQueue の日時をチェックして、すでに新しい cardProp 修正コマンドが出ていたらそこでキャンセル
+    // TODO: Update new Card if noteId is currentNoteId.
+    // すでに削除されたノートに対する更新は、新規ノート作成
+  }
+  else if (changedFile.operation === 'delete') {
+    // TaskQueue の日時をチェックして、すでに新しい cardProp 修正コマンドが出ていたらそこでキャンセル
+    // TODO: Delete card if noteId is currentNoteId
+    // コンフリクトに注意。なお ours 戦略なので、こちらでカードの更新日付修正があれば削除はされない。
+  }
+};
+
+const onSyncCardBody = (changedFile: ChangedFile, enqueueTime: string) => {
+  if (changedFile.operation === 'insert') {
+    //
+  }
+  else if (changedFile.operation === 'update') {
+    //
+  }
+  else if (changedFile.operation === 'delete') {
+    //
+  }
 };
 
 const filterContentsFrameMessage = (event: MessageEvent): ContentsFrameMessage => {

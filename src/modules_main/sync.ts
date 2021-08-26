@@ -41,20 +41,20 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
     (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
       for (const changedFile of changes) {
         let cardBodyId: string;
-        if (changedFile.operation === 'insert') {
+        if (changedFile.operation === 'insert' || changedFile.operation === 'update') {
           cardBodyId = (changedFile.new.doc as JsonDoc)._id;
-          // nop
-        }
-        else if (changedFile.operation === 'update') {
-          cardBodyId = (changedFile.new.doc as JsonDoc)._id;
-          // TODO: Update body, date of target Card if currentCardMap contains it.
-          const card = currentCardMap.get(cardBodyId);
         }
         else if (changedFile.operation === 'delete') {
           cardBodyId = (changedFile.old.doc as JsonDoc)._id;
-          // TODO: Delete body of target Card if currentCardMap contains it.
-          // TaskQueue の日時をチェックして、すでに新しい _body 修正コマンドが出ていたらそこでキャンセル
-          // かつ、削除されたカードに対する更新は、カードを作成する仕様とする必要がある。
+        }
+
+        const card = currentCardMap.get(cardBodyId);
+        if (card !== undefined) {
+          card.window.webContents.send(
+            'sync-card-body',
+            changedFile,
+            taskMetadata.enqueueTime
+          );
         }
       }
     }
@@ -159,24 +159,12 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
         else {
           const card = currentCardMap.get(cardId);
           if (card) {
-            card.window.webContents.send('sync-card', changes, taskMetadata);
+            card.window.webContents.send(
+              'sync-card',
+              changedFile,
+              taskMetadata.enqueueTime
+            );
           }
-          /*
-        if (changedFile.operation === 'insert') {
-          // TODO: Create new Card if noteId is currentNoteId.
-          // TODO: Create new note (with default props) if not exits
-        }
-        else if (changedFile.operation === 'update') {
-          // TaskQueue の日時をチェックして、すでに新しい cardProp 修正コマンドが出ていたらそこでキャンセル
-          // TODO: Update new Card if noteId is currentNoteId.
-          // すでに削除されたノートに対する更新は、新規ノート作成
-        }
-        else if (changedFile.operation === 'delete') {
-          // TaskQueue の日時をチェックして、すでに新しい cardProp 修正コマンドが出ていたらそこでキャンセル
-          // TODO: Delete card if noteId is currentNoteId
-          // コンフリクトに注意。なお ours 戦略なので、こちらでカードの更新日付修正があれば削除はされない。
-        }
-        */
         }
       }
     }
