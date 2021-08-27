@@ -344,41 +344,6 @@ class Note implements INote {
     return [newNote, firstCardProp];
   };
 
-  updateNoteDoc = async (noteProp: NoteProp): Promise<TaskMetadata> => {
-    const serializingProp = JSON.parse(JSON.stringify(noteProp));
-    delete serializingProp.updatedTime;
-
-    const task = await new Promise((resolve, reject) => {
-      this._noteCollection
-        .put(noteProp._id + '/prop', serializingProp, {
-          enqueueCallback: (taskMetadata: TaskMetadata) => {
-            resolve(taskMetadata);
-          },
-        })
-        .catch(err => reject(err));
-    }).catch((err: Error) => console.log(err.message + ', ' + noteProp._id));
-    if (this._sync) {
-      this._sync.trySync();
-    }
-    return (task as unknown) as TaskMetadata;
-  };
-
-  deleteNoteDoc = async (noteId: string): Promise<TaskMetadata> => {
-    const task = await new Promise((resolve, reject) => {
-      this._noteCollection
-        .delete(noteId + '/prop', {
-          enqueueCallback: (taskMetadata: TaskMetadata) => {
-            resolve(taskMetadata);
-          },
-        })
-        .catch(err => reject(err));
-    }).catch((err: Error) => console.log(err.message + ', ' + noteId + '/prop'));
-    if (this._sync) {
-      this._sync.trySync();
-    }
-    return (task as unknown) as TaskMetadata;
-  };
-
   /**
    * Card
    */
@@ -591,6 +556,41 @@ class Note implements INote {
     return Promise.resolve();
   };
 
+  updateNoteDoc = async (noteProp: NoteProp): Promise<TaskMetadata> => {
+    const serializingProp = JSON.parse(JSON.stringify(noteProp));
+    delete serializingProp.updatedTime;
+
+    const task = await new Promise((resolve, reject) => {
+      this._noteCollection
+        .put(noteProp._id + '/prop', serializingProp, {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            resolve(taskMetadata);
+          },
+        })
+        .catch(err => reject(err));
+    }).catch((err: Error) => console.log(err.message + ', ' + noteProp._id));
+    if (this._sync) {
+      this._sync.trySync();
+    }
+    return (task as unknown) as TaskMetadata;
+  };
+
+  deleteNoteDoc = async (noteId: string): Promise<TaskMetadata> => {
+    const task = await new Promise((resolve, reject) => {
+      this._noteCollection
+        .delete(noteId + '/prop', {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            resolve(taskMetadata);
+          },
+        })
+        .catch(err => reject(err));
+    }).catch((err: Error) => console.log(err.message + ', ' + noteId + '/prop'));
+    if (this._sync) {
+      this._sync.trySync();
+    }
+    return (task as unknown) as TaskMetadata;
+  };
+
   private _updateCardBodyDoc = async (prop: CardProp): Promise<CardBody> => {
     console.debug(`# Saving card body doc: ${prop.url}`);
     const cardId = getCardIdFromUrl(prop.url);
@@ -627,7 +627,7 @@ class Note implements INote {
   private _deleteCardBodyDoc = async (url: string) => {
     console.debug(`# Deleting card body doc: ${url}`);
     await this._cardCollection.delete(getCardIdFromUrl(url)).catch(e => {
-      throw new Error(`Error in deletingCardBody: ${e.message}`);
+      console.log(`Error in deletingCardBody: ${e.message}`);
     });
   };
 
@@ -636,7 +636,7 @@ class Note implements INote {
     await this._noteCollection
       .delete(getNoteIdFromUrl(url) + '/' + getCardIdFromUrl(url))
       .catch(e => {
-        throw new Error(`Error in deletingCardSketchDoc: ${e.message}`);
+        console.log(`Error in deletingCardSketchDoc: ${e.message}`);
       });
   };
 }

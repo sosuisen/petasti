@@ -34,6 +34,9 @@ export interface INote {
 
   closeDB: () => Promise<void>;
 
+  updateNoteDoc: (noteProp: NoteProp) => Promise<TaskMetadata>;
+  deleteNoteDoc: (noteId: string) => Promise<TaskMetadata>;
+
   updateCard: (prop: CardProp) => Promise<void>;
   updateCardBody: (prop: CardProp) => Promise<void>;
   updateCardSketch: (prop: CardProp) => Promise<void>;
