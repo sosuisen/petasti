@@ -63,7 +63,7 @@ export type CardBody = {
   _id: string;
 };
 
-export type CardDoc = {
+export type CardSketch = {
   geometry: Geometry;
   style: CardStyle;
   condition: CardCondition;
@@ -81,11 +81,11 @@ export type NoteProp = {
 
 export type CardStatus = 'Focused' | 'Blurred';
 
-export type SavingTarget = 'BodyOnly' | 'PropertyOnly' | 'Card';
+export type SavingTarget = 'BodyOnly' | 'SketchOnly' | 'Card';
 
 export type Task = {
   prop: CardPropStatus;
-  type: 'Save' | 'DeleteCard' | 'DeleteCardBody';
+  type: 'Save' | 'DeleteCardSketch' | 'DeleteCard';
   target?: SavingTarget;
 };
 

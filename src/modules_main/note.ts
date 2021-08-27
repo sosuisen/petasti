@@ -24,7 +24,7 @@ import {
   getCurrentDateAndTime,
   getNoteIdFromUrl,
 } from '../modules_common/utils';
-import { CardBody, CardDoc, CardProp, NoteProp } from '../modules_common/types';
+import { CardBody, CardProp, CardSketch, NoteProp } from '../modules_common/types';
 import {
   defaultDataDir,
   InfoState,
@@ -339,8 +339,7 @@ class Note implements INote {
     // Add first card
     const firstCard = new Card(this, _id);
     const firstCardProp = firstCard.toObject();
-    await note.updateCardBodyDoc(firstCardProp);
-    await note.updateCardDoc(firstCardProp);
+    await note.updateCard(firstCardProp);
 
     return [newNote, firstCardProp];
   };
@@ -437,15 +436,122 @@ class Note implements INote {
     return cardProps;
   };
 
+  updateCard = async (prop: CardProp): Promise<void> => {
+    const cardBody = await this._updateCardBodyDoc(prop);
+    const cardSketch = await this._updateCardSketchDoc(prop);
+
+    // Update currentCardMap
+    const card = currentCardMap.get(prop.url);
+    if (card) {
+      card.version = cardBody.version;
+      card.type = cardBody.type;
+      card.user = cardBody.user;
+      card.date = cardBody.date;
+      card._body = cardBody._body;
+
+      card.geometry = cardSketch.geometry;
+      card.style = cardSketch.style;
+      card.condition = cardSketch.condition;
+    }
+    else {
+      console.log('Card does note exist in currentCardMap: ' + prop.url);
+    }
+
+    // Update note store & DB
+    const noteId = getNoteIdFromUrl(prop.url);
+    const noteProp = noteStore.getState().get(noteId);
+    if (noteProp !== undefined) {
+      noteProp.date.modifiedDate = getCurrentDateAndTime();
+      // @ts-ignore
+      noteStore.dispatch(noteUpdateCreator(this, noteProp));
+    }
+    else {
+      console.log(`Note ${noteId} does not exist.`);
+    }
+  };
+
+  updateCardBody = async (prop: CardProp): Promise<void> => {
+    const cardBody = await this._updateCardBodyDoc(prop);
+
+    // Update currentCardMap
+    const card = currentCardMap.get(prop.url);
+    if (card) {
+      card.version = cardBody.version;
+      card.type = cardBody.type;
+      card.user = cardBody.user;
+      card.date = cardBody.date;
+      card._body = cardBody._body;
+    }
+    else {
+      console.log('Card does note exist in currentCardMap: ' + prop.url);
+    }
+
+    // Update note store & DB
+    const noteId = getNoteIdFromUrl(prop.url);
+    const noteProp = noteStore.getState().get(noteId);
+    if (noteProp !== undefined) {
+      noteProp.date.modifiedDate = getCurrentDateAndTime();
+      // @ts-ignore
+      noteStore.dispatch(noteUpdateCreator(this, noteProp));
+    }
+    else {
+      console.log(`Note ${noteId} does not exist.`);
+    }
+  };
+
+  updateCardSketch = async (prop: CardProp): Promise<void> => {
+    const cardSketch = await this._updateCardSketchDoc(prop);
+
+    // Update currentCardMap
+    const card = currentCardMap.get(prop.url);
+    if (card) {
+      card.geometry = cardSketch.geometry;
+      card.style = cardSketch.style;
+      card.condition = cardSketch.condition;
+    }
+    else {
+      console.log('Card does note exist in currentCardMap: ' + prop.url);
+    }
+
+    // Update note store & DB
+    const noteId = getNoteIdFromUrl(prop.url);
+    const noteProp = noteStore.getState().get(noteId);
+    if (noteProp !== undefined) {
+      noteProp.date.modifiedDate = getCurrentDateAndTime();
+      // @ts-ignore
+      noteStore.dispatch(noteUpdateCreator(this, noteProp));
+    }
+    else {
+      console.log(`Note ${noteId} does not exist.`);
+    }
+  };
+
   deleteCard = async (cardUrl: string) => {
+    await this.deleteCardSketch(cardUrl);
+    await this._deleteCardBodyDoc(cardUrl);
+  };
+
+  deleteCardSketch = async (cardUrl: string) => {
     const card = currentCardMap.get(cardUrl);
 
     if (card !== undefined) {
       if (!card.window.isDestroyed()) {
         card.window.destroy();
       }
-      await this.deleteCardDoc(cardUrl);
+      await this._deleteCardSketchDoc(cardUrl);
       currentCardMap.delete(cardUrl);
+
+      // Update note store & DB
+      const noteId = getNoteIdFromUrl(cardUrl);
+      const noteProp = noteStore.getState().get(noteId);
+      if (noteProp !== undefined) {
+        noteProp.date.modifiedDate = getCurrentDateAndTime();
+        // @ts-ignore
+        noteStore.dispatch(noteUpdateCreator(this, noteProp));
+      }
+      else {
+        throw new Error(`Error in deleteCardSketch: note ${noteId} does not exist.`);
+      }
     }
     else {
       console.error(`${cardUrl} does not exist`);
@@ -485,8 +591,8 @@ class Note implements INote {
     return Promise.resolve();
   };
 
-  updateCardBodyDoc = async (prop: CardProp): Promise<void> => {
-    console.debug(`# Saving card doc: ${prop.url}`);
+  private _updateCardBodyDoc = async (prop: CardProp): Promise<CardBody> => {
+    console.debug(`# Saving card body doc: ${prop.url}`);
     const cardId = getCardIdFromUrl(prop.url);
     const cardBodyDoc: CardBody = {
       version: prop.version,
@@ -499,82 +605,39 @@ class Note implements INote {
     await this._cardCollection.put(cardBodyDoc).catch(e => {
       throw new Error(`Error in updateCardBodyDoc: ${e.message}`);
     });
-    // Update currentCardMap
-    const card = currentCardMap.get(prop.url);
-    if (card) {
-      card.version = cardBodyDoc.version;
-      card.type = cardBodyDoc.type;
-      card.user = cardBodyDoc.user;
-      card.date = cardBodyDoc.date;
-      card._body = cardBodyDoc._body;
-    }
-    else {
-      console.log('Card does note exist in currentCardMap: ' + prop.url);
-    }
+
+    return cardBodyDoc;
   };
 
-  updateCardDoc = async (prop: CardProp): Promise<void> => {
-    console.debug(`# Saving card doc: ${prop.url}`);
+  private _updateCardSketchDoc = async (prop: CardProp): Promise<CardSketch> => {
+    console.debug(`# Saving card sketch doc: ${prop.url}`);
     const cardId = getCardIdFromUrl(prop.url);
-    const cardDoc: CardDoc = {
+    const cardSketch: CardSketch = {
       geometry: prop.geometry,
       style: prop.style,
       condition: prop.condition,
       _id: getNoteIdFromUrl(prop.url) + '/' + cardId,
     };
-    await this._noteCollection.put(cardDoc).catch(e => {
-      throw new Error(`Error in updateCardDoc: ${e.message}`);
+    await this._noteCollection.put(cardSketch).catch(e => {
+      throw new Error(`Error in updateCardSketchDoc: ${e.message}`);
     });
-    // Update currentCardMap
-    const newCard = currentCardMap.get(prop.url);
-    if (newCard) {
-      newCard.geometry = cardDoc.geometry;
-      newCard.style = cardDoc.style;
-      newCard.condition = cardDoc.condition;
-    }
-    else {
-      console.log('Card does note exist in currentCardMap: ' + prop.url);
-    }
-
-    // Update note store & DB
-    const noteId = getNoteIdFromUrl(prop.url);
-    const noteProp = noteStore.getState().get(noteId);
-    if (noteProp !== undefined) {
-      noteProp.date.modifiedDate = getCurrentDateAndTime();
-      // @ts-ignore
-      noteStore.dispatch(noteUpdateCreator(this, noteProp));
-    }
-    else {
-      throw new Error(`Error in updateCardDoc: note ${noteId} does not exist.`);
-    }
+    return cardSketch;
   };
 
-  deleteCardBodyDoc = async (url: string) => {
+  private _deleteCardBodyDoc = async (url: string) => {
     console.debug(`# Deleting card body doc: ${url}`);
     await this._cardCollection.delete(getCardIdFromUrl(url)).catch(e => {
       throw new Error(`Error in deletingCardBody: ${e.message}`);
     });
   };
 
-  deleteCardDoc = async (url: string) => {
+  private _deleteCardSketchDoc = async (url: string) => {
     console.debug(`# Deleting card doc: ${url}`);
     await this._noteCollection
       .delete(getNoteIdFromUrl(url) + '/' + getCardIdFromUrl(url))
       .catch(e => {
-        throw new Error(`Error in deletingCardDoc: ${e.message}`);
+        throw new Error(`Error in deletingCardSketchDoc: ${e.message}`);
       });
-
-    // Update note store & DB
-    const noteId = getNoteIdFromUrl(url);
-    const noteProp = noteStore.getState().get(noteId);
-    if (noteProp !== undefined) {
-      noteProp.date.modifiedDate = getCurrentDateAndTime();
-      // @ts-ignore
-      noteStore.dispatch(noteUpdateCreator(this, noteProp));
-    }
-    else {
-      throw new Error(`Error in deleteCardDoc: note ${noteId} does not exist.`);
-    }
   };
 }
 

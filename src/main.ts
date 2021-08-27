@@ -145,34 +145,24 @@ ipcMain.handle(
   'update-card',
   async (event, cardProp: CardProp, savingTarget: SavingTarget) => {
     const card = currentCardMap.get(cardProp.url);
-    if (savingTarget === 'BodyOnly' || savingTarget === 'Card') {
-      await note.updateCardBodyDoc(cardProp);
-
-      // Update currentCardMap
-      card!.version = cardProp.version;
-      card!.type = cardProp.type;
-      card!.user = cardProp.user;
-      card!.date = cardProp.date;
-      card!._body = cardProp._body;
+    if (savingTarget === 'Card') {
+      await note.updateCard(cardProp);
     }
-    if (savingTarget === 'PropertyOnly' || savingTarget === 'Card') {
-      await note.updateCardDoc(cardProp);
-
-      // Update currentCardMap
-      card!.geometry = cardProp.geometry;
-      card!.style = cardProp.style;
-      card!.condition = cardProp.condition;
+    else if (savingTarget === 'BodyOnly') {
+      await note.updateCardBody(cardProp);
+    }
+    else if (savingTarget === 'SketchOnly') {
+      await note.updateCardSketch(cardProp);
     }
   }
 );
 
-ipcMain.handle('delete-card-body', async (event, url: string) => {
-  await note.deleteCard(url);
-  await note.deleteCardBodyDoc(getCardIdFromUrl(url));
+ipcMain.handle('delete-card', async (event, url: string) => {
+  await note.deleteCard(getCardIdFromUrl(url));
 });
 
-ipcMain.handle('delete-card', async (event, url: string) => {
-  await note.deleteCard(url);
+ipcMain.handle('delete-card-sketch', async (event, url: string) => {
+  await note.deleteCardSketch(url);
 });
 
 ipcMain.handle('finish-render-card', (event, url: string) => {
@@ -281,10 +271,7 @@ ipcMain.handle('bring-to-front', (event, cardProp: CardProp, rearrange = false):
 
   // Async
   cardProp.geometry.z = zIndex;
-  note.updateCardDoc(cardProp);
-
-  // Update card
-  currentCardMap.get(cardProp.url)!.geometry.z = zIndex;
+  note.updateCardSketch(cardProp);
 
   // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
 

@@ -65,8 +65,7 @@ export const createCardWindow = async (
 
   const newCardProp = card.toObject();
   // Async
-  note.updateCardBodyDoc(newCardProp);
-  note.updateCardDoc(newCardProp);
+  note.updateCard(newCardProp);
 
   await card.render();
   console.debug(`focus in createCardWindow: ${card.url}`);
@@ -254,10 +253,10 @@ export class Card implements ICard {
     });
 
     this._debouncedCardPositionUpdateActionQueue.subscribe(rect => {
-      note.updateCardDoc(this.toObject());
+      note.updateCardSketch(this.toObject());
     });
     this._debouncedCardSizeUpdateActionQueue.subscribe(rect => {
-      note.updateCardDoc(this.toObject());
+      note.updateCardSketch(this.toObject());
     });
   }
 

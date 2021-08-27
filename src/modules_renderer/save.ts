@@ -55,7 +55,7 @@ const execTask = async () => {
       if (task.type === 'Save') {
         setTitleMessage('[saving...]');
       }
-      else if (task.type === 'DeleteCard' || task.type === 'DeleteCardBody') {
+      else if (task.type === 'DeleteCardSketch' || task.type === 'DeleteCard') {
         setTitleMessage('[deleting...]');
       }
     }, 1000);
@@ -67,14 +67,14 @@ const execTask = async () => {
         console.error('Error in execTask:' + e);
       });
     }
-    else if (task.type === 'DeleteCardBody') {
-      await window.api.deleteCardBody(task.prop.url).catch(e => {
+    else if (task.type === 'DeleteCard') {
+      await window.api.deleteCard(task.prop.url).catch(e => {
         // TODO: Handle save error.
         console.error('Error in execTask:' + e);
       });
     }
-    else if (task.type === 'DeleteCard') {
-      await window.api.deleteCard(task.prop.url).catch(e => {
+    else if (task.type === 'DeleteCardSketch') {
+      await window.api.deleteCardSketch(task.prop.url).catch(e => {
         // TODO: Handle save error.
         console.error('Error in execTask:' + e);
       });
@@ -105,10 +105,10 @@ export const saveCardColor = (
   cardPropStatus.style.uiColor = uiColor;
   cardPropStatus.style.opacity = opacity;
 
-  saveCard(cardPropStatus, 'PropertyOnly');
+  saveCard(cardPropStatus, 'SketchOnly');
 };
 
-export const deleteCardBody = (cardPropStatus: CardPropStatus) => {
+export const deleteCard = (cardPropStatus: CardPropStatus) => {
   // Delete card and cardBody
   unfinishedTasks.forEach(task => {
     console.debug(
@@ -121,15 +121,15 @@ export const deleteCardBody = (cardPropStatus: CardPropStatus) => {
     `Enqueue unfinishedTask: [Delete CardBody] ${cardPropStatus.date.modifiedDate}`
   );
   // Here, current length of unfinishedTasks should be 0 or 1.
-  unfinishedTasks.push({ prop: cardPropStatus, type: 'DeleteCardBody' });
+  unfinishedTasks.push({ prop: cardPropStatus, type: 'DeleteCard' });
   // Here, current length of unfinishedTasks is 1 or 2.
   execTask();
 };
 
-export const deleteCard = (cardPropStatus: CardPropStatus) => {
+export const deleteCardSketch = (cardPropStatus: CardPropStatus) => {
   unfinishedTasks = unfinishedTasks.filter(task => {
     let bool = true;
-    if (task.target === 'PropertyOnly') bool = false;
+    if (task.target === 'SketchOnly') bool = false;
     if (!bool) {
       console.debug(
         `Skip unfinishedTask: [${task.type}: ${task.target}] ${task.prop.date.modifiedDate}`
@@ -142,7 +142,7 @@ export const deleteCard = (cardPropStatus: CardPropStatus) => {
     `Enqueue unfinishedTask: [Delete Card] ${cardPropStatus.date.modifiedDate}`
   );
   // Here, current length of unfinishedTasks should be 0 or 1.
-  unfinishedTasks.push({ prop: cardPropStatus, type: 'DeleteCard' });
+  unfinishedTasks.push({ prop: cardPropStatus, type: 'DeleteCardSketch' });
   // Here, current length of unfinishedTasks is 1 or 2.
   execTask();
 };
@@ -166,8 +166,8 @@ export const saveCard = (cardPropStatus: CardPropStatus, target: SavingTarget) =
     )
       bool = false;
     else if (
-      task.target === 'PropertyOnly' &&
-      (task.target === 'PropertyOnly' || task.target === 'Card')
+      task.target === 'SketchOnly' &&
+      (task.target === 'SketchOnly' || task.target === 'Card')
     )
       bool = false;
     else if (task.target === 'Card' && task.target === 'Card') bool = false;

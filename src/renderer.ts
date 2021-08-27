@@ -30,7 +30,7 @@ import {
 import { darkenHexColor } from './modules_common/color';
 import {
   deleteCard,
-  deleteCardBody,
+  deleteCardSketch,
   saveCard,
   saveCardColor,
   waitUnfinishedTasks,
@@ -125,7 +125,7 @@ const initializeUIEvents = () => {
     }
 
     if (cardPropStatus._body === '' || event.ctrlKey) {
-      deleteCardBody(cardPropStatus);
+      deleteCard(cardPropStatus);
     }
     else {
       /**
@@ -139,7 +139,7 @@ const initializeUIEvents = () => {
           if (res === DIALOG_BUTTON.default) {
             // OK
             suppressFocusEvent = true; // Suppress focus event in order not to focus and save this card just after closing card window.
-            deleteCard(cardPropStatus);
+            deleteCardSketch(cardPropStatus);
           }
           else if (res === DIALOG_BUTTON.cancel) {
             // Cancel
@@ -354,7 +354,7 @@ window.addEventListener('message', event => {
  */
 let execSaveCommandTimeout: NodeJS.Timeout;
 const execSaveCommand = () => {
-  saveCard(cardPropStatus, 'PropertyOnly');
+  saveCard(cardPropStatus, 'SketchOnly');
 };
 
 export const queueSaveCommand = () => {
@@ -472,7 +472,7 @@ const onSetLock = (locked: boolean) => {
   if (cardEditor.isOpened) {
     endEditor();
   }
-  saveCard(cardPropStatus, 'PropertyOnly');
+  saveCard(cardPropStatus, 'SketchOnly');
 };
 
 const onZoomIn = () => {
@@ -487,7 +487,7 @@ const onZoomIn = () => {
   }
   render(['CardStyle', 'EditorStyle']);
 
-  saveCard(cardPropStatus, 'PropertyOnly');
+  saveCard(cardPropStatus, 'SketchOnly');
 };
 
 const onZoomOut = () => {
@@ -502,7 +502,7 @@ const onZoomOut = () => {
   }
   render(['CardStyle', 'EditorStyle']);
 
-  saveCard(cardPropStatus, 'PropertyOnly');
+  saveCard(cardPropStatus, 'SketchOnly');
 };
 
 const onSyncCard = (changedFile: ChangedFile, enqueueTime: string) => {
@@ -653,7 +653,7 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
       saveCardColor(cardPropStatus, '#ffffff', '#ffffff', 0.0);
     }
     else {
-      saveCard(cardPropStatus, 'PropertyOnly');
+      saveCard(cardPropStatus, 'SketchOnly');
     }
     render(['TitleBar', 'CardStyle', 'ContentsData', 'ContentsRect']);
 

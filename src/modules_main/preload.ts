@@ -28,11 +28,11 @@ contextBridge.exposeInMainWorld('api', {
   confirmDialog: (url: string, buttonLabels: string[], message: string) => {
     return ipcRenderer.invoke('confirm-dialog', url, buttonLabels, message);
   },
+  deleteCardSketch: (url: string) => {
+    return ipcRenderer.invoke('delete-card-sketch', url);
+  },
   deleteCard: (url: string) => {
     return ipcRenderer.invoke('delete-card', url);
-  },
-  deleteCardBody: (url: string) => {
-    return ipcRenderer.invoke('delete-card-body', url);
   },
   finishLoad: (url: string) => {
     return ipcRenderer.invoke('finish-load-' + url);
