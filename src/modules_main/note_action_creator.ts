@@ -77,15 +77,19 @@ export const noteDeleteCreator = (
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => NoteState) {
     await lock.acquire('noteDelete', async () => {
+      const noteProp = getState().get(noteId);
+      if (noteProp === undefined) {
+        return;
+      }
       if (enqueueTime !== undefined) {
-        const updatedTime = getState().get(noteId)?.updatedTime;
+        const updatedTime = noteProp?.updatedTime;
         if (updatedTime !== undefined && updatedTime! > enqueueTime) {
           console.log('Block expired remote update');
           return;
         }
       }
       if (changeFrom === 'local') {
-        const taskMetadata = await note.deleteNoteDoc(noteId);
+        await note.deleteNoteDoc(noteId);
       }
       const noteAction: NoteDeleteAction = {
         type: 'note-delete',

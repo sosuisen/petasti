@@ -111,11 +111,7 @@ export const addSettingsHandler = (note: INote) => {
           await note.combineDB(settingsDialog);
         }
         else {
-          settingsDialog.webContents.send(
-            'initialize-store',
-            note.info,
-            note.settings
-          );
+          settingsDialog.webContents.send('initialize-store', note.info, note.settings);
         }
         return 'succeed';
       }

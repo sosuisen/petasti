@@ -71,22 +71,16 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
         let fileId = '';
         if (changedFile.operation === 'insert') {
           cardId = (changedFile.new as FatJsonDoc)._id;
-          const idArray = cardId.split('/');
-          noteId = idArray[0];
-          fileId = idArray[1];
         }
         else if (changedFile.operation === 'update') {
           cardId = (changedFile.new as FatJsonDoc)._id;
-          const idArray = cardId.split('/');
-          noteId = idArray[0];
-          fileId = idArray[1];
         }
         else if (changedFile.operation === 'delete') {
           cardId = (changedFile.old as FatJsonDoc)._id;
-          const idArray = cardId.split('/');
-          noteId = idArray[0];
-          fileId = idArray[1];
         }
+        const idArray = cardId.split('/');
+        noteId = idArray[0];
+        fileId = idArray[1];
 
         if (fileId === 'prop') {
           if (changedFile.operation === 'insert') {
