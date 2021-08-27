@@ -143,7 +143,7 @@ ipcMain.handle(
   async (event, cardProp: CardProp, savingTarget: SavingTarget) => {
     const card = currentCardMap.get(cardProp.url);
     if (savingTarget === 'BodyOnly' || savingTarget === 'Card') {
-      await note.updateCardBody(cardProp);
+      await note.updateCardBodyDoc(cardProp);
 
       // Update currentCardMap
       card!.version = cardProp.version;

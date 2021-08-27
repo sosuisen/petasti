@@ -60,6 +60,7 @@ import {
   noteInitCreator,
   noteUpdateCreator,
 } from './note_action_creator';
+import { Card } from './card';
 
 export const generateNewNoteId = () => {
   const ulid = monotonicFactory();
@@ -272,6 +273,9 @@ class Note implements INote {
     return await this.loadCurrentNote();
   };
 
+  /**
+   * Note
+   */
   getSortedNoteIdList = (): string[] => {
     const sortedNoteIdList = [...noteStore.getState().keys()].sort((a, b) => {
       if (noteStore.getState().get(a)!.name > noteStore.getState().get(b)!.name) return 1;
@@ -284,7 +288,6 @@ class Note implements INote {
 
   loadCurrentNote = async (): Promise<CardProp[]> => {
     // Create note if not exist.
-
     let createNoteFlag = false;
     if (noteStore.getState().size === 0) {
       createNoteFlag = true;
@@ -301,49 +304,45 @@ class Note implements INote {
     }
 
     if (createNoteFlag) {
-      const currentNoteProp = this.createNote();
+      const [currentNoteProp, firstCardProp] = await this.createNote();
+
       // eslint-disable-next-line require-atomic-updates
       this._settings.currentNoteId = currentNoteProp._id;
       await this._settingsDB.put(this._settings);
 
-      const firstCardProp: CardProp = {
-        version: CARD_VERSION,
-        url: `${APP_SCHEME}://local/${currentNoteProp._id}/${generateNewCardId()}`,
-        type: 'text/html',
-        user: 'local',
-        geometry: DEFAULT_CARD_GEOMETRY,
-        style: DEFAULT_CARD_STYLE,
-        condition: DEFAULT_CARD_CONDITION,
-        date: {
-          createdDate: getCurrentDateAndTime(),
-          modifiedDate: getCurrentDateAndTime(),
-        },
-        _body: '',
-      };
-
-      // Async
-      this.updateCardBody(firstCardProp);
-      this.updateCardDoc(firstCardProp);
       return [firstCardProp];
     }
     console.log('# currentNoteId: ' + this._settings.currentNoteId);
     return await this.loadCurrentCards();
   };
 
-  deleteNoteDoc = async (noteId: string): Promise<TaskMetadata> => {
-    const task = await new Promise((resolve, reject) => {
-      this._noteCollection
-        .delete(noteId + '/prop', {
-          enqueueCallback: (taskMetadata: TaskMetadata) => {
-            resolve(taskMetadata);
-          },
-        })
-        .catch(err => reject(err));
-    }).catch((err: Error) => console.log(err.message + ', ' + noteId + '/prop'));
-    if (this._sync) {
-      this._sync.trySync();
+  createNote = async (name?: string): Promise<[NoteProp, CardProp]> => {
+    if (!name) {
+      name = MESSAGE('noteName', (noteStore.getState().size + 1).toString());
     }
-    return (task as unknown) as TaskMetadata;
+    const _id = generateNewNoteId();
+    const current = getCurrentDateAndTime();
+
+    const newNote: NoteProp = {
+      date: {
+        createdDate: current,
+        modifiedDate: current,
+      },
+      name,
+      user: 'local',
+      _id,
+    };
+    // tsc cannot check redux-thunk middleware
+    // @ts-ignore
+    noteStore.dispatch(noteCreateCreator(this, newNote));
+
+    // Add first card
+    const firstCard = new Card(this, _id);
+    const firstCardProp = firstCard.toObject();
+    await note.updateCardBodyDoc(firstCardProp);
+    await note.updateCardDoc(firstCardProp);
+
+    return [newNote, firstCardProp];
   };
 
   updateNoteDoc = async (noteProp: NoteProp): Promise<TaskMetadata> => {
@@ -365,29 +364,25 @@ class Note implements INote {
     return (task as unknown) as TaskMetadata;
   };
 
-  createNote = (name?: string): NoteProp => {
-    if (!name) {
-      name = MESSAGE('noteName', (noteStore.getState().size + 1).toString());
+  deleteNoteDoc = async (noteId: string): Promise<TaskMetadata> => {
+    const task = await new Promise((resolve, reject) => {
+      this._noteCollection
+        .delete(noteId + '/prop', {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            resolve(taskMetadata);
+          },
+        })
+        .catch(err => reject(err));
+    }).catch((err: Error) => console.log(err.message + ', ' + noteId + '/prop'));
+    if (this._sync) {
+      this._sync.trySync();
     }
-    const _id = generateNewNoteId();
-    const current = getCurrentDateAndTime();
-
-    const newNote: NoteProp = {
-      date: {
-        createdDate: current,
-        modifiedDate: current,
-      },
-      name,
-      user: 'local',
-      _id,
-    };
-    // tsc cannot check redux-thunk middleware
-    // @ts-ignore
-    noteStore.dispatch(noteCreateCreator(this, newNote));
-
-    return newNote;
+    return (task as unknown) as TaskMetadata;
   };
 
+  /**
+   * Card
+   */
   getZIndexOfTopCard = async (noteId: string) => {
     const cardDocs = await this._noteCollection.find({
       prefix: noteId + '/c',
@@ -401,10 +396,6 @@ class Note implements INote {
     return maxZIndex;
   };
 
-  // ! Operations for cards
-  /**
-   * Card
-   */
   loadCurrentCards = async (): Promise<CardProp[]> => {
     const cardDocs = await this._noteCollection.find({
       prefix: this._settings.currentNoteId + '/c',
@@ -446,6 +437,44 @@ class Note implements INote {
     return cardProps;
   };
 
+  deleteCard = async (cardUrl: string) => {
+    const card = currentCardMap.get(cardUrl);
+
+    if (card !== undefined) {
+      if (!card.window.isDestroyed()) {
+        card.window.destroy();
+      }
+      await this.deleteCardDoc(cardUrl);
+      currentCardMap.delete(cardUrl);
+    }
+    else {
+      console.error(`${cardUrl} does not exist`);
+    }
+  };
+
+  /**
+   * Database
+   */
+  combineDB = async (target: BrowserWindow | undefined) => {
+    showDialog(target, 'info', 'reloadNotebookByCombine');
+
+    try {
+      // Remove listeners firstly to avoid focus another card in closing process
+      currentCardMap.forEach(card => card.removeWindowListenersExceptClosedEvent());
+      currentCardMap.forEach(card => card.window.webContents.send('card-close'));
+    } catch (error) {
+      console.error(error);
+    }
+    await this.closeDB();
+    destroyTray();
+
+    handlers.forEach(channel => ipcMain.removeHandler(channel));
+    handlers.length = 0; // empty
+    currentCardMap.clear();
+
+    initializeTaskTray(this);
+  };
+
   closeDB = async () => {
     if (this._settingsDB !== undefined) {
       await this._settingsDB.close();
@@ -456,7 +485,7 @@ class Note implements INote {
     return Promise.resolve();
   };
 
-  updateCardBody = async (prop: CardProp): Promise<void> => {
+  updateCardBodyDoc = async (prop: CardProp): Promise<void> => {
     console.debug(`# Saving card doc: ${prop.url}`);
     const cardId = getCardIdFromUrl(prop.url);
     const cardBodyDoc: CardBody = {
@@ -468,15 +497,20 @@ class Note implements INote {
       _id: cardId,
     };
     await this._cardCollection.put(cardBodyDoc).catch(e => {
-      throw new Error(`Error in updateCardBody: ${e.message}`);
+      throw new Error(`Error in updateCardBodyDoc: ${e.message}`);
     });
     // Update currentCardMap
-    const newCard = currentCardMap.get(prop.url);
-    newCard.version = cardBodyDoc.version;
-    newCard.type = cardBodyDoc.type;
-    newCard.user = cardBodyDoc.user;
-    newCard.date = cardBodyDoc.date;
-    newCard._body = cardBodyDoc._body;
+    const card = currentCardMap.get(prop.url);
+    if (card) {
+      card.version = cardBodyDoc.version;
+      card.type = cardBodyDoc.type;
+      card.user = cardBodyDoc.user;
+      card.date = cardBodyDoc.date;
+      card._body = cardBodyDoc._body;
+    }
+    else {
+      console.log('Card does note exist in currentCardMap: ' + prop.url);
+    }
   };
 
   updateCardDoc = async (prop: CardProp): Promise<void> => {
@@ -493,9 +527,14 @@ class Note implements INote {
     });
     // Update currentCardMap
     const newCard = currentCardMap.get(prop.url);
-    newCard.geometry = cardDoc.geometry;
-    newCard.style = cardDoc.style;
-    newCard.condition = cardDoc.condition;
+    if (newCard) {
+      newCard.geometry = cardDoc.geometry;
+      newCard.style = cardDoc.style;
+      newCard.condition = cardDoc.condition;
+    }
+    else {
+      console.log('Card does note exist in currentCardMap: ' + prop.url);
+    }
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(prop.url);
@@ -536,41 +575,6 @@ class Note implements INote {
     else {
       throw new Error(`Error in deleteCardDoc: note ${noteId} does not exist.`);
     }
-  };
-
-  deleteCard = async (cardUrl: string) => {
-    const card = currentCardMap.get(cardUrl);
-
-    if (card !== undefined) {
-      if (!card.window.isDestroyed()) {
-        card.window.destroy();
-      }
-      await this.deleteCardDoc(cardUrl);
-      currentCardMap.delete(cardUrl);
-    }
-    else {
-      console.error(`${cardUrl} does not exist`);
-    }
-  };
-
-  combineDB = async (target: BrowserWindow | undefined) => {
-    showDialog(target, 'info', 'reloadNotebookByCombine');
-
-    try {
-      // Remove listeners firstly to avoid focus another card in closing process
-      currentCardMap.forEach(card => card.removeWindowListenersExceptClosedEvent());
-      currentCardMap.forEach(card => card.window.webContents.send('card-close'));
-    } catch (error) {
-      console.error(error);
-    }
-    await this.closeDB();
-    destroyTray();
-
-    handlers.forEach(channel => ipcMain.removeHandler(channel));
-    handlers.length = 0; // empty
-    currentCardMap.clear();
-
-    initializeTaskTray(this);
   };
 }
 

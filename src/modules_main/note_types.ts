@@ -37,13 +37,13 @@ export interface INote {
   updateNoteDoc: (noteProp: NoteProp) => Promise<TaskMetadata>;
   deleteNoteDoc: (noteId: string) => Promise<TaskMetadata>;
 
-  updateCardBody: (prop: CardProp) => Promise<void>;
+  updateCardBodyDoc: (prop: CardProp) => Promise<void>;
   updateCardDoc: (prop: CardProp) => Promise<void>;
 
   deleteCard: (cardUrl: string) => Promise<void>;
 
   getSortedNoteIdList: () => string[];
   changingToNoteId: string;
-  createNote: (name?: string) => NoteProp;
+  createNote: (name?: string) => Promise<[NoteProp, CardProp]>;
   getZIndexOfTopCard: (noteId: string) => Promise<number>;
 }

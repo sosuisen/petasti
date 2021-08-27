@@ -158,13 +158,7 @@ export const setTrayContextMenu = () => {
         ) {
           return;
         }
-        const newNoteProp = await note.createNote(newName as string);
-
-        const firstCard = new Card(note, newNoteProp._id);
-        const firstCardProp = firstCard.toObject();
-        // Async
-        await note.updateCardBody(firstCardProp);
-        await note.updateCardDoc(firstCardProp);
+        const [newNoteProp] = await note.createNote(newName as string);
 
         closeSettings();
 

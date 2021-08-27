@@ -23,7 +23,7 @@ export const createCardWindow = async (
 
   const newCardProp = card.toObject();
   // Async
-  note.updateCardBody(newCardProp);
+  note.updateCardBodyDoc(newCardProp);
   note.updateCardDoc(newCardProp);
 
   await card.render();
