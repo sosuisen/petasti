@@ -6,7 +6,7 @@ import path from 'path';
 import prompt from 'electron-prompt';
 import { app, Menu, MenuItemConstructorOptions, Tray } from 'electron';
 import { closeSettings, openSettings, settingsDialog } from './settings';
-import { Card } from './card';
+import { createCardWindow } from './card';
 import { emitter } from './event';
 import {
   generateNewCardId,
@@ -18,7 +18,6 @@ import { APP_ICON_NAME, APP_SCHEME, DEFAULT_CARD_GEOMETRY } from '../modules_com
 import { CardProp } from '../modules_common/types';
 import { MESSAGE } from './messages';
 import { currentCardMap } from './card_map';
-import { createCardWindow } from './card_create';
 import { INote } from './note_types';
 import { showDialog } from './utils_main';
 import { noteStore } from './note_store';

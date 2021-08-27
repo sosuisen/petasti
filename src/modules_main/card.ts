@@ -30,6 +30,7 @@ import {
 import { currentCardMap } from './card_map';
 import { setContextMenu } from './card_context_menu';
 import { INote } from './note_types';
+import { getZIndexOfTopCard } from './card_zindex';
 
 /**
  * Focus control
@@ -45,6 +46,31 @@ export const setGlobalFocusEventListenerPermission = (
 
 export const getGlobalFocusEventListenerPermission = () => {
   return globalFocusListenerPermission;
+};
+
+/**
+ * Create card
+ */
+export const createCardWindow = async (
+  note: INote,
+  partialCardProp: Partial<CardProp>
+): Promise<void> => {
+  // Overwrite z
+  if (partialCardProp.geometry !== undefined) {
+    partialCardProp.geometry.z = getZIndexOfTopCard() + 1;
+  }
+  const card = new Card(note, partialCardProp);
+
+  currentCardMap.set(card.url, card);
+
+  const newCardProp = card.toObject();
+  // Async
+  note.updateCardBodyDoc(newCardProp);
+  note.updateCardDoc(newCardProp);
+
+  await card.render();
+  console.debug(`focus in createCardWindow: ${card.url}`);
+  card.window.focus();
 };
 
 /**

@@ -44,17 +44,16 @@ export const noteUpdateCreator = (
   note: INote,
   noteProp: NoteProp,
   changeFrom: ChangeFrom = 'local',
-  enqueueTime: string = undefined
+  enqueueTime: string | undefined = undefined
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => NoteState) {
     await lock.acquire('noteUpdate', async () => {
-      if (
-        enqueueTime !== undefined &&
-        getState().get(noteProp._id).updatedTime !== undefined &&
-        getState().get(noteProp._id).updatedTime > enqueueTime
-      ) {
-        console.log('Block expired remote update');
-        return;
+      if (enqueueTime !== undefined) {
+        const updatedTime = getState().get(noteProp._id)?.updatedTime;
+        if (updatedTime !== undefined && updatedTime! > enqueueTime) {
+          console.log('Block expired remote update');
+          return;
+        }
       }
       if (changeFrom === 'local') {
         const taskMetadata = await note.updateNoteDoc(noteProp);
@@ -74,17 +73,16 @@ export const noteDeleteCreator = (
   note: INote,
   noteId: string,
   changeFrom: ChangeFrom = 'local',
-  enqueueTime: string = undefined
+  enqueueTime: string | undefined = undefined
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => NoteState) {
     await lock.acquire('noteDelete', async () => {
-      if (
-        enqueueTime !== undefined &&
-        getState().get(noteId).updatedTime !== undefined &&
-        getState().get(noteId).updatedTime > enqueueTime
-      ) {
-        console.log('Block expired remote update');
-        return;
+      if (enqueueTime !== undefined) {
+        const updatedTime = getState().get(noteId)?.updatedTime;
+        if (updatedTime !== undefined && updatedTime! > enqueueTime) {
+          console.log('Block expired remote update');
+          return;
+        }
       }
       if (changeFrom === 'local') {
         const taskMetadata = await note.deleteNoteDoc(noteId);

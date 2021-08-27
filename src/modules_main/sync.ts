@@ -48,7 +48,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           cardBodyId = (changedFile.old.doc as JsonDoc)._id;
         }
 
-        const card = currentCardMap.get(cardBodyId);
+        const card = currentCardMap.get(cardBodyId!);
         if (card !== undefined) {
           card.window.webContents.send(
             'sync-card-body',

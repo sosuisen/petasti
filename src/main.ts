@@ -5,7 +5,11 @@
 
 import { app, ipcMain, MouseInputEvent } from 'electron';
 import { APP_SCHEME } from './modules_common/const';
-import { Card, setGlobalFocusEventListenerPermission } from './modules_main/card';
+import {
+  Card,
+  createCardWindow,
+  setGlobalFocusEventListenerPermission,
+} from './modules_main/card';
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
 import { emitter, handlers } from './modules_main/event';
 import { note } from './modules_main/note';
@@ -18,7 +22,6 @@ import {
   setZIndexOfBottomCard,
   setZIndexOfTopCard,
 } from './modules_main/card_zindex';
-import { createCardWindow } from './modules_main/card_create';
 
 // process.on('unhandledRejection', console.dir);
 
