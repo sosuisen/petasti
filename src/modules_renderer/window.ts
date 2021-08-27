@@ -3,11 +3,13 @@
  * © 2021 Hidekazu Kubota
  */
 
+import { DatabaseCommand } from '../modules_common/db.types';
 import { MessageLabel } from '../modules_common/i18n';
 import { CardProp, SavingTarget } from '../modules_common/types';
 
 interface WindowWithAPI extends Window {
   api: {
+    db: (command: DatabaseCommand) => Promise<any>;
     alertDialog: (url: string, label: MessageLabel) => Promise<void>;
     blurAndFocusWithSuppressEvents: (url: string) => Promise<void>;
     blurAndFocusWithSuppressFocusEvents: (url: string) => Promise<void>;

@@ -87,8 +87,8 @@ export class Card implements ICard {
   public style: CardStyle = DEFAULT_CARD_STYLE;
   public condition: CardCondition = DEFAULT_CARD_CONDITION;
   public date: CartaDate = {
-    createdDate: getCurrentDateAndTime(),
-    modifiedDate: getCurrentDateAndTime(),
+    createdDate: '',
+    modifiedDate: '',
   };
 
   public _body = '';
@@ -174,6 +174,13 @@ export class Card implements ICard {
         cardProp.date.modifiedDate !== undefined
       ) {
         this.date = { ...cardProp.date };
+      }
+      else {
+        const time = getCurrentDateAndTime();
+        this.date = {
+          createdDate: time,
+          modifiedDate: time,
+        };
       }
 
       this._body = cardProp._body ?? this._body!;

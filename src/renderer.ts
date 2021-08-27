@@ -4,6 +4,7 @@
  */
 
 import { ChangedFile } from 'git-documentdb';
+import { cardStore } from 'card_store';
 import { CardProp, CardPropStatus } from './modules_common/types';
 import {
   CardCssStyle,
@@ -38,8 +39,6 @@ import {
 import window from './modules_renderer/window';
 import { setAltDown, setCtrlDown, setMetaDown, setShiftDown } from './modules_common/keys';
 
-let cardPropStatus: CardPropStatus;
-
 let cardUrlEncoded: string;
 
 let cardCssStyle: CardCssStyle = {
@@ -53,7 +52,7 @@ let suppressFocusEvent = false;
 const cardEditor: ICardEditor = new CardEditor();
 
 const close = async () => {
-  await waitUnfinishedTasks(cardPropStatus.url).catch((e: Error) => {
+  await waitUnfinishedTasks(url).catch((e: Error) => {
     console.error(e.message);
   });
   canClose = true;
@@ -90,8 +89,8 @@ const initializeUIEvents = () => {
     // Position of a new card is relative to this card.
 
     const geometry = { ...DEFAULT_CARD_GEOMETRY };
-    geometry.x = cardPropStatus.geometry.x + 30;
-    geometry.y = cardPropStatus.geometry.y + 30;
+    geometry.x = cardStore.getState().geometry.x + 30;
+    geometry.y = cardStore.getState().geometry.y + 30;
     const cardProp: Partial<CardProp> = {
       geometry: {
         x: geometry.x,
@@ -101,10 +100,10 @@ const initializeUIEvents = () => {
         height: geometry.height,
       },
       style: {
-        uiColor: cardPropStatus.style.uiColor,
-        backgroundColor: cardPropStatus.style.backgroundColor,
-        opacity: cardPropStatus.style.opacity,
-        zoom: cardPropStatus.style.zoom,
+        uiColor: cardStore.getState().style.uiColor,
+        backgroundColor: cardStore.getState().style.backgroundColor,
+        opacity: cardStore.getState().style.opacity,
+        zoom: cardStore.getState().style.zoom,
       },
     };
     await window.api.createCard(cardProp);
@@ -124,7 +123,7 @@ const initializeUIEvents = () => {
       render(['TitleBar', 'ContentsData', 'ContentsRect']);
     }
 
-    if (cardPropStatus._body === '' || event.ctrlKey) {
+    if (cardStore.getState()._body === '' || event.ctrlKey) {
       deleteCard(cardPropStatus);
     }
     else {
@@ -134,7 +133,7 @@ const initializeUIEvents = () => {
        * Caret of CKEditor is disappeared just after push Cancel button of window.confirm()
        */
       window.api
-        .confirmDialog(cardPropStatus.url, ['btnCloseCard', 'btnCancel'], 'confirmClosing')
+        .confirmDialog(cardStore.getState().url, ['btnCloseCard', 'btnCancel'], 'confirmClosing')
         .then((res: number) => {
           if (res === DIALOG_BUTTON.default) {
             // OK
@@ -160,8 +159,8 @@ const initializeUIEvents = () => {
     if (cardPropStatus === undefined) {
       return;
     }
-    let newWidth = cardPropStatus.geometry.width + getRenderOffsetWidth();
-    let newHeight = cardPropStatus.geometry.height + getRenderOffsetHeight();
+    let newWidth = cardStore.getState().geometry.width + getRenderOffsetWidth();
+    let newHeight = cardStore.getState().geometry.height + getRenderOffsetHeight();
     if (isHorizontalMoving) {
       newWidth += event.screenX - prevMouseX;
     }
@@ -173,8 +172,8 @@ const initializeUIEvents = () => {
 
     if (isHorizontalMoving || isVerticalMoving) {
       const rect = {
-        x: cardPropStatus.geometry.x,
-        y: cardPropStatus.geometry.y,
+        x: cardStore.getState().geometry.x,
+        y: cardStore.getState().geometry.y,
         width: newWidth,
         height: newHeight,
       };
@@ -371,16 +370,17 @@ const onResizeByHand = (
   },
   sendToMain: boolean
 ) => {
+  const geom = cardStore.getState().geometry;
   if (
-    cardPropStatus.geometry.x !== newBounds.x ||
-    cardPropStatus.geometry.y !== newBounds.y ||
-    cardPropStatus.geometry.width !== newBounds.width ||
-    cardPropStatus.geometry.height !== newBounds.height
+    geom.x !== newBounds.x ||
+    geom.getState().geometry.y !== newBounds.y ||
+    geom.getState().geometry.width !== newBounds.width ||
+    geom.getState().geometry.height !== newBounds.height
   ) {
-    cardPropStatus.geometry.x = Math.round(newBounds.x);
-    cardPropStatus.geometry.y = Math.round(newBounds.y);
-    cardPropStatus.geometry.width = Math.round(newBounds.width - getRenderOffsetWidth());
-    cardPropStatus.geometry.height = Math.round(newBounds.height - getRenderOffsetHeight());
+    geom.x = Math.round(newBounds.x);
+    geom.y = Math.round(newBounds.y);
+    geom.width = Math.round(newBounds.width - getRenderOffsetWidth());
+    geom.height = Math.round(newBounds.height - getRenderOffsetHeight());
 
     render(['TitleBar', 'ContentsRect', 'EditorRect']);
   }
@@ -456,7 +456,7 @@ const onRenderCard = (cardProp: CardProp) => {
       console.error(`Error in render-card: ${e.message}`);
     });
 
-  window.api.finishRenderCard(cardPropStatus.url).catch((e: Error) => {
+  window.api.finishRenderCard(cardStore.getState().url).catch((e: Error) => {
     // logger.error does not work in ipcRenderer event.
     console.error(`Error in render-card: ${e.message}`);
   });
@@ -476,13 +476,13 @@ const onSetLock = (locked: boolean) => {
 };
 
 const onZoomIn = () => {
-  if (cardPropStatus.style.zoom < 1.0) {
+  if (cardStore.getState().style.zoom < 1.0) {
     cardPropStatus.style.zoom += 0.15;
   }
   else {
     cardPropStatus.style.zoom += 0.3;
   }
-  if (cardPropStatus.style.zoom > 3) {
+  if (cardStore.getState().style.zoom > 3) {
     cardPropStatus.style.zoom = 3;
   }
   render(['CardStyle', 'EditorStyle']);
@@ -491,13 +491,13 @@ const onZoomIn = () => {
 };
 
 const onZoomOut = () => {
-  if (cardPropStatus.style.zoom <= 1.0) {
+  if (cardStore.getState().style.zoom <= 1.0) {
     cardPropStatus.style.zoom -= 0.15;
   }
   else {
     cardPropStatus.style.zoom -= 0.3;
   }
-  if (cardPropStatus.style.zoom <= 0.55) {
+  if (cardStore.getState().style.zoom <= 0.55) {
     cardPropStatus.style.zoom = 0.55;
   }
   render(['CardStyle', 'EditorStyle']);
@@ -555,7 +555,7 @@ const startEditor = async (x: number, y: number) => {
 
   const offsetY = document.getElementById('title')!.offsetHeight;
   cardEditor.execAfterMouseDown(cardEditor.startEdit);
-  window.api.sendLeftMouseDown(cardPropStatus.url, x, y + offsetY);
+  window.api.sendLeftMouseDown(cardStore.getState().url, x, y + offsetY);
 };
 
 const endEditor = () => {
@@ -571,7 +571,7 @@ const endEditor = () => {
 };
 
 const startEditorByClick = (clickEvent: InnerClickEvent) => {
-  if (cardPropStatus.condition.locked) {
+  if (cardStore.getState().condition.locked) {
     return;
   }
   startEditor(clickEvent.x, clickEvent.y);
@@ -592,14 +592,14 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
 
   dropImg.addEventListener('load', async () => {
     let imageOnly = false;
-    if (cardPropStatus._body === '') {
+    if (cardStore.getState()._body === '') {
       imageOnly = true;
     }
     const width = dropImg.naturalWidth;
     const height = dropImg.naturalHeight;
 
     let newImageWidth =
-      cardPropStatus.geometry.width -
+      cardStore.getState().geometry.width -
       (imageOnly ? DRAG_IMAGE_MARGIN : 0) -
       cardCssStyle.borderWidth * 2;
 
@@ -638,15 +638,15 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
       cardPropStatus._body = imgTag;
     }
     else {
-      cardPropStatus.geometry.height = cardPropStatus.geometry.height + newImageHeight;
-      cardPropStatus._body = cardPropStatus._body + '<br />' + imgTag;
-      windowHeight = cardPropStatus.geometry.height + getRenderOffsetHeight();
+      cardPropStatus.geometry.height = cardStore.getState().geometry.height + newImageHeight;
+      cardPropStatus._body = cardStore.getState()._body + '<br />' + imgTag;
+      windowHeight = cardStore.getState().geometry.height + getRenderOffsetHeight();
     }
 
     await window.api.setWindowSize(
-      cardPropStatus.url,
-      cardPropStatus.geometry.width,
-      cardPropStatus.geometry.height
+      cardStore.getState().url,
+      cardStore.getState().geometry.width,
+      cardStore.getState().geometry.height
     );
 
     if (imageOnly) {
@@ -657,7 +657,7 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
     }
     render(['TitleBar', 'CardStyle', 'ContentsData', 'ContentsRect']);
 
-    window.api.focus(cardPropStatus.url);
+    window.api.focus(cardStore.getState().url);
     await cardEditor.showEditor().catch((err: Error) => {
       console.error(`Error in loading image: ${err.message}`);
     });
@@ -670,7 +670,7 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
 window.addEventListener('load', onload, false);
 window.addEventListener('beforeunload', async e => {
   if (!canClose) {
-    await waitUnfinishedTasks(cardPropStatus.url).catch((error: Error) => {
+    await waitUnfinishedTasks(cardStore.getState().url).catch((error: Error) => {
       console.error(error.message);
     });
     //    e.preventDefault();

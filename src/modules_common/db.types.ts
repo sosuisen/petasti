@@ -3,6 +3,21 @@
  * © 2021 Hidekazu Kubota
  */
 
+import { CardBody } from './types';
+
+/**
+ * From card
+ */
+
+export type DatabaseCardBodyUpdate = {
+  command: 'db-card-body-update';
+  data: CardBody;
+};
+
+/**
+ * From settings dialog
+ */
+
 export type DatabaseExecSync = {
   command: 'db-exec-sync';
 };
@@ -50,6 +65,7 @@ export type DatabaseResumeSync = {
 };
 
 export type DatabaseCommand =
+  | DatabaseCardBodyUpdate
   | DatabaseExecSync
   | DatabaseSyncEnabledUpdate
   | DatabaseSyncRemoteUrlUpdate

@@ -52,8 +52,6 @@ export type CardProp = {
   _body: string;
 };
 
-export type CardPropStatus = CardProp & { status: CardStatus };
-
 export type CardBody = {
   version: string;
   type: string;
@@ -79,12 +77,17 @@ export type NoteProp = {
   updatedTime?: string; // only for redux-thunk
 };
 
+export type CardWorkState = {
+  url: '';
+  status: CardStatus;
+};
+
 export type CardStatus = 'Focused' | 'Blurred';
 
 export type SavingTarget = 'BodyOnly' | 'SketchOnly' | 'Card';
 
 export type Task = {
-  prop: CardPropStatus;
+  prop: CardBody | CardSketch;
   type: 'Save' | 'DeleteCardSketch' | 'DeleteCard';
   target?: SavingTarget;
 };

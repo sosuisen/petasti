@@ -4,12 +4,17 @@
  */
 import { contextBridge, ipcRenderer, MouseInputEvent } from 'electron';
 import { ChangedFile, TaskMetadata } from 'git-documentdb';
+import { DatabaseCommand } from '../modules_common/db.types';
 import { CardProp, SavingTarget } from '../modules_common/types';
 
 contextBridge.exposeInMainWorld('api', {
   /**
    * Command from Renderer process
    */
+  db: (command: DatabaseCommand) => {
+    return ipcRenderer.invoke('db', command);
+  },
+
   alertDialog: (url: string, message: string) => {
     return ipcRenderer.invoke('alert-dialog', url, message);
   },
