@@ -5,7 +5,7 @@
 
 import { DatabaseCommand } from '../modules_common/db.types';
 import { MessageLabel } from '../modules_common/i18n';
-import { CardBody, CardSketch, SavingTarget } from '../modules_common/types';
+import { CardBody, CardSketch } from '../modules_common/types';
 
 interface WindowWithAPI extends Window {
   api: {
@@ -15,7 +15,7 @@ interface WindowWithAPI extends Window {
     blurAndFocusWithSuppressFocusEvents: (url: string) => Promise<void>;
     bringToFront: (sketchUrl: string) => Promise<number>;
     createCard: (
-      url: string,
+      sketchUrl: string | undefined,
       cardBody: Partial<CardBody>,
       cardSketch: Partial<CardSketch>
     ) => Promise<void>;

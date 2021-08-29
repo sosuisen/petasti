@@ -19,7 +19,7 @@ import {
 } from '../modules_common/const';
 import { handlers } from './event';
 import { CardBody, CardSketch, CardStatus, Geometry, ICard } from '../modules_common/types';
-import { currentCardMap } from './card_map';
+import { cacheOfCard } from './card_cache';
 import { setContextMenu } from './card_context_menu';
 import { INote } from './note_types';
 import { getZIndexOfTopCard } from './card_zindex';
@@ -55,7 +55,7 @@ export const createCardWindow = async (
   }
   const card = new Card(note, sketchUrl, partialCardBody, partialCardSketch);
 
-  currentCardMap.set(card.url, card);
+  cacheOfCard.set(card.url, card);
 
   // Async
   note.updateCard(sketchUrl, card.body, card.sketch);
@@ -78,7 +78,10 @@ export class Card implements ICard {
     version: CARD_VERSION,
     type: 'text/html',
     user: 'local',
-    date: undefined,
+    date: {
+      modifiedDate: '',
+      createdDate: '',
+    },
     _body: '',
     _id: '',
   };
@@ -87,7 +90,10 @@ export class Card implements ICard {
     geometry: DEFAULT_CARD_GEOMETRY,
     style: DEFAULT_CARD_STYLE,
     condition: DEFAULT_CARD_CONDITION,
-    date: undefined,
+    date: {
+      modifiedDate: '',
+      createdDate: '',
+    },
     _id: '',
   };
 
@@ -135,7 +141,7 @@ export class Card implements ICard {
       this.url = noteIdOrUrl;
       // Create card with specified CardProp
       this.body = { ...this.body, ...cardBody };
-      this.sketch.geometry = { ...this.sketch.geometry, ...cardSketch.geometry };
+      this.sketch.geometry = { ...this.sketch.geometry, ...cardSketch?.geometry };
 
       this.sketch.geometry.x = Math.round(this.sketch.geometry.x);
       this.sketch.geometry.y = Math.round(this.sketch.geometry.y);
@@ -143,19 +149,16 @@ export class Card implements ICard {
       this.sketch.geometry.width = Math.round(this.sketch.geometry.width);
       this.sketch.geometry.height = Math.round(this.sketch.geometry.height);
 
-      this.sketch.style = { ...this.sketch.style, ...cardSketch.style };
+      this.sketch.style = { ...this.sketch.style, ...cardSketch?.style };
 
-      this.sketch.condition = { ...this.sketch.condition, ...cardSketch.condition };
+      this.sketch.condition = { ...this.sketch.condition, ...cardSketch?.condition };
     }
 
-    this.body.date = { ...this.body.date, ...cardBody.date };
-    this.sketch.date = { ...this.sketch.date, ...cardSketch.date };
-
     const time = getCurrentDateAndTime();
-    this.body.date.createdDate ??= time;
-    this.body.date.modifiedDate ??= time;
-    this.sketch.date.createdDate ??= time;
-    this.sketch.date.modifiedDate ??= time;
+    this.body.date.createdDate = cardBody?.date?.createdDate ?? time;
+    this.body.date.modifiedDate = cardBody?.date?.modifiedDate ?? time;
+    this.sketch.date.createdDate = cardSketch?.date?.createdDate ?? time;
+    this.sketch.date.modifiedDate = cardSketch?.date?.modifiedDate ?? time;
 
     this.indexUrl = url.format({
       pathname: path.join(__dirname, '../index.html'),
@@ -270,11 +273,11 @@ export class Card implements ICard {
     // when you should delete the corresponding element.
     this.removeWindowListeners();
 
-    currentCardMap.delete(this.url);
+    cacheOfCard.delete(this.url);
 
     // Emit window-all-closed event explicitly
     // because Electron sometimes does not emit it automatically.
-    if (currentCardMap.size === 0) {
+    if (cacheOfCard.size === 0) {
       app.emit('window-all-closed');
     }
   };

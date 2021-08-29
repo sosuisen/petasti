@@ -9,16 +9,18 @@ import {
   DatabaseCardBodyUpdate,
   DatabaseCardSketchUpdate,
 } from '../modules_common/db.types';
-import { CardBody, CardCondition, Geometry } from '../modules_common/types';
+import { CardSketch, CardStatus, CardStyle, Geometry } from '../modules_common/types';
 import {
   CardBodyUpdateAction,
-  CardConditionAction,
   CardConditionLockedUpdateAction,
+  CardConditionUpdateAction,
+  CardGeometryUpdateAction,
   CardGeometryZUpdateAction,
+  CardStyleUpdateAction,
+  CardWorkStateStatusUpdateAction,
 } from './card_action';
+import { CardState, ChangeFrom } from './card_types';
 import window from './window';
-
-type ChangeFrom = 'local' | 'remote';
 
 const lock = new AsyncLock();
 
@@ -26,12 +28,12 @@ let bodyUpdatedTime: string;
 let sketchUpdatedTime: string;
 
 export const cardBodyUpdateCreator = (
-  cardBody: CardBody,
+  _body: string,
   changeFrom: ChangeFrom = 'local',
   enqueueTime: string | undefined = undefined
 ) => {
-  return async function (dispatch: Dispatch<any>, getState: () => CardBody) {
-    await lock.acquire('cardUpdate', async () => {
+  return async function (dispatch: Dispatch<any>, getState: () => CardState) {
+    await lock.acquire('cardBodyUpdate', async () => {
       if (enqueueTime !== undefined) {
         if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
           console.log('Block expired remote update');
@@ -40,16 +42,136 @@ export const cardBodyUpdateCreator = (
       }
 
       const cardAction: CardBodyUpdateAction = {
-        type: 'card-body-update',
-        payload: cardBody,
+        type: 'card-body-body-update',
+        payload: _body,
       };
       dispatch(cardAction);
 
       if (changeFrom === 'local') {
-        const newCardBody = getState();
+        const newCardBody = getState().body;
         const cmd: DatabaseCardBodyUpdate = {
           command: 'db-card-body-update',
           data: newCardBody,
+        };
+
+        const taskMetadata: TaskMetadata = await window.api.db(cmd);
+        // eslint-disable-next-line require-atomic-updates
+        bodyUpdatedTime = taskMetadata.enqueueTime!;
+      }
+    });
+  };
+};
+
+export const cardSketchUpdateCreator = (
+  cardSketch: CardSketch,
+  changeFrom: ChangeFrom = 'local',
+  enqueueTime: string | undefined = undefined
+) => {
+  return async function (dispatch: Dispatch<any>, getState: () => CardState) {
+    await lock.acquire('cardSketchUpdate', async () => {
+      if (enqueueTime !== undefined) {
+        if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
+          console.log('Block expired remote update');
+          return;
+        }
+      }
+
+      const cardGeometryAction: CardGeometryUpdateAction = {
+        type: 'card-geometry-update',
+        payload: cardSketch.geometry,
+      };
+      dispatch(cardGeometryAction);
+
+      const cardStyleAction: CardStyleUpdateAction = {
+        type: 'card-style-update',
+        payload: cardSketch.style,
+      };
+      dispatch(cardStyleAction);
+
+      const cardConditionAction: CardConditionUpdateAction = {
+        type: 'card-condition-update',
+        payload: cardSketch.condition,
+      };
+      dispatch(cardConditionAction);
+
+      if (changeFrom === 'local') {
+        const cmd: DatabaseCardSketchUpdate = {
+          command: 'db-card-sketch-update',
+          data: {
+            ...getState().sketch,
+          },
+        };
+
+        const taskMetadata: TaskMetadata = await window.api.db(cmd);
+        // eslint-disable-next-line require-atomic-updates
+        bodyUpdatedTime = taskMetadata.enqueueTime!;
+      }
+    });
+  };
+};
+
+export const cardGeometryUpdateCreator = (
+  geometry: Geometry,
+  changeFrom: ChangeFrom = 'local',
+  enqueueTime: string | undefined = undefined
+) => {
+  return async function (dispatch: Dispatch<any>, getState: () => CardState) {
+    await lock.acquire('cardGeometryUpdate', async () => {
+      if (enqueueTime !== undefined) {
+        if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
+          console.log('Block expired remote update');
+          return;
+        }
+      }
+
+      const cardAction: CardGeometryUpdateAction = {
+        type: 'card-geometry-update',
+        payload: geometry,
+      };
+      dispatch(cardAction);
+
+      if (changeFrom === 'local') {
+        const cmd: DatabaseCardSketchUpdate = {
+          command: 'db-card-sketch-update',
+          data: {
+            ...getState().sketch,
+          },
+        };
+
+        const taskMetadata: TaskMetadata = await window.api.db(cmd);
+        // eslint-disable-next-line require-atomic-updates
+        bodyUpdatedTime = taskMetadata.enqueueTime!;
+      }
+    });
+  };
+};
+
+export const cardStyleUpdateCreator = (
+  style: CardStyle,
+  changeFrom: ChangeFrom = 'local',
+  enqueueTime: string | undefined = undefined
+) => {
+  return async function (dispatch: Dispatch<any>, getState: () => CardState) {
+    await lock.acquire('cardStyleUpdate', async () => {
+      if (enqueueTime !== undefined) {
+        if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
+          console.log('Block expired remote update');
+          return;
+        }
+      }
+
+      const cardAction: CardStyleUpdateAction = {
+        type: 'card-style-update',
+        payload: style,
+      };
+      dispatch(cardAction);
+
+      if (changeFrom === 'local') {
+        const cmd: DatabaseCardSketchUpdate = {
+          command: 'db-card-sketch-update',
+          data: {
+            ...getState().sketch,
+          },
         };
 
         const taskMetadata: TaskMetadata = await window.api.db(cmd);
@@ -65,7 +187,7 @@ export const cardConditionLockedUpdateCreator = (
   changeFrom: ChangeFrom = 'local',
   enqueueTime: string | undefined = undefined
 ) => {
-  return async function (dispatch: Dispatch<any>, getState: () => CardCondition) {
+  return async function (dispatch: Dispatch<any>, getState: () => CardState) {
     await lock.acquire('cardConditionLockedUpdate', async () => {
       if (enqueueTime !== undefined) {
         if (sketchUpdatedTime !== undefined && sketchUpdatedTime! > enqueueTime) {
@@ -81,10 +203,11 @@ export const cardConditionLockedUpdateCreator = (
       dispatch(cardAction);
 
       if (changeFrom === 'local') {
-        const newCardBody = getState();
         const cmd: DatabaseCardSketchUpdate = {
           command: 'db-card-sketch-update',
-          data: newCardBody,
+          data: {
+            ...getState().sketch,
+          },
         };
 
         const taskMetadata: TaskMetadata = await window.api.db(cmd);
@@ -95,25 +218,36 @@ export const cardConditionLockedUpdateCreator = (
   };
 };
 
-export const cardSketchBringToFrontCreator = (cardUrl: string) => {
-  return async function (dispatch: Dispatch<any>, getState: () => Geometry) {
-    const newZ = await window.api.bringToFront(cardUrl);
+export const cardSketchBringToFrontCreator = (sketchUrl: string) => {
+  return async function (dispatch: Dispatch<any>, getState: () => CardState) {
+    const newZ = await window.api.bringToFront(sketchUrl);
     if (newZ === undefined) return;
-    // eslint-disable-next-line require-atomic-updates
-    cardPropStatus.geometry.z = newZ;
-  
-    cardPropStatus.status = 'Focused';
-  
-    const cardAction: CardGeometryZUpdateAction = {
+
+    const cardGeometryAction: CardGeometryZUpdateAction = {
       type: 'card-geometry-z-update',
-      payload: zIndex,
+      payload: newZ,
     };
-    dispatch(cardAction);
+    dispatch(cardGeometryAction);
+    const cardStatusAction: CardWorkStateStatusUpdateAction = {
+      type: 'card-work-state-status-update',
+      payload: 'Focused',
+    };
+    dispatch(cardStatusAction);
+  };
+};
+
+export const cardWorkStateStatusUpdateCreator = (status: CardStatus) => {
+  return function (dispatch: Dispatch<any>, getState: () => CardState) {
+    const cardStatusAction: CardWorkStateStatusUpdateAction = {
+      type: 'card-work-state-status-update',
+      payload: status,
+    };
+    dispatch(cardStatusAction);
   };
 };
 
 export const cardSketchSendToBackCreator = (zIndex: number) => {
-  return function (dispatch: Dispatch<any>, getState: () => Geometry) {
+  return function (dispatch: Dispatch<any>, getState: () => CardState) {
     const cardAction: CardGeometryZUpdateAction = {
       type: 'card-geometry-z-update',
       payload: zIndex,

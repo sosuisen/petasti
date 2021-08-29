@@ -28,11 +28,11 @@ contextBridge.exposeInMainWorld('api', {
     return ipcRenderer.invoke('bring-to-front', sketchUrl);
   },
   createCard: (
-    url: string,
+    sketchUrl: string | undefined,
     cardBody: Partial<CardBody>,
     cardSketch: Partial<CardSketch>
   ): Promise<void> => {
-    return ipcRenderer.invoke('create-card', url, cardBody, cardSketch);
+    return ipcRenderer.invoke('create-card', sketchUrl, cardBody, cardSketch);
   },
   confirmDialog: (url: string, buttonLabels: string[], message: string) => {
     return ipcRenderer.invoke('confirm-dialog', url, buttonLabels, message);

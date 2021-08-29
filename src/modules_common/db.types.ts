@@ -3,7 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { CardBody } from './types';
+import { CardBody, CardSketch } from './types';
 
 /**
  * From card
@@ -16,7 +16,7 @@ export type DatabaseCardBodyUpdate = {
 
 export type DatabaseCardSketchUpdate = {
   command: 'db-card-sketch-update';
-  data: CardBody;
+  data: CardSketch;
 };
 
 /**

@@ -17,7 +17,7 @@ import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
 import { APP_ICON_NAME, APP_SCHEME, DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
 import { CardSketch } from '../modules_common/types';
 import { MESSAGE } from './messages';
-import { currentCardMap } from './card_map';
+import { cacheOfCard } from './card_cache';
 import { INote } from './note_types';
 import { showDialog } from './utils_main';
 import { noteStore } from './note_store';
@@ -99,17 +99,17 @@ export const setTrayContextMenu = () => {
           click: () => {
             if (noteProp._id !== note.settings.currentNoteId) {
               closeSettings();
-              if (currentCardMap.size === 0) {
+              if (cacheOfCard.size === 0) {
                 emitter.emit('change-note', noteProp._id);
               }
               else {
                 note.changingToNoteId = noteProp._id;
                 try {
                   // Remove listeners firstly to avoid focus another card in closing process
-                  currentCardMap.forEach(card =>
+                  cacheOfCard.forEach(card =>
                     card.removeWindowListenersExceptClosedEvent()
                   );
-                  currentCardMap.forEach(card =>
+                  cacheOfCard.forEach(card =>
                     card.window.webContents.send('card-close')
                   );
                 } catch (e) {
@@ -164,7 +164,7 @@ export const setTrayContextMenu = () => {
 
         closeSettings();
 
-        if (currentCardMap.size === 0) {
+        if (cacheOfCard.size === 0) {
           emitter.emit('change-note', newNoteProp._id);
         }
         else {
@@ -172,8 +172,8 @@ export const setTrayContextMenu = () => {
           note.changingToNoteId = newNoteProp._id;
           try {
             // Remove listeners firstly to avoid focus another card in closing process
-            currentCardMap.forEach(card => card.removeWindowListenersExceptClosedEvent());
-            currentCardMap.forEach(card => card.window.webContents.send('card-close'));
+            cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
+            cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
           } catch (e) {
             console.error(e);
           }
@@ -216,7 +216,7 @@ export const setTrayContextMenu = () => {
         );
 
         setTrayContextMenu();
-        currentCardMap.forEach(card => card.resetContextMenu());
+        cacheOfCard.forEach(card => card.resetContextMenu());
       },
     },
     {
@@ -226,7 +226,7 @@ export const setTrayContextMenu = () => {
         if (noteStore.getState().size <= 1) {
           return;
         }
-        if (currentCardMap.size > 0) {
+        if (cacheOfCard.size > 0) {
           showDialog(undefined, 'info', 'noteCannotDelete');
           return;
         }
@@ -258,12 +258,12 @@ export const setTrayContextMenu = () => {
         }
         //        setChangingToWorkspaceId('exit');
         closeSettings();
-        if (currentCardMap.size === 0) {
+        if (cacheOfCard.size === 0) {
           emitter.emit('exit');
         }
         else {
           try {
-            currentCardMap.forEach(card => {
+            cacheOfCard.forEach(card => {
               card.window.webContents.send('card-close');
             });
           } catch (e) {

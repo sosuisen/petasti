@@ -21,6 +21,7 @@ import {
   getCardIdFromUrl,
   getCurrentDateAndTime,
   getNoteIdFromUrl,
+  getSketchIdFromUrl,
 } from '../modules_common/utils';
 import {
   CardBody,
@@ -49,7 +50,7 @@ import { showDialog } from './utils_main';
 import { initSync } from './sync';
 import { MESSAGE, setMessages } from './messages';
 import { destroyTray, initializeTaskTray } from './tray';
-import { currentCardMap } from './card_map';
+import { cacheOfCard } from './card_cache';
 import { INote, NoteState } from './note_types';
 import { noteStore } from './note_store';
 import {
@@ -59,6 +60,7 @@ import {
   noteUpdateCreator,
 } from './note_action_creator';
 import { Card } from './card';
+import { cardSketchBringToFrontCreator } from '../modules_renderer/card_action_creator';
 
 export const generateNewNoteId = () => {
   const ulid = monotonicFactory();
@@ -400,15 +402,15 @@ class Note implements INote {
     cardBody: CardBody,
     cardSketch: CardSketch
   ): Promise<void> => {
-    // Update currentCardMap
-    const card = currentCardMap.get(sketchUrl);
+    // Update cacheOfCard
+    const card = cacheOfCard.get(sketchUrl);
 
     await this._updateCardBodyDoc(cardBody);
     if (card) {
       card.body = JSON.parse(JSON.stringify(cardBody));
     }
     else {
-      console.log('Card does note exist in currentCardMap: ' + sketchUrl);
+      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
     }
 
     await this._updateCardSketchDoc(cardSketch);
@@ -416,7 +418,7 @@ class Note implements INote {
       card.sketch = JSON.parse(JSON.stringify(cardSketch));
     }
     else {
-      console.log('Card does note exist in currentCardMap: ' + sketchUrl);
+      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
     }
 
     // Update note store & DB
@@ -428,15 +430,15 @@ class Note implements INote {
   };
 
   updateCardBody = async (sketchUrl: string, cardBody: CardBody): Promise<void> => {
-    // Update currentCardMap
-    const card = currentCardMap.get(sketchUrl);
+    // Update cacheOfCard
+    const card = cacheOfCard.get(sketchUrl);
     if (card) {
       card.body = JSON.parse(JSON.stringify(cardBody));
     }
     else {
-      console.log('Card does note exist in currentCardMap: ' + sketchUrl);
+      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
     }
-    await this._updateCardBodyDoc(card.body);
+    await this._updateCardBodyDoc(cardBody);
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
@@ -447,16 +449,23 @@ class Note implements INote {
   };
 
   updateCardGeometry = async (sketchUrl: string, geometry: Geometry): Promise<void> => {
-    // Update currentCardMap
-    const card = currentCardMap.get(sketchUrl);
+    // Update cacheOfCard
+    const card = cacheOfCard.get(sketchUrl);
+    let sketch: CardSketch;
     if (card) {
       card.sketch.geometry = { ...card.sketch.geometry, ...geometry };
+      sketch = card.sketch;
     }
     else {
-      console.log('Card does note exist in currentCardMap: ' + sketchUrl);
+      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
+      sketch = (await this._noteCollection.get(
+        getSketchIdFromUrl(sketchUrl)
+      )) as CardSketch;
+      sketch.geometry = { ...sketch.geometry, ...geometry };
     }
-    await this._updateCardSketchDoc(card.sketch);
-
+    if (sketch) {
+      await this._updateCardSketchDoc(sketch);
+    }
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(
@@ -466,16 +475,22 @@ class Note implements INote {
   };
 
   updateCardSketch = async (sketchUrl: string, cardSketch: CardSketch): Promise<void> => {
-    // Update currentCardMap
-    const card = currentCardMap.get(sketchUrl);
+    // Update cacheOfCard
+    const card = cacheOfCard.get(sketchUrl);
+    let sketch: CardSketch;
     if (card) {
       card.sketch = JSON.parse(JSON.stringify(cardSketch));
+      sketch = card.sketch;
     }
     else {
-      console.log('Card does note exist in currentCardMap: ' + sketchUrl);
+      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
+      sketch = (await this._noteCollection.get(
+        getSketchIdFromUrl(sketchUrl)
+      )) as CardSketch;
     }
-
-    await this._updateCardSketchDoc(card.sketch);
+    if (sketch) {
+      await this._updateCardSketchDoc(sketch);
+    }
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
@@ -491,13 +506,13 @@ class Note implements INote {
   };
 
   deleteCardSketch = async (cardUrl: string) => {
-    const card = currentCardMap.get(cardUrl);
+    const card = cacheOfCard.get(cardUrl);
 
     if (card !== undefined) {
       if (!card.window.isDestroyed()) {
         card.window.destroy();
       }
-      currentCardMap.delete(cardUrl);
+      cacheOfCard.delete(cardUrl);
       await this._deleteCardSketchDoc(cardUrl);
 
       // Update note store & DB
@@ -520,8 +535,8 @@ class Note implements INote {
 
     try {
       // Remove listeners firstly to avoid focus another card in closing process
-      currentCardMap.forEach(card => card.removeWindowListenersExceptClosedEvent());
-      currentCardMap.forEach(card => card.window.webContents.send('card-close'));
+      cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
+      cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
     } catch (error) {
       console.error(error);
     }
@@ -530,7 +545,7 @@ class Note implements INote {
 
     handlers.forEach(channel => ipcMain.removeHandler(channel));
     handlers.length = 0; // empty
-    currentCardMap.clear();
+    cacheOfCard.clear();
 
     initializeTaskTray(this);
   };

@@ -13,7 +13,7 @@ import {
 import { showDialog } from './utils_main';
 import { INote } from './note_types';
 import { NoteProp } from '../modules_common/types';
-import { currentCardMap } from './card_map';
+import { cacheOfCard } from './card_cache';
 import { setTrayContextMenu } from './tray';
 import { noteStore } from './note_store';
 import {
@@ -48,7 +48,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           cardBodyId = (changedFile.old.doc as JsonDoc)._id;
         }
 
-        const card = currentCardMap.get(cardBodyId!);
+        const card = cacheOfCard.get(cardBodyId!);
         if (card !== undefined) {
           card.window.webContents.send(
             'sync-card-body',
@@ -92,7 +92,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
             );
 
             setTrayContextMenu();
-            currentCardMap.forEach(card => card.resetContextMenu());
+            cacheOfCard.forEach(card => card.resetContextMenu());
           }
           else if (changedFile.operation === 'update') {
             const prop = changedFile.new.doc as NoteProp;
@@ -105,7 +105,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
             );
 
             setTrayContextMenu();
-            currentCardMap.forEach(card => card.resetContextMenu());
+            cacheOfCard.forEach(card => card.resetContextMenu());
           }
           else if (changedFile.operation === 'delete') {
             // eslint-disable-next-line no-await-in-loop
@@ -125,7 +125,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
               }
               else {
                 setTrayContextMenu();
-                currentCardMap.forEach(card => card.resetContextMenu());
+                cacheOfCard.forEach(card => card.resetContextMenu());
               }
             }
             else {
@@ -151,7 +151,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           }
         }
         else {
-          const card = currentCardMap.get(cardId);
+          const card = cacheOfCard.get(cardId);
           if (card) {
             card.window.webContents.send(
               'sync-card',

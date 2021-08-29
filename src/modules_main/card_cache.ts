@@ -5,10 +5,10 @@
 import { ICard } from '../modules_common/types';
 
 /**
- * currentCardMap
+ * cacheOfCard
  *
  * @remarks
  * - key: cardUrl
  * - value: Card
  */
-export const currentCardMap: Map<string, ICard> = new Map(); // means { [cardUrl: string]: ICard] }
+export const cacheOfCard: Map<string, ICard> = new Map(); // means { [cardUrl: string]: ICard] }

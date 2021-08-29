@@ -10,7 +10,7 @@ import { availableLanguages, defaultLanguage, MessageLabel } from '../modules_co
 import { emitter } from './event';
 import { settingsDialog } from './settings';
 import { DIALOG_BUTTON } from '../modules_common/const';
-import { currentCardMap } from './card_map';
+import { cacheOfCard } from './card_cache';
 import { MESSAGE, setMessages } from './messages';
 import { showDialog } from './utils_main';
 import { INote } from './note_types';
@@ -159,7 +159,7 @@ ipcMain.handle('alert-dialog', (event, url: string, label: MessageLabel) => {
     win = settingsDialog;
   }
   else {
-    const card = currentCardMap.get(url);
+    const card = cacheOfCard.get(url);
     if (!card) {
       return;
     }
@@ -176,7 +176,7 @@ ipcMain.handle(
       win = settingsDialog;
     }
     else {
-      const card = currentCardMap.get(url);
+      const card = cacheOfCard.get(url);
       if (!card) {
         return;
       }

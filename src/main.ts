@@ -16,7 +16,7 @@ import { note } from './modules_main/note';
 import { CardBody, CardSketch } from './modules_common/types';
 import { generateNewCardId, getCardIdFromUrl } from './modules_common/utils';
 import { addSettingsHandler } from './modules_main/settings_eventhandler';
-import { currentCardMap } from './modules_main/card_map';
+import { cacheOfCard } from './modules_main/card_cache';
 import {
   getZIndexOfTopCard,
   setZIndexOfBottomCard,
@@ -46,19 +46,19 @@ app.on('ready', async () => {
   const renderers: Promise<void>[] = [];
   cardProps.forEach(cardProp => {
     const card = new Card(note, cardProp.url, cardProp.body, cardProp.sketch);
-    currentCardMap.set(cardProp.url, card);
+    cacheOfCard.set(cardProp.url, card);
     renderers.push(card.render());
   });
   await Promise.all(renderers).catch(e => {
     console.error(`Error while rendering cards in ready event: ${e.message}`);
   });
 
-  const backToFront = [...currentCardMap.values()].sort((a, b) => {
+  const backToFront = [...cacheOfCard.values()].sort((a, b) => {
     if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
     else if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
     return 0;
   });
-  if (currentCardMap.size > 0) {
+  if (cacheOfCard.size > 0) {
     setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
     setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
   }
@@ -91,7 +91,7 @@ emitter.on('exit', () => {
 emitter.on('change-note', async (nextNoteId: string) => {
   handlers.forEach(channel => ipcMain.removeHandler(channel));
   handlers.length = 0; // empty
-  currentCardMap.clear();
+  cacheOfCard.clear();
 
   note.settings.currentNoteId = nextNoteId;
   await note.settingsDB.put(note.settings);
@@ -103,14 +103,14 @@ emitter.on('change-note', async (nextNoteId: string) => {
   const renderers: Promise<void>[] = [];
   cardProps.forEach(cardProp => {
     const card = new Card(note, cardProp.url, cardProp.body, cardProp.sketch);
-    currentCardMap.set(cardProp.url, card);
+    cacheOfCard.set(cardProp.url, card);
     renderers.push(card.render());
   });
   await Promise.all(renderers).catch(e => {
     console.error(`Error while rendering cards in ready event: ${e.message}`);
   });
 
-  const backToFront = [...currentCardMap.values()].sort((a, b) => {
+  const backToFront = [...cacheOfCard.values()].sort((a, b) => {
     if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
     else if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
     return 0;
@@ -161,7 +161,7 @@ ipcMain.handle('delete-card-sketch', async (event, url: string) => {
 });
 
 ipcMain.handle('finish-render-card', (event, url: string) => {
-  const card = currentCardMap.get(url);
+  const card = cacheOfCard.get(url);
   if (card) {
     card.renderingCompleted = true;
   }
@@ -171,20 +171,20 @@ ipcMain.handle(
   'create-card',
   async (
     event,
-    url,
+    sketchUrl: string | undefined,
     cardBody: Partial<CardBody>,
     cardSketch: Partial<CardSketch>
   ): Promise<void> => {
-    if (url === undefined) {
+    if (sketchUrl === undefined) {
       const cardId = generateNewCardId();
-      url = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
+      sketchUrl = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
     }
-    await createCardWindow(note, url, cardBody, cardSketch);
+    await createCardWindow(note, sketchUrl, cardBody, cardSketch);
   }
 );
 
 ipcMain.handle('blur-and-focus-with-suppress-events', (event, url: string) => {
-  const card = currentCardMap.get(url);
+  const card = cacheOfCard.get(url);
   if (card) {
     console.debug(`blurAndFocus: ${url}`);
     /**
@@ -201,7 +201,7 @@ ipcMain.handle('blur-and-focus-with-suppress-events', (event, url: string) => {
 });
 
 ipcMain.handle('blur-and-focus-with-suppress-focus-event', (event, url: string) => {
-  const card = currentCardMap.get(url);
+  const card = cacheOfCard.get(url);
   if (card) {
     console.debug(`blurAndFocus: ${url}`);
     /**
@@ -216,7 +216,7 @@ ipcMain.handle('blur-and-focus-with-suppress-focus-event', (event, url: string) 
 });
 
 ipcMain.handle('blur', (event, url: string) => {
-  const card = currentCardMap.get(url);
+  const card = cacheOfCard.get(url);
   if (card) {
     console.debug(`blur: ${url}`);
     card.window.blur();
@@ -224,7 +224,7 @@ ipcMain.handle('blur', (event, url: string) => {
 });
 
 ipcMain.handle('focus', (event, url: string) => {
-  const card = currentCardMap.get(url);
+  const card = cacheOfCard.get(url);
   if (card) {
     console.debug(`focus: ${url}`);
     card.window.focus();
@@ -232,21 +232,21 @@ ipcMain.handle('focus', (event, url: string) => {
 });
 
 ipcMain.handle('set-title', (event, url: string, title: string) => {
-  const card = currentCardMap.get(url);
+  const card = cacheOfCard.get(url);
   if (card) {
     card.window.setTitle(title);
   }
 });
 
 ipcMain.handle('set-window-size', (event, url: string, width: number, height: number) => {
-  const card = currentCardMap.get(url);
+  const card = cacheOfCard.get(url);
   // eslint-disable-next-line no-unused-expressions
   card?.window.setSize(width, height);
   return card?.window.getBounds();
 });
 
 ipcMain.handle('set-window-position', (event, url: string, x: number, y: number) => {
-  const card = currentCardMap.get(url);
+  const card = cacheOfCard.get(url);
   // eslint-disable-next-line no-unused-expressions
   card?.window.setPosition(x, y);
   return card?.window.getBounds();
@@ -256,19 +256,21 @@ ipcMain.handle('get-uuid', () => {
   //  return uuidv4();
 });
 
-ipcMain.handle('bring-to-front', (event, sketchUrl: string, rearrange = false): number => {
-  const targetCard = currentCardMap.get(sketchUrl);
+ipcMain.handle('bring-to-front', (event, sketchUrl: string, rearrange = false):
+  | number
+  | undefined => {
+  const targetCard = cacheOfCard.get(sketchUrl);
   if (targetCard === undefined) {
     return undefined;
   }
   // Database Update
   if (targetCard.sketch.geometry.z === getZIndexOfTopCard()) {
     // console.log('skip: ' + cardProp.geometry.z);
-    // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
+    // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
     return targetCard.sketch.geometry.z;
   }
 
-  // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
+  // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 
   const zIndex = getZIndexOfTopCard() + 1;
   // console.debug(`new zIndex: ${zIndex}`);
@@ -277,10 +279,10 @@ ipcMain.handle('bring-to-front', (event, sketchUrl: string, rearrange = false): 
   // Async
   note.updateCardSketch(sketchUrl, newSketch);
 
-  // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
+  // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 
   // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
-  const backToFront = [...currentCardMap.values()].sort((a, b) => {
+  const backToFront = [...cacheOfCard.values()].sort((a, b) => {
     if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
     if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
     return 0;
@@ -302,7 +304,7 @@ ipcMain.handle('bring-to-front', (event, sketchUrl: string, rearrange = false): 
 ipcMain.handle(
   'send-mouse-input',
   (event, url: string, mouseInputEvent: MouseInputEvent) => {
-    const cardWindow = currentCardMap.get(url);
+    const cardWindow = cacheOfCard.get(url);
     if (!cardWindow) {
       return;
     }

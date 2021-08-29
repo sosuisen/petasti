@@ -67,7 +67,7 @@ export type NoteProp = {
 };
 
 export type CardWorkState = {
-  url: '';
+  url: string;
   status: CardStatus;
 };
 
@@ -91,6 +91,7 @@ export interface ICard {
   url: string;
   body: CardBody;
   sketch: CardSketch;
+
   status: CardStatus;
 
   removeWindowListenersExceptClosedEvent: () => void;

@@ -54,7 +54,16 @@ export const getNoteIdFromUrl = (url: string): string => {
   return '';
 };
 
-export const getCardIdFromUrl = (cardUrl: string): string => {
-  const paths = cardUrl.split('/');
+export const getCardIdFromUrl = (url: string): string => {
+  const paths = url.split('/');
   return paths[paths.length - 1];
+};
+
+export const getSketchIdFromUrl = (url: string): string => {
+  const rex = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/(n.+?)$`); // treestickies://local/noteID/(cardID|noteID)
+  const result = url.match(rex);
+  if (result && result.length === 2) {
+    return result[1];
+  }
+  return '';
 };

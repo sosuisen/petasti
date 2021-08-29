@@ -3,8 +3,6 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { CardProp } from './types';
-
 export interface ICardEditor {
   readonly hasCodeMode: boolean;
   isCodeMode: boolean;
@@ -13,7 +11,6 @@ export interface ICardEditor {
   getImageTag(id: string, src: string, width: number, height: number, alt: string): string;
 
   loadUI(cardCssStyle: CardCssStyle): Promise<void>; // A Promise resolves when required initialization is finished.
-  setCard(prop: CardProp): void; // Loading a card after loadUI().
 
   showEditor(): Promise<void>;
   hideEditor(): void;

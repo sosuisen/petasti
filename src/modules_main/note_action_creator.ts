@@ -68,9 +68,11 @@ export const noteModifiedDateUpdateCreator = (
 
       if (changeFrom === 'local') {
         const newProp = getState().get(noteId);
-        const taskMetadata = await note.updateNoteDoc(newProp);
-        // eslint-disable-next-line require-atomic-updates
-        newProp.updatedTime = taskMetadata.enqueueTime;
+        if (newProp) {
+          const taskMetadata = await note.updateNoteDoc(newProp);
+          // eslint-disable-next-line require-atomic-updates
+          newProp.updatedTime = taskMetadata.enqueueTime;
+        }
       }
     });
   };
@@ -98,9 +100,11 @@ export const noteUpdateCreator = (
       dispatch(noteAction);
       if (changeFrom === 'local') {
         const newProp = getState().get(noteProp._id);
-        const taskMetadata = await note.updateNoteDoc(newProp);
-        // eslint-disable-next-line require-atomic-updates
-        newProp.updatedTime = taskMetadata.enqueueTime;
+        if (newProp) {
+          const taskMetadata = await note.updateNoteDoc(newProp);
+          // eslint-disable-next-line require-atomic-updates
+          newProp.updatedTime = taskMetadata.enqueueTime;
+        }
       }
     });
   };

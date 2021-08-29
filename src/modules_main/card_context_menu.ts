@@ -6,14 +6,14 @@ import { MenuItemConstructorOptions } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { cardColors, ColorName } from '../modules_common/color';
 import { APP_SCHEME } from '../modules_common/const';
-import { CardProp, ICard } from '../modules_common/types';
+import { CardSketch, ICard } from '../modules_common/types';
 import { getCardIdFromUrl } from '../modules_common/utils';
 import {
   getZIndexOfBottomCard,
   setZIndexOfBottomCard,
   setZIndexOfTopCard,
 } from './card_zindex';
-import { currentCardMap } from './card_map';
+import { cacheOfCard } from './card_cache';
 import { MESSAGE } from './messages';
 import { INote } from './note_types';
 import { noteStore } from './note_store';
@@ -37,23 +37,23 @@ export const setContextMenu = (note: INote, card: ICard) => {
   };
 
   const moveCardToNote = async (noteId: string) => {
-    const newCardProp: CardProp = card.toObject();
-    newCardProp.url = `${APP_SCHEME}://local/${noteId}/${getCardIdFromUrl(card.url)}`;
+    const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
+    const url = `${APP_SCHEME}://local/${noteId}/${getCardIdFromUrl(card.url)}`;
     // Overwrite z
-    newCardProp.geometry.z = (await note.getZIndexOfTopCard(noteId)) + 1;
+    newCardSketch.geometry.z = (await note.getZIndexOfTopCard(noteId)) + 1;
 
-    await note.updateCardSketch(newCardProp);
+    await note.updateCardSketch(url, newCardSketch);
 
     await note.deleteCardSketch(card.url);
   };
 
   const copyCardToNote = async (noteId: string) => {
-    const newCardProp: CardProp = card.toObject();
-    newCardProp.url = `${APP_SCHEME}://local/${noteId}/${getCardIdFromUrl(card.url)}`;
+    const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
+    const url = `${APP_SCHEME}://local/${noteId}/${getCardIdFromUrl(card.url)}`;
     // Overwrite z
-    newCardProp.geometry.z = (await note.getZIndexOfTopCard(noteId)) + 1;
+    newCardSketch.geometry.z = (await note.getZIndexOfTopCard(noteId)) + 1;
 
-    await note.updateCardSketch(newCardProp);
+    await note.updateCardSketch(url, newCardSketch);
   };
 
   const moveToNotes: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
@@ -145,30 +145,30 @@ export const setContextMenu = (note: INote, card: ICard) => {
       {
         label: MESSAGE('sendToBack'),
         click: () => {
-          const cardProp = card.toObject();
-
-          // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
+          // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 
           // Database Update
-          if (card.geometry.z === getZIndexOfBottomCard()) {
-            return cardProp.geometry.z;
+          if (card.sketch.geometry.z === getZIndexOfBottomCard()) {
+            return card.sketch.geometry.z;
           }
 
           const zIndex = getZIndexOfBottomCard() - 1;
           // console.debug(`new zIndex: ${zIndex}`);
+          const cardSketch = JSON.parse(JSON.stringify(card.sketch)) as CardSketch;
+          cardSketch.geometry.z = zIndex;
 
           // Async
-          note.updateCardSketch(cardProp);
+          note.updateCardSketch(card.url, cardSketch);
 
-          // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
+          // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 
-          const backToFront: ICard[] = [...currentCardMap.values()].sort((a, b) => {
-            if (a.geometry.z > b.geometry.z) return 1;
-            if (a.geometry.z < b.geometry.z) return -1;
+          const backToFront: ICard[] = [...cacheOfCard.values()].sort((a, b) => {
+            if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
+            if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
             return 0;
           });
-          setZIndexOfTopCard(backToFront[backToFront.length - 1].geometry.z);
-          setZIndexOfBottomCard(backToFront[0].geometry.z);
+          setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
+          setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
           backToFront.forEach(myCard => {
             if (myCard.window && !myCard.window.isDestroyed()) {
               myCard!.suppressFocusEventOnce = true;
@@ -180,10 +180,10 @@ export const setContextMenu = (note: INote, card: ICard) => {
         },
       },
       {
-        label: card.condition.locked ? MESSAGE('unlockCard') : MESSAGE('lockCard'),
+        label: card.sketch.condition.locked ? MESSAGE('unlockCard') : MESSAGE('lockCard'),
         click: () => {
-          card.condition.locked = !card.condition.locked;
-          card.window.webContents.send('set-lock', card.condition.locked);
+          card.sketch.condition.locked = !card.sketch.condition.locked;
+          card.window.webContents.send('set-lock', card.sketch.condition.locked);
           resetContextMenu();
         },
       },

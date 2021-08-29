@@ -24,7 +24,7 @@ const noteReducer = (
     }
     case 'note-modified-date-update': {
       const newState = new Map(state);
-      newState.get(action.payload.id).date.modifiedDate = action.payload.modifiedDate;
+      newState.get(action.payload.id)!.date.modifiedDate = action.payload.modifiedDate;
       return newState;
     }
     case 'note-update': {
