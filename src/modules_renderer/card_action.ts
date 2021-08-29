@@ -27,7 +27,15 @@ export interface CardSketchUpdateAction {
   payload: CardSketch;
 }
 
-export type CardSketchAction = CardSketchInitAction | CardSketchUpdateAction;
+export interface CardSketchLockedUpdateAction {
+  type: 'card-sketch-locked-update';
+  payload: boolean;
+}
+
+export type CardSketchAction =
+  | CardSketchInitAction
+  | CardSketchUpdateAction
+  | CardSketchLockedUpdateAction;
 
 export interface CardWorkStateStatusUpdateAction {
   type: 'card-work-state-status-update';

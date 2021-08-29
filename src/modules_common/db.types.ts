@@ -14,6 +14,11 @@ export type DatabaseCardBodyUpdate = {
   data: CardBody;
 };
 
+export type DatabaseCardSketchUpdate = {
+  command: 'db-card-sketch-update';
+  data: CardBody;
+};
+
 /**
  * From settings dialog
  */
@@ -66,6 +71,7 @@ export type DatabaseResumeSync = {
 
 export type DatabaseCommand =
   | DatabaseCardBodyUpdate
+  | DatabaseCardSketchUpdate
   | DatabaseExecSync
   | DatabaseSyncEnabledUpdate
   | DatabaseSyncRemoteUrlUpdate

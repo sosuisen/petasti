@@ -57,6 +57,11 @@ const cardSketchReducer = (
       const newState = JSON.parse(JSON.stringify(action.payload));
       return newState;
     }
+    case 'card-sketch-locked-update': {
+      const newState = JSON.parse(JSON.stringify(action.payload)) as CardSketch;
+      newState.condition.locked = action.payload;
+      return newState;
+    }
     default:
       return state;
   }

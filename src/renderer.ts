@@ -5,6 +5,7 @@
 
 import { ChangedFile } from 'git-documentdb';
 import { cardStore } from 'card_store';
+import { dispatch } from 'rxjs/internal/observable/pairs';
 import { CardProp, CardPropStatus } from './modules_common/types';
 import {
   CardCssStyle,
@@ -38,6 +39,7 @@ import {
 } from './modules_renderer/save';
 import window from './modules_renderer/window';
 import { setAltDown, setCtrlDown, setMetaDown, setShiftDown } from './modules_common/keys';
+import { cardSketchLockedUpdateCreator } from './modules_renderer/card_action_creator';
 
 let cardUrlEncoded: string;
 
@@ -133,7 +135,11 @@ const initializeUIEvents = () => {
        * Caret of CKEditor is disappeared just after push Cancel button of window.confirm()
        */
       window.api
-        .confirmDialog(cardStore.getState().url, ['btnCloseCard', 'btnCancel'], 'confirmClosing')
+        .confirmDialog(
+          cardStore.getState().url,
+          ['btnCloseCard', 'btnCancel'],
+          'confirmClosing'
+        )
         .then((res: number) => {
           if (res === DIALOG_BUTTON.default) {
             // OK
@@ -468,7 +474,7 @@ const onSendToBack = (zIndex: number) => {
 };
 
 const onSetLock = (locked: boolean) => {
-  cardPropStatus.condition.locked = locked;
+  cardStore.dispatch(cardSketchLockedUpdateCreator(locked));
   if (cardEditor.isOpened) {
     endEditor();
   }
@@ -638,7 +644,8 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
       cardPropStatus._body = imgTag;
     }
     else {
-      cardPropStatus.geometry.height = cardStore.getState().geometry.height + newImageHeight;
+      cardPropStatus.geometry.height =
+        cardStore.getState().geometry.height + newImageHeight;
       cardPropStatus._body = cardStore.getState()._body + '<br />' + imgTag;
       windowHeight = cardStore.getState().geometry.height + getRenderOffsetHeight();
     }
