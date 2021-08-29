@@ -55,6 +55,7 @@ import { noteStore } from './note_store';
 import {
   noteCreateCreator,
   noteInitCreator,
+  noteModifiedDateUpdateCreator,
   noteUpdateCreator,
 } from './note_action_creator';
 import { Card } from './card';
@@ -364,11 +365,9 @@ class Note implements INote {
       prefix: this._settings.currentNoteId + '/c',
     });
 
-    const cardProps: CardProperty[] = [];
-    for (const cardDoc of cardDocs) {
+    const getCardProp = async (cardDoc: CardSketch): Promise<CardProperty> => {
       const url = `${APP_SCHEME}://local/${cardDoc._id}`; // treestickies://local/noteID/(cardID|noteID)
       const cardId = getCardIdFromUrl(url);
-      // eslint-disable-next-line no-await-in-loop
       let cardBodyDoc = await this._cardCollection.get(cardId);
       if (cardBodyDoc === undefined) {
         const current = getCurrentDateAndTime();
@@ -385,9 +384,14 @@ class Note implements INote {
         body: cardBodyDoc as CardBody,
         sketch: cardDoc as CardSketch,
       };
-
-      cardProps.push(cardProp);
+      return cardProp;
+    };
+    const getCardProps: Promise<CardProperty>[] = [];
+    for (const cardDoc of cardDocs) {
+      getCardProps.push(getCardProp(cardDoc as CardSketch));
     }
+
+    const cardProps: CardProperty[] = await Promise.all(getCardProps);
     return cardProps;
   };
 
@@ -398,27 +402,29 @@ class Note implements INote {
   ): Promise<void> => {
     // Update currentCardMap
     const card = currentCardMap.get(sketchUrl);
+
+    await this._updateCardBodyDoc(cardBody);
     if (card) {
       card.body = JSON.parse(JSON.stringify(cardBody));
+    }
+    else {
+      console.log('Card does note exist in currentCardMap: ' + sketchUrl);
+    }
+
+    await this._updateCardSketchDoc(cardSketch);
+    if (card) {
       card.sketch = JSON.parse(JSON.stringify(cardSketch));
     }
     else {
       console.log('Card does note exist in currentCardMap: ' + sketchUrl);
     }
-    await this._updateCardBodyDoc(card.body);
-    await this._updateCardSketchDoc(card.sketch);
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
-    const noteProp = noteStore.getState().get(noteId);
-    if (noteProp !== undefined) {
-      noteProp.date.modifiedDate = getCurrentDateAndTime();
+    noteStore.dispatch(
       // @ts-ignore
-      noteStore.dispatch(noteUpdateCreator(this, noteProp));
-    }
-    else {
-      console.log(`Note ${noteId} does not exist.`);
-    }
+      noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
+    );
   };
 
   updateCardBody = async (sketchUrl: string, cardBody: CardBody): Promise<void> => {
@@ -430,20 +436,14 @@ class Note implements INote {
     else {
       console.log('Card does note exist in currentCardMap: ' + sketchUrl);
     }
-
     await this._updateCardBodyDoc(card.body);
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
-    const noteProp = noteStore.getState().get(noteId);
-    if (noteProp !== undefined) {
-      noteProp.date.modifiedDate = getCurrentDateAndTime();
+    noteStore.dispatch(
       // @ts-ignore
-      noteStore.dispatch(noteUpdateCreator(this, noteProp));
-    }
-    else {
-      console.log(`Note ${noteId} does not exist.`);
-    }
+      noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
+    );
   };
 
   updateCardGeometry = async (sketchUrl: string, geometry: Geometry): Promise<void> => {
@@ -459,15 +459,10 @@ class Note implements INote {
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
-    const noteProp = noteStore.getState().get(noteId);
-    if (noteProp !== undefined) {
-      noteProp.date.modifiedDate = getCurrentDateAndTime();
+    noteStore.dispatch(
       // @ts-ignore
-      noteStore.dispatch(noteUpdateCreator(this, noteProp));
-    }
-    else {
-      console.log(`Note ${noteId} does not exist.`);
-    }
+      noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
+    );
   };
 
   updateCardSketch = async (sketchUrl: string, cardSketch: CardSketch): Promise<void> => {
@@ -484,15 +479,10 @@ class Note implements INote {
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
-    const noteProp = noteStore.getState().get(noteId);
-    if (noteProp !== undefined) {
-      noteProp.date.modifiedDate = getCurrentDateAndTime();
+    noteStore.dispatch(
       // @ts-ignore
-      noteStore.dispatch(noteUpdateCreator(this, noteProp));
-    }
-    else {
-      console.log(`Note ${noteId} does not exist.`);
-    }
+      noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
+    );
   };
 
   deleteCard = async (cardUrl: string) => {
@@ -507,20 +497,15 @@ class Note implements INote {
       if (!card.window.isDestroyed()) {
         card.window.destroy();
       }
-      await this._deleteCardSketchDoc(cardUrl);
       currentCardMap.delete(cardUrl);
+      await this._deleteCardSketchDoc(cardUrl);
 
       // Update note store & DB
       const noteId = getNoteIdFromUrl(cardUrl);
-      const noteProp = noteStore.getState().get(noteId);
-      if (noteProp !== undefined) {
-        noteProp.date.modifiedDate = getCurrentDateAndTime();
+      noteStore.dispatch(
         // @ts-ignore
-        noteStore.dispatch(noteUpdateCreator(this, noteProp));
-      }
-      else {
-        throw new Error(`Error in deleteCardSketch: note ${noteId} does not exist.`);
-      }
+        noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
+      );
     }
     else {
       console.error(`${cardUrl} does not exist`);

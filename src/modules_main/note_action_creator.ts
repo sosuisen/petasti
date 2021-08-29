@@ -9,6 +9,7 @@ import {
   NoteCreateAction,
   NoteDeleteAction,
   NoteInitAction,
+  NoteModifiedDateUpdateAction,
   NoteUpdateAction,
 } from './note_action';
 import { INote, NoteState } from './note_types';
@@ -40,6 +41,41 @@ export const noteCreateCreator = (
   };
 };
 
+export const noteModifiedDateUpdateCreator = (
+  note: INote,
+  noteId: string,
+  modifiedDate: string,
+  changeFrom: ChangeFrom = 'local',
+  enqueueTime: string | undefined = undefined
+) => {
+  return async function (dispatch: Dispatch<any>, getState: () => NoteState) {
+    await lock.acquire('noteUpdate', async () => {
+      if (enqueueTime !== undefined) {
+        const updatedTime = getState().get(noteId)?.updatedTime;
+        if (updatedTime !== undefined && updatedTime! > enqueueTime) {
+          console.log('Block expired remote update');
+          return;
+        }
+      }
+      const noteAction: NoteModifiedDateUpdateAction = {
+        type: 'note-modified-date-update',
+        payload: {
+          id: noteId,
+          modifiedDate,
+        },
+      };
+      dispatch(noteAction);
+
+      if (changeFrom === 'local') {
+        const newProp = getState().get(noteId);
+        const taskMetadata = await note.updateNoteDoc(newProp);
+        // eslint-disable-next-line require-atomic-updates
+        newProp.updatedTime = taskMetadata.enqueueTime;
+      }
+    });
+  };
+};
+
 export const noteUpdateCreator = (
   note: INote,
   noteProp: NoteProp,
@@ -55,16 +91,17 @@ export const noteUpdateCreator = (
           return;
         }
       }
-      if (changeFrom === 'local') {
-        const taskMetadata = await note.updateNoteDoc(noteProp);
-        // eslint-disable-next-line require-atomic-updates
-        noteProp.updatedTime = taskMetadata.enqueueTime;
-      }
       const noteAction: NoteUpdateAction = {
         type: 'note-update',
         payload: noteProp,
       };
       dispatch(noteAction);
+      if (changeFrom === 'local') {
+        const newProp = getState().get(noteProp._id);
+        const taskMetadata = await note.updateNoteDoc(newProp);
+        // eslint-disable-next-line require-atomic-updates
+        newProp.updatedTime = taskMetadata.enqueueTime;
+      }
     });
   };
 };
@@ -88,14 +125,14 @@ export const noteDeleteCreator = (
           return;
         }
       }
-      if (changeFrom === 'local') {
-        await note.deleteNoteDoc(noteId);
-      }
       const noteAction: NoteDeleteAction = {
         type: 'note-delete',
         payload: noteId,
       };
       dispatch(noteAction);
+      if (changeFrom === 'local') {
+        await note.deleteNoteDoc(noteId);
+      }
     });
   };
 };

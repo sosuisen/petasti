@@ -15,6 +15,14 @@ export interface NoteCreateAction {
   payload: NoteProp;
 }
 
+export interface NoteModifiedDateUpdateAction {
+  type: 'note-modified-date-update';
+  payload: {
+    id: string;
+    modifiedDate: string;
+  };
+}
+
 export interface NoteUpdateAction {
   type: 'note-update';
   payload: NoteProp;
@@ -28,5 +36,6 @@ export interface NoteDeleteAction {
 export type NoteAction =
   | NoteInitAction
   | NoteCreateAction
+  | NoteModifiedDateUpdateAction
   | NoteUpdateAction
   | NoteDeleteAction;
