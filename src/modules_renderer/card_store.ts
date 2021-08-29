@@ -6,8 +6,20 @@ import {
   DEFAULT_CARD_GEOMETRY,
   DEFAULT_CARD_STYLE,
 } from '../modules_common/const';
-import { CardBody, CardSketch, CardWorkState } from '../modules_common/types';
-import { CardBodyAction, CardSketchAction, CardWorkStateAction } from './card_action';
+import {
+  CardBody,
+  CardCondition,
+  CardStyle,
+  CardWorkState,
+  Geometry,
+} from '../modules_common/types';
+import {
+  CardBodyAction,
+  CardConditionAction,
+  CardGeometryAction,
+  CardStyleAction,
+  CardWorkStateAction,
+} from './card_action';
 
 const cardBodyReducer = (
   // eslint-disable-next-line default-param-last
@@ -25,10 +37,6 @@ const cardBodyReducer = (
   action: CardBodyAction
 ) => {
   switch (action.type) {
-    case 'card-body-init': {
-      const newState = JSON.parse(JSON.stringify(action.payload));
-      return newState;
-    }
     case 'card-body-update': {
       const newState = JSON.parse(JSON.stringify(action.payload));
       return newState;
@@ -38,29 +46,48 @@ const cardBodyReducer = (
   }
 };
 
-const cardSketchReducer = (
+const cardGeometryReducer = (
   // eslint-disable-next-line default-param-last
-  state: CardSketch = {
-    geometry: DEFAULT_CARD_GEOMETRY,
-    style: DEFAULT_CARD_STYLE,
-    condition: DEFAULT_CARD_CONDITION,
-    _id: '',
-  },
-  action: CardSketchAction
+  state: Geometry = DEFAULT_CARD_GEOMETRY,
+  action: CardGeometryAction
 ) => {
   switch (action.type) {
-    case 'card-sketch-init': {
-      const newState = JSON.parse(JSON.stringify(action.payload));
-      return newState;
+    case 'card-geometry-update': {
+      return { ...state, ...action.payload };
     }
-    case 'card-sketch-update': {
-      const newState = JSON.parse(JSON.stringify(action.payload));
-      return newState;
+    case 'card-geometry-z-update': {
+      return { ...state, z: action.payload };
     }
-    case 'card-sketch-locked-update': {
-      const newState = JSON.parse(JSON.stringify(action.payload)) as CardSketch;
-      newState.condition.locked = action.payload;
-      return newState;
+    default:
+      return state;
+  }
+};
+
+const cardStyleReducer = (
+  // eslint-disable-next-line default-param-last
+  state: CardStyle = DEFAULT_CARD_STYLE,
+  action: CardStyleAction
+) => {
+  switch (action.type) {
+    case 'card-style-update': {
+      return { ...state, ...action.payload };
+    }
+    default:
+      return state;
+  }
+};
+
+const cardConditionReducer = (
+  // eslint-disable-next-line default-param-last
+  state: CardCondition = DEFAULT_CARD_CONDITION,
+  action: CardConditionAction
+) => {
+  switch (action.type) {
+    case 'card-condition-update': {
+      return { ...state, ...action.payload };
+    }
+    case 'card-condition-locked-update': {
+      return { ...state, locked: action.payload };
     }
     default:
       return state;
@@ -77,9 +104,7 @@ const cardWorkStateReducer = (
 ) => {
   switch (action.type) {
     case 'card-work-state-status-update': {
-      const newState = JSON.parse(JSON.stringify(state));
-      newState.status = action.payload;
-      return newState;
+      return { ...state, status: action.payload };
     }
     default:
       return state;
@@ -88,7 +113,9 @@ const cardWorkStateReducer = (
 
 export const cardReducer = combineReducers({
   body: cardBodyReducer,
-  sketch: cardSketchReducer,
+  geometry: cardGeometryReducer,
+  style: cardStyleReducer,
+  condition: cardConditionReducer,
   workState: cardWorkStateReducer,
 });
 

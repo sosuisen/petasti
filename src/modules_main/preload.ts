@@ -3,9 +3,9 @@
  * © 2021 Hidekazu Kubota
  */
 import { contextBridge, ipcRenderer, MouseInputEvent } from 'electron';
-import { ChangedFile, TaskMetadata } from 'git-documentdb';
+import { ChangedFile } from 'git-documentdb';
 import { DatabaseCommand } from '../modules_common/db.types';
-import { CardProp, SavingTarget } from '../modules_common/types';
+import { CardBody, CardSketch, Geometry, SavingTarget } from '../modules_common/types';
 
 contextBridge.exposeInMainWorld('api', {
   /**
@@ -24,11 +24,15 @@ contextBridge.exposeInMainWorld('api', {
   blurAndFocusWithSuppressFocusEvents: (url: string) => {
     return ipcRenderer.invoke('blur-and-focus-with-suppress-focus-events', url);
   },
-  bringToFront: (cardProp: CardProp): Promise<number> => {
-    return ipcRenderer.invoke('bring-to-front', cardProp);
+  bringToFront: (sketchUrl: string): Promise<number> => {
+    return ipcRenderer.invoke('bring-to-front', sketchUrl);
   },
-  createCard: (cardProp: Partial<CardProp>): Promise<void> => {
-    return ipcRenderer.invoke('create-card', cardProp);
+  createCard: (
+    url: string,
+    cardBody: Partial<CardBody>,
+    cardSketch: Partial<CardSketch>
+  ): Promise<void> => {
+    return ipcRenderer.invoke('create-card', url, cardBody, cardSketch);
   },
   confirmDialog: (url: string, buttonLabels: string[], message: string) => {
     return ipcRenderer.invoke('confirm-dialog', url, buttonLabels, message);
@@ -51,8 +55,11 @@ contextBridge.exposeInMainWorld('api', {
   getUuid: () => {
     return ipcRenderer.invoke('get-uuid');
   },
-  updateCard: (cardProp: CardProp, target: SavingTarget) => {
-    return ipcRenderer.invoke('update-card', cardProp, target);
+  updateCardSketch: (sketchUrl: string, cardSketch: CardSketch, target: SavingTarget) => {
+    return ipcRenderer.invoke('update-card-sketch', sketchUrl, cardSketch, target);
+  },
+  updateCardBody: (sketchUrl: string, cardBody: CardBody, target: SavingTarget) => {
+    return ipcRenderer.invoke('update-card-body', sketchUrl, cardBody, target);
   },
   sendLeftMouseDown: (url: string, x: number, y: number) => {
     const leftMouseDown: MouseInputEvent = {
@@ -99,18 +106,24 @@ ipcRenderer.on(
     )
 );
 
-ipcRenderer.on(
-  'move-by-hand',
-  (event: Electron.IpcRendererEvent, bounds: Electron.Rectangle) =>
-    window.postMessage({ command: 'move-by-hand', bounds }, 'file://')
-);
-ipcRenderer.on('render-card', (event: Electron.IpcRendererEvent, cardProp: CardProp) =>
-  window.postMessage({ command: 'render-card', cardProp }, 'file://')
+ipcRenderer.on('move-by-hand', (event: Electron.IpcRendererEvent, geometry: Geometry) =>
+  window.postMessage({ command: 'move-by-hand', geometry }, 'file://')
 );
 ipcRenderer.on(
-  'resize-by-hand',
-  (event: Electron.IpcRendererEvent, bounds: Electron.Rectangle) =>
-    window.postMessage({ command: 'resize-by-hand', bounds }, 'file://')
+  'render-card',
+  (
+    event: Electron.IpcRendererEvent,
+    sketchUrl,
+    cardBody: CardBody,
+    cardSketch: CardSketch
+  ) =>
+    window.postMessage(
+      { command: 'render-card', sketchUrl, cardBody, cardSketch },
+      'file://'
+    )
+);
+ipcRenderer.on('resize-by-hand', (event: Electron.IpcRendererEvent, geometry: Geometry) =>
+  window.postMessage({ command: 'resize-by-hand', geometry }, 'file://')
 );
 ipcRenderer.on('send-to-back', (event: Electron.IpcRendererEvent, zIndex: number) =>
   window.postMessage({ command: 'send-to-back', zIndex }, 'file://')

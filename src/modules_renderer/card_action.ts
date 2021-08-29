@@ -3,40 +3,69 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { CardBody, CardSketch, CardStatus } from '../modules_common/types';
+import {
+  CardBody,
+  CardCondition,
+  CardStatus,
+  CardStyle,
+  Geometry,
+} from '../modules_common/types';
 
-export interface CardBodyInitAction {
-  type: 'card-body-init';
-  payload: CardBody;
-}
-
+/**
+ * CardBodyAction
+ */
 export interface CardBodyUpdateAction {
   type: 'card-body-update';
   payload: CardBody;
 }
 
-export type CardBodyAction = CardBodyInitAction | CardBodyUpdateAction;
+export type CardBodyAction = CardBodyUpdateAction;
 
-export interface CardSketchInitAction {
-  type: 'card-sketch-init';
-  payload: CardSketch;
+/**
+ * CardGeometryAction
+ */
+export interface CardGeometryUpdateAction {
+  type: 'card-geometry-update';
+  payload: Geometry;
 }
 
-export interface CardSketchUpdateAction {
-  type: 'card-sketch-update';
-  payload: CardSketch;
+export interface CardGeometryZUpdateAction {
+  type: 'card-geometry-z-update';
+  payload: number;
 }
 
-export interface CardSketchLockedUpdateAction {
-  type: 'card-sketch-locked-update';
+export type CardGeometryAction = CardGeometryUpdateAction | CardGeometryZUpdateAction;
+
+/**
+ * CardStyleAction
+ */
+export interface CardStyleUpdateAction {
+  type: 'card-style-update';
+  payload: CardStyle;
+}
+
+export type CardStyleAction = CardStyleUpdateAction;
+
+/**
+ * CardConditionAction
+ */
+export interface CardConditionUpdateAction {
+  type: 'card-condition-update';
+  payload: CardCondition;
+}
+
+export interface CardConditionLockedUpdateAction {
+  type: 'card-condition-locked-update';
   payload: boolean;
 }
 
-export type CardSketchAction =
-  | CardSketchInitAction
-  | CardSketchUpdateAction
-  | CardSketchLockedUpdateAction;
+export type CardConditionAction =
+  | CardConditionUpdateAction
+  | CardConditionLockedUpdateAction;
 
+/**
+ * CardWorkStateAction
+ */
 export interface CardWorkStateStatusUpdateAction {
   type: 'card-work-state-status-update';
   payload: CardStatus;
@@ -44,4 +73,12 @@ export interface CardWorkStateStatusUpdateAction {
 
 export type CardWorkStateAction = CardWorkStateStatusUpdateAction;
 
-export type CardAction = CardBodyAction | CardSketchAction | CardWorkStateAction;
+/**
+ * CardAction
+ */
+export type CardAction =
+  | CardBodyAction
+  | CardGeometryAction
+  | CardStyleAction
+  | CardConditionAction
+  | CardWorkStateAction;

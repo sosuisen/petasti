@@ -13,7 +13,13 @@ import {
 import { Translator } from 'typed-intl';
 import { Messages } from '../modules_common/i18n';
 import { InfoState, SettingsState } from '../modules_common/store.types';
-import { CardBody, CardProp, CardSketch, NoteProp } from '../modules_common/types';
+import {
+  CardBody,
+  CardProperty,
+  CardSketch,
+  Geometry,
+  NoteProp,
+} from '../modules_common/types';
 
 export type NoteState = Map<string, NoteProp>;
 
@@ -37,14 +43,19 @@ export interface INote {
   updateNoteDoc: (noteProp: NoteProp) => Promise<TaskMetadata>;
   deleteNoteDoc: (noteId: string) => Promise<TaskMetadata>;
 
-  updateCard: (prop: CardProp) => Promise<void>;
-  updateCardBody: (prop: CardProp) => Promise<void>;
-  updateCardSketch: (prop: CardProp) => Promise<void>;
+  updateCard: (
+    sketchUrl: string,
+    cardBody: CardBody,
+    cardSketch: CardSketch
+  ) => Promise<void>;
+  updateCardBody: (sketchUrl: string, cardBody: CardBody) => Promise<void>;
+  updateCardGeometry: (sketchUrl: string, geometry: Geometry) => Promise<void>;
+  updateCardSketch: (sketchUrl: string, cardSketch: CardSketch) => Promise<void>;
 
   deleteCardSketch: (cardUrl: string) => Promise<void>;
 
   getSortedNoteIdList: () => string[];
   changingToNoteId: string;
-  createNote: (name?: string) => Promise<[NoteProp, CardProp]>;
+  createNote: (name?: string) => Promise<[NoteProp, CardProperty]>;
   getZIndexOfTopCard: (noteId: string) => Promise<number>;
 }

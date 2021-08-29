@@ -40,18 +40,6 @@ export type CardCondition = {
   locked: boolean;
 };
 
-export type CardProp = {
-  version: string;
-  url: string;
-  type: string;
-  user: string;
-  geometry: Geometry;
-  style: CardStyle;
-  condition: CardCondition;
-  date: CartaDate;
-  _body: string;
-};
-
 export type CardBody = {
   version: string;
   type: string;
@@ -65,6 +53,7 @@ export type CardSketch = {
   geometry: Geometry;
   style: CardStyle;
   condition: CardCondition;
+  date: CartaDate;
   _id: string;
 };
 
@@ -92,18 +81,16 @@ export type Task = {
   target?: SavingTarget;
 };
 
-export interface ICard {
-  version: string;
+export type CardProperty = {
   url: string;
-  type: string;
-  user: string;
-  geometry: Geometry;
-  style: CardStyle;
-  condition: CardCondition;
-  date: CartaDate;
+  body: CardBody;
+  sketch: CardSketch;
+};
 
-  _body: string;
-
+export interface ICard {
+  url: string;
+  body: CardBody;
+  sketch: CardSketch;
   status: CardStatus;
 
   removeWindowListenersExceptClosedEvent: () => void;
@@ -111,8 +98,6 @@ export interface ICard {
   window: BrowserWindow;
 
   resetContextMenu: () => void;
-
-  toObject: () => CardProp;
 
   suppressFocusEventOnce: boolean;
   suppressBlurEventOnce: boolean;

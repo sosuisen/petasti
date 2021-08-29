@@ -13,7 +13,7 @@ import {
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
 import { emitter, handlers } from './modules_main/event';
 import { note } from './modules_main/note';
-import { CardProp, SavingTarget } from './modules_common/types';
+import { CardBody, CardSketch, SavingTarget } from './modules_common/types';
 import { generateNewCardId, getCardIdFromUrl } from './modules_common/utils';
 import { addSettingsHandler } from './modules_main/settings_eventhandler';
 import { currentCardMap } from './modules_main/card_map';
@@ -45,7 +45,7 @@ app.on('ready', async () => {
 
   const renderers: Promise<void>[] = [];
   cardProps.forEach(cardProp => {
-    const card = new Card(note, cardProp);
+    const card = new Card(note, cardProp.url, cardProp.body, cardProp.sketch);
     currentCardMap.set(cardProp.url, card);
     renderers.push(card.render());
   });
@@ -54,13 +54,13 @@ app.on('ready', async () => {
   });
 
   const backToFront = [...currentCardMap.values()].sort((a, b) => {
-    if (a.geometry.z > b.geometry.z) return 1;
-    else if (a.geometry.z < b.geometry.z) return -1;
+    if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
+    else if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
     return 0;
   });
   if (currentCardMap.size > 0) {
-    setZIndexOfTopCard(backToFront[backToFront.length - 1].geometry.z);
-    setZIndexOfBottomCard(backToFront[0].geometry.z);
+    setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
+    setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
   }
   backToFront.forEach(card => {
     if (card.window && !card.window.isDestroyed()) {
@@ -102,7 +102,7 @@ emitter.on('change-note', async (nextNoteId: string) => {
 
   const renderers: Promise<void>[] = [];
   cardProps.forEach(cardProp => {
-    const card = new Card(note, cardProp);
+    const card = new Card(note, cardProp.url, cardProp.body, cardProp.sketch);
     currentCardMap.set(cardProp.url, card);
     renderers.push(card.render());
   });
@@ -111,12 +111,12 @@ emitter.on('change-note', async (nextNoteId: string) => {
   });
 
   const backToFront = [...currentCardMap.values()].sort((a, b) => {
-    if (a.geometry.z > b.geometry.z) return 1;
-    else if (a.geometry.z < b.geometry.z) return -1;
+    if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
+    else if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
     return 0;
   });
-  setZIndexOfTopCard(backToFront[backToFront.length - 1].geometry.z);
-  setZIndexOfBottomCard(backToFront[0].geometry.z);
+  setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
+  setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
   backToFront.forEach(card => {
     if (card.window && !card.window.isDestroyed()) {
       card.window.moveTop();
@@ -142,20 +142,15 @@ app.on('window-all-closed', () => {
  */
 
 ipcMain.handle(
-  'update-card',
-  async (event, cardProp: CardProp, savingTarget: SavingTarget) => {
-    const card = currentCardMap.get(cardProp.url);
-    if (savingTarget === 'Card') {
-      await note.updateCard(cardProp);
-    }
-    else if (savingTarget === 'BodyOnly') {
-      await note.updateCardBody(cardProp);
-    }
-    else if (savingTarget === 'SketchOnly') {
-      await note.updateCardSketch(cardProp);
-    }
+  'update-card-sketch',
+  async (event, sketchUrl: string, cardSketch: CardSketch) => {
+    await note.updateCardSketch(sketchUrl, cardSketch);
   }
 );
+
+ipcMain.handle('update-card-body', async (event, sketchUrl: string, cardBody: CardBody) => {
+  await note.updateCardBody(sketchUrl, cardBody);
+});
 
 ipcMain.handle('delete-card', async (event, url: string) => {
   await note.deleteCard(getCardIdFromUrl(url));
@@ -174,12 +169,17 @@ ipcMain.handle('finish-render-card', (event, url: string) => {
 
 ipcMain.handle(
   'create-card',
-  async (event, cardProp: CardProp): Promise<void> => {
-    if (cardProp.url === undefined) {
+  async (
+    event,
+    url,
+    cardBody: Partial<CardBody>,
+    cardSketch: Partial<CardSketch>
+  ): Promise<void> => {
+    if (url === undefined) {
       const cardId = generateNewCardId();
-      cardProp.url = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
+      url = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
     }
-    await createCardWindow(note, cardProp);
+    await createCardWindow(note, url, cardBody, cardSketch);
   }
 );
 
@@ -256,12 +256,16 @@ ipcMain.handle('get-uuid', () => {
   //  return uuidv4();
 });
 
-ipcMain.handle('bring-to-front', (event, cardProp: CardProp, rearrange = false): number => {
+ipcMain.handle('bring-to-front', (event, sketchUrl: string, rearrange = false): number => {
+  const targetCard = currentCardMap.get(sketchUrl);
+  if (targetCard === undefined) {
+    return undefined;
+  }
   // Database Update
-  if (cardProp.geometry.z === getZIndexOfTopCard()) {
+  if (targetCard.sketch.geometry.z === getZIndexOfTopCard()) {
     // console.log('skip: ' + cardProp.geometry.z);
     // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
-    return cardProp.geometry.z;
+    return targetCard.sketch.geometry.z;
   }
 
   // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
@@ -269,23 +273,23 @@ ipcMain.handle('bring-to-front', (event, cardProp: CardProp, rearrange = false):
   const zIndex = getZIndexOfTopCard() + 1;
   // console.debug(`new zIndex: ${zIndex}`);
 
+  const newSketch = { ...targetCard.sketch, z: zIndex };
   // Async
-  cardProp.geometry.z = zIndex;
-  note.updateCardSketch(cardProp);
+  note.updateCardSketch(sketchUrl, newSketch);
 
   // console.log([...currentCardMap.values()].map(myCard => myCard.geometry.z));
 
   // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
   const backToFront = [...currentCardMap.values()].sort((a, b) => {
-    if (a.geometry.z > b.geometry.z) return 1;
-    if (a.geometry.z < b.geometry.z) return -1;
+    if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
+    if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
     return 0;
   });
-  setZIndexOfTopCard(backToFront[backToFront.length - 1].geometry.z);
-  setZIndexOfBottomCard(backToFront[0].geometry.z);
+  setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
+  setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
   if (rearrange) {
     backToFront.forEach(card => {
-      console.debug(`sorting zIndex..: ${card.geometry.z}`);
+      console.debug(`sorting zIndex..: ${card.sketch.geometry.z}`);
 
       if (card.window && !card.window.isDestroyed()) {
         card.window.moveTop();

@@ -5,7 +5,7 @@
 
 import { DatabaseCommand } from '../modules_common/db.types';
 import { MessageLabel } from '../modules_common/i18n';
-import { CardProp, SavingTarget } from '../modules_common/types';
+import { CardBody, CardSketch, SavingTarget } from '../modules_common/types';
 
 interface WindowWithAPI extends Window {
   api: {
@@ -13,8 +13,12 @@ interface WindowWithAPI extends Window {
     alertDialog: (url: string, label: MessageLabel) => Promise<void>;
     blurAndFocusWithSuppressEvents: (url: string) => Promise<void>;
     blurAndFocusWithSuppressFocusEvents: (url: string) => Promise<void>;
-    bringToFront: (cardProp: CardProp) => Promise<number>;
-    createCard: (cardProp: Partial<CardProp>) => Promise<void>;
+    bringToFront: (sketchUrl: string) => Promise<number>;
+    createCard: (
+      url: string,
+      cardBody: Partial<CardBody>,
+      cardSketch: Partial<CardSketch>
+    ) => Promise<void>;
     confirmDialog: (
       url: string,
       buttonLabels: MessageLabel[],
@@ -26,7 +30,8 @@ interface WindowWithAPI extends Window {
     finishRenderCard: (url: string) => Promise<void>;
     focus: (url: string) => Promise<void>;
     getUuid: () => Promise<string>;
-    updateCard: (cardProp: CardProp, target: SavingTarget) => Promise<void>;
+    updateCardSketch: (sketchUrl: string, cardSketch: CardSketch) => Promise<void>;
+    updateCardBody: (sketchUrl: string, cardBody: CardBody) => Promise<void>;
     sendLeftMouseDown: (url: string, x: number, y: number) => Promise<void>;
     setTitle: (url: string, title: string) => Promise<void>;
     setWindowSize: (

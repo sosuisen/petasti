@@ -13,18 +13,22 @@ import {
   RemoteOptions,
   Sync,
   TaskMetadata,
-  TaskQueue,
 } from 'git-documentdb';
 import { selectPreferredLanguage, translate, Translator } from 'typed-intl';
 import { monotonicFactory } from 'ulid';
 import {
   generateId,
-  generateNewCardId,
   getCardIdFromUrl,
   getCurrentDateAndTime,
   getNoteIdFromUrl,
 } from '../modules_common/utils';
-import { CardBody, CardProp, CardSketch, NoteProp } from '../modules_common/types';
+import {
+  CardBody,
+  CardProperty,
+  CardSketch,
+  Geometry,
+  NoteProp,
+} from '../modules_common/types';
 import {
   defaultDataDir,
   InfoState,
@@ -38,14 +42,7 @@ import {
   JAPANESE,
   Messages,
 } from '../modules_common/i18n';
-import {
-  APP_SCHEME,
-  CARD_VERSION,
-  DEFAULT_CARD_CONDITION,
-  DEFAULT_CARD_GEOMETRY,
-  DEFAULT_CARD_STYLE,
-  SETTINGS_DB_NAME,
-} from '../modules_common/const';
+import { APP_SCHEME, SETTINGS_DB_NAME } from '../modules_common/const';
 
 import { handlers } from './event';
 import { showDialog } from './utils_main';
@@ -157,7 +154,7 @@ class Note implements INote {
    * loadNoteBook
    */
   // eslint-disable-next-line complexity
-  loadNotebook = async (): Promise<CardProp[]> => {
+  loadNotebook = async (): Promise<CardProperty[]> => {
     // locale can be got after 'ready'
     const myLocale = app.getLocale();
     console.debug(`locale: ${myLocale}`);
@@ -286,7 +283,7 @@ class Note implements INote {
     return sortedNoteIdList;
   };
 
-  loadCurrentNote = async (): Promise<CardProp[]> => {
+  loadCurrentNote = async (): Promise<CardProperty[]> => {
     // Create note if not exist.
     let createNoteFlag = false;
     if (noteStore.getState().size === 0) {
@@ -316,11 +313,11 @@ class Note implements INote {
     return await this.loadCurrentCards();
   };
 
-  createNote = async (name?: string): Promise<[NoteProp, CardProp]> => {
+  createNote = async (name?: string): Promise<[NoteProp, CardProperty]> => {
     if (!name) {
       name = MESSAGE('noteName', (noteStore.getState().size + 1).toString());
     }
-    const _id = generateNewNoteId();
+    const noteId = generateNewNoteId();
     const current = getCurrentDateAndTime();
 
     const newNote: NoteProp = {
@@ -330,18 +327,20 @@ class Note implements INote {
       },
       name,
       user: 'local',
-      _id,
+      _id: noteId,
     };
     // tsc cannot check redux-thunk middleware
     // @ts-ignore
     noteStore.dispatch(noteCreateCreator(this, newNote));
 
     // Add first card
-    const firstCard = new Card(this, _id);
-    const firstCardProp = firstCard.toObject();
-    await note.updateCard(firstCardProp);
+    const firstCard = new Card(this, noteId);
+    await note.updateCard(firstCard.url, firstCard.body, firstCard.sketch);
 
-    return [newNote, firstCardProp];
+    return [
+      newNote,
+      { url: firstCard.url, body: firstCard.body, sketch: firstCard.sketch },
+    ];
   };
 
   /**
@@ -360,12 +359,12 @@ class Note implements INote {
     return maxZIndex;
   };
 
-  loadCurrentCards = async (): Promise<CardProp[]> => {
+  loadCurrentCards = async (): Promise<CardProperty[]> => {
     const cardDocs = await this._noteCollection.find({
       prefix: this._settings.currentNoteId + '/c',
     });
 
-    const cardProps: CardProp[] = [];
+    const cardProps: CardProperty[] = [];
     for (const cardDoc of cardDocs) {
       const url = `${APP_SCHEME}://local/${cardDoc._id}`; // treestickies://local/noteID/(cardID|noteID)
       const cardId = getCardIdFromUrl(url);
@@ -381,19 +380,10 @@ class Note implements INote {
           },
         };
       }
-      const cardProp: CardProp = {
+      const cardProp: CardProperty = {
         url,
-        type: cardBodyDoc.type,
-        user: cardBodyDoc.user,
-        geometry: cardDoc.geometry,
-        style: cardDoc.style,
-        condition: cardDoc.condition,
-        date: {
-          createdDate: cardBodyDoc.date.createdDate,
-          modifiedDate: cardBodyDoc.date.modifiedDate,
-        },
-        version: cardBodyDoc.version,
-        _body: cardBodyDoc._body,
+        body: cardBodyDoc as CardBody,
+        sketch: cardDoc as CardSketch,
       };
 
       cardProps.push(cardProp);
@@ -401,29 +391,25 @@ class Note implements INote {
     return cardProps;
   };
 
-  updateCard = async (prop: CardProp): Promise<void> => {
-    const cardBody = await this._updateCardBodyDoc(prop);
-    const cardSketch = await this._updateCardSketchDoc(prop);
-
+  updateCard = async (
+    sketchUrl: string,
+    cardBody: CardBody,
+    cardSketch: CardSketch
+  ): Promise<void> => {
     // Update currentCardMap
-    const card = currentCardMap.get(prop.url);
+    const card = currentCardMap.get(sketchUrl);
     if (card) {
-      card.version = cardBody.version;
-      card.type = cardBody.type;
-      card.user = cardBody.user;
-      card.date = cardBody.date;
-      card._body = cardBody._body;
-
-      card.geometry = cardSketch.geometry;
-      card.style = cardSketch.style;
-      card.condition = cardSketch.condition;
+      card.body = JSON.parse(JSON.stringify(cardBody));
+      card.sketch = JSON.parse(JSON.stringify(cardSketch));
     }
     else {
-      console.log('Card does note exist in currentCardMap: ' + prop.url);
+      console.log('Card does note exist in currentCardMap: ' + sketchUrl);
     }
+    await this._updateCardBodyDoc(card.body);
+    await this._updateCardSketchDoc(card.sketch);
 
     // Update note store & DB
-    const noteId = getNoteIdFromUrl(prop.url);
+    const noteId = getNoteIdFromUrl(sketchUrl);
     const noteProp = noteStore.getState().get(noteId);
     if (noteProp !== undefined) {
       noteProp.date.modifiedDate = getCurrentDateAndTime();
@@ -435,24 +421,20 @@ class Note implements INote {
     }
   };
 
-  updateCardBody = async (prop: CardProp): Promise<void> => {
-    const cardBody = await this._updateCardBodyDoc(prop);
-
+  updateCardBody = async (sketchUrl: string, cardBody: CardBody): Promise<void> => {
     // Update currentCardMap
-    const card = currentCardMap.get(prop.url);
+    const card = currentCardMap.get(sketchUrl);
     if (card) {
-      card.version = cardBody.version;
-      card.type = cardBody.type;
-      card.user = cardBody.user;
-      card.date = cardBody.date;
-      card._body = cardBody._body;
+      card.body = JSON.parse(JSON.stringify(cardBody));
     }
     else {
-      console.log('Card does note exist in currentCardMap: ' + prop.url);
+      console.log('Card does note exist in currentCardMap: ' + sketchUrl);
     }
 
+    await this._updateCardBodyDoc(card.body);
+
     // Update note store & DB
-    const noteId = getNoteIdFromUrl(prop.url);
+    const noteId = getNoteIdFromUrl(sketchUrl);
     const noteProp = noteStore.getState().get(noteId);
     if (noteProp !== undefined) {
       noteProp.date.modifiedDate = getCurrentDateAndTime();
@@ -464,22 +446,44 @@ class Note implements INote {
     }
   };
 
-  updateCardSketch = async (prop: CardProp): Promise<void> => {
-    const cardSketch = await this._updateCardSketchDoc(prop);
-
+  updateCardGeometry = async (sketchUrl: string, geometry: Geometry): Promise<void> => {
     // Update currentCardMap
-    const card = currentCardMap.get(prop.url);
+    const card = currentCardMap.get(sketchUrl);
     if (card) {
-      card.geometry = cardSketch.geometry;
-      card.style = cardSketch.style;
-      card.condition = cardSketch.condition;
+      card.sketch.geometry = { ...card.sketch.geometry, ...geometry };
     }
     else {
-      console.log('Card does note exist in currentCardMap: ' + prop.url);
+      console.log('Card does note exist in currentCardMap: ' + sketchUrl);
     }
+    await this._updateCardSketchDoc(card.sketch);
 
     // Update note store & DB
-    const noteId = getNoteIdFromUrl(prop.url);
+    const noteId = getNoteIdFromUrl(sketchUrl);
+    const noteProp = noteStore.getState().get(noteId);
+    if (noteProp !== undefined) {
+      noteProp.date.modifiedDate = getCurrentDateAndTime();
+      // @ts-ignore
+      noteStore.dispatch(noteUpdateCreator(this, noteProp));
+    }
+    else {
+      console.log(`Note ${noteId} does not exist.`);
+    }
+  };
+
+  updateCardSketch = async (sketchUrl: string, cardSketch: CardSketch): Promise<void> => {
+    // Update currentCardMap
+    const card = currentCardMap.get(sketchUrl);
+    if (card) {
+      card.sketch = JSON.parse(JSON.stringify(cardSketch));
+    }
+    else {
+      console.log('Card does note exist in currentCardMap: ' + sketchUrl);
+    }
+
+    await this._updateCardSketchDoc(card.sketch);
+
+    // Update note store & DB
+    const noteId = getNoteIdFromUrl(sketchUrl);
     const noteProp = noteStore.getState().get(noteId);
     if (noteProp !== undefined) {
       noteProp.date.modifiedDate = getCurrentDateAndTime();
@@ -591,37 +595,18 @@ class Note implements INote {
     return (task as unknown) as TaskMetadata;
   };
 
-  private _updateCardBodyDoc = async (prop: CardProp): Promise<CardBody> => {
-    console.debug(`# Saving card body doc: ${prop.url}`);
-    const cardId = getCardIdFromUrl(prop.url);
-    const cardBodyDoc: CardBody = {
-      version: prop.version,
-      type: prop.type,
-      user: prop.user,
-      date: prop.date,
-      _body: prop._body,
-      _id: cardId,
-    };
-    await this._cardCollection.put(cardBodyDoc).catch(e => {
+  private _updateCardBodyDoc = async (cardBody: CardBody): Promise<void> => {
+    console.debug(`# Saving card body doc: ${cardBody._id}`);
+    await this._cardCollection.put(cardBody).catch(e => {
       throw new Error(`Error in updateCardBodyDoc: ${e.message}`);
     });
-
-    return cardBodyDoc;
   };
 
-  private _updateCardSketchDoc = async (prop: CardProp): Promise<CardSketch> => {
-    console.debug(`# Saving card sketch doc: ${prop.url}`);
-    const cardId = getCardIdFromUrl(prop.url);
-    const cardSketch: CardSketch = {
-      geometry: prop.geometry,
-      style: prop.style,
-      condition: prop.condition,
-      _id: getNoteIdFromUrl(prop.url) + '/' + cardId,
-    };
+  private _updateCardSketchDoc = async (cardSketch: CardSketch): Promise<void> => {
+    console.debug(`# Saving card sketch doc: ${cardSketch._id}`);
     await this._noteCollection.put(cardSketch).catch(e => {
       throw new Error(`Error in updateCardSketchDoc: ${e.message}`);
     });
-    return cardSketch;
   };
 
   private _deleteCardBodyDoc = async (url: string) => {

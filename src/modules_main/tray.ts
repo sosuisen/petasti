@@ -15,13 +15,14 @@ import {
 } from '../modules_common/utils';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
 import { APP_ICON_NAME, APP_SCHEME, DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
-import { CardProp } from '../modules_common/types';
+import { CardSketch } from '../modules_common/types';
 import { MESSAGE } from './messages';
 import { currentCardMap } from './card_map';
 import { INote } from './note_types';
 import { showDialog } from './utils_main';
 import { noteStore } from './note_store';
 import { noteDeleteCreator, noteUpdateCreator } from './note_action_creator';
+import { cardSketchBringToFrontCreator } from '../modules_renderer/card_action_creator';
 
 /**
  * Task tray
@@ -60,8 +61,10 @@ const createRandomColorCard = async () => {
   const bgColor: string = cardColors[newColor];
 
   const cardId = generateNewCardId();
-  const cardProp: Partial<CardProp> = {
-    url: `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`,
+
+  const url = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
+
+  const cardSketch: Partial<CardSketch> = {
     geometry,
     style: {
       uiColor: darkenHexColor(bgColor),
@@ -71,7 +74,7 @@ const createRandomColorCard = async () => {
     },
   };
 
-  await createCardWindow(note, cardProp);
+  await createCardWindow(note, url, {}, cardSketch);
 };
 
 export const setTrayContextMenu = () => {

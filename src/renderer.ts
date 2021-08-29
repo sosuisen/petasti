@@ -6,7 +6,13 @@
 import { ChangedFile } from 'git-documentdb';
 import { cardStore } from 'card_store';
 import { dispatch } from 'rxjs/internal/observable/pairs';
-import { CardProp, CardPropStatus } from './modules_common/types';
+import {
+  CardBody,
+  CardProp,
+  CardPropStatus,
+  CardSketch,
+  Geometry,
+} from './modules_common/types';
 import {
   CardCssStyle,
   contentsFrameCommand,
@@ -39,9 +45,15 @@ import {
 } from './modules_renderer/save';
 import window from './modules_renderer/window';
 import { setAltDown, setCtrlDown, setMetaDown, setShiftDown } from './modules_common/keys';
-import { cardSketchLockedUpdateCreator } from './modules_renderer/card_action_creator';
+import {
+  cardSketchBringToFrontCreator,
+  cardSketchLockedUpdateCreator,
+  cardSketchSendToBackCreator,
+} from './modules_renderer/card_action_creator';
 
-let cardUrlEncoded: string;
+let sketchUrl: string;
+
+let sketchUrlEncoded: string;
 
 let cardCssStyle: CardCssStyle = {
   borderWidth: 0,
@@ -177,14 +189,15 @@ const initializeUIEvents = () => {
     prevMouseY = event.screenY;
 
     if (isHorizontalMoving || isVerticalMoving) {
-      const rect = {
+      const geom = {
         x: cardStore.getState().geometry.x,
         y: cardStore.getState().geometry.y,
+        z: cardStore.getState().geometry.z,
         width: newWidth,
         height: newHeight,
       };
       window.resizeTo(newWidth, newHeight);
-      onResizeByHand(rect, true);
+      onResizeByHand(geom, true);
     }
   };
   window.addEventListener('mousemove', onmousemove);
@@ -279,8 +292,8 @@ const onload = async () => {
     const pair = arr[i].split('=');
     params[pair[0]] = pair[1];
   }
-  cardUrlEncoded = params.cardUrl;
-  if (!cardUrlEncoded) {
+  sketchUrlEncoded = params.sketchUrl;
+  if (!sketchUrlEncoded) {
     console.error('id parameter is not given in URL');
     return;
   }
@@ -301,7 +314,7 @@ const onload = async () => {
   );
 
   initializeContentsFrameEvents();
-  window.api.finishLoad(cardUrlEncoded);
+  window.api.finishLoad(sketchUrlEncoded);
 };
 
 // eslint-disable-next-line complexity
@@ -322,13 +335,13 @@ window.addEventListener('message', event => {
       onChangeCardColor(event.data.backgroundColor, event.data.opacity);
       break;
     case 'move-by-hand':
-      onMoveByHand(event.data.bounds);
+      onMoveByHand(event.data.geometry);
       break;
     case 'render-card':
-      onRenderCard(event.data.cardProp);
+      onRenderCard(event.data.sketchUrl, event.data.cardBody, event.data.cardSketch);
       break;
     case 'resize-by-hand':
-      onResizeByHand(event.data.bounds, false);
+      onResizeByHand(event.data.geometry, false);
       break;
     case 'send-to-back':
       onSendToBack(event.data.zIndex);
@@ -367,26 +380,18 @@ export const queueSaveCommand = () => {
   execSaveCommandTimeout = setTimeout(execSaveCommand, 1000);
 };
 
-const onResizeByHand = (
-  newBounds: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  },
-  sendToMain: boolean
-) => {
+const onResizeByHand = (geometry: Geometry, sendToMain: boolean) => {
   const geom = cardStore.getState().geometry;
   if (
-    geom.x !== newBounds.x ||
-    geom.getState().geometry.y !== newBounds.y ||
-    geom.getState().geometry.width !== newBounds.width ||
-    geom.getState().geometry.height !== newBounds.height
+    geom.x !== geometry.x ||
+    geom.getState().geometry.y !== geometry.y ||
+    geom.getState().geometry.width !== geometry.width ||
+    geom.getState().geometry.height !== geometry.height
   ) {
-    geom.x = Math.round(newBounds.x);
-    geom.y = Math.round(newBounds.y);
-    geom.width = Math.round(newBounds.width - getRenderOffsetWidth());
-    geom.height = Math.round(newBounds.height - getRenderOffsetHeight());
+    geom.x = Math.round(geometry.x);
+    geom.y = Math.round(geometry.y);
+    geom.width = Math.round(geometry.width - getRenderOffsetWidth());
+    geom.height = Math.round(geometry.height - getRenderOffsetHeight());
 
     render(['TitleBar', 'ContentsRect', 'EditorRect']);
   }
@@ -403,13 +408,9 @@ const onCardFocused = async () => {
   if (suppressFocusEvent) {
     return;
   }
+  cardStore.dispatch(cardSketchBringToFrontCreator());
 
-  cardPropStatus.status = 'Focused';
   render(['CardStyle', 'ContentsRect']);
-
-  const newZ = await window.api.bringToFront(cardPropStatus);
-  // eslint-disable-next-line require-atomic-updates
-  cardPropStatus.geometry.z = newZ;
 };
 
 const onCardBlurred = () => {
@@ -430,19 +431,34 @@ const onChangeCardColor = (backgroundColor: string, opacity = 1.0) => {
   render(['CardStyle', 'TitleBarStyle', 'EditorStyle']);
 };
 
-const onMoveByHand = (newBounds: {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}) => {
-  cardPropStatus.geometry.x = Math.round(newBounds.x);
-  cardPropStatus.geometry.y = Math.round(newBounds.y);
+const onMoveByHand = (geometry: Geometry) => {
+  cardPropStatus.geometry.x = Math.round(geometry.x);
+  cardPropStatus.geometry.y = Math.round(geometry.y);
 };
 
 // Render card data
-const onRenderCard = (cardProp: CardProp) => {
-  cardPropStatus = { ...cardProp, status: 'Blurred' };
+const onRenderCard = (url: string, cardBody: CardBody, cardSketch: CardSketch) => {
+  sketchUrl = url;
+  cardStore.dispatch({
+    type: 'card-body-update',
+    payload: cardBody,
+  });
+  cardStore.dispatch({
+    type: 'card-geometry-update',
+    payload: cardSketch.geometry,
+  });
+  cardStore.dispatch({
+    type: 'card-style-update',
+    payload: cardSketch.style,
+  });
+  cardStore.dispatch({
+    type: 'card-condition-update',
+    payload: cardSketch.condition,
+  });
+  cardStore.dispatch({
+    type: 'card-work-state-status-update',
+    payload: 'Blurred',
+  });
 
   initCardRenderer(cardPropStatus, cardCssStyle, cardEditor);
 
@@ -469,8 +485,7 @@ const onRenderCard = (cardProp: CardProp) => {
 };
 
 const onSendToBack = (zIndex: number) => {
-  // eslint-disable-next-line require-atomic-updates
-  cardPropStatus.geometry.z = zIndex;
+  cardStore.dispatch(cardSketchSendToBackCreator(zIndex));
 };
 
 const onSetLock = (locked: boolean) => {
@@ -478,7 +493,6 @@ const onSetLock = (locked: boolean) => {
   if (cardEditor.isOpened) {
     endEditor();
   }
-  saveCard(cardPropStatus, 'SketchOnly');
 };
 
 const onZoomIn = () => {

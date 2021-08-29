@@ -9,11 +9,12 @@ import {
   DatabaseCardBodyUpdate,
   DatabaseCardSketchUpdate,
 } from '../modules_common/db.types';
-import { CardBody } from '../modules_common/types';
+import { CardBody, CardCondition, Geometry } from '../modules_common/types';
 import {
-  CardBodyAction,
   CardBodyUpdateAction,
-  CardSketchLockedUpdateAction,
+  CardConditionAction,
+  CardConditionLockedUpdateAction,
+  CardGeometryZUpdateAction,
 } from './card_action';
 import window from './window';
 
@@ -59,13 +60,13 @@ export const cardBodyUpdateCreator = (
   };
 };
 
-export const cardSketchLockedUpdateCreator = (
+export const cardConditionLockedUpdateCreator = (
   locked: boolean,
   changeFrom: ChangeFrom = 'local',
   enqueueTime: string | undefined = undefined
 ) => {
-  return async function (dispatch: Dispatch<any>, getState: () => CardBody) {
-    await lock.acquire('cardSketchLockedUpdate', async () => {
+  return async function (dispatch: Dispatch<any>, getState: () => CardCondition) {
+    await lock.acquire('cardConditionLockedUpdate', async () => {
       if (enqueueTime !== undefined) {
         if (sketchUpdatedTime !== undefined && sketchUpdatedTime! > enqueueTime) {
           console.log('Block expired remote update');
@@ -73,8 +74,8 @@ export const cardSketchLockedUpdateCreator = (
         }
       }
 
-      const cardAction: CardSketchLockedUpdateAction = {
-        type: 'card-sketch-locked-update',
+      const cardAction: CardConditionLockedUpdateAction = {
+        type: 'card-condition-locked-update',
         payload: locked,
       };
       dispatch(cardAction);
@@ -91,5 +92,32 @@ export const cardSketchLockedUpdateCreator = (
         bodyUpdatedTime = taskMetadata.enqueueTime!;
       }
     });
+  };
+};
+
+export const cardSketchBringToFrontCreator = (cardUrl: string) => {
+  return async function (dispatch: Dispatch<any>, getState: () => Geometry) {
+    const newZ = await window.api.bringToFront(cardUrl);
+    if (newZ === undefined) return;
+    // eslint-disable-next-line require-atomic-updates
+    cardPropStatus.geometry.z = newZ;
+  
+    cardPropStatus.status = 'Focused';
+  
+    const cardAction: CardGeometryZUpdateAction = {
+      type: 'card-geometry-z-update',
+      payload: zIndex,
+    };
+    dispatch(cardAction);
+  };
+};
+
+export const cardSketchSendToBackCreator = (zIndex: number) => {
+  return function (dispatch: Dispatch<any>, getState: () => Geometry) {
+    const cardAction: CardGeometryZUpdateAction = {
+      type: 'card-geometry-z-update',
+      payload: zIndex,
+    };
+    dispatch(cardAction);
   };
 };

@@ -18,15 +18,7 @@ import {
   MINIMUM_WINDOW_WIDTH,
 } from '../modules_common/const';
 import { handlers } from './event';
-import {
-  CardCondition,
-  CardProp,
-  CardStatus,
-  CardStyle,
-  CartaDate,
-  Geometry,
-  ICard,
-} from '../modules_common/types';
+import { CardBody, CardSketch, CardStatus, Geometry, ICard } from '../modules_common/types';
 import { currentCardMap } from './card_map';
 import { setContextMenu } from './card_context_menu';
 import { INote } from './note_types';
@@ -53,19 +45,20 @@ export const getGlobalFocusEventListenerPermission = () => {
  */
 export const createCardWindow = async (
   note: INote,
-  partialCardProp: Partial<CardProp>
+  sketchUrl: string,
+  partialCardBody: Partial<CardBody>,
+  partialCardSketch: Partial<CardSketch>
 ): Promise<void> => {
   // Overwrite z
-  if (partialCardProp.geometry !== undefined) {
-    partialCardProp.geometry.z = getZIndexOfTopCard() + 1;
+  if (partialCardSketch.geometry !== undefined) {
+    partialCardSketch.geometry.z = getZIndexOfTopCard() + 1;
   }
-  const card = new Card(note, partialCardProp);
+  const card = new Card(note, sketchUrl, partialCardBody, partialCardSketch);
 
   currentCardMap.set(card.url, card);
 
-  const newCardProp = card.toObject();
   // Async
-  note.updateCard(newCardProp);
+  note.updateCard(sketchUrl, card.body, card.sketch);
 
   await card.render();
   console.debug(`focus in createCardWindow: ${card.url}`);
@@ -79,19 +72,24 @@ export class Card implements ICard {
   /**
    * CardProp
    */
-  public version = CARD_VERSION;
   public url: string;
-  public type = 'text/html';
-  public user = 'local';
-  public geometry: Geometry = DEFAULT_CARD_GEOMETRY;
-  public style: CardStyle = DEFAULT_CARD_STYLE;
-  public condition: CardCondition = DEFAULT_CARD_CONDITION;
-  public date: CartaDate = {
-    createdDate: '',
-    modifiedDate: '',
+
+  public body: CardBody = {
+    version: CARD_VERSION,
+    type: 'text/html',
+    user: 'local',
+    date: undefined,
+    _body: '',
+    _id: '',
   };
 
-  public _body = '';
+  public sketch: CardSketch = {
+    geometry: DEFAULT_CARD_GEOMETRY,
+    style: DEFAULT_CARD_STYLE,
+    condition: DEFAULT_CARD_CONDITION,
+    date: undefined,
+    _id: '',
+  };
 
   /**
    * Temporal status
@@ -121,77 +119,50 @@ export class Card implements ICard {
    * Constructor
    */
   // eslint-disable-next-line complexity
-  constructor (note: INote, noteIdOrCardProp: string | Partial<CardProp>) {
-    if (typeof noteIdOrCardProp === 'string') {
+  constructor (
+    note: INote,
+    noteIdOrUrl: string,
+    cardBody?: Partial<CardBody>,
+    cardSketch?: Partial<CardSketch>
+  ) {
+    if (!noteIdOrUrl.startsWith(APP_SCHEME)) {
       // Create card with default properties
-
-      const noteId = noteIdOrCardProp;
+      const noteId = noteIdOrUrl;
       const cardId = generateNewCardId();
       this.url = `${APP_SCHEME}://local/${noteId}/${cardId}`;
     }
     else {
+      this.url = noteIdOrUrl;
       // Create card with specified CardProp
+      this.body = { ...this.body, ...cardBody };
+      this.sketch.geometry = { ...this.sketch.geometry, ...cardSketch.geometry };
 
-      const cardProp = noteIdOrCardProp;
-      this.version = cardProp.version ?? this.version!;
-      this.url = cardProp.url!;
-      this.type = cardProp.type ?? this.type!;
-      this.user = cardProp.user ?? this.user!;
+      this.sketch.geometry.x = Math.round(this.sketch.geometry.x);
+      this.sketch.geometry.y = Math.round(this.sketch.geometry.y);
+      this.sketch.geometry.z = Math.round(this.sketch.geometry.z);
+      this.sketch.geometry.width = Math.round(this.sketch.geometry.width);
+      this.sketch.geometry.height = Math.round(this.sketch.geometry.height);
 
-      if (
-        cardProp.geometry !== undefined &&
-        cardProp.geometry.x !== undefined &&
-        cardProp.geometry.y !== undefined &&
-        cardProp.geometry.z !== undefined &&
-        cardProp.geometry.width !== undefined &&
-        cardProp.geometry.height !== undefined
-      ) {
-        this.geometry = { ...cardProp.geometry };
-        this.geometry.x = Math.round(this.geometry.x);
-        this.geometry.y = Math.round(this.geometry.y);
-        this.geometry.z = Math.round(this.geometry.z);
-        this.geometry.width = Math.round(this.geometry.width);
-        this.geometry.height = Math.round(this.geometry.height);
-      }
+      this.sketch.style = { ...this.sketch.style, ...cardSketch.style };
 
-      if (
-        cardProp.style !== undefined &&
-        cardProp.style.backgroundColor !== undefined &&
-        cardProp.style.opacity !== undefined &&
-        cardProp.style.uiColor !== undefined &&
-        cardProp.style.zoom !== undefined
-      ) {
-        this.style = { ...cardProp.style };
-      }
-
-      if (cardProp.condition !== undefined && cardProp.condition.locked !== undefined) {
-        this.condition = { ...cardProp.condition };
-      }
-
-      if (
-        cardProp.date !== undefined &&
-        cardProp.date.createdDate !== undefined &&
-        cardProp.date.modifiedDate !== undefined
-      ) {
-        this.date = { ...cardProp.date };
-      }
-      else {
-        const time = getCurrentDateAndTime();
-        this.date = {
-          createdDate: time,
-          modifiedDate: time,
-        };
-      }
-
-      this._body = cardProp._body ?? this._body!;
+      this.sketch.condition = { ...this.sketch.condition, ...cardSketch.condition };
     }
+
+    this.body.date = { ...this.body.date, ...cardBody.date };
+    this.sketch.date = { ...this.sketch.date, ...cardSketch.date };
+
+    const time = getCurrentDateAndTime();
+    this.body.date.createdDate ??= time;
+    this.body.date.modifiedDate ??= time;
+    this.sketch.date.createdDate ??= time;
+    this.sketch.date.modifiedDate ??= time;
 
     this.indexUrl = url.format({
       pathname: path.join(__dirname, '../index.html'),
       protocol: 'file:',
       slashes: true,
       query: {
-        cardUrl: this.url,
+        sketchUrl: this.url,
       },
     });
 
@@ -259,11 +230,12 @@ export class Card implements ICard {
       //      }
     });
 
-    this._debouncedCardPositionUpdateActionQueue.subscribe(rect => {
-      note.updateCardSketch(this.toObject());
+    this._debouncedCardPositionUpdateActionQueue.subscribe((geometry: Geometry) => {
+      note.updateCardGeometry(this.url, geometry);
     });
-    this._debouncedCardSizeUpdateActionQueue.subscribe(rect => {
-      note.updateCardSketch(this.toObject());
+
+    this._debouncedCardSizeUpdateActionQueue.subscribe((geometry: Geometry) => {
+      note.updateCardGeometry(this.url, geometry);
     });
   }
 
@@ -272,20 +244,24 @@ export class Card implements ICard {
 
   private _willMoveListener = (event: Electron.Event, rect: Electron.Rectangle) => {
     // Update x and y
-    this.geometry.x = rect.x;
-    this.geometry.y = rect.y;
-    this._debouncedCardPositionUpdateActionQueue.next(rect);
-    this.window.webContents.send('move-by-hand', rect);
+    const geometry = { ...this.sketch.geometry, x: rect.x, y: rect.y };
+
+    this._debouncedCardPositionUpdateActionQueue.next(geometry);
+    this.window.webContents.send('move-by-hand', geometry);
   };
 
   private _willResizeListener = (event: Electron.Event, rect: Electron.Rectangle) => {
     // Update x, y, width, height
-    this.geometry.x = rect.x;
-    this.geometry.y = rect.y;
-    this.geometry.width = rect.width;
-    this.geometry.height = rect.height;
-    this._debouncedCardSizeUpdateActionQueue.next(rect);
-    this.window.webContents.send('resize-by-hand', rect);
+    const geometry = {
+      ...this.sketch.geometry,
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height,
+    };
+
+    this._debouncedCardSizeUpdateActionQueue.next(geometry);
+    this.window.webContents.send('resize-by-hand', geometry);
   };
 
   private _closedListener = () => {
@@ -360,11 +336,11 @@ export class Card implements ICard {
 
   renderCard = (): Promise<void> => {
     return new Promise(resolve => {
-      this.window.setSize(this.geometry.width, this.geometry.height);
-      this.window.setPosition(this.geometry.x, this.geometry.y);
-      console.debug(`renderCard in main [${this.url}] ${this._body.substr(0, 40)}`);
+      this.window.setSize(this.sketch.geometry.width, this.sketch.geometry.height);
+      this.window.setPosition(this.sketch.geometry.x, this.sketch.geometry.y);
+      console.debug(`renderCard in main [${this.url}] ${this.body._body.substr(0, 40)}`);
       this.window.showInactive();
-      this.window.webContents.send('render-card', this.toObject()); // CardProp must be serialize because passing non-JavaScript objects to IPC methods is deprecated and will throw an exception beginning with Electron 9.
+      this.window.webContents.send('render-card', this.url, this.body, this.sketch); // CardProp must be serialize because passing non-JavaScript objects to IPC methods is deprecated and will throw an exception beginning with Electron 9.
       const checkTimer = setInterval(() => {
         if (this.renderingCompleted) {
           clearInterval(checkTimer);
@@ -380,7 +356,7 @@ export class Card implements ICard {
         console.debug('loadHTML  ' + this.url);
         const finishReloadListener = () => {
           console.debug('Reloaded: ' + this.url);
-          this.window.webContents.send('render-card', this.toObject());
+          this.window.webContents.send('render-card', this.url, this.body, this.sketch);
         };
 
         // Don't use 'did-finish-load' event.
@@ -402,19 +378,5 @@ export class Card implements ICard {
 
       this.window.loadURL(this.indexUrl);
     });
-  };
-
-  public toObject = (): CardProp => {
-    return {
-      version: this.version,
-      url: this.url,
-      type: this.type,
-      user: this.user,
-      geometry: { ...this.geometry },
-      style: { ...this.style },
-      condition: { ...this.condition },
-      date: { ...this.date },
-      _body: this._body,
-    };
   };
 }
