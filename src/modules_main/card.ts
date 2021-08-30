@@ -27,6 +27,7 @@ import {
   setZIndexOfBottomCard,
   setZIndexOfTopCard,
 } from './card_zindex';
+import { cardSketchBringToFrontCreator } from '../modules_renderer/card_action_creator';
 
 /**
  * Focus control
@@ -142,6 +143,8 @@ export class Card implements ICard {
       const noteId = noteIdOrUrl;
       const cardId = generateNewCardId();
       this.url = `${APP_SCHEME}://local/${noteId}/${cardId}`;
+      this.body._id = cardId;
+      this.sketch._id = `${noteId}/${cardId}`;
     }
     else {
       this.url = noteIdOrUrl;
@@ -158,6 +161,8 @@ export class Card implements ICard {
       this.sketch.style = { ...this.sketch.style, ...cardSketch?.style };
 
       this.sketch.condition = { ...this.sketch.condition, ...cardSketch?.condition };
+
+      this.sketch._id = cardSketch!._id!;
     }
 
     const time = getCurrentDateAndTime();

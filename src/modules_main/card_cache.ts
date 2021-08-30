@@ -11,4 +11,4 @@ import { ICard } from '../modules_common/types';
  * - key: cardUrl
  * - value: Card
  */
-export const cacheOfCard: Map<string, ICard> = new Map(); // means { [cardUrl: string]: ICard] }
+export const cacheOfCard: Map<string, ICard> = new Map<string, ICard>(); // means { [cardUrl: string]: ICard] }

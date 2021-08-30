@@ -361,12 +361,12 @@ class Note implements INote {
   };
 
   loadCurrentCards = async (): Promise<CardProperty[]> => {
-    const cardDocs = await this._noteCollection.find({
+    const sketchDocs = await this._noteCollection.find({
       prefix: this._settings.currentNoteId + '/c',
     });
 
-    const getCardProp = async (cardDoc: CardSketch): Promise<CardProperty> => {
-      const url = `${APP_SCHEME}://local/${cardDoc._id}`; // treestickies://local/noteID/(cardID|noteID)
+    const getCardProp = async (sketchDoc: CardSketch): Promise<CardProperty> => {
+      const url = `${APP_SCHEME}://local/${sketchDoc._id}`; // treestickies://local/noteID/(cardID|noteID)
       const cardId = getCardIdFromUrl(url);
       let cardBodyDoc = await this._cardCollection.get(cardId);
       if (cardBodyDoc === undefined) {
@@ -382,13 +382,13 @@ class Note implements INote {
       const cardProp: CardProperty = {
         url,
         body: cardBodyDoc as CardBody,
-        sketch: cardDoc as CardSketch,
+        sketch: sketchDoc as CardSketch,
       };
       return cardProp;
     };
     const getCardProps: Promise<CardProperty>[] = [];
-    for (const cardDoc of cardDocs) {
-      getCardProps.push(getCardProp(cardDoc as CardSketch));
+    for (const sketchDoc of sketchDocs) {
+      getCardProps.push(getCardProp(sketchDoc as CardSketch));
     }
 
     const cardProps: CardProperty[] = await Promise.all(getCardProps);
