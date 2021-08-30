@@ -30,7 +30,7 @@ export const addSettingsHandler = (note: INote) => {
   });
 
   // eslint-disable-next-line complexity
-  ipcMain.handle('db', async (e, command: DatabaseCommand) => {
+  ipcMain.handle('db-settings', async (e, command: DatabaseCommand) => {
     // eslint-disable-next-line default-case
     switch (command.command) {
       case 'db-language-update': {

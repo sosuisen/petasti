@@ -554,7 +554,7 @@ class Note implements INote {
         getSketchIdFromUrl(sketchUrl)
       )) as CardSketch;
     }
-    const  task: TaskMetadata = await this._updateCardSketchDoc(sketch!);
+    const task: TaskMetadata = await this._updateCardSketchDoc(sketch!);
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
