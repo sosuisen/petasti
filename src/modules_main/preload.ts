@@ -24,9 +24,6 @@ contextBridge.exposeInMainWorld('api', {
   blurAndFocusWithSuppressFocusEvents: (url: string) => {
     return ipcRenderer.invoke('blur-and-focus-with-suppress-focus-events', url);
   },
-  bringToFront: (sketchUrl: string): Promise<number> => {
-    return ipcRenderer.invoke('bring-to-front', sketchUrl);
-  },
   createCard: (
     sketchUrl: string | undefined,
     cardBody: Partial<CardBody>,
@@ -90,8 +87,8 @@ ipcRenderer.on('card-blurred', () =>
 ipcRenderer.on('card-close', () =>
   window.postMessage({ command: 'card-close' }, 'file://')
 );
-ipcRenderer.on('card-focused', () =>
-  window.postMessage({ command: 'card-focused' }, 'file://')
+ipcRenderer.on('card-focused', (event: Electron.IpcRendererEvent, zIndex: number) =>
+  window.postMessage({ command: 'card-focused', zIndex }, 'file://')
 );
 ipcRenderer.on(
   'change-card-color',

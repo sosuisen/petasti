@@ -257,51 +257,6 @@ ipcMain.handle('get-uuid', () => {
   //  return uuidv4();
 });
 
-ipcMain.handle('bring-to-front', (event, sketchUrl: string, rearrange = false):
-  | number
-  | undefined => {
-  const targetCard = cacheOfCard.get(sketchUrl);
-  if (targetCard === undefined) {
-    return undefined;
-  }
-  // Database Update
-  if (targetCard.sketch.geometry.z === getZIndexOfTopCard()) {
-    // console.log('skip: ' + cardProp.geometry.z);
-    // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-    return targetCard.sketch.geometry.z;
-  }
-
-  // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-
-  const zIndex = getZIndexOfTopCard() + 1;
-  // console.debug(`new zIndex: ${zIndex}`);
-
-  const newSketch = { ...targetCard.sketch, z: zIndex };
-  // Async
-  note.updateCardSketch(sketchUrl, newSketch);
-
-  // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-
-  // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
-  const backToFront = [...cacheOfCard.values()].sort((a, b) => {
-    if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
-    if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
-    return 0;
-  });
-  setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
-  setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
-  if (rearrange) {
-    backToFront.forEach(card => {
-      console.debug(`sorting zIndex..: ${card.sketch.geometry.z}`);
-
-      if (card.window && !card.window.isDestroyed()) {
-        card.window.moveTop();
-      }
-    });
-  }
-  return zIndex;
-});
-
 ipcMain.handle(
   'send-mouse-input',
   (event, url: string, mouseInputEvent: MouseInputEvent) => {

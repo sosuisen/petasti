@@ -109,9 +109,7 @@ export const setTrayContextMenu = () => {
                   cacheOfCard.forEach(card =>
                     card.removeWindowListenersExceptClosedEvent()
                   );
-                  cacheOfCard.forEach(card =>
-                    card.window.webContents.send('card-close')
-                  );
+                  cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
                 } catch (e) {
                   console.error(e);
                 }

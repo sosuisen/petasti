@@ -223,14 +223,11 @@ export const cardConditionLockedUpdateCreator = (
   };
 };
 
-export const cardSketchBringToFrontCreator = (sketchUrl: string) => {
-  return async function (dispatch: Dispatch<any>, getState: () => CardState) {
-    const newZ = await window.api.bringToFront(sketchUrl);
-    if (newZ === undefined) return;
-
+export const cardSketchBringToFrontCreator = (sketchUrl: string, zIndex: number) => {
+  return function (dispatch: Dispatch<any>, getState: () => CardState) {
     const cardGeometryAction: CardGeometryZUpdateAction = {
       type: 'card-geometry-z-update',
-      payload: newZ,
+      payload: zIndex,
     };
     dispatch(cardGeometryAction);
     const cardStatusAction: CardWorkStateStatusUpdateAction = {

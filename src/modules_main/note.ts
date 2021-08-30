@@ -16,7 +16,6 @@ import {
 } from 'git-documentdb';
 import { selectPreferredLanguage, translate, Translator } from 'typed-intl';
 import { monotonicFactory } from 'ulid';
-import { Task } from 'electron/main';
 import {
   generateId,
   getCardIdFromUrl,
@@ -58,10 +57,8 @@ import {
   noteCreateCreator,
   noteInitCreator,
   noteModifiedDateUpdateCreator,
-  noteUpdateCreator,
 } from './note_action_creator';
 import { Card } from './card';
-import { cardSketchBringToFrontCreator } from '../modules_renderer/card_action_creator';
 
 export const generateNewNoteId = () => {
   const ulid = monotonicFactory();
@@ -398,6 +395,38 @@ class Note implements INote {
     return cardProps;
   };
 
+  createCard = async (
+    sketchUrl: string,
+    cardBody: CardBody,
+    cardSketch: CardSketch
+  ): Promise<void> => {
+    // Update cacheOfCard
+    const card = cacheOfCard.get(sketchUrl);
+
+    await this._createCardBodyDoc(cardBody);
+    if (card) {
+      card.body = JSON.parse(JSON.stringify(cardBody));
+    }
+    else {
+      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
+    }
+
+    await this._createCardSketchDoc(cardSketch);
+    if (card) {
+      card.sketch = JSON.parse(JSON.stringify(cardSketch));
+    }
+    else {
+      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
+    }
+
+    // Update note store & DB
+    const noteId = getNoteIdFromUrl(sketchUrl);
+    noteStore.dispatch(
+      // @ts-ignore
+      noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
+    );
+  };
+
   updateCard = async (
     sketchUrl: string,
     cardBody: CardBody,
@@ -478,6 +507,38 @@ class Note implements INote {
       // @ts-ignore
       noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
     );
+    return task;
+  };
+
+  createCardSketch = async (
+    sketchUrl: string,
+    cardSketch: CardSketch
+  ): Promise<TaskMetadata> => {
+    // Update cacheOfCard
+    const card = cacheOfCard.get(sketchUrl);
+    let sketch: CardSketch;
+    if (card) {
+      card.sketch = JSON.parse(JSON.stringify(cardSketch));
+      sketch = card.sketch;
+    }
+    else {
+      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
+      sketch = (await this._noteCollection.get(
+        getSketchIdFromUrl(sketchUrl)
+      )) as CardSketch;
+    }
+    let task: TaskMetadata;
+    if (sketch) {
+      task = await this._createCardSketchDoc(sketch);
+    }
+
+    // Update note store & DB
+    const noteId = getNoteIdFromUrl(sketchUrl);
+    noteStore.dispatch(
+      // @ts-ignore
+      noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
+    );
+
     return task;
   };
 
@@ -608,11 +669,39 @@ class Note implements INote {
     return (task as unknown) as TaskMetadata;
   };
 
+  private _createCardBodyDoc = async (cardBody: CardBody): Promise<TaskMetadata> => {
+    console.debug(`# Saving card body doc: ${cardBody._id}`);
+    const task = await new Promise((resolve, reject) => {
+      this._cardCollection
+        .insert(cardBody, {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            resolve(taskMetadata);
+          },
+        })
+        .catch(err => reject(err));
+    }).catch((err: Error) => console.log(`Error in createCardBodyDoc: ${err.message}`));
+    return (task as unknown) as TaskMetadata;
+  };
+
+  private _createCardSketchDoc = async (cardSketch: CardSketch): Promise<TaskMetadata> => {
+    console.debug(`# Saving card sketch doc: ${cardSketch._id}`);
+    const task = await new Promise((resolve, reject) => {
+      this._noteCollection
+        .insert(cardSketch, {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            resolve(taskMetadata);
+          },
+        })
+        .catch(err => reject(err));
+    }).catch((err: Error) => console.log(`Error in createCardSketchDoc: ${err.message}`));
+    return (task as unknown) as TaskMetadata;
+  };
+
   private _updateCardBodyDoc = async (cardBody: CardBody): Promise<TaskMetadata> => {
     console.debug(`# Saving card body doc: ${cardBody._id}`);
     const task = await new Promise((resolve, reject) => {
       this._cardCollection
-        .put(cardBody, {
+        .update(cardBody, {
           enqueueCallback: (taskMetadata: TaskMetadata) => {
             resolve(taskMetadata);
           },
@@ -626,7 +715,7 @@ class Note implements INote {
     console.debug(`# Saving card sketch doc: ${cardSketch._id}`);
     const task = await new Promise((resolve, reject) => {
       this._noteCollection
-        .put(cardSketch, {
+        .update(cardSketch, {
           enqueueCallback: (taskMetadata: TaskMetadata) => {
             resolve(taskMetadata);
           },

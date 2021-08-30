@@ -6,7 +6,7 @@ import { MenuItemConstructorOptions } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { cardColors, ColorName } from '../modules_common/color';
 import { APP_SCHEME } from '../modules_common/const';
-import { CardSketch, ICard } from '../modules_common/types';
+import { CardSketch, Geometry, ICard } from '../modules_common/types';
 import { getCardIdFromUrl } from '../modules_common/utils';
 import {
   getZIndexOfBottomCard,
@@ -42,7 +42,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
     // Overwrite z
     newCardSketch.geometry.z = (await note.getZIndexOfTopCard(noteId)) + 1;
 
-    await note.updateCardSketch(url, newCardSketch);
+    await note.createCardSketch(url, newCardSketch);
 
     await note.deleteCardSketch(card.url);
   };
@@ -53,7 +53,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
     // Overwrite z
     newCardSketch.geometry.z = (await note.getZIndexOfTopCard(noteId)) + 1;
 
-    await note.updateCardSketch(url, newCardSketch);
+    await note.createCardSketch(url, newCardSketch);
   };
 
   const moveToNotes: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
@@ -154,11 +154,11 @@ export const setContextMenu = (note: INote, card: ICard) => {
 
           const zIndex = getZIndexOfBottomCard() - 1;
           // console.debug(`new zIndex: ${zIndex}`);
-          const cardSketch = JSON.parse(JSON.stringify(card.sketch)) as CardSketch;
-          cardSketch.geometry.z = zIndex;
+          const newGeom = JSON.parse(JSON.stringify(card.sketch.geometry)) as Geometry;
+          newGeom.z = zIndex;
 
           // Async
-          note.updateCardSketch(card.url, cardSketch);
+          note.updateCardGeometry(card.url, newGeom);
 
           // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 

@@ -43,6 +43,11 @@ export interface INote {
   updateNoteDoc: (noteProp: NoteProp) => Promise<TaskMetadata>;
   deleteNoteDoc: (noteId: string) => Promise<TaskMetadata>;
 
+  createCard: (
+    sketchUrl: string,
+    cardBody: CardBody,
+    cardSketch: CardSketch
+  ) => Promise<void>;
   updateCard: (
     sketchUrl: string,
     cardBody: CardBody,
@@ -50,6 +55,7 @@ export interface INote {
   ) => Promise<void>;
   updateCardBody: (sketchUrl: string, cardBody: CardBody) => Promise<TaskMetadata>;
   updateCardGeometry: (sketchUrl: string, geometry: Geometry) => Promise<TaskMetadata>;
+  createCardSketch: (sketchUrl: string, cardSketch: CardSketch) => Promise<TaskMetadata>;
   updateCardSketch: (sketchUrl: string, cardSketch: CardSketch) => Promise<TaskMetadata>;
 
   deleteCardSketch: (cardUrl: string) => Promise<void>;

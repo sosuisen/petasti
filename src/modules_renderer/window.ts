@@ -13,7 +13,6 @@ interface WindowWithAPI extends Window {
     alertDialog: (url: string, label: MessageLabel) => Promise<void>;
     blurAndFocusWithSuppressEvents: (url: string) => Promise<void>;
     blurAndFocusWithSuppressFocusEvents: (url: string) => Promise<void>;
-    bringToFront: (sketchUrl: string) => Promise<number>;
     createCard: (
       sketchUrl: string | undefined,
       cardBody: Partial<CardBody>,

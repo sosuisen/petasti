@@ -310,7 +310,7 @@ window.addEventListener('message', event => {
       onCardClose();
       break;
     case 'card-focused':
-      onCardFocused();
+      onCardFocused(event.data.zIndex);
       break;
     case 'change-card-color':
       onChangeCardColor(event.data.backgroundColor, event.data.opacity);
@@ -374,12 +374,12 @@ const onCardClose = () => {
   close();
 };
 
-const onCardFocused = () => {
+const onCardFocused = (zIndex: number) => {
   if (suppressFocusEvent) {
     return;
   }
   // @ts-ignore
-  cardStore.dispatch(cardSketchBringToFrontCreator(sketchUrl));
+  cardStore.dispatch(cardSketchBringToFrontCreator(sketchUrl, zIndex));
 
   render(['CardStyle', 'ContentsRect']);
 };

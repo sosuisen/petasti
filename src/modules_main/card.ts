@@ -22,7 +22,11 @@ import { CardBody, CardSketch, CardStatus, Geometry, ICard } from '../modules_co
 import { cacheOfCard } from './card_cache';
 import { setContextMenu } from './card_context_menu';
 import { INote } from './note_types';
-import { getZIndexOfTopCard } from './card_zindex';
+import {
+  getZIndexOfTopCard,
+  setZIndexOfBottomCard,
+  setZIndexOfTopCard,
+} from './card_zindex';
 
 /**
  * Focus control
@@ -58,7 +62,7 @@ export const createCardWindow = async (
   cacheOfCard.set(card.url, card);
 
   // Async
-  note.updateCard(sketchUrl, card.body, card.sketch);
+  note.createCard(sketchUrl, card.body, card.sketch);
 
   await card.render();
   console.debug(`focus in createCardWindow: ${card.url}`);
@@ -69,6 +73,7 @@ export const createCardWindow = async (
  * Card class
  */
 export class Card implements ICard {
+  private _note: INote;
   /**
    * CardProp
    */
@@ -131,6 +136,7 @@ export class Card implements ICard {
     cardBody?: Partial<CardBody>,
     cardSketch?: Partial<CardSketch>
   ) {
+    this._note = note;
     if (!noteIdOrUrl.startsWith(APP_SCHEME)) {
       // Create card with default properties
       const noteId = noteIdOrUrl;
@@ -301,7 +307,33 @@ export class Card implements ICard {
     }
     else {
       console.debug(`# focus ${this.url}`);
-      this.window.webContents.send('card-focused');
+
+      if (this.sketch.geometry.z === getZIndexOfTopCard()) {
+        // console.log('skip: ' + cardProp.geometry.z);
+        // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
+        return;
+      }
+      // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
+
+      const zIndex = getZIndexOfTopCard() + 1;
+      // console.debug(`new zIndex: ${zIndex}`);
+
+      this.window.webContents.send('card-focused', zIndex);
+
+      const newGeom = { ...this.sketch.geometry, z: zIndex };
+
+      // Async
+      this._note.updateCardGeometry(this.url, newGeom);
+      // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
+      // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
+
+      const backToFront = [...cacheOfCard.values()].sort((a, b) => {
+        if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
+        if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
+        return 0;
+      });
+      setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
+      setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
     }
   };
 
