@@ -3,9 +3,14 @@
  * © 2021 Hidekazu Kubota
  */
 import { applyMiddleware, combineReducers, createStore } from 'redux';
-import thunk from 'redux-thunk';
+import thunk, { ThunkDispatch, ThunkMiddleware } from 'redux-thunk';
 import { ENGLISH } from '../modules_common/i18n';
-import { InfoState, SettingsState } from '../modules_common/store.types';
+import {
+  InfoState,
+  SettingsDialogAction,
+  SettingsDialogState,
+  SettingsState,
+} from '../modules_common/store.types';
 import { InfoAction, SettingsAction } from './action';
 
 const infoReducer = (
@@ -87,7 +92,11 @@ export const settingsDialogReducer = combineReducers({
   settings: settingsReducer,
 });
 
+type IAppDispatch = ThunkDispatch<SettingsDialogState, any, SettingsDialogAction>;
+
 export const settingsDialogStore = createStore(
   settingsDialogReducer,
-  applyMiddleware(thunk)
+  applyMiddleware<IAppDispatch, any>(
+    thunk as ThunkMiddleware<IAppDispatch, SettingsDialogAction, any>
+  )
 );

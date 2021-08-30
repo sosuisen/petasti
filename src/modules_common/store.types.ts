@@ -111,3 +111,5 @@ export type AppPutAction = {
 };
 
 export type TemporalSettingsAction = MessagesPutAction | AppPutAction;
+
+export type SettingsDialogAction = PersistentSettingsAction | TemporalSettingsAction;

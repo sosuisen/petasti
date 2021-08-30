@@ -30,11 +30,13 @@ import window from './modules_renderer/window';
 import { setAltDown, setCtrlDown, setMetaDown, setShiftDown } from './modules_common/keys';
 import {
   cardBodyUpdateCreator,
+  cardConditionLockedUpdateCreator,
   cardGeometryUpdateCreator,
   cardSketchBringToFrontCreator,
   cardSketchSendToBackCreator,
   cardSketchUpdateCreator,
   cardStyleUpdateCreator,
+  cardWorkStateStatusUpdateCreator,
 } from './modules_renderer/card_action_creator';
 import { ChangeFrom } from './modules_renderer/card_types';
 
@@ -113,7 +115,6 @@ const initializeUIEvents = () => {
     if (cardEditor.isOpened) {
       cardEditor.hideEditor();
       const _body = cardEditor.endEdit();
-      // @ts-ignore
       cardStore.dispatch(cardBodyUpdateCreator(_body));
 
       render(['TitleBar', 'ContentsData', 'ContentsRect']);
@@ -362,8 +363,6 @@ const onResizeByHand = (geometry: Geometry) => {
       width: Math.round(geometry.width - getRenderOffsetWidth()),
       height: Math.round(geometry.height - getRenderOffsetHeight()),
     };
-
-    // @ts-ignore
     cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
 
     render(['TitleBar', 'ContentsRect', 'EditorRect']);
@@ -378,14 +377,12 @@ const onCardFocused = (zIndex: number) => {
   if (suppressFocusEvent) {
     return;
   }
-  // @ts-ignore
-  cardStore.dispatch(cardSketchBringToFrontCreator(sketchUrl, zIndex));
+  cardStore.dispatch(cardSketchBringToFrontCreator(zIndex));
 
   render(['CardStyle', 'ContentsRect']);
 };
 
 const onCardBlurred = () => {
-  // @ts-ignore
   cardStore.dispatch(cardWorkStateStatusUpdateCreator('Blurred'));
 
   render(['CardStyle', 'ContentsRect']);
@@ -414,8 +411,6 @@ const onMoveByHand = (geometry: Geometry, changeFrom: ChangeFrom) => {
       width: current.width,
       height: current.height,
     };
-
-    // @ts-ignore
     cardStore.dispatch(cardGeometryUpdateCreator(newGeom, changeFrom));
   }
 };
@@ -479,13 +474,11 @@ const onRenderCard = (url: string, cardBody: CardBody, cardSketch: CardSketch) =
 };
 
 const onSendToBack = (zIndex: number) => {
-  // @ts-ignore
   cardStore.dispatch(cardSketchSendToBackCreator(zIndex));
 };
 
 const onSetLock = (locked: boolean) => {
-  // @ts-ignore
-  cardStore.dispatch(cardSketchLockedUpdateCreator(locked));
+  cardStore.dispatch(cardConditionLockedUpdateCreator(locked));
   if (cardEditor.isOpened) {
     endEditor();
   }
@@ -502,7 +495,6 @@ const onZoomIn = () => {
   if (newStyle.zoom > 3) {
     newStyle.zoom = 3;
   }
-  // @ts-ignore
   cardStore.dispatch(cardStyleUpdateCreator(newStyle));
   render(['CardStyle', 'EditorStyle']);
 };
@@ -518,7 +510,6 @@ const onZoomOut = () => {
   if (newStyle.zoom <= 0.55) {
     newStyle.zoom = 0.55;
   }
-  // @ts-ignore
   cardStore.dispatch(cardStyleUpdateCreator(newStyle));
   render(['CardStyle', 'EditorStyle']);
 };
@@ -529,7 +520,6 @@ const onSyncCardSketch = (changedFile: ChangedFile, enqueueTime: string) => {
   }
   else if (changedFile.operation === 'update') {
     const cardSketch = changedFile.new.doc as CardSketch;
-    // @ts-ignore
     cardStore.dispatch(cardSketchUpdateCreator(cardSketch, 'remote', enqueueTime));
     render(['TitleBar', 'ContentsRect', 'CardStyle', 'EditorStyle', 'EditorRect']);
   }
@@ -543,16 +533,13 @@ const onSyncCardBody = (changedFile: ChangedFile, enqueueTime: string) => {
     // It will be not occurred.
 
     const cardBody = changedFile.new.doc as CardBody;
-    // @ts-ignore
     cardStore.dispatch(cardBodyUpdateCreator(cardBody._body, 'remote', enqueueTime));
   }
   else if (changedFile.operation === 'update') {
     const cardBody = changedFile.new.doc as CardBody;
-    // @ts-ignore
     cardStore.dispatch(cardBodyUpdateCreator(cardBody._body, 'remote', enqueueTime));
   }
   else if (changedFile.operation === 'delete') {
-    // @ts-ignore
     cardStore.dispatch(cardBodyUpdateCreator('', 'remote', enqueueTime));
   }
   render(['ContentsData']);
@@ -677,9 +664,7 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
         _id: cardStore.getState().sketch._id,
       };
 
-      // @ts-ignore
       cardStore.dispatch(cardSketchUpdateCreator(newSketch));
-      // @ts-ignore
       cardStore.dispatch(cardBodyUpdateCreator(imgTag));
     }
     else {
@@ -687,10 +672,8 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
         ...cardStore.getState().sketch.geometry,
       };
       newGeom.height += newImageHeight;
-      // @ts-ignore
       cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
       cardStore.dispatch(
-        // @ts-ignore
         cardBodyUpdateCreator(cardStore.getState().body._body + '<br />' + imgTag)
       );
     }

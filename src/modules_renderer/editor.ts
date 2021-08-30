@@ -126,7 +126,6 @@ export class CardEditor implements ICardEditor {
       width: geometryWidth,
       height: geometryHeight,
     };
-    // @ts-ignore
     cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
 
     render(['TitleBar', 'EditorRect']);
@@ -158,7 +157,6 @@ export class CardEditor implements ICardEditor {
         CKEDITOR.instances.editor.on('change', () => {
           const data = CKEDITOR.instances.editor.getData();
           if (cardStore.getState().body._body !== data) {
-            // @ts-ignore
             cardStore.dispatch(cardBodyUpdateCreator(data));
 
             render(['TitleBar']);
@@ -288,7 +286,6 @@ export class CardEditor implements ICardEditor {
               ...cardStore.getState().sketch.geometry,
               height: newHeight,
             };
-            // @ts-ignore
             cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
 
             window.api.setWindowSize(
@@ -298,7 +295,6 @@ export class CardEditor implements ICardEditor {
             );
 
             const data = this.endEdit();
-            // @ts-ignore
             cardStore.dispatch(cardBodyUpdateCreator(data));
             render();
             // Workaround for at bug that an image cannot be resizable just after created by drag and drop.
@@ -420,7 +416,6 @@ export class CardEditor implements ICardEditor {
 
     clearTimeout(this.execSaveCommandTimeout);
 
-    // @ts-ignore
     cardStore.dispatch(cardBodyUpdateCreator(data));
 
     window.api.setWindowSize(

@@ -5,12 +5,14 @@
 import AsyncLock from 'async-lock';
 import { TaskMetadata } from 'git-documentdb';
 import { Dispatch } from 'redux';
+import { ThunkDispatch } from 'redux-thunk';
 import {
   DatabaseCardBodyUpdate,
   DatabaseCardSketchUpdate,
 } from '../modules_common/db.types';
 import { CardSketch, CardStatus, CardStyle, Geometry } from '../modules_common/types';
 import {
+  CardAction,
   CardBodyUpdateAction,
   CardConditionLockedUpdateAction,
   CardConditionUpdateAction,
@@ -223,7 +225,7 @@ export const cardConditionLockedUpdateCreator = (
   };
 };
 
-export const cardSketchBringToFrontCreator = (sketchUrl: string, zIndex: number) => {
+export const cardSketchBringToFrontCreator = (zIndex: number) => {
   return function (dispatch: Dispatch<any>, getState: () => CardState) {
     const cardGeometryAction: CardGeometryZUpdateAction = {
       type: 'card-geometry-z-update',

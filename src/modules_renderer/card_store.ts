@@ -1,5 +1,5 @@
 import { applyMiddleware, combineReducers, createStore } from 'redux';
-import thunk from 'redux-thunk';
+import thunk, { ThunkDispatch, ThunkMiddleware } from 'redux-thunk';
 import {
   CARD_VERSION,
   DEFAULT_CARD_CONDITION,
@@ -15,6 +15,7 @@ import {
   Geometry,
 } from '../modules_common/types';
 import {
+  CardAction,
   CardBodyAction,
   CardConditionAction,
   CardGeometryAction,
@@ -23,6 +24,7 @@ import {
   CardStyleAction,
   CardWorkStateAction,
 } from './card_action';
+import { CardState } from './card_types';
 
 const cardBodyReducer = (
   // eslint-disable-next-line default-param-last
@@ -176,4 +178,9 @@ export const cardReducer = combineReducers({
   workState: cardWorkStateReducer,
 });
 
-export const cardStore = createStore(cardReducer, applyMiddleware(thunk));
+type IAppDispatch = ThunkDispatch<CardState, any, CardAction>;
+
+export const cardStore = createStore(
+  cardReducer,
+  applyMiddleware<IAppDispatch, any>(thunk as ThunkMiddleware<CardState, CardAction, any>)
+);

@@ -16,6 +16,5 @@ export const saveCardColor = (bgColor: string, uiColor?: string, opacity = 1.0) 
   newStyle.uiColor = uiColor;
   newStyle.opacity = opacity;
 
-  // @ts-ignore
   cardStore.dispatch(cardStyleUpdateCreator(newStyle));
 };
