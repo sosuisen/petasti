@@ -48,9 +48,9 @@ export interface INote {
     cardBody: CardBody,
     cardSketch: CardSketch
   ) => Promise<void>;
-  updateCardBody: (sketchUrl: string, cardBody: CardBody) => Promise<void>;
-  updateCardGeometry: (sketchUrl: string, geometry: Geometry) => Promise<void>;
-  updateCardSketch: (sketchUrl: string, cardSketch: CardSketch) => Promise<void>;
+  updateCardBody: (sketchUrl: string, cardBody: CardBody) => Promise<TaskMetadata>;
+  updateCardGeometry: (sketchUrl: string, geometry: Geometry) => Promise<TaskMetadata>;
+  updateCardSketch: (sketchUrl: string, cardSketch: CardSketch) => Promise<TaskMetadata>;
 
   deleteCardSketch: (cardUrl: string) => Promise<void>;
 

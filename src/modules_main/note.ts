@@ -16,6 +16,7 @@ import {
 } from 'git-documentdb';
 import { selectPreferredLanguage, translate, Translator } from 'typed-intl';
 import { monotonicFactory } from 'ulid';
+import { Task } from 'electron/main';
 import {
   generateId,
   getCardIdFromUrl,
@@ -429,7 +430,7 @@ class Note implements INote {
     );
   };
 
-  updateCardBody = async (sketchUrl: string, cardBody: CardBody): Promise<void> => {
+  updateCardBody = async (sketchUrl: string, cardBody: CardBody): Promise<TaskMetadata> => {
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
     if (card) {
@@ -438,7 +439,7 @@ class Note implements INote {
     else {
       console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
     }
-    await this._updateCardBodyDoc(cardBody);
+    const task = await this._updateCardBodyDoc(cardBody);
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
@@ -446,9 +447,13 @@ class Note implements INote {
       // @ts-ignore
       noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
     );
+    return task;
   };
 
-  updateCardGeometry = async (sketchUrl: string, geometry: Geometry): Promise<void> => {
+  updateCardGeometry = async (
+    sketchUrl: string,
+    geometry: Geometry
+  ): Promise<TaskMetadata> => {
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
     let sketch: CardSketch;
@@ -463,8 +468,9 @@ class Note implements INote {
       )) as CardSketch;
       sketch.geometry = { ...sketch.geometry, ...geometry };
     }
+    let task: TaskMetadata;
     if (sketch) {
-      await this._updateCardSketchDoc(sketch);
+      task = await this._updateCardSketchDoc(sketch);
     }
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
@@ -472,9 +478,13 @@ class Note implements INote {
       // @ts-ignore
       noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
     );
+    return task;
   };
 
-  updateCardSketch = async (sketchUrl: string, cardSketch: CardSketch): Promise<void> => {
+  updateCardSketch = async (
+    sketchUrl: string,
+    cardSketch: CardSketch
+  ): Promise<TaskMetadata> => {
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
     let sketch: CardSketch;
@@ -488,8 +498,9 @@ class Note implements INote {
         getSketchIdFromUrl(sketchUrl)
       )) as CardSketch;
     }
+    let task: TaskMetadata;
     if (sketch) {
-      await this._updateCardSketchDoc(sketch);
+      task = await this._updateCardSketchDoc(sketch);
     }
 
     // Update note store & DB
@@ -498,14 +509,16 @@ class Note implements INote {
       // @ts-ignore
       noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
     );
+
+    return task;
   };
 
-  deleteCard = async (cardUrl: string) => {
+  deleteCard = async (cardUrl: string): Promise<void> => {
     await this.deleteCardSketch(cardUrl);
     await this._deleteCardBodyDoc(cardUrl);
   };
 
-  deleteCardSketch = async (cardUrl: string) => {
+  deleteCardSketch = async (cardUrl: string): Promise<void> => {
     const card = cacheOfCard.get(cardUrl);
 
     if (card !== undefined) {
@@ -595,34 +608,60 @@ class Note implements INote {
     return (task as unknown) as TaskMetadata;
   };
 
-  private _updateCardBodyDoc = async (cardBody: CardBody): Promise<void> => {
+  private _updateCardBodyDoc = async (cardBody: CardBody): Promise<TaskMetadata> => {
     console.debug(`# Saving card body doc: ${cardBody._id}`);
-    await this._cardCollection.put(cardBody).catch(e => {
-      throw new Error(`Error in updateCardBodyDoc: ${e.message}`);
-    });
+    const task = await new Promise((resolve, reject) => {
+      this._cardCollection
+        .put(cardBody, {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            resolve(taskMetadata);
+          },
+        })
+        .catch(err => reject(err));
+    }).catch((err: Error) => console.log(`Error in updateCardBodyDoc: ${err.message}`));
+    return (task as unknown) as TaskMetadata;
   };
 
-  private _updateCardSketchDoc = async (cardSketch: CardSketch): Promise<void> => {
+  private _updateCardSketchDoc = async (cardSketch: CardSketch): Promise<TaskMetadata> => {
     console.debug(`# Saving card sketch doc: ${cardSketch._id}`);
-    await this._noteCollection.put(cardSketch).catch(e => {
-      throw new Error(`Error in updateCardSketchDoc: ${e.message}`);
-    });
+    const task = await new Promise((resolve, reject) => {
+      this._noteCollection
+        .put(cardSketch, {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            resolve(taskMetadata);
+          },
+        })
+        .catch(err => reject(err));
+    }).catch((err: Error) => console.log(`Error in updateCardSketchDoc: ${err.message}`));
+    return (task as unknown) as TaskMetadata;
   };
 
-  private _deleteCardBodyDoc = async (url: string) => {
+  private _deleteCardBodyDoc = async (url: string): Promise<TaskMetadata> => {
     console.debug(`# Deleting card body doc: ${url}`);
-    await this._cardCollection.delete(getCardIdFromUrl(url)).catch(e => {
-      console.log(`Error in deletingCardBody: ${e.message}`);
-    });
+    const task = await new Promise((resolve, reject) => {
+      this._cardCollection
+        .delete(getCardIdFromUrl(url), {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            resolve(taskMetadata);
+          },
+        })
+        .catch(err => reject(err));
+    }).catch((err: Error) => console.log(`Error in deletingCardBody: ${err.message}`));
+    return (task as unknown) as TaskMetadata;
   };
 
-  private _deleteCardSketchDoc = async (url: string) => {
+  private _deleteCardSketchDoc = async (url: string): Promise<TaskMetadata> => {
     console.debug(`# Deleting card doc: ${url}`);
-    await this._noteCollection
-      .delete(getNoteIdFromUrl(url) + '/' + getCardIdFromUrl(url))
-      .catch(e => {
-        console.log(`Error in deletingCardSketchDoc: ${e.message}`);
-      });
+    const task = await new Promise((resolve, reject) => {
+      this._noteCollection
+        .delete(getNoteIdFromUrl(url) + '/' + getCardIdFromUrl(url), {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            resolve(taskMetadata);
+          },
+        })
+        .catch(err => reject(err));
+    }).catch((err: Error) => console.log(`Error in deletingCardBody: ${err.message}`));
+    return (task as unknown) as TaskMetadata;
   };
 }
 

@@ -11,11 +11,13 @@ import { CardBody, CardSketch } from './types';
 
 export type DatabaseCardBodyUpdate = {
   command: 'db-card-body-update';
+  url: string;
   data: CardBody;
 };
 
 export type DatabaseCardSketchUpdate = {
   command: 'db-card-sketch-update';
+  url: string;
   data: CardSketch;
 };
 

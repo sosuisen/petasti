@@ -22,6 +22,7 @@ import {
   setZIndexOfBottomCard,
   setZIndexOfTopCard,
 } from './modules_main/card_zindex';
+import { DatabaseCommand } from './modules_common/db.types';
 
 // process.on('unhandledRejection', console.dir);
 
@@ -311,3 +312,18 @@ ipcMain.handle(
     cardWindow.window.webContents.sendInputEvent(mouseInputEvent);
   }
 );
+
+ipcMain.handle('db', (event, command: DatabaseCommand) => {
+  switch (command.command) {
+    case 'db-card-body-update': {
+      note.updateCardBody(command.url, command.data);
+      break;
+    }
+    case 'db-card-sketch-update': {
+      note.updateCardSketch(command.url, command.data);
+      break;
+    }
+    default:
+      break;
+  }
+});

@@ -51,6 +51,7 @@ export const cardBodyUpdateCreator = (
         const newCardBody = getState().body;
         const cmd: DatabaseCardBodyUpdate = {
           command: 'db-card-body-update',
+          url: getState().workState.url,
           data: newCardBody,
         };
 
@@ -97,6 +98,7 @@ export const cardSketchUpdateCreator = (
       if (changeFrom === 'local') {
         const cmd: DatabaseCardSketchUpdate = {
           command: 'db-card-sketch-update',
+          url: getState().workState.url,
           data: {
             ...getState().sketch,
           },
@@ -133,6 +135,7 @@ export const cardGeometryUpdateCreator = (
       if (changeFrom === 'local') {
         const cmd: DatabaseCardSketchUpdate = {
           command: 'db-card-sketch-update',
+          url: getState().workState.url,
           data: {
             ...getState().sketch,
           },
@@ -169,6 +172,7 @@ export const cardStyleUpdateCreator = (
       if (changeFrom === 'local') {
         const cmd: DatabaseCardSketchUpdate = {
           command: 'db-card-sketch-update',
+          url: getState().workState.url,
           data: {
             ...getState().sketch,
           },
@@ -205,6 +209,7 @@ export const cardConditionLockedUpdateCreator = (
       if (changeFrom === 'local') {
         const cmd: DatabaseCardSketchUpdate = {
           command: 'db-card-sketch-update',
+          url: getState().workState.url,
           data: {
             ...getState().sketch,
           },
