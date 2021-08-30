@@ -531,6 +531,7 @@ const onSyncCardSketch = (changedFile: ChangedFile, enqueueTime: string) => {
     const cardSketch = changedFile.new.doc as CardSketch;
     // @ts-ignore
     cardStore.dispatch(cardSketchUpdateCreator(cardSketch, 'remote', enqueueTime));
+    render(['TitleBar', 'ContentsRect', 'CardStyle', 'EditorStyle', 'EditorRect']);
   }
   else if (changedFile.operation === 'delete') {
     // It is not invoked.
@@ -554,6 +555,7 @@ const onSyncCardBody = (changedFile: ChangedFile, enqueueTime: string) => {
     // @ts-ignore
     cardStore.dispatch(cardBodyUpdateCreator('', 'remote', enqueueTime));
   }
+  render(['ContentsData']);
 };
 
 const filterContentsFrameMessage = (event: MessageEvent): ContentsFrameMessage => {
