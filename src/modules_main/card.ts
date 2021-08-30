@@ -244,8 +244,8 @@ export class Card implements ICard {
       //      }
     });
 
-    this._debouncedCardPositionUpdateActionQueue.subscribe((geometry: Geometry) => {
-      note.updateCardGeometry(this.url, geometry);
+    this._debouncedCardPositionUpdateActionQueue.subscribe((geometry: unknown) => {
+      note.updateCardGeometry(this.url, geometry as Geometry);
     });
   }
 
@@ -309,7 +309,7 @@ export class Card implements ICard {
       if (this.sketch.geometry.z === getZIndexOfTopCard()) {
         // console.log('skip: ' + cardProp.geometry.z);
         // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-        this.window.webContents.send('card-focused', undefined); // Don't change zIndex
+        this.window.webContents.send('card-focused', undefined);
         return;
       }
       // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));

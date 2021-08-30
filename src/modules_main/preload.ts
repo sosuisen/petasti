@@ -112,7 +112,7 @@ ipcRenderer.on(
   'render-card',
   (
     event: Electron.IpcRendererEvent,
-    sketchUrl,
+    sketchUrl: string,
     cardBody: CardBody,
     cardSketch: CardSketch
   ) =>

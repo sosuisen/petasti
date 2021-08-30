@@ -174,6 +174,7 @@ const cardWorkStateReducer = (
 ) => {
   switch (action.type) {
     case 'card-work-state-init': {
+      console.log('# cardWorkStateReducer: ' + action.payload);
       return { ...action.payload };
     }
     case 'card-work-state-status-update': {
