@@ -225,13 +225,15 @@ export const cardConditionLockedUpdateCreator = (
   };
 };
 
-export const cardSketchBringToFrontCreator = (zIndex: number) => {
+export const cardSketchBringToFrontCreator = (zIndex: number | undefined) => {
   return function (dispatch: Dispatch<any>, getState: () => CardState) {
-    const cardGeometryAction: CardGeometryZUpdateAction = {
-      type: 'card-geometry-z-update',
-      payload: zIndex,
-    };
-    dispatch(cardGeometryAction);
+    if (zIndex !== undefined) {
+      const cardGeometryAction: CardGeometryZUpdateAction = {
+        type: 'card-geometry-z-update',
+        payload: zIndex,
+      };
+      dispatch(cardGeometryAction);
+    }
     const cardStatusAction: CardWorkStateStatusUpdateAction = {
       type: 'card-work-state-status-update',
       payload: 'Focused',

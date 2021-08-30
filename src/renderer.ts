@@ -373,7 +373,7 @@ const onCardClose = () => {
   close();
 };
 
-const onCardFocused = (zIndex: number) => {
+const onCardFocused = (zIndex: number | undefined) => {
   if (suppressFocusEvent) {
     return;
   }

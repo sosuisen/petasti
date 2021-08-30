@@ -309,6 +309,7 @@ export class Card implements ICard {
       if (this.sketch.geometry.z === getZIndexOfTopCard()) {
         // console.log('skip: ' + cardProp.geometry.z);
         // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
+        this.window.webContents.send('card-focused', undefined); // Don't change zIndex
         return;
       }
       // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));

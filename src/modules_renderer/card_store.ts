@@ -49,6 +49,7 @@ const cardBodyReducer = (
     case 'card-body-body-update': {
       const newState = JSON.parse(JSON.stringify(state));
       newState._body = action.payload;
+      console.log('# cardBodyReducer: ' + JSON.stringify(newState));
       return newState;
     }
     default:
@@ -66,10 +67,14 @@ const cardGeometryReducer = (
       return { ...state, ...action.payload };
     }
     case 'card-geometry-update': {
-      return { ...state, ...action.payload };
+      const newState = { ...state, ...action.payload };
+      console.log('# cardGeometryReducer: ' + JSON.stringify(newState));
+      return newState;
     }
     case 'card-geometry-z-update': {
-      return { ...state, z: action.payload };
+      const newState = { ...state, z: action.payload };
+      console.log('# cardGeometryReducer: ' + JSON.stringify(newState));
+      return newState;
     }
     default:
       return state;
@@ -86,7 +91,9 @@ const cardStyleReducer = (
       return { ...state, ...action.payload };
     }
     case 'card-style-update': {
-      return { ...state, ...action.payload };
+      const newState = { ...state, ...action.payload };
+      console.log('# cardStyleReducer: ' + JSON.stringify(newState));
+      return newState;
     }
     default:
       return state;
@@ -100,10 +107,14 @@ const cardConditionReducer = (
 ) => {
   switch (action.type) {
     case 'card-condition-update': {
-      return { ...state, ...action.payload };
+      const newState = { ...state, ...action.payload };
+      console.log('# cardConditionReducer: ' + JSON.stringify(newState));
+      return newState;
     }
     case 'card-condition-locked-update': {
-      return { ...state, locked: action.payload };
+      const newState = { ...state, locked: action.payload };
+      console.log('# cardConditionReducer: ' + JSON.stringify(newState));
+      return newState;
     }
     default:
       return state;
@@ -123,6 +134,7 @@ const cardSketchDateReducer = (
       return { ...action.payload };
     }
     case 'card-sketch-modified-date-update': {
+      console.log('# cardSketchDateReducer: ' + action.payload);
       return { ...state, modifiedDate: action.payload };
     }
     default:
@@ -165,6 +177,7 @@ const cardWorkStateReducer = (
       return { ...action.payload };
     }
     case 'card-work-state-status-update': {
+      console.log('# cardWorkStateReducer: ' + action.payload);
       return { ...state, status: action.payload };
     }
     default:
