@@ -3,7 +3,6 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { dispatch } from 'rxjs/internal/observable/pairs';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
 import {
   getRenderOffsetHeight,
