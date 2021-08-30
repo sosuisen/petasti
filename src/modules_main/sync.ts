@@ -12,7 +12,7 @@ import {
 } from 'git-documentdb';
 import { showDialog } from './utils_main';
 import { INote } from './note_types';
-import { NoteProp } from '../modules_common/types';
+import { CardBody, CardSketch, NoteProp } from '../modules_common/types';
 import { cacheOfCard } from './card_cache';
 import { setTrayContextMenu } from './tray';
 import { noteStore } from './note_store';
@@ -23,6 +23,9 @@ import {
   noteUpdateCreator,
 } from './note_action_creator';
 import { emitter } from './event';
+import { CardBodyAction } from '../modules_renderer/card_action';
+import { APP_SCHEME } from '../modules_common/const';
+import { createCardWindow } from './card';
 
 export const initSync = async (note: INote): Promise<Sync | undefined> => {
   let sync: Sync | undefined;
@@ -50,6 +53,13 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
 
         const card = cacheOfCard.get(cardBodyId!);
         if (card !== undefined) {
+          if (changedFile.operation === 'insert' || changedFile.operation === 'update') {
+            card.body = changedFile.new.doc as CardBody;
+          }
+          else if (changedFile.operation === 'delete') {
+            card.body._body = '';
+          }
+
           card.window.webContents.send(
             'sync-card-body',
             changedFile,
@@ -66,23 +76,24 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
     // eslint-disable-next-line complexity
     async (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
       for (const changedFile of changes) {
-        let cardId = '';
+        let sketchId = '';
         let noteId = '';
-        let fileId = '';
+        let cardId = '';
         if (changedFile.operation === 'insert') {
-          cardId = (changedFile.new as FatJsonDoc)._id;
+          sketchId = (changedFile.new as FatJsonDoc)._id;
         }
         else if (changedFile.operation === 'update') {
-          cardId = (changedFile.new as FatJsonDoc)._id;
+          sketchId = (changedFile.new as FatJsonDoc)._id;
         }
         else if (changedFile.operation === 'delete') {
-          cardId = (changedFile.old as FatJsonDoc)._id;
+          sketchId = (changedFile.old as FatJsonDoc)._id;
         }
-        const idArray = cardId.split('/');
+        const idArray = sketchId.split('/');
         noteId = idArray[0];
-        fileId = idArray[1];
+        cardId = idArray[1];
 
-        if (fileId === 'prop') {
+        if (cardId === 'prop') {
+          // Update note
           if (changedFile.operation === 'insert') {
             const prop = changedFile.new.doc as NoteProp;
             prop._id = noteId; // Set note id instead of 'prop'.
@@ -151,13 +162,34 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           }
         }
         else {
-          const card = cacheOfCard.get(cardId);
-          if (card) {
-            card.window.webContents.send(
-              'sync-card',
-              changedFile,
-              taskMetadata.enqueueTime
-            );
+          // Update card sketch
+          const card = cacheOfCard.get(sketchId);
+          if (changedFile.operation === 'insert') {
+            // Create card
+            if (note.settings.currentNoteId === noteId) {
+              const url = `${APP_SCHEME}://local/${sketchId}`;
+              // eslint-disable-next-line no-await-in-loop
+              const cardBody = await note.cardCollection.get(cardId);
+              createCardWindow(note, url, cardBody, changedFile.new.doc as CardSketch);
+            }
+          }
+          else if (changedFile.operation === 'update') {
+            if (card) {
+              card.sketch = (changedFile.new as unknown) as CardSketch;
+              card.window.webContents.send(
+                'sync-card-sketch',
+                changedFile,
+                taskMetadata.enqueueTime
+              );
+            }
+          }
+          else if (changedFile.operation === 'delete') {
+            if (card) {
+              // Can delete.
+              // Delete from remote is superior to update from renderer.
+              const url = `${APP_SCHEME}://local/${sketchId}`;
+              note.deleteCardSketch(url);
+            }
           }
         }
       }

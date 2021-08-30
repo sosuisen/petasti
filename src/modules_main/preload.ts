@@ -132,9 +132,9 @@ ipcRenderer.on('zoom-in', () => window.postMessage({ command: 'zoom-in' }, 'file
 ipcRenderer.on('zoom-out', () => window.postMessage({ command: 'zoom-out' }, 'file://'));
 
 ipcRenderer.on(
-  'sync-card',
+  'sync-card-sketch',
   (event: Electron.IpcRendererEvent, changedFile: ChangedFile, enqueueTime: string) =>
-    window.postMessage({ command: 'sync-card', changedFile, enqueueTime }, 'file://')
+    window.postMessage({ command: 'sync-card-sketch', changedFile, enqueueTime }, 'file://')
 );
 
 ipcRenderer.on(

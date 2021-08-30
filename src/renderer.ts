@@ -178,7 +178,7 @@ const initializeUIEvents = () => {
         height: newHeight,
       };
       window.resizeTo(newWidth, newHeight);
-      onResizeByHand(newGeom, 'local');
+      onResizeByHand(newGeom);
     }
   };
   window.addEventListener('mousemove', onmousemove);
@@ -322,7 +322,7 @@ window.addEventListener('message', event => {
       onRenderCard(event.data.sketchUrl, event.data.cardBody, event.data.cardSketch);
       break;
     case 'resize-by-hand':
-      onResizeByHand(event.data.geometry, 'remote');
+      onResizeByHand(event.data.geometry);
       break;
     case 'send-to-back':
       onSendToBack(event.data.zIndex);
@@ -337,7 +337,7 @@ window.addEventListener('message', event => {
       onZoomOut();
       break;
     case 'sync-card':
-      onSyncCard(event.data.changedFile, event.data.enqueueTime);
+      onSyncCardSketch(event.data.changedFile, event.data.enqueueTime);
       break;
     case 'sync-card-body':
       onSyncCardBody(event.data.changedFile, event.data.enqueueTime);
@@ -347,7 +347,7 @@ window.addEventListener('message', event => {
   }
 });
 
-const onResizeByHand = (geometry: Geometry, changeFrom: ChangeFrom) => {
+const onResizeByHand = (geometry: Geometry) => {
   const current = cardStore.getState().sketch.geometry;
   if (
     current.x !== geometry.x ||
@@ -364,7 +364,7 @@ const onResizeByHand = (geometry: Geometry, changeFrom: ChangeFrom) => {
     };
 
     // @ts-ignore
-    cardStore.dispatch(cardGeometryUpdateCreator(newGeom, changeFrom));
+    cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
 
     render(['TitleBar', 'ContentsRect', 'EditorRect']);
   }
@@ -523,32 +523,36 @@ const onZoomOut = () => {
   render(['CardStyle', 'EditorStyle']);
 };
 
-const onSyncCard = (changedFile: ChangedFile, enqueueTime: string) => {
+const onSyncCardSketch = (changedFile: ChangedFile, enqueueTime: string) => {
   if (changedFile.operation === 'insert') {
-    // TODO: Create new Card if noteId is currentNoteId.
-    // TODO: Create new note (with default props) if not exits
+    // It is not invoked.
   }
   else if (changedFile.operation === 'update') {
-    // TaskQueue の日時をチェックして、すでに新しい cardProp 修正コマンドが出ていたらそこでキャンセル
-    // TODO: Update new Card if noteId is currentNoteId.
-    // すでに削除されたノートに対する更新は、新規ノート作成
+    const cardSketch = changedFile.new.doc as CardSketch;
+    // @ts-ignore
+    cardStore.dispatch(cardSketchUpdateCreator(cardSketch, 'remote', enqueueTime));
   }
   else if (changedFile.operation === 'delete') {
-    // TaskQueue の日時をチェックして、すでに新しい cardProp 修正コマンドが出ていたらそこでキャンセル
-    // TODO: Delete card if noteId is currentNoteId
-    // コンフリクトに注意。なお ours 戦略なので、こちらでカードの更新日付修正があれば削除はされない。
+    // It is not invoked.
   }
 };
 
 const onSyncCardBody = (changedFile: ChangedFile, enqueueTime: string) => {
   if (changedFile.operation === 'insert') {
-    //
+    // It will be not occurred.
+
+    const cardBody = changedFile.new.doc as CardBody;
+    // @ts-ignore
+    cardStore.dispatch(cardBodyUpdateCreator(cardBody._body, 'remote', enqueueTime));
   }
   else if (changedFile.operation === 'update') {
-    //
+    const cardBody = changedFile.new.doc as CardBody;
+    // @ts-ignore
+    cardStore.dispatch(cardBodyUpdateCreator(cardBody._body, 'remote', enqueueTime));
   }
   else if (changedFile.operation === 'delete') {
-    //
+    // @ts-ignore
+    cardStore.dispatch(cardBodyUpdateCreator('', 'remote', enqueueTime));
   }
 };
 

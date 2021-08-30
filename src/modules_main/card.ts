@@ -242,14 +242,9 @@ export class Card implements ICard {
     this._debouncedCardPositionUpdateActionQueue.subscribe((geometry: Geometry) => {
       note.updateCardGeometry(this.url, geometry);
     });
-
-    this._debouncedCardSizeUpdateActionQueue.subscribe((geometry: Geometry) => {
-      note.updateCardGeometry(this.url, geometry);
-    });
   }
 
   private _debouncedCardPositionUpdateActionQueue = new DebounceQueue(1000);
-  private _debouncedCardSizeUpdateActionQueue = new DebounceQueue(1000);
 
   private _willMoveListener = (event: Electron.Event, rect: Electron.Rectangle) => {
     // Update x and y
@@ -268,8 +263,6 @@ export class Card implements ICard {
       width: rect.width,
       height: rect.height,
     };
-
-    this._debouncedCardSizeUpdateActionQueue.next(geometry);
     this.window.webContents.send('resize-by-hand', geometry);
   };
 
