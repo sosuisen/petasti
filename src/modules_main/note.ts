@@ -497,10 +497,8 @@ class Note implements INote {
       )) as CardSketch;
       sketch.geometry = { ...sketch.geometry, ...geometry };
     }
-    let task: TaskMetadata;
-    if (sketch) {
-      task = await this._updateCardSketchDoc(sketch);
-    }
+    const task: TaskMetadata = await this._updateCardSketchDoc(sketch!);
+
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(
@@ -527,10 +525,7 @@ class Note implements INote {
         getSketchIdFromUrl(sketchUrl)
       )) as CardSketch;
     }
-    let task: TaskMetadata;
-    if (sketch) {
-      task = await this._createCardSketchDoc(sketch);
-    }
+    const task: TaskMetadata = await this._createCardSketchDoc(sketch!);
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
@@ -559,10 +554,7 @@ class Note implements INote {
         getSketchIdFromUrl(sketchUrl)
       )) as CardSketch;
     }
-    let task: TaskMetadata;
-    if (sketch) {
-      task = await this._updateCardSketchDoc(sketch);
-    }
+    const  task: TaskMetadata = await this._updateCardSketchDoc(sketch!);
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);

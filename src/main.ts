@@ -268,15 +268,13 @@ ipcMain.handle(
   }
 );
 
-ipcMain.handle('db', (event, command: DatabaseCommand) => {
+ipcMain.handle('db', async (event, command: DatabaseCommand) => {
   switch (command.command) {
     case 'db-card-body-update': {
-      note.updateCardBody(command.url, command.data);
-      break;
+      return await note.updateCardBody(command.url, command.data);
     }
     case 'db-card-sketch-update': {
-      note.updateCardSketch(command.url, command.data);
-      break;
+      return await note.updateCardSketch(command.url, command.data);
     }
     default:
       break;

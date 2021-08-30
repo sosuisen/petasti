@@ -170,7 +170,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
               const url = `${APP_SCHEME}://local/${sketchId}`;
               // eslint-disable-next-line no-await-in-loop
               const cardBody = await note.cardCollection.get(cardId);
-              createCardWindow(note, url, cardBody, changedFile.new.doc as CardSketch);
+              createCardWindow(note, url, cardBody!, changedFile.new.doc as CardSketch);
             }
           }
           else if (changedFile.operation === 'update') {
