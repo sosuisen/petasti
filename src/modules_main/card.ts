@@ -61,7 +61,7 @@ export const getGlobalFocusEventListenerPermission = () => {
  */
 export const createCardWindow = async (
   note: INote,
-  sketchUrl: string,
+  noteIdOrUrl: string,
   partialCardBody: Partial<CardBody>,
   partialCardSketch: Partial<CardSketch>
 ): Promise<void> => {
@@ -69,7 +69,7 @@ export const createCardWindow = async (
   if (partialCardSketch.geometry !== undefined) {
     partialCardSketch.geometry.z = getZIndexOfTopCard() + 1;
   }
-  const card = new Card(note, sketchUrl, partialCardBody, partialCardSketch);
+  const card = new Card(note, noteIdOrUrl, partialCardBody, partialCardSketch);
   // Async
   note.createCard(card.url, card);
 
@@ -146,34 +146,38 @@ export class Card implements ICard {
     cardSketch?: Partial<CardSketch>
   ) {
     this._note = note;
+    let cardId: string;
+    let sketchId: string;
     if (!noteIdOrUrl.startsWith(APP_SCHEME)) {
       // Create card with default properties
       const noteId = noteIdOrUrl;
-      const cardId = generateNewCardId();
+      cardId = generateNewCardId();
       this.url = `${APP_SCHEME}://local/${noteId}/${cardId}`;
-      this.body._id = cardId;
-      this.sketch._id = `${noteId}/${cardId}`;
+      sketchId = `${noteId}/${cardId}`;
     }
     else {
       this.url = noteIdOrUrl;
-      // Create card with specified CardProp
-      this.body = { ...this.body, ...cardBody };
-      this.body._id = getCardIdFromUrl(this.url);
-
-      this.sketch.geometry = { ...this.sketch.geometry, ...cardSketch?.geometry };
-
-      this.sketch.geometry.x = Math.round(this.sketch.geometry.x);
-      this.sketch.geometry.y = Math.round(this.sketch.geometry.y);
-      this.sketch.geometry.z = Math.round(this.sketch.geometry.z);
-      this.sketch.geometry.width = Math.round(this.sketch.geometry.width);
-      this.sketch.geometry.height = Math.round(this.sketch.geometry.height);
-
-      this.sketch.style = { ...this.sketch.style, ...cardSketch?.style };
-
-      this.sketch.condition = { ...this.sketch.condition, ...cardSketch?.condition };
-
-      this.sketch._id = getSketchIdFromUrl(this.url);
+      cardId = getCardIdFromUrl(this.url);
+      sketchId = getSketchIdFromUrl(this.url);
     }
+
+    // Create card with specified CardProp
+    this.body = { ...this.body, ...cardBody };
+    this.body._id = cardId;
+
+    this.sketch.geometry = { ...this.sketch.geometry, ...cardSketch?.geometry };
+
+    this.sketch.geometry.x = Math.round(this.sketch.geometry.x);
+    this.sketch.geometry.y = Math.round(this.sketch.geometry.y);
+    this.sketch.geometry.z = Math.round(this.sketch.geometry.z);
+    this.sketch.geometry.width = Math.round(this.sketch.geometry.width);
+    this.sketch.geometry.height = Math.round(this.sketch.geometry.height);
+
+    this.sketch.style = { ...this.sketch.style, ...cardSketch?.style };
+
+    this.sketch.condition = { ...this.sketch.condition, ...cardSketch?.condition };
+
+    this.sketch._id = sketchId;
 
     const time = getCurrentDateAndTime();
     this.body.date.createdDate = cardBody?.date?.createdDate ?? time;

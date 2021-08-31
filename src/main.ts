@@ -12,7 +12,7 @@ import {
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
 import { emitter, handlers } from './modules_main/event';
 import { note } from './modules_main/note';
-import { CardBody, CardProperty, CardSketch } from './modules_common/types';
+import { CardBody, CardSketch } from './modules_common/types';
 import { addSettingsHandler } from './modules_main/settings_eventhandler';
 import { cacheOfCard } from './modules_main/card_cache';
 import { setZIndexOfBottomCard, setZIndexOfTopCard } from './modules_main/card_zindex';
