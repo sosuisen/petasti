@@ -178,6 +178,7 @@ const initializeUIEvents = () => {
         width: newWidth,
         height: newHeight,
       };
+      console.log('# resize on renderer');
       window.resizeTo(newWidth, newHeight);
       onResizeByHand(newGeom);
     }
@@ -435,11 +436,11 @@ const onRenderCard = (url: string, cardBody: CardBody, cardSketch: CardSketch) =
   });
   cardStore.dispatch({
     type: 'card-sketch-date-init',
-    payload: cardBody.date,
+    payload: cardSketch.date,
   });
   cardStore.dispatch({
     type: 'card-sketch-id-init',
-    payload: cardBody._id,
+    payload: cardSketch._id,
   });
   cardStore.dispatch({
     type: 'card-work-state-init',

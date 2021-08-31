@@ -64,10 +64,10 @@ const cardGeometryReducer = (
 ) => {
   switch (action.type) {
     case 'card-geometry-init': {
-      return { ...state, ...action.payload };
+      return { ...action.payload };
     }
     case 'card-geometry-update': {
-      const newState = { ...state, ...action.payload };
+      const newState = { ...action.payload };
       console.log('# cardGeometryReducer: ' + JSON.stringify(newState));
       return newState;
     }
@@ -174,7 +174,7 @@ const cardWorkStateReducer = (
 ) => {
   switch (action.type) {
     case 'card-work-state-init': {
-      console.log('# cardWorkStateReducer: ' + action.payload);
+      console.log('# cardWorkStateReducer: ' + JSON.stringify(action.payload));
       return { ...action.payload };
     }
     case 'card-work-state-status-update': {
