@@ -12,7 +12,7 @@ import {
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
 import { emitter, handlers } from './modules_main/event';
 import { note } from './modules_main/note';
-import { CardBody, CardSketch } from './modules_common/types';
+import { CardBody, CardProperty, CardSketch } from './modules_common/types';
 import { addSettingsHandler } from './modules_main/settings_eventhandler';
 import { cacheOfCard } from './modules_main/card_cache';
 import { setZIndexOfBottomCard, setZIndexOfTopCard } from './modules_main/card_zindex';
@@ -110,8 +110,10 @@ emitter.on('change-note', async (nextNoteId: string) => {
     else if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
     return 0;
   });
-  setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
-  setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
+  if (cacheOfCard.size > 0) {
+    setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
+    setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
+  }
   backToFront.forEach(card => {
     if (card.window && !card.window.isDestroyed()) {
       card.window.moveTop();

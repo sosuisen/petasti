@@ -314,7 +314,10 @@ class Note implements INote {
     return await this.loadCurrentCards();
   };
 
-  createNote = async (name?: string): Promise<[NoteProp, CardProperty]> => {
+  createNote = async (
+    name?: string,
+    waitFirstCardCreation = false
+  ): Promise<[NoteProp, CardProperty]> => {
     if (!name) {
       name = MESSAGE('noteName', (noteStore.getState().size + 1).toString());
     }
@@ -336,7 +339,12 @@ class Note implements INote {
 
     // Add first card
     const firstCard = new Card(this, noteId);
-    await note.createCard(firstCard.url, firstCard.body, firstCard.sketch);
+    await note.createCard(
+      firstCard.url,
+      firstCard.body,
+      firstCard.sketch,
+      waitFirstCardCreation
+    );
 
     return [
       newNote,
@@ -398,12 +406,13 @@ class Note implements INote {
   createCard = async (
     sketchUrl: string,
     cardBody: CardBody,
-    cardSketch: CardSketch
+    cardSketch: CardSketch,
+    waitCreation = false
   ): Promise<void> => {
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
 
-    await this._createCardBodyDoc(cardBody);
+    await this._createCardBodyDoc(cardBody, waitCreation);
     if (card) {
       card.body = JSON.parse(JSON.stringify(cardBody));
     }
@@ -411,7 +420,7 @@ class Note implements INote {
       console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
     }
 
-    await this._createCardSketchDoc(cardSketch);
+    await this._createCardSketchDoc(cardSketch, waitCreation);
     if (card) {
       card.sketch = JSON.parse(JSON.stringify(cardSketch));
     }
@@ -677,8 +686,29 @@ class Note implements INote {
     return (task as unknown) as TaskMetadata;
   };
 
-  private _createCardBodyDoc = async (cardBody: CardBody): Promise<TaskMetadata> => {
+  private _createCardBodyDoc = async (
+    cardBody: CardBody,
+    waitCreation = false
+  ): Promise<TaskMetadata> => {
     console.debug(`# Saving card body doc: ${cardBody._id}`);
+    if (waitCreation) {
+      // Sync
+      let task: TaskMetadata;
+      await this._cardCollection
+        .insert(cardBody, {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            task = taskMetadata;
+          },
+        })
+        .catch((err: Error) => console.log(`Error in createCardBodyDoc: ${err.message}`));
+      // Consecutive sync task will be skipped
+      if (this._sync) {
+        this._sync.trySync();
+      }
+      return task!;
+    }
+
+    // Async
     const task = await new Promise((resolve, reject) => {
       this._cardCollection
         .insert(cardBody, {
@@ -695,8 +725,29 @@ class Note implements INote {
     return (task as unknown) as TaskMetadata;
   };
 
-  private _createCardSketchDoc = async (cardSketch: CardSketch): Promise<TaskMetadata> => {
+  private _createCardSketchDoc = async (
+    cardSketch: CardSketch,
+    waitCreation = false
+  ): Promise<TaskMetadata> => {
     console.debug(`# Saving card sketch doc: ${cardSketch._id}`);
+    if (waitCreation) {
+      // Sync
+      let task: TaskMetadata;
+      await this._noteCollection
+        .insert(cardSketch, {
+          enqueueCallback: (taskMetadata: TaskMetadata) => {
+            task = taskMetadata;
+          },
+        })
+        .catch((err: Error) => console.log(`Error in createCardSketchDoc: ${err.message}`));
+      // Consecutive sync task will be skipped
+      if (this._sync) {
+        this._sync.trySync();
+      }
+      return task!;
+    }
+
+    // Async
     const task = await new Promise((resolve, reject) => {
       this._noteCollection
         .insert(cardSketch, {

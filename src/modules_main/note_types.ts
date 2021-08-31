@@ -46,7 +46,8 @@ export interface INote {
   createCard: (
     sketchUrl: string,
     cardBody: CardBody,
-    cardSketch: CardSketch
+    cardSketch: CardSketch,
+    waitCreation?: boolean
   ) => Promise<void>;
   updateCard: (
     sketchUrl: string,
@@ -75,6 +76,9 @@ export interface INote {
 
   getSortedNoteIdList: () => string[];
   changingToNoteId: string;
-  createNote: (name?: string) => Promise<[NoteProp, CardProperty]>;
+  createNote: (
+    name?: string,
+    waitFirstCardCreation?: boolean
+  ) => Promise<[NoteProp, CardProperty]>;
   getZIndexOfTopCard: (noteId: string) => Promise<number>;
 }

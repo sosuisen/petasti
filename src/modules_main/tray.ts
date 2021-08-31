@@ -157,7 +157,7 @@ export const setTrayContextMenu = () => {
         ) {
           return;
         }
-        const [newNoteProp] = await note.createNote(newName as string);
+        const [newNoteProp] = await note.createNote(newName as string, true);
 
         closeSettings();
 
