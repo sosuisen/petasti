@@ -160,10 +160,11 @@ ipcMain.handle(
     cardSketch: Partial<CardSketch>
   ): Promise<void> => {
     if (sketchUrl === undefined) {
-      const cardId = generateNewCardId();
-      sketchUrl = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
+      await createCardWindow(note, note.settings.currentNoteId, cardBody, cardSketch);
     }
-    await createCardWindow(note, sketchUrl, cardBody, cardSketch);
+    else {
+      await createCardWindow(note, sketchUrl, cardBody, cardSketch);
+    }
   }
 );
 

@@ -6,7 +6,12 @@ import url from 'url';
 import path from 'path';
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { DebounceQueue } from 'rx-queue';
-import { generateNewCardId, getCurrentDateAndTime } from '../modules_common/utils';
+import {
+  generateNewCardId,
+  getCardIdFromUrl,
+  getCurrentDateAndTime,
+  getSketchIdFromUrl,
+} from '../modules_common/utils';
 import {
   APP_ICON_NAME,
   APP_SCHEME,
@@ -23,7 +28,6 @@ import {
   CardPositionDebounceItem,
   CardSketch,
   CardStatus,
-  Geometry,
   ICard,
 } from '../modules_common/types';
 import { cacheOfCard } from './card_cache';
@@ -34,7 +38,6 @@ import {
   setZIndexOfBottomCard,
   setZIndexOfTopCard,
 } from './card_zindex';
-import { cardSketchBringToFrontCreator } from '../modules_renderer/card_action_creator';
 
 /**
  * Focus control
@@ -70,7 +73,7 @@ export const createCardWindow = async (
   cacheOfCard.set(card.url, card);
 
   // Async
-  note.createCard(sketchUrl, card.body, card.sketch);
+  note.createCard(card.url, card.body, card.sketch);
 
   await card.render();
   console.debug(`focus in createCardWindow: ${card.url}`);
@@ -157,6 +160,8 @@ export class Card implements ICard {
       this.url = noteIdOrUrl;
       // Create card with specified CardProp
       this.body = { ...this.body, ...cardBody };
+      this.body._id = getCardIdFromUrl(this.url);
+
       this.sketch.geometry = { ...this.sketch.geometry, ...cardSketch?.geometry };
 
       this.sketch.geometry.x = Math.round(this.sketch.geometry.x);
@@ -169,7 +174,7 @@ export class Card implements ICard {
 
       this.sketch.condition = { ...this.sketch.condition, ...cardSketch?.condition };
 
-      this.sketch._id = cardSketch!._id!;
+      this.sketch._id = getSketchIdFromUrl(this.url);
     }
 
     const time = getCurrentDateAndTime();
