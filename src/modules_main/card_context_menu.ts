@@ -38,10 +38,11 @@ export const setContextMenu = (note: INote, card: ICard) => {
 
   const moveCardToNote = async (noteId: string) => {
     const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
-    const url = `${APP_SCHEME}://local/${noteId}/${getCardIdFromUrl(card.url)}`;
+    const newSketchId = `${noteId}/${getCardIdFromUrl(card.url)}`;
+    const url = `${APP_SCHEME}://local/${newSketchId}`;
     // Overwrite z
     newCardSketch.geometry.z = (await note.getZIndexOfTopCard(noteId)) + 1;
-
+    newCardSketch._id = newSketchId;
     await note.createCardSketch(url, newCardSketch);
 
     await note.deleteCardSketch(card.url);
@@ -49,9 +50,11 @@ export const setContextMenu = (note: INote, card: ICard) => {
 
   const copyCardToNote = async (noteId: string) => {
     const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
-    const url = `${APP_SCHEME}://local/${noteId}/${getCardIdFromUrl(card.url)}`;
+    const newSketchId = `${noteId}/${getCardIdFromUrl(card.url)}`;
+    const url = `${APP_SCHEME}://local/${newSketchId}`;
     // Overwrite z
     newCardSketch.geometry.z = (await note.getZIndexOfTopCard(noteId)) + 1;
+    newCardSketch._id = newSketchId;
 
     await note.createCardSketch(url, newCardSketch);
   };

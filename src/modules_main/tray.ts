@@ -209,7 +209,7 @@ export const setTrayContextMenu = () => {
         noteProp.date.modifiedDate = getCurrentDateAndTime();
         noteStore.dispatch(
           // @ts-ignore
-          noteUpdateCreator(note, prop)
+          noteUpdateCreator(note, noteProp)
         );
 
         setTrayContextMenu();
