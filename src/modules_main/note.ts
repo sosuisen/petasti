@@ -688,6 +688,10 @@ class Note implements INote {
         })
         .catch(err => reject(err));
     }).catch((err: Error) => console.log(`Error in createCardBodyDoc: ${err.message}`));
+    // Consecutive sync task will be skipped
+    if (this._sync) {
+      this._sync.trySync();
+    }
     return (task as unknown) as TaskMetadata;
   };
 
@@ -702,6 +706,10 @@ class Note implements INote {
         })
         .catch(err => reject(err));
     }).catch((err: Error) => console.log(`Error in createCardSketchDoc: ${err.message}`));
+    // Consecutive sync task will be skipped
+    if (this._sync) {
+      this._sync.trySync();
+    }
     return (task as unknown) as TaskMetadata;
   };
 
@@ -719,6 +727,10 @@ class Note implements INote {
       console.log(`Error in updateCardBodyDoc: ${err.message}`);
       return undefined;
     });
+    // Consecutive sync task will be skipped
+    if (this._sync) {
+      this._sync.trySync();
+    }
     return (task as unknown) as TaskMetadata;
   };
 
@@ -736,6 +748,10 @@ class Note implements INote {
       console.log(`Error in updateCardSketchDoc: ${err.message}`);
       return undefined;
     });
+    // Consecutive sync task will be skipped
+    if (this._sync) {
+      this._sync.trySync();
+    }
     return (task as unknown) as TaskMetadata;
   };
 
@@ -750,6 +766,10 @@ class Note implements INote {
         })
         .catch(err => reject(err));
     }).catch((err: Error) => console.log(`Error in deletingCardBody: ${err.message}`));
+    // Consecutive sync task will be skipped
+    if (this._sync) {
+      this._sync.trySync();
+    }
     return (task as unknown) as TaskMetadata;
   };
 
@@ -764,6 +784,10 @@ class Note implements INote {
         })
         .catch(err => reject(err));
     }).catch((err: Error) => console.log(`Error in deletingCardBody: ${err.message}`));
+    // Consecutive sync task will be skipped
+    if (this._sync) {
+      this._sync.trySync();
+    }
     return (task as unknown) as TaskMetadata;
   };
 }

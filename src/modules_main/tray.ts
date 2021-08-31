@@ -22,7 +22,6 @@ import { INote } from './note_types';
 import { showDialog } from './utils_main';
 import { noteStore } from './note_store';
 import { noteDeleteCreator, noteUpdateCreator } from './note_action_creator';
-import { cardSketchBringToFrontCreator } from '../modules_renderer/card_action_creator';
 
 /**
  * Task tray
