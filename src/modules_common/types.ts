@@ -71,6 +71,11 @@ export type CardWorkState = {
   status: CardStatus;
 };
 
+export type CardPositionDebounceItem = {
+  geometry: Geometry;
+  modifiedDate: string;
+};
+
 export type CardStatus = 'Focused' | 'Blurred';
 
 export type SavingTarget = 'BodyOnly' | 'SketchOnly' | 'Card';

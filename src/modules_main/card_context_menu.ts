@@ -7,7 +7,7 @@ import contextMenu from 'electron-context-menu';
 import { cardColors, ColorName } from '../modules_common/color';
 import { APP_SCHEME } from '../modules_common/const';
 import { CardSketch, Geometry, ICard } from '../modules_common/types';
-import { getCardIdFromUrl } from '../modules_common/utils';
+import { getCardIdFromUrl, getCurrentDateAndTime } from '../modules_common/utils';
 import {
   getZIndexOfBottomCard,
   setZIndexOfBottomCard,
@@ -158,7 +158,8 @@ export const setContextMenu = (note: INote, card: ICard) => {
           newGeom.z = zIndex;
 
           // Async
-          note.updateCardGeometry(card.url, newGeom);
+          const modifiedDate = getCurrentDateAndTime();
+          note.updateCardGeometry(card.url, newGeom, modifiedDate);
 
           // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 
@@ -176,7 +177,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
             }
           });
 
-          card.window.webContents.send('send-to-back', zIndex);
+          card.window.webContents.send('send-to-back', zIndex, modifiedDate);
         },
       },
       {

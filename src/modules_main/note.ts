@@ -336,7 +336,7 @@ class Note implements INote {
 
     // Add first card
     const firstCard = new Card(this, noteId);
-    await note.updateCard(firstCard.url, firstCard.body, firstCard.sketch);
+    await note.createCard(firstCard.url, firstCard.body, firstCard.sketch);
 
     return [
       newNote,
@@ -423,14 +423,15 @@ class Note implements INote {
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(
       // @ts-ignore
-      noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
+      noteModifiedDateUpdateCreator(this, noteId, cardBody.date.modifiedDate)
     );
   };
 
   updateCard = async (
     sketchUrl: string,
     cardBody: CardBody,
-    cardSketch: CardSketch
+    cardSketch: CardSketch,
+    modifiedDate: string
   ): Promise<void> => {
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
@@ -438,6 +439,7 @@ class Note implements INote {
     await this._updateCardBodyDoc(cardBody);
     if (card) {
       card.body = JSON.parse(JSON.stringify(cardBody));
+      card.body.date.modifiedDate = modifiedDate;
     }
     else {
       console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
@@ -446,6 +448,7 @@ class Note implements INote {
     await this._updateCardSketchDoc(cardSketch);
     if (card) {
       card.sketch = JSON.parse(JSON.stringify(cardSketch));
+      card.sketch.date.modifiedDate = modifiedDate;
     }
     else {
       console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
@@ -455,15 +458,20 @@ class Note implements INote {
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(
       // @ts-ignore
-      noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
+      noteModifiedDateUpdateCreator(this, noteId, modifiedDate)
     );
   };
 
-  updateCardBody = async (sketchUrl: string, cardBody: CardBody): Promise<TaskMetadata> => {
+  updateCardBody = async (
+    sketchUrl: string,
+    cardBody: CardBody,
+    modifiedDate: string
+  ): Promise<TaskMetadata> => {
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
     if (card) {
       card.body = JSON.parse(JSON.stringify(cardBody));
+      card.body.date.modifiedDate = modifiedDate;
     }
     else {
       console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
@@ -471,23 +479,27 @@ class Note implements INote {
     const task = await this._updateCardBodyDoc(cardBody);
 
     // Update note store & DB
-    const noteId = getNoteIdFromUrl(sketchUrl);
-    noteStore.dispatch(
-      // @ts-ignore
-      noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
-    );
+    if (task !== undefined) {
+      const noteId = getNoteIdFromUrl(sketchUrl);
+      noteStore.dispatch(
+        // @ts-ignore
+        noteModifiedDateUpdateCreator(this, noteId, modifiedDate)
+      );
+    }
     return task;
   };
 
   updateCardGeometry = async (
     sketchUrl: string,
-    geometry: Geometry
+    geometry: Geometry,
+    modifiedTime: string
   ): Promise<TaskMetadata> => {
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
     let sketch: CardSketch;
     if (card) {
       card.sketch.geometry = { ...card.sketch.geometry, ...geometry };
+      card.sketch.date.modifiedDate = modifiedTime;
       sketch = card.sketch;
     }
     else {
@@ -500,11 +512,13 @@ class Note implements INote {
     const task: TaskMetadata = await this._updateCardSketchDoc(sketch!);
 
     // Update note store & DB
-    const noteId = getNoteIdFromUrl(sketchUrl);
-    noteStore.dispatch(
-      // @ts-ignore
-      noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
-    );
+    if (task !== undefined) {
+      const noteId = getNoteIdFromUrl(sketchUrl);
+      noteStore.dispatch(
+        // @ts-ignore
+        noteModifiedDateUpdateCreator(this, noteId, modifiedTime)
+      );
+    }
     return task;
   };
 
@@ -531,7 +545,7 @@ class Note implements INote {
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(
       // @ts-ignore
-      noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
+      noteModifiedDateUpdateCreator(this, noteId, sketch.date.modifiedDate)
     );
 
     return task;
@@ -539,13 +553,15 @@ class Note implements INote {
 
   updateCardSketch = async (
     sketchUrl: string,
-    cardSketch: CardSketch
+    cardSketch: CardSketch,
+    modifiedDate: string
   ): Promise<TaskMetadata> => {
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
     let sketch: CardSketch;
     if (card) {
       card.sketch = JSON.parse(JSON.stringify(cardSketch));
+      card.sketch.date.modifiedDate = modifiedDate;
       sketch = card.sketch;
     }
     else {
@@ -560,7 +576,7 @@ class Note implements INote {
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(
       // @ts-ignore
-      noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
+      noteModifiedDateUpdateCreator(this, noteId, modifiedDate)
     );
 
     return task;
@@ -699,7 +715,10 @@ class Note implements INote {
           },
         })
         .catch(err => reject(err));
-    }).catch((err: Error) => console.log(`Error in updateCardBodyDoc: ${err.message}`));
+    }).catch((err: Error) => {
+      console.log(`Error in updateCardBodyDoc: ${err.message}`);
+      return undefined;
+    });
     return (task as unknown) as TaskMetadata;
   };
 
@@ -713,7 +732,10 @@ class Note implements INote {
           },
         })
         .catch(err => reject(err));
-    }).catch((err: Error) => console.log(`Error in updateCardSketchDoc: ${err.message}`));
+    }).catch((err: Error) => {
+      console.log(`Error in updateCardSketchDoc: ${err.message}`);
+      return undefined;
+    });
     return (task as unknown) as TaskMetadata;
   };
 

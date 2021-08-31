@@ -52,12 +52,6 @@ contextBridge.exposeInMainWorld('api', {
   getUuid: () => {
     return ipcRenderer.invoke('get-uuid');
   },
-  updateCardSketch: (sketchUrl: string, cardSketch: CardSketch, target: SavingTarget) => {
-    return ipcRenderer.invoke('update-card-sketch', sketchUrl, cardSketch, target);
-  },
-  updateCardBody: (sketchUrl: string, cardBody: CardBody, target: SavingTarget) => {
-    return ipcRenderer.invoke('update-card-body', sketchUrl, cardBody, target);
-  },
   sendLeftMouseDown: (url: string, x: number, y: number) => {
     const leftMouseDown: MouseInputEvent = {
       button: 'left',
@@ -89,8 +83,11 @@ ipcRenderer.on('card-close', () =>
 );
 ipcRenderer.on(
   'card-focused',
-  (event: Electron.IpcRendererEvent, zIndex: number | undefined) =>
-    window.postMessage({ command: 'card-focused', zIndex }, 'file://')
+  (
+    event: Electron.IpcRendererEvent,
+    zIndex: number | undefined,
+    modifiedDate: string | undefined
+  ) => window.postMessage({ command: 'card-focused', zIndex, modifiedDate }, 'file://')
 );
 ipcRenderer.on(
   'change-card-color',
@@ -105,8 +102,10 @@ ipcRenderer.on(
     )
 );
 
-ipcRenderer.on('move-by-hand', (event: Electron.IpcRendererEvent, geometry: Geometry) =>
-  window.postMessage({ command: 'move-by-hand', geometry }, 'file://')
+ipcRenderer.on(
+  'move-by-hand',
+  (event: Electron.IpcRendererEvent, geometry: Geometry, modifiedDate: string) =>
+    window.postMessage({ command: 'move-by-hand', geometry, modifiedDate }, 'file://')
 );
 ipcRenderer.on(
   'render-card',
@@ -124,8 +123,10 @@ ipcRenderer.on(
 ipcRenderer.on('resize-by-hand', (event: Electron.IpcRendererEvent, geometry: Geometry) =>
   window.postMessage({ command: 'resize-by-hand', geometry }, 'file://')
 );
-ipcRenderer.on('send-to-back', (event: Electron.IpcRendererEvent, zIndex: number) =>
-  window.postMessage({ command: 'send-to-back', zIndex }, 'file://')
+ipcRenderer.on(
+  'send-to-back',
+  (event: Electron.IpcRendererEvent, zIndex: number, modifiedDate: string) =>
+    window.postMessage({ command: 'send-to-back', zIndex, modifiedDate }, 'file://')
 );
 ipcRenderer.on('set-lock', (event: Electron.IpcRendererEvent, locked: boolean) => {
   window.postMessage({ command: 'set-lock', locked }, 'file://');

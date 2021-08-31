@@ -11,6 +11,7 @@ import {
   DatabaseCardSketchUpdate,
 } from '../modules_common/db.types';
 import { CardSketch, CardStatus, CardStyle, Geometry } from '../modules_common/types';
+import { getCurrentDateAndTime } from '../modules_common/utils';
 import {
   CardAction,
   CardBodyUpdateAction,
@@ -18,6 +19,7 @@ import {
   CardConditionUpdateAction,
   CardGeometryUpdateAction,
   CardGeometryZUpdateAction,
+  CardSketchModifiedDateUpdateAction,
   CardStyleUpdateAction,
   CardWorkStateStatusUpdateAction,
 } from './card_action';
@@ -97,6 +99,12 @@ export const cardSketchUpdateCreator = (
       };
       dispatch(cardConditionAction);
 
+      const cardDateAction: CardSketchModifiedDateUpdateAction = {
+        type: 'card-sketch-modified-date-update',
+        payload: getCurrentDateAndTime(),
+      };
+      dispatch(cardDateAction);
+
       if (changeFrom === 'local') {
         const cmd: DatabaseCardSketchUpdate = {
           command: 'db-card-sketch-update',
@@ -116,6 +124,7 @@ export const cardSketchUpdateCreator = (
 
 export const cardGeometryUpdateCreator = (
   geometry: Geometry,
+  modifiedDate: string | undefined = undefined,
   changeFrom: ChangeFrom = 'local',
   enqueueTime: string | undefined = undefined
 ) => {
@@ -133,6 +142,12 @@ export const cardGeometryUpdateCreator = (
         payload: geometry,
       };
       dispatch(cardAction);
+
+      const cardDateAction: CardSketchModifiedDateUpdateAction = {
+        type: 'card-sketch-modified-date-update',
+        payload: modifiedDate || getCurrentDateAndTime(),
+      };
+      dispatch(cardDateAction);
 
       if (changeFrom === 'local') {
         const cmd: DatabaseCardSketchUpdate = {
@@ -171,6 +186,12 @@ export const cardStyleUpdateCreator = (
       };
       dispatch(cardAction);
 
+      const cardDateAction: CardSketchModifiedDateUpdateAction = {
+        type: 'card-sketch-modified-date-update',
+        payload: getCurrentDateAndTime(),
+      };
+      dispatch(cardDateAction);
+
       if (changeFrom === 'local') {
         const cmd: DatabaseCardSketchUpdate = {
           command: 'db-card-sketch-update',
@@ -208,6 +229,12 @@ export const cardConditionLockedUpdateCreator = (
       };
       dispatch(cardAction);
 
+      const cardDateAction: CardSketchModifiedDateUpdateAction = {
+        type: 'card-sketch-modified-date-update',
+        payload: getCurrentDateAndTime(),
+      };
+      dispatch(cardDateAction);
+
       if (changeFrom === 'local') {
         const cmd: DatabaseCardSketchUpdate = {
           command: 'db-card-sketch-update',
@@ -225,7 +252,10 @@ export const cardConditionLockedUpdateCreator = (
   };
 };
 
-export const cardSketchBringToFrontCreator = (zIndex: number | undefined) => {
+export const cardSketchBringToFrontCreator = (
+  zIndex: number | undefined,
+  modifiedDate: string | undefined
+) => {
   return function (dispatch: Dispatch<any>, getState: () => CardState) {
     if (zIndex !== undefined) {
       const cardGeometryAction: CardGeometryZUpdateAction = {
@@ -233,6 +263,12 @@ export const cardSketchBringToFrontCreator = (zIndex: number | undefined) => {
         payload: zIndex,
       };
       dispatch(cardGeometryAction);
+
+      const cardDateAction: CardSketchModifiedDateUpdateAction = {
+        type: 'card-sketch-modified-date-update',
+        payload: modifiedDate!,
+      };
+      dispatch(cardDateAction);
     }
     const cardStatusAction: CardWorkStateStatusUpdateAction = {
       type: 'card-work-state-status-update',
@@ -252,12 +288,18 @@ export const cardWorkStateStatusUpdateCreator = (status: CardStatus) => {
   };
 };
 
-export const cardSketchSendToBackCreator = (zIndex: number) => {
+export const cardSketchSendToBackCreator = (zIndex: number, modifiedDate: string) => {
   return function (dispatch: Dispatch<any>, getState: () => CardState) {
     const cardAction: CardGeometryZUpdateAction = {
       type: 'card-geometry-z-update',
       payload: zIndex,
     };
     dispatch(cardAction);
+
+    const cardDateAction: CardSketchModifiedDateUpdateAction = {
+      type: 'card-sketch-modified-date-update',
+      payload: modifiedDate,
+    };
+    dispatch(cardDateAction);
   };
 };

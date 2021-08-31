@@ -14,6 +14,7 @@ import {
   CartaDate,
   Geometry,
 } from '../modules_common/types';
+import { getCurrentDateAndTime } from '../modules_common/utils';
 import {
   CardAction,
   CardBodyAction,
@@ -47,8 +48,9 @@ const cardBodyReducer = (
       return newState;
     }
     case 'card-body-body-update': {
-      const newState = JSON.parse(JSON.stringify(state));
+      const newState = JSON.parse(JSON.stringify(state)) as CardBody;
       newState._body = action.payload;
+      newState.date.modifiedDate = getCurrentDateAndTime();
       console.log('# cardBodyReducer: ' + JSON.stringify(newState));
       return newState;
     }

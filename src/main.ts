@@ -142,17 +142,6 @@ app.on('window-all-closed', () => {
  * ipcMain handles
  */
 
-ipcMain.handle(
-  'update-card-sketch',
-  async (event, sketchUrl: string, cardSketch: CardSketch) => {
-    await note.updateCardSketch(sketchUrl, cardSketch);
-  }
-);
-
-ipcMain.handle('update-card-body', async (event, sketchUrl: string, cardBody: CardBody) => {
-  await note.updateCardBody(sketchUrl, cardBody);
-});
-
 ipcMain.handle('delete-card', async (event, url: string) => {
   await note.deleteCard(getCardIdFromUrl(url));
 });
@@ -271,10 +260,18 @@ ipcMain.handle(
 ipcMain.handle('db', async (event, command: DatabaseCommand) => {
   switch (command.command) {
     case 'db-card-body-update': {
-      return await note.updateCardBody(command.url, command.data);
+      return await note.updateCardBody(
+        command.url,
+        command.data,
+        command.data.date.modifiedDate
+      );
     }
     case 'db-card-sketch-update': {
-      return await note.updateCardSketch(command.url, command.data);
+      return await note.updateCardSketch(
+        command.url,
+        command.data,
+        command.data.date.modifiedDate
+      );
     }
     default:
       break;

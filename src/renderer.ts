@@ -312,13 +312,13 @@ window.addEventListener('message', event => {
       onCardClose();
       break;
     case 'card-focused':
-      onCardFocused(event.data.zIndex);
+      onCardFocused(event.data.zIndex, event.data.modifiedDate);
       break;
     case 'change-card-color':
       onChangeCardColor(event.data.backgroundColor, event.data.opacity);
       break;
     case 'move-by-hand':
-      onMoveByHand(event.data.geometry, 'remote');
+      onMoveByHand(event.data.geometry, event.data.modifiedDate, 'remote');
       break;
     case 'render-card':
       onRenderCard(event.data.sketchUrl, event.data.cardBody, event.data.cardSketch);
@@ -327,7 +327,7 @@ window.addEventListener('message', event => {
       onResizeByHand(event.data.geometry);
       break;
     case 'send-to-back':
-      onSendToBack(event.data.zIndex);
+      onSendToBack(event.data.zIndex, event.data.modifiedDate);
       break;
     case 'set-lock':
       onSetLock(event.data.locked);
@@ -374,11 +374,11 @@ const onCardClose = () => {
   close();
 };
 
-const onCardFocused = (zIndex: number | undefined) => {
+const onCardFocused = (zIndex: number | undefined, modifiedDate: string | undefined) => {
   if (suppressFocusEvent) {
     return;
   }
-  cardStore.dispatch(cardSketchBringToFrontCreator(zIndex));
+  cardStore.dispatch(cardSketchBringToFrontCreator(zIndex, modifiedDate));
 
   render(['CardStyle', 'ContentsRect']);
 };
@@ -402,7 +402,7 @@ const onChangeCardColor = (backgroundColor: string, opacity = 1.0) => {
   render(['CardStyle', 'TitleBarStyle', 'EditorStyle']);
 };
 
-const onMoveByHand = (geometry: Geometry, changeFrom: ChangeFrom) => {
+const onMoveByHand = (geometry: Geometry, modifiedDate: string, changeFrom: ChangeFrom) => {
   const current = cardStore.getState().sketch.geometry;
   if (current.x !== geometry.x || current.y !== geometry.y) {
     const newGeom: Geometry = {
@@ -412,7 +412,7 @@ const onMoveByHand = (geometry: Geometry, changeFrom: ChangeFrom) => {
       width: current.width,
       height: current.height,
     };
-    cardStore.dispatch(cardGeometryUpdateCreator(newGeom, changeFrom));
+    cardStore.dispatch(cardGeometryUpdateCreator(newGeom, modifiedDate, changeFrom));
   }
 };
 
@@ -474,8 +474,8 @@ const onRenderCard = (url: string, cardBody: CardBody, cardSketch: CardSketch) =
   });
 };
 
-const onSendToBack = (zIndex: number) => {
-  cardStore.dispatch(cardSketchSendToBackCreator(zIndex));
+const onSendToBack = (zIndex: number, modifiedDate: string) => {
+  cardStore.dispatch(cardSketchSendToBackCreator(zIndex, modifiedDate));
 };
 
 const onSetLock = (locked: boolean) => {

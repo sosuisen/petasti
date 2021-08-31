@@ -18,7 +18,14 @@ import {
   MINIMUM_WINDOW_WIDTH,
 } from '../modules_common/const';
 import { handlers } from './event';
-import { CardBody, CardSketch, CardStatus, Geometry, ICard } from '../modules_common/types';
+import {
+  CardBody,
+  CardPositionDebounceItem,
+  CardSketch,
+  CardStatus,
+  Geometry,
+  ICard,
+} from '../modules_common/types';
 import { cacheOfCard } from './card_cache';
 import { setContextMenu } from './card_context_menu';
 import { INote } from './note_types';
@@ -244,8 +251,12 @@ export class Card implements ICard {
       //      }
     });
 
-    this._debouncedCardPositionUpdateActionQueue.subscribe((geometry: unknown) => {
-      note.updateCardGeometry(this.url, geometry as Geometry);
+    this._debouncedCardPositionUpdateActionQueue.subscribe((item: unknown) => {
+      note.updateCardGeometry(
+        this.url,
+        (item as CardPositionDebounceItem).geometry,
+        (item as CardPositionDebounceItem).modifiedDate
+      );
     });
   }
 
@@ -255,8 +266,9 @@ export class Card implements ICard {
     // Update x and y
     const geometry = { ...this.sketch.geometry, x: rect.x, y: rect.y };
 
-    this._debouncedCardPositionUpdateActionQueue.next(geometry);
-    this.window.webContents.send('move-by-hand', geometry);
+    const modifiedDate = getCurrentDateAndTime();
+    this._debouncedCardPositionUpdateActionQueue.next({ geometry, modifiedDate });
+    this.window.webContents.send('move-by-hand', geometry, modifiedDate);
   };
 
   private _willResizeListener = (event: Electron.Event, rect: Electron.Rectangle) => {
@@ -306,10 +318,12 @@ export class Card implements ICard {
     else {
       console.debug(`# focus ${this.url}`);
 
+      const modifiedTime = getCurrentDateAndTime();
+
       if (this.sketch.geometry.z === getZIndexOfTopCard()) {
         // console.log('skip: ' + cardProp.geometry.z);
         // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-        this.window.webContents.send('card-focused', undefined);
+        this.window.webContents.send('card-focused', undefined, undefined);
         return;
       }
       // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
@@ -317,12 +331,12 @@ export class Card implements ICard {
       const zIndex = getZIndexOfTopCard() + 1;
       // console.debug(`new zIndex: ${zIndex}`);
 
-      this.window.webContents.send('card-focused', zIndex);
+      this.window.webContents.send('card-focused', zIndex, modifiedTime);
 
       const newGeom = { ...this.sketch.geometry, z: zIndex };
 
       // Async
-      this._note.updateCardGeometry(this.url, newGeom);
+      this._note.updateCardGeometry(this.url, newGeom, modifiedTime);
       // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
       // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
 
