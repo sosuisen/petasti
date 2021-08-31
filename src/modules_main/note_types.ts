@@ -18,6 +18,7 @@ import {
   CardProperty,
   CardSketch,
   Geometry,
+  ICard,
   NoteProp,
 } from '../modules_common/types';
 
@@ -43,12 +44,7 @@ export interface INote {
   updateNoteDoc: (noteProp: NoteProp) => Promise<TaskMetadata>;
   deleteNoteDoc: (noteId: string) => Promise<TaskMetadata>;
 
-  createCard: (
-    sketchUrl: string,
-    cardBody: CardBody,
-    cardSketch: CardSketch,
-    waitCreation?: boolean
-  ) => Promise<void>;
+  createCard: (sketchUrl: string, card: ICard, waitCreation?: boolean) => Promise<void>;
   updateCard: (
     sketchUrl: string,
     cardBody: CardBody,
@@ -65,7 +61,11 @@ export interface INote {
     geometry: Geometry,
     modifiedTime: string
   ) => Promise<TaskMetadata>;
-  createCardSketch: (sketchUrl: string, cardSketch: CardSketch) => Promise<TaskMetadata>;
+  createCardSketch: (
+    sketchUrl: string,
+    cardSketch: CardSketch,
+    waitCreation?: boolean
+  ) => Promise<TaskMetadata>;
   updateCardSketch: (
     sketchUrl: string,
     cardSketch: CardSketch,

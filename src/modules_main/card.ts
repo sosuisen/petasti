@@ -6,6 +6,7 @@ import url from 'url';
 import path from 'path';
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { DebounceQueue } from 'rx-queue';
+import { TaskMetadata } from 'git-documentdb';
 import {
   generateNewCardId,
   getCardIdFromUrl,
@@ -69,11 +70,8 @@ export const createCardWindow = async (
     partialCardSketch.geometry.z = getZIndexOfTopCard() + 1;
   }
   const card = new Card(note, sketchUrl, partialCardBody, partialCardSketch);
-
-  cacheOfCard.set(card.url, card);
-
   // Async
-  note.createCard(card.url, card.body, card.sketch);
+  note.createCard(card.url, card);
 
   await card.render();
   console.debug(`focus in createCardWindow: ${card.url}`);
@@ -431,5 +429,51 @@ export class Card implements ICard {
 
       this.window.loadURL(this.indexUrl);
     });
+  };
+
+  public moveToNote = async (noteId: string) => {
+    const newCardSketch = JSON.parse(JSON.stringify(this.sketch));
+    const newSketchId = `${noteId}/${getCardIdFromUrl(this.url)}`;
+    const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
+    // Overwrite z
+    newCardSketch.geometry.z = (await this._note.getZIndexOfTopCard(noteId)) + 1;
+    newCardSketch._id = newSketchId;
+    this._note
+      .createCardSketch(newUrl, newCardSketch, true)
+      .then((task: TaskMetadata) => {
+        if (task.shortId!.startsWith(this._note.settings.currentNoteId)) {
+          return this._note.cardCollection.get(getCardIdFromUrl(newUrl));
+        }
+        return Promise.reject(new Error('Note does not match.'));
+      })
+      .then(cardBody => {
+        console.log('Save has been completed: ' + newUrl);
+        createCardWindow(this._note, newUrl, cardBody!, newCardSketch);
+      })
+      .catch(e => console.log(e));
+
+    await this._note.deleteCardSketch(this.url);
+  };
+
+  public copyToNote = async (noteId: string) => {
+    const newCardSketch = JSON.parse(JSON.stringify(this.sketch));
+    const newSketchId = `${noteId}/${getCardIdFromUrl(this.url)}`;
+    const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
+    // Overwrite z
+    newCardSketch.geometry.z = (await this._note.getZIndexOfTopCard(noteId)) + 1;
+    newCardSketch._id = newSketchId;
+    this._note
+      .createCardSketch(newUrl, newCardSketch, true)
+      .then((task: TaskMetadata) => {
+        if (task.shortId!.startsWith(this._note.settings.currentNoteId)) {
+          return this._note.cardCollection.get(getCardIdFromUrl(newUrl));
+        }
+        return Promise.reject(new Error('Note does not match.'));
+      })
+      .then(cardBody => {
+        console.log('Save has been completed: ' + newUrl);
+        createCardWindow(this._note, newUrl, cardBody!, newCardSketch);
+      })
+      .catch(e => console.log(e));
   };
 }

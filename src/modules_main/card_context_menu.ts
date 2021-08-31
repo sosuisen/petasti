@@ -5,9 +5,8 @@
 import { MenuItemConstructorOptions } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { cardColors, ColorName } from '../modules_common/color';
-import { APP_SCHEME } from '../modules_common/const';
-import { CardSketch, Geometry, ICard } from '../modules_common/types';
-import { getCardIdFromUrl, getCurrentDateAndTime } from '../modules_common/utils';
+import { Geometry, ICard } from '../modules_common/types';
+import { getCurrentDateAndTime } from '../modules_common/utils';
 import {
   getZIndexOfBottomCard,
   setZIndexOfBottomCard,
@@ -36,27 +35,12 @@ export const setContextMenu = (note: INote, card: ICard) => {
     };
   };
 
-  const moveCardToNote = async (noteId: string) => {
-    const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
-    const newSketchId = `${noteId}/${getCardIdFromUrl(card.url)}`;
-    const url = `${APP_SCHEME}://local/${newSketchId}`;
-    // Overwrite z
-    newCardSketch.geometry.z = (await note.getZIndexOfTopCard(noteId)) + 1;
-    newCardSketch._id = newSketchId;
-    await note.createCardSketch(url, newCardSketch);
-
-    await note.deleteCardSketch(card.url);
+  const moveCardToNote = (noteId: string) => {
+    card.moveToNote(noteId);
   };
 
-  const copyCardToNote = async (noteId: string) => {
-    const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
-    const newSketchId = `${noteId}/${getCardIdFromUrl(card.url)}`;
-    const url = `${APP_SCHEME}://local/${newSketchId}`;
-    // Overwrite z
-    newCardSketch.geometry.z = (await note.getZIndexOfTopCard(noteId)) + 1;
-    newCardSketch._id = newSketchId;
-
-    await note.createCardSketch(url, newCardSketch);
+  const copyCardToNote = (noteId: string) => {
+    card.copyToNote(noteId);
   };
 
   const moveToNotes: MenuItemConstructorOptions[] = [...noteStore.getState().values()]

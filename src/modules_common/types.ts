@@ -110,6 +110,9 @@ export interface ICard {
 
   renderingCompleted: boolean;
   recaptureGlobalFocusEventAfterLocalFocusEvent: boolean;
+
+  moveToNote: (noteID: string) => Promise<void>;
+  copyToNote: (noteID: string) => Promise<void>;
 }
 
 export type CardMap = Map<string, ICard>;

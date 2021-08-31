@@ -28,6 +28,7 @@ import {
   CardProperty,
   CardSketch,
   Geometry,
+  ICard,
   NoteProp,
 } from '../modules_common/types';
 import {
@@ -339,12 +340,7 @@ class Note implements INote {
 
     // Add first card
     const firstCard = new Card(this, noteId);
-    await note.createCard(
-      firstCard.url,
-      firstCard.body,
-      firstCard.sketch,
-      waitFirstCardCreation
-    );
+    await note.createCard(firstCard.url, firstCard, waitFirstCardCreation);
 
     return [
       newNote,
@@ -405,34 +401,18 @@ class Note implements INote {
 
   createCard = async (
     sketchUrl: string,
-    cardBody: CardBody,
-    cardSketch: CardSketch,
+    card: ICard,
     waitCreation = false
   ): Promise<void> => {
-    // Update cacheOfCard
-    const card = cacheOfCard.get(sketchUrl);
+    cacheOfCard.set(sketchUrl, card);
 
-    await this._createCardBodyDoc(cardBody, waitCreation);
-    if (card) {
-      card.body = JSON.parse(JSON.stringify(cardBody));
-    }
-    else {
-      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
-    }
-
-    await this._createCardSketchDoc(cardSketch, waitCreation);
-    if (card) {
-      card.sketch = JSON.parse(JSON.stringify(cardSketch));
-    }
-    else {
-      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
-    }
-
+    await this._createCardBodyDoc(card.body, waitCreation);
+    await this._createCardSketchDoc(card.sketch, waitCreation);
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(
       // @ts-ignore
-      noteModifiedDateUpdateCreator(this, noteId, cardBody.date.modifiedDate)
+      noteModifiedDateUpdateCreator(this, noteId, card.body.date.modifiedDate)
     );
   };
 
@@ -533,28 +513,16 @@ class Note implements INote {
 
   createCardSketch = async (
     sketchUrl: string,
-    cardSketch: CardSketch
+    cardSketch: CardSketch,
+    waitCreation = false
   ): Promise<TaskMetadata> => {
-    // Update cacheOfCard
-    const card = cacheOfCard.get(sketchUrl);
-    let sketch: CardSketch;
-    if (card) {
-      card.sketch = JSON.parse(JSON.stringify(cardSketch));
-      sketch = card.sketch;
-    }
-    else {
-      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
-      sketch = (await this._noteCollection.get(
-        getSketchIdFromUrl(sketchUrl)
-      )) as CardSketch;
-    }
-    const task: TaskMetadata = await this._createCardSketchDoc(sketch!);
+    const task: TaskMetadata = await this._createCardSketchDoc(cardSketch, waitCreation);
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(
       // @ts-ignore
-      noteModifiedDateUpdateCreator(this, noteId, sketch.date.modifiedDate)
+      noteModifiedDateUpdateCreator(this, noteId, cardSketch.date.modifiedDate)
     );
 
     return task;
@@ -665,7 +633,7 @@ class Note implements INote {
         .catch(err => reject(err));
     }).catch((err: Error) => console.log(err.message + ', ' + noteProp._id));
     if (this._sync) {
-      this._sync.trySync();
+      // this._sync.trySync();
     }
     return (task as unknown) as TaskMetadata;
   };
@@ -681,7 +649,7 @@ class Note implements INote {
         .catch(err => reject(err));
     }).catch((err: Error) => console.log(err.message + ', ' + noteId + '/prop'));
     if (this._sync) {
-      this._sync.trySync();
+      // this._sync.trySync();
     }
     return (task as unknown) as TaskMetadata;
   };
@@ -703,7 +671,7 @@ class Note implements INote {
         .catch((err: Error) => console.log(`Error in createCardBodyDoc: ${err.message}`));
       // Consecutive sync task will be skipped
       if (this._sync) {
-        this._sync.trySync();
+        // this._sync.trySync();
       }
       return task!;
     }
@@ -720,7 +688,7 @@ class Note implements INote {
     }).catch((err: Error) => console.log(`Error in createCardBodyDoc: ${err.message}`));
     // Consecutive sync task will be skipped
     if (this._sync) {
-      this._sync.trySync();
+      // this._sync.trySync();
     }
     return (task as unknown) as TaskMetadata;
   };
@@ -742,7 +710,7 @@ class Note implements INote {
         .catch((err: Error) => console.log(`Error in createCardSketchDoc: ${err.message}`));
       // Consecutive sync task will be skipped
       if (this._sync) {
-        this._sync.trySync();
+        // this._sync.trySync();
       }
       return task!;
     }
@@ -759,7 +727,7 @@ class Note implements INote {
     }).catch((err: Error) => console.log(`Error in createCardSketchDoc: ${err.message}`));
     // Consecutive sync task will be skipped
     if (this._sync) {
-      this._sync.trySync();
+      // this._sync.trySync();
     }
     return (task as unknown) as TaskMetadata;
   };
@@ -780,7 +748,7 @@ class Note implements INote {
     });
     // Consecutive sync task will be skipped
     if (this._sync) {
-      this._sync.trySync();
+      // this._sync.trySync();
     }
     return (task as unknown) as TaskMetadata;
   };
@@ -801,7 +769,7 @@ class Note implements INote {
     });
     // Consecutive sync task will be skipped
     if (this._sync) {
-      this._sync.trySync();
+      // this._sync.trySync();
     }
     return (task as unknown) as TaskMetadata;
   };
@@ -819,7 +787,7 @@ class Note implements INote {
     }).catch((err: Error) => console.log(`Error in deletingCardBody: ${err.message}`));
     // Consecutive sync task will be skipped
     if (this._sync) {
-      this._sync.trySync();
+      // this._sync.trySync();
     }
     return (task as unknown) as TaskMetadata;
   };
@@ -837,7 +805,7 @@ class Note implements INote {
     }).catch((err: Error) => console.log(`Error in deletingCardBody: ${err.message}`));
     // Consecutive sync task will be skipped
     if (this._sync) {
-      this._sync.trySync();
+      // this._sync.trySync();
     }
     return (task as unknown) as TaskMetadata;
   };
