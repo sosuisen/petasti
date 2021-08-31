@@ -4,7 +4,6 @@
  */
 
 import { app, ipcMain, MouseInputEvent } from 'electron';
-import { APP_SCHEME } from './modules_common/const';
 import {
   Card,
   createCardWindow,
@@ -14,14 +13,9 @@ import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_m
 import { emitter, handlers } from './modules_main/event';
 import { note } from './modules_main/note';
 import { CardBody, CardSketch } from './modules_common/types';
-import { generateNewCardId, getCardIdFromUrl } from './modules_common/utils';
 import { addSettingsHandler } from './modules_main/settings_eventhandler';
 import { cacheOfCard } from './modules_main/card_cache';
-import {
-  getZIndexOfTopCard,
-  setZIndexOfBottomCard,
-  setZIndexOfTopCard,
-} from './modules_main/card_zindex';
+import { setZIndexOfBottomCard, setZIndexOfTopCard } from './modules_main/card_zindex';
 import { DatabaseCommand } from './modules_common/db.types';
 
 // process.on('unhandledRejection', console.dir);
@@ -143,7 +137,7 @@ app.on('window-all-closed', () => {
  */
 
 ipcMain.handle('delete-card', async (event, url: string) => {
-  await note.deleteCard(getCardIdFromUrl(url));
+  await note.deleteCard(url);
 });
 
 ipcMain.handle('delete-card-sketch', async (event, url: string) => {
