@@ -14,6 +14,8 @@ import { cacheOfCard } from './card_cache';
 import { MESSAGE, setMessages } from './messages';
 import { showDialog } from './utils_main';
 import { INote } from './note_types';
+import { setTrayContextMenu } from './tray';
+import { initSync } from './sync';
 
 export const addSettingsHandler = (note: INote) => {
   // Request from settings dialog
@@ -61,8 +63,15 @@ export const addSettingsHandler = (note: INote) => {
             note.sync = undefined;
           }
         }
+        else {
+          // eslint-disable-next-line require-atomic-updates
+          note.sync = await initSync(note);
+        }
+        // eslint-disable-next-line require-atomic-updates
         note.settings.sync.enabled = command.data;
         await note.settingsDB.put(note.settings);
+
+        setTrayContextMenu();
         break;
       }
       case 'db-sync-remote-url-update': {

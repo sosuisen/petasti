@@ -242,6 +242,15 @@ export const setTrayContextMenu = () => {
       type: 'separator',
     },
     {
+      label: MESSAGE('syncNow'),
+      enabled: note.settings.sync.enabled,
+      click: () => {
+        if (note.sync !== undefined) {
+          note.sync.trySync();
+        }
+      },
+    },
+    {
       label: MESSAGE('settings'),
       click: () => {
         openSettings(note);

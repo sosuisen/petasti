@@ -18,6 +18,7 @@ type MessagesMain = {
   btnCancel: string;
   btnRemove: string;
   settings: string;
+  syncNow: string;
   lockCard: string;
   unlockCard: string;
   cut: string;
@@ -182,6 +183,7 @@ export const ENGLISH: Messages = {
   btnCancel: 'Cancel ', // 'Cancel' is automatically translated to local language, so add use 'Cancel '.
   btnRemove: 'Remove',
   settings: 'Settings...',
+  syncNow: 'Sync now',
   lockCard: 'Lock card',
   unlockCard: 'Unlock card',
   cut: 'Cut',
@@ -281,6 +283,7 @@ export const JAPANESE: Messages = {
   btnCancel: 'キャンセル',
   btnRemove: '削除する',
   settings: '設定...',
+  syncNow: '今すぐ同期',
   lockCard: 'ロックする',
   unlockCard: 'ロック解除する',
   cut: '切り取り',

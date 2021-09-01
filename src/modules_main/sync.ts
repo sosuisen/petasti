@@ -208,14 +208,17 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
   });
 
   sync.on('start', () => {
+    console.log('# Start sync...');
     // mainWindow.webContents.send('sync-start');
   });
 
   sync.on('complete', () => {
+    console.log('# Sync completed.');
     // mainWindow.webContents.send('sync-complete');
   });
 
-  sync.on('error', () => {
+  sync.on('error', (err: Error) => {
+    console.log('# Sync error: ' + err);
     // mainWindow.webContents.send('sync-complete');
   });
 
