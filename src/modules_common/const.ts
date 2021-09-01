@@ -17,6 +17,7 @@ export const notebookDbName = 'book001'; // This will be variable in the next ve
 // Ubuntu and mac cannot load .ico
 // export const APP_ICON_NAME = 'tree-stickies-icon.ico';
 export const APP_ICON_NAME = 'tree-stickies-icon-128x128.png';
+export const APP_ICON_NAME_MONO = 'tree-stickies-icon-40x40_mono.png';
 
 export const APP_SCHEME = 'treestickies';
 

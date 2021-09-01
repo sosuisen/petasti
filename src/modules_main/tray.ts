@@ -14,7 +14,12 @@ import {
   getRandomInt,
 } from '../modules_common/utils';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
-import { APP_ICON_NAME, APP_SCHEME, DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
+import {
+  APP_ICON_NAME,
+  APP_ICON_NAME_MONO,
+  APP_SCHEME,
+  DEFAULT_CARD_GEOMETRY,
+} from '../modules_common/const';
 import { CardSketch } from '../modules_common/types';
 import { MESSAGE } from './messages';
 import { cacheOfCard } from './card_cache';
@@ -294,7 +299,12 @@ export const initializeTaskTray = (store: INote) => {
 
   emitter.on('updateTrayContextMenu', updateTrayContextMenu);
 
-  tray = new Tray(path.join(__dirname, '../assets/' + APP_ICON_NAME));
+  if (process.platform === 'darwin') {
+    tray = new Tray(path.join(__dirname, '../assets/' + APP_ICON_NAME_MONO));
+  }
+  else {
+    tray = new Tray(path.join(__dirname, '../assets/' + APP_ICON_NAME));
+  }
 
   currentLanguage = note.settings.language;
   setTrayContextMenu();
