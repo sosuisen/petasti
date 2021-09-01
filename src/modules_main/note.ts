@@ -309,7 +309,6 @@ class Note implements INote {
 
       return [firstCardProp];
     }
-    console.log('# currentNoteId: ' + this._settings.currentNoteId);
     return await this.loadCurrentCards();
   };
 
@@ -402,7 +401,9 @@ class Note implements INote {
     card: ICard,
     waitCreation = false
   ): Promise<void> => {
-    cacheOfCard.set(sketchUrl, card);
+    if (getNoteIdFromUrl(sketchUrl) === note.settings.currentNoteId) {
+      cacheOfCard.set(sketchUrl, card);
+    }
 
     await this._createCardBodyDoc(card.body, waitCreation);
     await this._createCardSketchDoc(card.sketch, waitCreation);

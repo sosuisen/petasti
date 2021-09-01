@@ -90,7 +90,6 @@ emitter.on('change-note', async (nextNoteId: string) => {
 
   note.settings.currentNoteId = nextNoteId;
   await note.settingsDB.put(note.settings);
-
   setTrayContextMenu();
 
   const cardProps = await note.loadCurrentNote();
@@ -125,6 +124,7 @@ emitter.on('change-note', async (nextNoteId: string) => {
 });
 
 app.on('window-all-closed', () => {
+  console.log('# window-all-closed: ' + note.changingToNoteId);
   if (note.changingToNoteId === 'exit') {
     emitter.emit('exit');
   }

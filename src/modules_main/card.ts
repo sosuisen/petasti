@@ -298,6 +298,8 @@ export class Card implements ICard {
 
     cacheOfCard.delete(this.url);
 
+    console.log('# closed: ' + this.url);
+    console.log('# cacheOfCard ' + cacheOfCard.size);
     // Emit window-all-closed event explicitly
     // because Electron sometimes does not emit it automatically.
     if (cacheOfCard.size === 0) {
