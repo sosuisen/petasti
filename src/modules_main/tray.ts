@@ -295,6 +295,7 @@ export const initializeTaskTray = (store: INote) => {
   emitter.on('updateTrayContextMenu', updateTrayContextMenu);
 
   tray = new Tray(path.join(__dirname, '../assets/' + APP_ICON_NAME));
+
   currentLanguage = note.settings.language;
   setTrayContextMenu();
   tray.on('click', () => {

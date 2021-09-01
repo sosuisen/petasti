@@ -44,7 +44,7 @@ import {
   JAPANESE,
   Messages,
 } from '../modules_common/i18n';
-import { APP_SCHEME, SETTINGS_DB_NAME } from '../modules_common/const';
+import { APP_ICON_NAME, APP_SCHEME, SETTINGS_DB_NAME } from '../modules_common/const';
 
 import { handlers } from './event';
 import { showDialog } from './utils_main';
@@ -127,9 +127,7 @@ class Note implements INote {
       name: app.getName(),
       version: app.getVersion(),
       iconDataURL: nativeImage
-        // .ico cannot be loaded in ubuntu
-        //  .createFromPath(path.resolve(__dirname, '../assets/tree-stickies-icon.ico'))
-        .createFromPath(path.resolve(__dirname, '../assets/tree-stickies-icon-128x128.png'))
+        .createFromPath(path.join(__dirname, '../assets/' + APP_ICON_NAME))
         .toDataURL(),
     },
   };

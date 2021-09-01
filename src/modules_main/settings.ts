@@ -5,6 +5,7 @@
 import path from 'path';
 import { app, BrowserWindow, shell } from 'electron';
 import { INote } from './note_types';
+import { APP_ICON_NAME } from '../modules_common/const';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let settingsDialog: BrowserWindow;
@@ -33,7 +34,7 @@ export const openSettings = (note: INote) => {
     autoHideMenuBar: true,
     transparent: true,
     frame: false,
-    icon: path.join(__dirname, '../../assets/media_stickies_grad_icon.ico'),
+    icon: path.join(__dirname, '../../assets/' + APP_ICON_NAME),
   });
 
   settingsDialog.webContents.on('did-finish-load', () => {
