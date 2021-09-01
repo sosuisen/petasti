@@ -84,12 +84,22 @@ export const cardSketchUpdateCreator = (
           return;
         }
       }
-
+      const prevX = getState().sketch.geometry.x;
+      const prevY = getState().sketch.geometry.y;
+      const prevWidth = getState().sketch.geometry.width;
+      const prevHeight = getState().sketch.geometry.height;
       const cardGeometryAction: CardGeometryUpdateAction = {
         type: 'card-geometry-update',
         payload: cardSketch.geometry,
       };
       dispatch(cardGeometryAction);
+      const newGeom = cardSketch.geometry;
+      if (newGeom.x !== prevX || newGeom.y !== prevY) {
+        window.moveTo(newGeom.x, newGeom.y);
+      }
+      if (newGeom.width !== prevWidth || newGeom.height !== prevHeight) {
+        window.resizeTo(newGeom.width, newGeom.width);
+      }
 
       const cardStyleAction: CardStyleUpdateAction = {
         type: 'card-style-update',

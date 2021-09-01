@@ -522,6 +522,7 @@ const onSyncCardSketch = (changedFile: ChangedFile, enqueueTime: string) => {
   else if (changedFile.operation === 'update') {
     const cardSketch = changedFile.new.doc as CardSketch;
     cardStore.dispatch(cardSketchUpdateCreator(cardSketch, 'remote', enqueueTime));
+
     render(['TitleBar', 'ContentsRect', 'CardStyle', 'EditorStyle', 'EditorRect']);
   }
   else if (changedFile.operation === 'delete') {
