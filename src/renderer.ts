@@ -338,7 +338,7 @@ window.addEventListener('message', event => {
     case 'zoom-out':
       onZoomOut();
       break;
-    case 'sync-card':
+    case 'sync-card-sketch':
       onSyncCardSketch(event.data.changedFile, event.data.enqueueTime);
       break;
     case 'sync-card-body':
