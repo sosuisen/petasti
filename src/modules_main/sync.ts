@@ -50,6 +50,8 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           cardBodyId = (changedFile.old.doc as JsonDoc)._id;
         }
 
+        console.log(`# change card <${changedFile.operation}> ${cardBodyId}`);
+
         const card = cacheOfCard.get(cardBodyId!);
         if (card !== undefined) {
           if (changedFile.operation === 'insert' || changedFile.operation === 'update') {
@@ -90,6 +92,8 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           propChanges.push(changedFile);
         }
         else {
+          console.log(`# change sketch <${changedFile.operation}> ${sketchId}`);
+
           // Update card sketch
           const card = cacheOfCard.get(sketchId);
           if (changedFile.operation === 'insert') {
@@ -132,6 +136,8 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           sketchId = (changedFile.old as FatJsonDoc)._id;
         }
         const [noteId] = sketchId.split('/');
+
+        console.log(`# change note <${changedFile.operation}> ${noteId}`);
 
         if (changedFile.operation === 'insert') {
           const prop = changedFile.new.doc as NoteProp;
