@@ -8,7 +8,7 @@ import { ICard } from '../modules_common/types';
  * cacheOfCard
  *
  * @remarks
- * - key: cardUrl
+ * - key: sketchUrl
  * - value: Card
  */
-export const cacheOfCard: Map<string, ICard> = new Map<string, ICard>(); // means { [cardUrl: string]: ICard] }
+export const cacheOfCard: Map<string, ICard> = new Map<string, ICard>(); // means { [sketchUrl: string]: ICard] }
