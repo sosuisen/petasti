@@ -298,7 +298,16 @@ export const initializeTaskTray = (store: INote) => {
 
   currentLanguage = note.settings.language;
   setTrayContextMenu();
+
   tray.on('click', () => {
+    // NOTE: click of tray on macOS opens context menu.
+    if (process.platform !== 'darwin') {
+      tray.popUpContextMenu();
+    }
+  });
+
+  tray.on('double-click', () => {
+    // NOTE: double-click does not occur on linux.
     createRandomColorCard();
   });
 
