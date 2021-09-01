@@ -42,7 +42,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
     'localChange',
     (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
       for (const changedFile of changes) {
-        let cardBodyId: string;
+        let cardBodyId = '';
         if (changedFile.operation === 'insert' || changedFile.operation === 'update') {
           cardBodyId = (changedFile.new.doc as JsonDoc)._id;
         }
