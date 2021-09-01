@@ -8,6 +8,7 @@ import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
 import window from './window';
 import { getCtrlDown } from '../modules_common/keys';
 import { cardStore } from './card_store';
+import { note } from '../modules_main/note';
 
 let cardCssStyle: CardCssStyle;
 let cardEditor: ICardEditor;
@@ -305,6 +306,7 @@ export const setTitleMessage = (msg: string) => {
   }
 };
 
+// eslint-disable-next-line complexity
 export const render = async (
   options: CardRenderOptions[] = [
     'TitleBar',
@@ -321,10 +323,15 @@ export const render = async (
    */
   if (options.includes('ContentsData')) {
     options = options.filter(opt => opt !== 'ContentsData');
-    await renderContentsData().catch(e =>
-      console.error('Error in renderContentsData: ' + e)
-    );
+
+    if (cardStore.getState().body._id !== '') {
+      await renderContentsData().catch(e =>
+        console.error('Error in renderContentsData: ' + e)
+      );
+    }
   }
+
+  if (cardStore.getState().sketch._id === '') return;
 
   for (const opt of options) {
     if (opt === 'TitleBar') {
