@@ -5,10 +5,10 @@
   "description": "TreeStickies",
   "main": "dist/main.js",
   "scripts": {
-    "/* initial-build */ ": "/* Use OpenJDK8 to build CKEditor4. Run following commands: git submodule update --init --recursive && cd ./external_modules/ckeditor4/ && ./dev/builder/build.sh && cd ../../ && npm i && npm run compile-all && mkdir dist && mkdir installer && npm run copy-static*/",
+    "/* initial-build */ ": "/* Use OpenJDK8 to build CKEditor4. Run following commands: git submodule update --init --recursive && cd ./external_modules/ckeditor4/ && ./dev/builder/build.sh && cd ../../ && npm i && mkdir dist && npm run compile-all && mkdir installer && npm run copy-static*/",
     "rebuild-native": "npx electron-rebuild -f",
     "update-ckeditor": "cd external_modules/ckeditor4/ && git pull origin major && cd ./dev/builder/ && build.sh && cd ../../../../ && git add external_modules/ckeditor4",
-    "copy-static": "rm -r dist && cp -r html dist && cp -r external_modules/ckeditor4/dev/builder/release/ckeditor/ dist/ && cp -r external_modules/fontawesome dist/ && cp -r assets dist/ && cp ./node_modules/react/umd/react.production.min.js ./dist/settings/ && cp ./node_modules/react-dom/umd/react-dom.production.min.js ./dist/settings",
+    "copy-static": "rm -r dist && cp -r html dist && cp -r external_modules/ckeditor4/dev/builder/release/ckeditor dist/ && cp -r external_modules/fontawesome dist/ && cp -r assets dist/ && cp ./node_modules/react/umd/react.production.min.js ./dist/settings/ && cp ./node_modules/react-dom/umd/react-dom.production.min.js ./dist/settings",
     "lint": "eslint --fix --ext .ts .",
     "tsc-iframe": "npx tsc -p ./tsconfig.iframe.json",
     "webpack-renderer": "npx webpack --config webpack.renderer.production.js",
