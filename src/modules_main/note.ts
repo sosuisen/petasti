@@ -218,15 +218,13 @@ class Note implements INote {
         this._bookDB.committer = this._bookDB.author;
       }
 
-      if (this._settings.sync.enabled) {
-        this._remoteOptions = {
-          remoteUrl: this._settings.sync.remoteUrl,
-          connection: this._settings.sync.connection,
-          interval: this._settings.sync.interval,
-          conflictResolutionStrategy: 'ours-diff',
-          live: true,
-        };
-      }
+      this._remoteOptions = {
+        remoteUrl: this._settings.sync.remoteUrl,
+        connection: this._settings.sync.connection,
+        interval: this._settings.sync.interval,
+        conflictResolutionStrategy: 'ours-diff',
+        live: true,
+      };
     } catch (err) {
       showDialog(undefined, 'error', 'databaseCreateError', err.message);
       console.log(err);
@@ -265,7 +263,9 @@ class Note implements INote {
     }
     noteStore.dispatch(noteInitCreator(initialNoteState));
 
-    this._sync = await initSync(this);
+    if (this.settings.sync.enabled) {
+      this._sync = await initSync(this);
+    }
 
     return await this.loadCurrentNote();
   };
