@@ -270,7 +270,7 @@ export class Card implements ICard {
   private _debouncedCardPositionUpdateActionQueue = new DebounceQueue(1000);
 
   private _willMoveListener = (event: Electron.Event, rect: Electron.Rectangle) => {
-    // Update x and y
+    // Update x and yg
     const geometry = { ...this.sketch.geometry, x: rect.x, y: rect.y };
 
     const modifiedDate = getCurrentDateAndTime();

@@ -93,12 +93,14 @@ export const cardSketchUpdateCreator = (
         payload: cardSketch.geometry,
       };
       dispatch(cardGeometryAction);
-      const newGeom = cardSketch.geometry;
-      if (newGeom.x !== prevX || newGeom.y !== prevY) {
-        window.moveTo(newGeom.x, newGeom.y);
-      }
-      if (newGeom.width !== prevWidth || newGeom.height !== prevHeight) {
-        window.resizeTo(newGeom.width, newGeom.width);
+      if (changeFrom === 'remote') {
+        const newGeom = cardSketch.geometry;
+        if (newGeom.x !== prevX || newGeom.y !== prevY) {
+          window.moveTo(newGeom.x, newGeom.y);
+        }
+        if (newGeom.width !== prevWidth || newGeom.height !== prevHeight) {
+          window.resizeTo(newGeom.width, newGeom.width);
+        }
       }
 
       const cardStyleAction: CardStyleUpdateAction = {
