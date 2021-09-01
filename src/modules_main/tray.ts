@@ -264,10 +264,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('exit'),
       click: () => {
-        if (settingsDialog && !settingsDialog.isDestroyed()) {
-          settingsDialog.close();
-        }
-        //        setChangingToWorkspaceId('exit');
+        note.changingToNoteId = 'exit';
         closeSettings();
         if (cacheOfCard.size === 0) {
           emitter.emit('exit');
