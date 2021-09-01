@@ -308,6 +308,8 @@ export const initializeTaskTray = (store: INote) => {
 
   tray.on('double-click', () => {
     // NOTE: double-click does not occur on linux.
+    // double-click does not occur on macOS while context-menu is opened.
+    // So double-click is only occurred on Windows.
     createRandomColorCard();
   });
 

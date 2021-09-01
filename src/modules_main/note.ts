@@ -429,7 +429,7 @@ class Note implements INote {
       card.body.date.modifiedDate = modifiedDate;
     }
     else {
-      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
+      console.log('Card does not exist in cacheOfCard: ' + sketchUrl);
     }
 
     await this._updateCardSketchDoc(cardSketch);
@@ -438,7 +438,7 @@ class Note implements INote {
       card.sketch.date.modifiedDate = modifiedDate;
     }
     else {
-      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
+      console.log('Card does not exist in cacheOfCard: ' + sketchUrl);
     }
 
     // Update note store & DB
@@ -461,7 +461,7 @@ class Note implements INote {
       card.body.date.modifiedDate = modifiedDate;
     }
     else {
-      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
+      console.log('Card does not exist in cacheOfCard: ' + sketchUrl);
     }
     const task = await this._updateCardBodyDoc(cardBody);
 
@@ -490,7 +490,7 @@ class Note implements INote {
       sketch = card.sketch;
     }
     else {
-      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
+      console.log('Card does not exist in cacheOfCard: ' + sketchUrl);
       sketch = (await this._noteCollection.get(
         getSketchIdFromUrl(sketchUrl)
       )) as CardSketch;
@@ -540,7 +540,7 @@ class Note implements INote {
       sketch = card.sketch;
     }
     else {
-      console.log('Card does note exist in cacheOfCard: ' + sketchUrl);
+      console.log('Card does not exist in cacheOfCard: ' + sketchUrl);
       sketch = (await this._noteCollection.get(
         getSketchIdFromUrl(sketchUrl)
       )) as CardSketch;

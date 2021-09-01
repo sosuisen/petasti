@@ -37,6 +37,8 @@ export const cardBodyUpdateCreator = (
   enqueueTime: string | undefined = undefined
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => CardState) {
+    if (getState().body._id === '') return;
+
     await lock.acquire('cardBodyUpdate', async () => {
       if (enqueueTime !== undefined) {
         if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
@@ -73,6 +75,8 @@ export const cardSketchUpdateCreator = (
   enqueueTime: string | undefined = undefined
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => CardState) {
+    if (getState().sketch._id === '') return;
+
     await lock.acquire('cardSketchUpdate', async () => {
       if (enqueueTime !== undefined) {
         if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
@@ -129,6 +133,8 @@ export const cardGeometryUpdateCreator = (
   enqueueTime: string | undefined = undefined
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => CardState) {
+    if (getState().sketch._id === '') return;
+
     await lock.acquire('cardGeometryUpdate', async () => {
       if (enqueueTime !== undefined) {
         if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
@@ -172,6 +178,8 @@ export const cardStyleUpdateCreator = (
   enqueueTime: string | undefined = undefined
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => CardState) {
+    if (getState().sketch._id === '') return;
+
     await lock.acquire('cardStyleUpdate', async () => {
       if (enqueueTime !== undefined) {
         if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
@@ -215,6 +223,8 @@ export const cardConditionLockedUpdateCreator = (
   enqueueTime: string | undefined = undefined
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => CardState) {
+    if (getState().sketch._id === '') return;
+
     await lock.acquire('cardConditionLockedUpdate', async () => {
       if (enqueueTime !== undefined) {
         if (sketchUpdatedTime !== undefined && sketchUpdatedTime! > enqueueTime) {
@@ -257,6 +267,8 @@ export const cardSketchBringToFrontCreator = (
   modifiedDate: string | undefined
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => CardState) {
+    if (getState().sketch._id === '') return;
+
     if (zIndex !== undefined) {
       const cardGeometryAction: CardGeometryZUpdateAction = {
         type: 'card-geometry-z-update',
@@ -280,6 +292,8 @@ export const cardSketchBringToFrontCreator = (
 
 export const cardWorkStateStatusUpdateCreator = (status: CardStatus) => {
   return function (dispatch: Dispatch<any>, getState: () => CardState) {
+    if (getState().sketch._id === '') return;
+
     const cardStatusAction: CardWorkStateStatusUpdateAction = {
       type: 'card-work-state-status-update',
       payload: status,
@@ -290,6 +304,8 @@ export const cardWorkStateStatusUpdateCreator = (status: CardStatus) => {
 
 export const cardSketchSendToBackCreator = (zIndex: number, modifiedDate: string) => {
   return function (dispatch: Dispatch<any>, getState: () => CardState) {
+    if (getState().sketch._id === '') return;
+
     const cardAction: CardGeometryZUpdateAction = {
       type: 'card-geometry-z-update',
       payload: zIndex,
