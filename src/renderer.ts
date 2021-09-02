@@ -161,8 +161,11 @@ const initializeUIEvents = () => {
   let isVerticalMoving = false;
 
   const onmousemove = (event: MouseEvent) => {
-    let newWidth = cardStore.getState().sketch.geometry.width + getRenderOffsetWidth();
-    let newHeight = cardStore.getState().sketch.geometry.height + getRenderOffsetHeight();
+    // let newWidth = cardStore.getState().sketch.geometry.width + getRenderOffsetWidth();
+    // let newHeight = cardStore.getState().sketch.geometry.height + getRenderOffsetHeight();
+    let newWidth = window.outerWidth;
+    let newHeight = window.outerHeight;
+
     if (isHorizontalMoving) {
       newWidth += event.screenX - prevMouseX;
     }
@@ -179,7 +182,7 @@ const initializeUIEvents = () => {
         height: newHeight,
       };
       console.log('# resize on renderer');
-      window.resizeTo(newWidth, newHeight);
+      window.resizeTo(newWidth, newHeight); // set outerWidth and outerHeight
       onResizeByHand(newGeom);
     }
   };
@@ -324,6 +327,7 @@ window.addEventListener('message', event => {
       onRenderCard(event.data.sketchUrl, event.data.cardBody, event.data.cardSketch);
       break;
     case 'resize-by-hand':
+      console.log('# resize on main');
       onResizeByHand(event.data.geometry);
       break;
     case 'send-to-back':
