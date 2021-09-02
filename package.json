@@ -53,7 +53,7 @@
     "babel-plugin-transform-react-jsx": "^6.24.1",
     "cross-env": "^7.0.2",
     "css-loader": "^3.6.0",
-    "electron": "^13.1.9",
+    "electron": "^14.0.0",
     "electron-connect": "^0.6.3",
     "electron-packager": "^15.3.0",
     "electron-rebuild": "^3.1.1",
