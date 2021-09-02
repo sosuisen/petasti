@@ -58,6 +58,7 @@ export const getGlobalFocusEventListenerPermission = () => {
 
 const sortCards = () => {
   const backToFront = [...cacheOfCard.values()].sort((a, b) => {
+    /*
     if (a.sketch.geometry === undefined) {
       console.log('# geometry undefined: ' + JSON.stringify(a.sketch));
       return 0;
@@ -66,6 +67,7 @@ const sortCards = () => {
       console.log('# geometry undefined: ' + JSON.stringify(b.sketch));
       return 0;
     }
+    */
     if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
     if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
     return 0;

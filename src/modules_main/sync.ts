@@ -108,8 +108,8 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           }
           else if (changedFile.operation === 'update') {
             if (card) {
-              const newSketch = (changedFile.new as unknown) as CardSketch;
-              const oldSketch = (changedFile.old as unknown) as CardSketch;
+              const newSketch = (changedFile.new.doc as unknown) as CardSketch;
+              const oldSketch = (changedFile.old.doc as unknown) as CardSketch;
               card.sketch = newSketch;
               card.window.webContents.send(
                 'sync-card-sketch',
