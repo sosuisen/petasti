@@ -3,7 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 import { applyMiddleware, createStore } from 'redux';
-import thunk from 'redux-thunk';
+import thunk, { ThunkDispatch, ThunkMiddleware } from 'redux-thunk';
 import { NoteAction } from './note_action';
 import { NoteState } from './note_types';
 
@@ -41,5 +41,8 @@ const noteReducer = (
       return state;
   }
 };
-
-export const noteStore = createStore(noteReducer, applyMiddleware(thunk));
+type IAppDispatch = ThunkDispatch<NoteState, any, NoteAction>;
+export const noteStore = createStore(
+  noteReducer,
+  applyMiddleware<IAppDispatch, any>(thunk as ThunkMiddleware<NoteState, NoteAction, any>)
+);

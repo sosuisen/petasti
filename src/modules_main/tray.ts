@@ -5,7 +5,7 @@
 import path from 'path';
 import prompt from 'electron-prompt';
 import { app, Menu, MenuItemConstructorOptions, Tray } from 'electron';
-import { closeSettings, openSettings, settingsDialog } from './settings';
+import { closeSettings, openSettings } from './settings';
 import { createCardWindow } from './card';
 import { emitter } from './event';
 import {
@@ -211,7 +211,7 @@ export const setTrayContextMenu = () => {
 
         noteProp.name = newName as string;
         noteProp.date.modifiedDate = getCurrentDateAndTime();
-        noteStore.dispatch(
+        await noteStore.dispatch(
           // @ts-ignore
           noteUpdateCreator(note, noteProp)
         );
@@ -223,7 +223,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('noteDelete'),
       enabled: noteStore.getState().size > 1,
-      click: () => {
+      click: async () => {
         if (noteStore.getState().size <= 1) {
           return;
         }
@@ -231,11 +231,14 @@ export const setTrayContextMenu = () => {
           showDialog(undefined, 'info', 'noteCannotDelete');
           return;
         }
+        const noteIdList = note.getSortedNoteIdList();
+        const currentNoteIndex = noteIdList.indexOf(note.settings.currentNoteId);
+        const nextNoteIndex = currentNoteIndex > 0 ? currentNoteIndex - 1 : 0;
         // Delete current note
-        // @ts-ignore
-        noteStore.dispatch(noteDeleteCreator(note, note.settings.currentNoteId));
+        await noteStore.dispatch(noteDeleteCreator(note, note.settings.currentNoteId));
 
-        note.settings.currentNoteId = note.getSortedNoteIdList()[0];
+        // eslint-disable-next-line require-atomic-updates
+        note.settings.currentNoteId = noteIdList[nextNoteIndex];
         emitter.emit('change-note', note.settings.currentNoteId);
 
         // setTrayContextMenu() will be called in change-note event.

@@ -331,9 +331,7 @@ class Note implements INote {
       user: 'local',
       _id: noteId,
     };
-    // tsc cannot check redux-thunk middleware
-    // @ts-ignore
-    noteStore.dispatch(noteCreateCreator(this, newNote));
+    await noteStore.dispatch(noteCreateCreator(this, newNote));
 
     // Add first card
     const firstCard = new Card(this, noteId);
@@ -410,7 +408,6 @@ class Note implements INote {
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(
-      // @ts-ignore
       noteModifiedDateUpdateCreator(this, noteId, card.body.date.modifiedDate)
     );
   };
@@ -444,10 +441,7 @@ class Note implements INote {
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
-    noteStore.dispatch(
-      // @ts-ignore
-      noteModifiedDateUpdateCreator(this, noteId, modifiedDate)
-    );
+    noteStore.dispatch(noteModifiedDateUpdateCreator(this, noteId, modifiedDate));
   };
 
   updateCardBody = async (
@@ -469,10 +463,7 @@ class Note implements INote {
     // Update note store & DB
     if (task !== undefined) {
       const noteId = getNoteIdFromUrl(sketchUrl);
-      noteStore.dispatch(
-        // @ts-ignore
-        noteModifiedDateUpdateCreator(this, noteId, modifiedDate)
-      );
+      noteStore.dispatch(noteModifiedDateUpdateCreator(this, noteId, modifiedDate));
     }
     return task;
   };
@@ -502,10 +493,7 @@ class Note implements INote {
     // Update note store & DB
     if (task !== undefined) {
       const noteId = getNoteIdFromUrl(sketchUrl);
-      noteStore.dispatch(
-        // @ts-ignore
-        noteModifiedDateUpdateCreator(this, noteId, modifiedTime)
-      );
+      noteStore.dispatch(noteModifiedDateUpdateCreator(this, noteId, modifiedTime));
     }
     return task;
   };
@@ -550,10 +538,7 @@ class Note implements INote {
 
     // Update note store & DB
     const noteId = getNoteIdFromUrl(sketchUrl);
-    noteStore.dispatch(
-      // @ts-ignore
-      noteModifiedDateUpdateCreator(this, noteId, modifiedDate)
-    );
+    noteStore.dispatch(noteModifiedDateUpdateCreator(this, noteId, modifiedDate));
 
     return task;
   };
@@ -576,7 +561,6 @@ class Note implements INote {
       // Update note store & DB
       const noteId = getNoteIdFromUrl(cardUrl);
       noteStore.dispatch(
-        // @ts-ignore
         noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
       );
     }
