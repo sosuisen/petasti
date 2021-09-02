@@ -190,6 +190,7 @@ class Note implements INote {
       const bookDbOption: DatabaseOptions = {
         localDir: this._settings.dataStorePath,
         dbName: this._settings.currentNotebookName,
+        debounceTime: 3000,
       };
 
       this._bookDB = new GitDocumentDB(bookDbOption);
