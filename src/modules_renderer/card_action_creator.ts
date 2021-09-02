@@ -5,7 +5,6 @@
 import AsyncLock from 'async-lock';
 import { TaskMetadata } from 'git-documentdb';
 import { Dispatch } from 'redux';
-import { ThunkDispatch } from 'redux-thunk';
 import {
   DatabaseCardBodyUpdate,
   DatabaseCardSketchUpdate,
@@ -13,7 +12,6 @@ import {
 import { CardSketch, CardStatus, CardStyle, Geometry } from '../modules_common/types';
 import { getCurrentDateAndTime } from '../modules_common/utils';
 import {
-  CardAction,
   CardBodyUpdateAction,
   CardConditionLockedUpdateAction,
   CardConditionUpdateAction,
@@ -39,7 +37,7 @@ export const cardBodyUpdateCreator = (
   return async function (dispatch: Dispatch<any>, getState: () => CardState) {
     if (getState().body._id === '') return;
 
-    await lock.acquire('cardBodyUpdate', async () => {
+    await lock.acquire('body', async () => {
       if (enqueueTime !== undefined) {
         if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
           console.log('Block expired remote update');
@@ -77,7 +75,7 @@ export const cardSketchUpdateCreator = (
   return async function (dispatch: Dispatch<any>, getState: () => CardState) {
     if (getState().sketch._id === '') return;
 
-    await lock.acquire('cardSketchUpdate', async () => {
+    await lock.acquire('sketch', async () => {
       if (enqueueTime !== undefined) {
         if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
           console.log('Block expired remote update');
@@ -147,7 +145,7 @@ export const cardGeometryUpdateCreator = (
   return async function (dispatch: Dispatch<any>, getState: () => CardState) {
     if (getState().sketch._id === '') return;
 
-    await lock.acquire('cardGeometryUpdate', async () => {
+    await lock.acquire('sketch', async () => {
       if (enqueueTime !== undefined) {
         if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
           console.log('Block expired remote update');
@@ -192,7 +190,7 @@ export const cardStyleUpdateCreator = (
   return async function (dispatch: Dispatch<any>, getState: () => CardState) {
     if (getState().sketch._id === '') return;
 
-    await lock.acquire('cardStyleUpdate', async () => {
+    await lock.acquire('sketch', async () => {
       if (enqueueTime !== undefined) {
         if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
           console.log('Block expired remote update');
@@ -237,7 +235,7 @@ export const cardConditionLockedUpdateCreator = (
   return async function (dispatch: Dispatch<any>, getState: () => CardState) {
     if (getState().sketch._id === '') return;
 
-    await lock.acquire('cardConditionLockedUpdate', async () => {
+    await lock.acquire('sketch', async () => {
       if (enqueueTime !== undefined) {
         if (sketchUpdatedTime !== undefined && sketchUpdatedTime! > enqueueTime) {
           console.log('Block expired remote update');
