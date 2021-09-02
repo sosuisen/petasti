@@ -8,6 +8,7 @@ import {
   Card,
   createCardWindow,
   setGlobalFocusEventListenerPermission,
+  sortCardWindows,
 } from './modules_main/card';
 import { destroyTray, initializeTaskTray, setTrayContextMenu } from './modules_main/tray';
 import { emitter, handlers } from './modules_main/event';
@@ -48,20 +49,7 @@ app.on('ready', async () => {
     console.error(`Error while rendering cards in ready event: ${e.message}`);
   });
 
-  const backToFront = [...cacheOfCard.values()].sort((a, b) => {
-    if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
-    else if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
-    return 0;
-  });
-  if (cacheOfCard.size > 0) {
-    setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
-    setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
-  }
-  backToFront.forEach(card => {
-    if (card.window && !card.window.isDestroyed()) {
-      card.window.moveTop();
-    }
-  });
+  const backToFront = sortCardWindows();
 
   const size = backToFront.length;
   console.debug(`Completed to load ${size} cards`);
@@ -104,20 +92,7 @@ emitter.on('change-note', async (nextNoteId: string) => {
     console.error(`Error while rendering cards in ready event: ${e.message}`);
   });
 
-  const backToFront = [...cacheOfCard.values()].sort((a, b) => {
-    if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
-    else if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
-    return 0;
-  });
-  if (cacheOfCard.size > 0) {
-    setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
-    setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
-  }
-  backToFront.forEach(card => {
-    if (card.window && !card.window.isDestroyed()) {
-      card.window.moveTop();
-    }
-  });
+  const backToFront = sortCardWindows();
 
   const size = backToFront.length;
   console.debug(`Completed to load ${size} cards`);

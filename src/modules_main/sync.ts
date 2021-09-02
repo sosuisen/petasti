@@ -4,7 +4,6 @@
  */
 import {
   ChangedFile,
-  ChangedFileInsert,
   DuplicatedFile,
   FatJsonDoc,
   JsonDoc,
@@ -24,7 +23,7 @@ import {
 } from './note_action_creator';
 import { emitter } from './event';
 import { APP_SCHEME } from '../modules_common/const';
-import { createCardWindow } from './card';
+import { createCardWindow, sortCardWindows } from './card';
 
 export const initSync = async (note: INote): Promise<Sync | undefined> => {
   let sync: Sync | undefined;
@@ -109,12 +108,19 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           }
           else if (changedFile.operation === 'update') {
             if (card) {
-              card.sketch = (changedFile.new as unknown) as CardSketch;
+              const newSketch = (changedFile.new as unknown) as CardSketch;
+              const oldSketch = (changedFile.old as unknown) as CardSketch;
+              card.sketch = newSketch;
               card.window.webContents.send(
                 'sync-card-sketch',
                 changedFile,
                 taskMetadata.enqueueTime
               );
+
+              // eslint-disable-next-line max-depth
+              if (oldSketch.geometry.z !== newSketch.geometry.z) {
+                sortCardWindows();
+              }
             }
           }
           else if (changedFile.operation === 'delete') {

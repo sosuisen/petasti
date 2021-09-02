@@ -56,6 +56,37 @@ export const getGlobalFocusEventListenerPermission = () => {
   return globalFocusListenerPermission;
 };
 
+const sortCards = () => {
+  const backToFront = [...cacheOfCard.values()].sort((a, b) => {
+    if (a.sketch.geometry === undefined) {
+      console.log('# geometry undefined: ' + JSON.stringify(a.sketch));
+      return 0;
+    }
+    if (b.sketch.geometry === undefined) {
+      console.log('# geometry undefined: ' + JSON.stringify(b.sketch));
+      return 0;
+    }
+    if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
+    if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
+    return 0;
+  });
+  if (backToFront.length > 0) {
+    setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
+    setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
+  }
+  return backToFront;
+};
+
+export const sortCardWindows = () => {
+  const backToFront = sortCards();
+  backToFront.forEach(card => {
+    if (card.window && !card.window.isDestroyed()) {
+      card.window.moveTop();
+    }
+  });
+  return backToFront;
+};
+
 /**
  * Create card
  */
@@ -349,21 +380,7 @@ export class Card implements ICard {
       // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
       // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
 
-      const backToFront = [...cacheOfCard.values()].sort((a, b) => {
-        if (a.sketch.geometry === undefined) {
-          console.log('# geometry undefined: ' + JSON.stringify(a.sketch));
-          return 0;
-        }
-        if (b.sketch.geometry === undefined) {
-          console.log('# geometry undefined: ' + JSON.stringify(b.sketch));
-          return 0;
-        }
-        if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
-        if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
-        return 0;
-      });
-      setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
-      setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
+      sortCards();
     }
   };
 
