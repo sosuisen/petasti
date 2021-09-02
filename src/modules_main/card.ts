@@ -350,6 +350,14 @@ export class Card implements ICard {
       // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
 
       const backToFront = [...cacheOfCard.values()].sort((a, b) => {
+        if (a.sketch.geometry === undefined) {
+          console.log('# geometry undefined: ' + JSON.stringify(a.sketch));
+          return 0;
+        }
+        if (b.sketch.geometry === undefined) {
+          console.log('# geometry undefined: ' + JSON.stringify(b.sketch));
+          return 0;
+        }
         if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
         if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
         return 0;

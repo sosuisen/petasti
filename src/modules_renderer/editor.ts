@@ -125,7 +125,7 @@ export class CardEditor implements ICardEditor {
       width: geometryWidth,
       height: geometryHeight,
     };
-    cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
+    await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
 
     render(['TitleBar', 'EditorRect']);
   };
@@ -153,10 +153,10 @@ export class CardEditor implements ICardEditor {
         CKEDITOR.instances.editor.keystrokeHandler.keystrokes[CKEDITOR.CTRL + 190] =
           'bulletedlist';
 
-        CKEDITOR.instances.editor.on('change', () => {
+        CKEDITOR.instances.editor.on('change', async () => {
           const data = CKEDITOR.instances.editor.getData();
           if (cardStore.getState().body._body !== data) {
-            cardStore.dispatch(cardBodyUpdateCreator(data));
+            await cardStore.dispatch(cardBodyUpdateCreator(data));
 
             render(['TitleBar']);
           }
@@ -231,7 +231,8 @@ export class CardEditor implements ICardEditor {
         if (file) {
           const dropImg = new Image();
           // eslint-disable-next-line unicorn/prefer-add-event-listener
-          dropImg.onload = () => {
+          // eslint-disable-next-line require-atomic-updates
+          dropImg.onload = async () => {
             const width = dropImg.naturalWidth;
             const height = dropImg.naturalHeight;
 
@@ -285,7 +286,7 @@ export class CardEditor implements ICardEditor {
               ...cardStore.getState().sketch.geometry,
               height: newHeight,
             };
-            cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
+            await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
 
             window.api.setWindowSize(
               cardStore.getState().workState.url,
@@ -293,8 +294,7 @@ export class CardEditor implements ICardEditor {
               windowHeight
             );
 
-            const data = this.endEdit();
-            cardStore.dispatch(cardBodyUpdateCreator(data));
+            await this.endEdit();
             render();
             // Workaround for at bug that an image cannot be resizable just after created by drag and drop.
             window.api.blurAndFocusWithSuppressFocusEvents(
@@ -407,7 +407,7 @@ export class CardEditor implements ICardEditor {
     CKEDITOR.instances.editor.focus();
   };
 
-  endEdit = (): string => {
+  endEdit = async (): Promise<string> => {
     this._isEditing = false;
 
     // Save data to AvatarProp
@@ -415,7 +415,7 @@ export class CardEditor implements ICardEditor {
 
     clearTimeout(this.execSaveCommandTimeout);
 
-    cardStore.dispatch(cardBodyUpdateCreator(data));
+    await cardStore.dispatch(cardBodyUpdateCreator(data));
 
     window.api.setWindowSize(
       cardStore.getState().workState.url,

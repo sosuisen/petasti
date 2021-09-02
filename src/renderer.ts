@@ -111,11 +111,11 @@ const initializeUIEvents = () => {
   });
 
   // eslint-disable-next-line no-unused-expressions
-  document.getElementById('closeBtn')?.addEventListener('click', event => {
+  document.getElementById('closeBtn')?.addEventListener('click', async event => {
     if (cardEditor.isOpened) {
       cardEditor.hideEditor();
-      const _body = cardEditor.endEdit();
-      cardStore.dispatch(cardBodyUpdateCreator(_body));
+      const _body = await cardEditor.endEdit();
+      await cardStore.dispatch(cardBodyUpdateCreator(_body));
 
       render(['TitleBar', 'ContentsData', 'ContentsRect']);
     }
@@ -353,25 +353,17 @@ window.addEventListener('message', event => {
   }
 });
 
-const onResizeByHand = (geometry: Geometry) => {
-  const current = cardStore.getState().sketch.geometry;
-  if (
-    current.x !== geometry.x ||
-    current.y !== geometry.y ||
-    current.width !== geometry.width ||
-    current.height !== geometry.height
-  ) {
-    const newGeom: Geometry = {
-      x: Math.round(geometry.x),
-      y: Math.round(geometry.y),
-      z: current.z,
-      width: Math.round(geometry.width - getRenderOffsetWidth()),
-      height: Math.round(geometry.height - getRenderOffsetHeight()),
-    };
-    cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
-
-    render(['TitleBar', 'ContentsRect', 'EditorRect']);
-  }
+const onResizeByHand = async (geometry: Geometry) => {
+  const newGeom: Geometry = {
+    x: Math.round(geometry.x),
+    y: Math.round(geometry.y),
+    z: cardStore.getState().sketch.geometry.z,
+    width: Math.round(geometry.width - getRenderOffsetWidth()),
+    height: Math.round(geometry.height - getRenderOffsetHeight()),
+  };
+  await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
+  console.log('# render: ' + JSON.stringify(newGeom));
+  render(['TitleBar', 'ContentsRect', 'EditorRect']);
 };
 
 const onCardClose = () => {
@@ -489,7 +481,7 @@ const onSetLock = (locked: boolean) => {
   }
 };
 
-const onZoomIn = () => {
+const onZoomIn = async () => {
   const newStyle: CardStyle = { ...cardStore.getState().sketch.style };
   if (newStyle.zoom < 1.0) {
     newStyle.zoom += 0.15;
@@ -500,11 +492,11 @@ const onZoomIn = () => {
   if (newStyle.zoom > 3) {
     newStyle.zoom = 3;
   }
-  cardStore.dispatch(cardStyleUpdateCreator(newStyle));
+  await cardStore.dispatch(cardStyleUpdateCreator(newStyle));
   render(['CardStyle', 'EditorStyle']);
 };
 
-const onZoomOut = () => {
+const onZoomOut = async () => {
   const newStyle: CardStyle = { ...cardStore.getState().sketch.style };
   if (newStyle.zoom <= 1.0) {
     newStyle.zoom -= 0.15;
@@ -515,17 +507,17 @@ const onZoomOut = () => {
   if (newStyle.zoom <= 0.55) {
     newStyle.zoom = 0.55;
   }
-  cardStore.dispatch(cardStyleUpdateCreator(newStyle));
+  await cardStore.dispatch(cardStyleUpdateCreator(newStyle));
   render(['CardStyle', 'EditorStyle']);
 };
 
-const onSyncCardSketch = (changedFile: ChangedFile, enqueueTime: string) => {
+const onSyncCardSketch = async (changedFile: ChangedFile, enqueueTime: string) => {
   if (changedFile.operation === 'insert') {
     // It is not invoked.
   }
   else if (changedFile.operation === 'update') {
     const cardSketch = changedFile.new.doc as CardSketch;
-    cardStore.dispatch(cardSketchUpdateCreator(cardSketch, 'remote', enqueueTime));
+    await cardStore.dispatch(cardSketchUpdateCreator(cardSketch, 'remote', enqueueTime));
 
     render(['TitleBar', 'ContentsRect', 'CardStyle', 'EditorStyle', 'EditorRect']);
   }
@@ -534,19 +526,19 @@ const onSyncCardSketch = (changedFile: ChangedFile, enqueueTime: string) => {
   }
 };
 
-const onSyncCardBody = (changedFile: ChangedFile, enqueueTime: string) => {
+const onSyncCardBody = async (changedFile: ChangedFile, enqueueTime: string) => {
   if (changedFile.operation === 'insert') {
     // It will be not occurred.
 
     const cardBody = changedFile.new.doc as CardBody;
-    cardStore.dispatch(cardBodyUpdateCreator(cardBody._body, 'remote', enqueueTime));
+    await cardStore.dispatch(cardBodyUpdateCreator(cardBody._body, 'remote', enqueueTime));
   }
   else if (changedFile.operation === 'update') {
     const cardBody = changedFile.new.doc as CardBody;
-    cardStore.dispatch(cardBodyUpdateCreator(cardBody._body, 'remote', enqueueTime));
+    await cardStore.dispatch(cardBodyUpdateCreator(cardBody._body, 'remote', enqueueTime));
   }
   else if (changedFile.operation === 'delete') {
-    cardStore.dispatch(cardBodyUpdateCreator('', 'remote', enqueueTime));
+    await cardStore.dispatch(cardBodyUpdateCreator('', 'remote', enqueueTime));
   }
   render(['ContentsData']);
 };
@@ -575,10 +567,10 @@ const startEditor = async (x: number, y: number) => {
   window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y + offsetY);
 };
 
-const endEditor = () => {
+const endEditor = async () => {
   cardEditor.hideEditor();
 
-  cardEditor.endEdit(); // body will be saved in endEdit()
+  await cardEditor.endEdit(); // body will be saved in endEdit()
 
   render();
 
@@ -670,16 +662,16 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
         _id: cardStore.getState().sketch._id,
       };
 
-      cardStore.dispatch(cardSketchUpdateCreator(newSketch));
-      cardStore.dispatch(cardBodyUpdateCreator(imgTag));
+      await cardStore.dispatch(cardSketchUpdateCreator(newSketch));
+      await cardStore.dispatch(cardBodyUpdateCreator(imgTag));
     }
     else {
       const newGeom = {
         ...cardStore.getState().sketch.geometry,
       };
       newGeom.height += newImageHeight;
-      cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
-      cardStore.dispatch(
+      await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
+      await cardStore.dispatch(
         cardBodyUpdateCreator(cardStore.getState().body._body + '<br />' + imgTag)
       );
     }
