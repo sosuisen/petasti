@@ -8,6 +8,7 @@ import path from 'path';
 import { app, BrowserWindow, ipcMain, nativeImage } from 'electron';
 import {
   Collection,
+  CollectionOptions,
   DatabaseOptions,
   GitDocumentDB,
   RemoteOptions,
@@ -187,7 +188,7 @@ class Note implements INote {
         this._settings = loadedSettings;
       }
 
-      const bookDbOption: DatabaseOptions = {
+      const bookDbOption: DatabaseOptions & CollectionOptions = {
         localDir: this._settings.dataStorePath,
         dbName: this._settings.currentNotebookName,
         debounceTime: 3000,
