@@ -230,8 +230,7 @@ export class CardEditor implements ICardEditor {
         const file = dataTransfer.$.files[0];
         if (file) {
           const dropImg = new Image();
-          // eslint-disable-next-line unicorn/prefer-add-event-listener
-          // eslint-disable-next-line require-atomic-updates
+          // eslint-disable-next-line unicorn/prefer-add-event-listener, require-atomic-updates
           dropImg.onload = async () => {
             const width = dropImg.naturalWidth;
             const height = dropImg.naturalHeight;
