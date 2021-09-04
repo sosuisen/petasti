@@ -192,6 +192,7 @@ class Note implements INote {
         localDir: this._settings.dataStorePath,
         dbName: this._settings.currentNotebookName,
         debounceTime: 3000,
+        logLevel: 'trace',
       };
 
       this._bookDB = new GitDocumentDB(bookDbOption);
@@ -643,7 +644,7 @@ class Note implements INote {
     cardBody: CardBody,
     waitCreation = false
   ): Promise<TaskMetadata> => {
-    console.debug(`# Saving card body doc: ${cardBody._id}`);
+    console.debug(`# Creating card body doc: ${cardBody._id}`);
     if (waitCreation) {
       // Sync
       let task: TaskMetadata;
@@ -682,7 +683,7 @@ class Note implements INote {
     cardSketch: CardSketch,
     waitCreation = false
   ): Promise<TaskMetadata> => {
-    console.debug(`# Saving card sketch doc: ${cardSketch._id}`);
+    console.debug(`# Creating card sketch doc: ${cardSketch._id}`);
     if (waitCreation) {
       // Sync
       let task: TaskMetadata;
@@ -718,7 +719,7 @@ class Note implements INote {
   };
 
   private _updateCardBodyDoc = async (cardBody: CardBody): Promise<TaskMetadata> => {
-    console.debug(`# Saving card body doc: ${cardBody._id}`);
+    console.debug(`# Updating card body doc: ${cardBody._id}`);
     const task = await new Promise((resolve, reject) => {
       this._cardCollection
         .update(cardBody, {
@@ -739,7 +740,7 @@ class Note implements INote {
   };
 
   private _updateCardSketchDoc = async (cardSketch: CardSketch): Promise<TaskMetadata> => {
-    console.debug(`# Saving card sketch doc: ${cardSketch._id}`);
+    console.debug(`# Updating card sketch doc: ${cardSketch._id}`);
     const task = await new Promise((resolve, reject) => {
       this._noteCollection
         .update(cardSketch, {
