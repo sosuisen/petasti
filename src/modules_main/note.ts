@@ -55,11 +55,7 @@ import { destroyTray, initializeTaskTray } from './tray';
 import { cacheOfCard } from './card_cache';
 import { INote, NoteState } from './note_types';
 import { noteStore } from './note_store';
-import {
-  noteCreateCreator,
-  noteInitCreator,
-  noteModifiedDateUpdateCreator,
-} from './note_action_creator';
+import { noteCreateCreator, noteInitCreator } from './note_action_creator';
 import { Card } from './card';
 
 export const generateNewNoteId = () => {
@@ -192,7 +188,6 @@ class Note implements INote {
         localDir: this._settings.dataStorePath,
         dbName: this._settings.currentNotebookName,
         debounceTime: 3000,
-        logLevel: 'trace',
       };
 
       this._bookDB = new GitDocumentDB(bookDbOption);
@@ -409,10 +404,12 @@ class Note implements INote {
     await this._createCardBodyDoc(card.body, waitCreation);
     await this._createCardSketchDoc(card.sketch, waitCreation);
     // Update note store & DB
+    /*
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(
       noteModifiedDateUpdateCreator(this, noteId, card.body.date.modifiedDate)
     );
+    */
   };
 
   updateCard = async (
@@ -443,8 +440,10 @@ class Note implements INote {
     }
 
     // Update note store & DB
+    /*
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(noteModifiedDateUpdateCreator(this, noteId, modifiedDate));
+    */
   };
 
   updateCardBody = async (
@@ -464,10 +463,12 @@ class Note implements INote {
     const task = await this._updateCardBodyDoc(cardBody);
 
     // Update note store & DB
+    /*
     if (task !== undefined) {
       const noteId = getNoteIdFromUrl(sketchUrl);
       noteStore.dispatch(noteModifiedDateUpdateCreator(this, noteId, modifiedDate));
     }
+    */
     return task;
   };
 
@@ -494,10 +495,12 @@ class Note implements INote {
     const task: TaskMetadata = await this._updateCardSketchDoc(sketch!);
 
     // Update note store & DB
+    /*
     if (task !== undefined) {
       const noteId = getNoteIdFromUrl(sketchUrl);
       noteStore.dispatch(noteModifiedDateUpdateCreator(this, noteId, modifiedTime));
     }
+    */
     return task;
   };
 
@@ -509,12 +512,13 @@ class Note implements INote {
     const task: TaskMetadata = await this._createCardSketchDoc(cardSketch, waitCreation);
 
     // Update note store & DB
+    /*
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(
       // @ts-ignore
       noteModifiedDateUpdateCreator(this, noteId, cardSketch.date.modifiedDate)
     );
-
+    */
     return task;
   };
 
@@ -540,9 +544,10 @@ class Note implements INote {
     const task: TaskMetadata = await this._updateCardSketchDoc(sketch!);
 
     // Update note store & DB
+    /*
     const noteId = getNoteIdFromUrl(sketchUrl);
     noteStore.dispatch(noteModifiedDateUpdateCreator(this, noteId, modifiedDate));
-
+    */
     return task;
   };
 
@@ -562,10 +567,12 @@ class Note implements INote {
       await this._deleteCardSketchDoc(cardUrl);
 
       // Update note store & DB
+      /*
       const noteId = getNoteIdFromUrl(cardUrl);
       noteStore.dispatch(
         noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
       );
+      */
     }
     else {
       console.error(`${cardUrl} does not exist`);
