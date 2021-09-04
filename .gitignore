@@ -9,6 +9,7 @@ lerna-debug.log*
 # Card dir
 tree_stickies_data/
 tree_stickies_data.bu/
+tree_stickies_data_old/*
 
 # Dist dir
 dist/
