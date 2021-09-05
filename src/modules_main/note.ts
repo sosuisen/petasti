@@ -57,6 +57,7 @@ import { INote, NoteState } from './note_types';
 import { noteStore } from './note_store';
 import { noteCreateCreator, noteInitCreator } from './note_action_creator';
 import { Card } from './card';
+import { closeSettings } from './settings';
 
 export const generateNewNoteId = () => {
   const ulid = monotonicFactory();
@@ -137,7 +138,7 @@ class Note implements INote {
    * Note
    */
 
-  changingToNoteId = 'none'; // changingToNoteId stores next id while workspace is changing, 'none' or 'exit'
+  changingToNoteId = 'none'; // changingToNoteId stores next id while workspace is changing, 'none' or 'exit' or 'restart'
 
   /**
    * I18n
@@ -188,6 +189,7 @@ class Note implements INote {
         localDir: this._settings.dataStorePath,
         dbName: this._settings.currentNotebookName,
         debounceTime: 3000,
+        logLevel: 'trace',
       };
 
       this._bookDB = new GitDocumentDB(bookDbOption);
@@ -582,24 +584,17 @@ class Note implements INote {
   /**
    * Database
    */
-  combineDB = async (target: BrowserWindow | undefined) => {
+  combineDB = (target: BrowserWindow | undefined) => {
     showDialog(target, 'info', 'reloadNotebookByCombine');
-
+    note.changingToNoteId = 'restart';
     try {
       // Remove listeners firstly to avoid focus another card in closing process
+      closeSettings();
       cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
       cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
     } catch (error) {
       console.error(error);
     }
-    await this.closeDB();
-    destroyTray();
-
-    handlers.forEach(channel => ipcMain.removeHandler(channel));
-    handlers.length = 0; // empty
-    cacheOfCard.clear();
-
-    initializeTaskTray(this);
   };
 
   closeDB = async () => {

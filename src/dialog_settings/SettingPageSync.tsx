@@ -101,7 +101,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
         .catch(e => {
           return e;
         });
-      if (result !== 'succeed') {
+      if (result !== 'succeed' && result !== 'combine') {
         console.log(result);
         setTestSyncDialogMessage(messages.syncError);
         return;
@@ -110,11 +110,17 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
       setTestSyncDialogMessage('');
       setIsChanged(false);
       setIsTestSyncDialogOpen(false);
-      dispatch(settingsSyncEnableUpdateCreator(true));
 
-      window.api.db({
-        command: 'db-resume-sync',
-      });
+      if (result === 'succeed') {
+        dispatch(settingsSyncEnableUpdateCreator(true));
+        window.api.db({
+          command: 'db-resume-sync',
+        });
+      }
+      else {
+        // combine
+        // main will update sync enable and restart app.
+      }
     }
     else {
       dispatch(settingsSyncEnableUpdateCreator(true));

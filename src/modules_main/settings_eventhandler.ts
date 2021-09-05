@@ -105,11 +105,10 @@ export const addSettingsHandler = (note: INote) => {
           live: true,
         };
         // eslint-disable-next-line require-atomic-updates
-        const syncOrError: [Sync, SyncResult] | Error = await note.bookDB
-          .sync(note.remoteOptions, true)
-          .catch(err => {
-            return err;
-          });
+        const syncOrError: [Sync, SyncResult] | Error = await note.bookDB.sync(
+          note.remoteOptions,
+          true
+        );
         if (syncOrError instanceof Error) {
           return syncOrError.name;
         }
@@ -117,11 +116,16 @@ export const addSettingsHandler = (note: INote) => {
         note.sync = syncOrError[0];
         const syncResult = syncOrError[1];
         if (syncResult.action === 'combine database') {
+          // eslint-disable-next-line require-atomic-updates
+          note.settings.sync.enabled = true;
+          await note.settingsDB.put(note.settings, {
+            debounceTime: 0,
+          });
+
           await note.combineDB(settingsDialog);
+          return 'combine';
         }
-        else {
-          settingsDialog.webContents.send('initialize-store', note.info, note.settings);
-        }
+        settingsDialog.webContents.send('initialize-store', note.info, note.settings);
         return 'succeed';
       }
       case 'db-pause-sync': {

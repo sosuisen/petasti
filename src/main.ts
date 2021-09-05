@@ -35,7 +35,7 @@ ipcMain.setMaxListeners(1000);
  * initialization and is ready to create browser windows.
  * Some APIs can only be used after this event occurs.
  */
-app.on('ready', async () => {
+const startApp = async (isRestart: boolean) => {
   // load workspaces
   const cardProps = await note.loadNotebook();
 
@@ -54,23 +54,51 @@ app.on('ready', async () => {
   const size = backToFront.length;
   console.debug(`Completed to load ${size} cards`);
 
-  addSettingsHandler(note);
+  if (!isRestart) {
+    addSettingsHandler(note);
+  }
 
   /**
    * Add task tray
    */
   initializeTaskTray(note);
+};
+
+app.on('ready', () => {
+  startApp(false);
 });
+
+/**
+ * Close notebook
+ */
+const closeNotebook = async () => {
+  handlers.forEach(channel => ipcMain.removeHandler(channel));
+  handlers.length = 0; // empty
+  cacheOfCard.clear();
+
+  await note.closeDB();
+  destroyTray();
+};
 
 /**
  * Exit app
  */
-emitter.on('exit', () => {
-  note.closeDB();
-  destroyTray();
+emitter.on('exit', async () => {
+  await closeNotebook();
   app.quit();
 });
 
+/**
+ * Restart app
+ */
+emitter.on('restart', async () => {
+  await closeNotebook();
+  startApp(true);
+});
+
+/**
+ * Change not
+ */
 emitter.on('change-note', async (nextNoteId: string) => {
   handlers.forEach(channel => ipcMain.removeHandler(channel));
   handlers.length = 0; // empty
@@ -102,6 +130,9 @@ app.on('window-all-closed', () => {
   console.log('# window-all-closed: ' + note.changingToNoteId);
   if (note.changingToNoteId === 'exit') {
     emitter.emit('exit');
+  }
+  else if (note.changingToNoteId === 'restart') {
+    emitter.emit('restart');
   }
   else if (note.changingToNoteId !== 'none') {
     emitter.emit('change-note', note.changingToNoteId);
