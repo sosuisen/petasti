@@ -200,7 +200,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
               })
               .then(revertedNote => {
                 if (revertedNote) {
-                  note.noteCollection.put(revertedNote);
+                  note.noteCollection.put(revertedNote, { debounceTime: 0 });
                 }
                 else throw new Error('backNumber does not found');
               })
