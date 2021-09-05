@@ -90,7 +90,7 @@ const cardStyleReducer = (
 ) => {
   switch (action.type) {
     case 'card-style-init': {
-      return { ...state, ...action.payload };
+      return { ...action.payload };
     }
     case 'card-style-update': {
       const newState = { ...state, ...action.payload };
@@ -108,6 +108,9 @@ const cardConditionReducer = (
   action: CardConditionAction
 ) => {
   switch (action.type) {
+    case 'card-condition-init': {
+      return { ...action.payload };
+    }
     case 'card-condition-update': {
       const newState = { ...state, ...action.payload };
       console.log('# cardConditionReducer: ' + JSON.stringify(newState));
@@ -132,8 +135,11 @@ const cardSketchDateReducer = (
   action: CardSketchDateAction
 ) => {
   switch (action.type) {
-    case 'card-sketch-date-update': {
+    case 'card-sketch-date-init': {
       return { ...action.payload };
+    }
+    case 'card-sketch-date-update': {
+      return { ...state, ...action.payload };
     }
     case 'card-sketch-modified-date-update': {
       console.log('# cardSketchDateReducer: ' + action.payload);
