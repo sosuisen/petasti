@@ -1,7 +1,7 @@
 {
   "name": "tree-stickies",
   "productName": "TreeStickies",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TreeStickies",
   "main": "dist/main.js",
   "scripts": {
@@ -79,7 +79,7 @@
     "electron-prompt": "^1.6.2",
     "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^9.0.1",
-    "git-documentdb": "^0.4.5",
+    "git-documentdb": "^0.4.6",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-redux": "^7.2.4",
