@@ -1,0 +1,62 @@
+/**
+ * TreeStickies
+ * © 2021 Hidekazu Kubota
+ */
+
+/**
+ * for CKEditor
+ */ 
+
+body > #card > .cke_screen_reader_only{
+  display: none;
+}
+
+body > #card > #cke_editor{
+  padding: 0px;
+  margin: 0px;
+  top: 18px;  
+  border: 0px;
+  visibility: hidden;
+  position: absolute;
+  z-index: 50;
+}
+
+body > #card > #cke_editor .cke_combo::after,
+#cke_editor .cke_toolgroup a.cke_button:last-child:after,
+#cke_editor .cke_toolgroup a.cke_button.cke_button_disabled:last-child:after
+{
+  border: none;
+}
+
+body > #card > #cke_editor .cke_combo__fontsize a.cke_combo_button .cke_combo_text{
+  width:22px;
+  padding-left: 0px;
+}
+
+body > #card > #cke_editor .cke_combo__fontsize a.cke_combo_button .cke_combo_open{
+  margin-left:0px;
+  margin-right:0px;
+}
+
+body > #card > #cke_editor .cke_bottom{
+  padding: 0px;
+  position: fixed;
+  bottom: 3px;
+}
+
+body > #card > #cke_editor .cke_toolgroup{
+  margin: 0px;
+}
+
+body > #card > #cke_editor .cke_combo{
+  margin-bottom: 0px;
+}
+
+body > #card > #cke_editor .cke_inner{
+  background-color: rgba(255,255,255,0);
+}
+
+body > #card > #cke_editor .cke_wysiwyg_frame{
+  position: fixed; /* Need for blocking scroll of <body> of BrowserWindow */
+}
+

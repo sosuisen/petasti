@@ -15,7 +15,7 @@ import {
   InnerClickEvent,
 } from './modules_common/types_cardeditor';
 import { DEFAULT_CARD_GEOMETRY, DRAG_IMAGE_MARGIN } from './modules_common/const';
-import { CardEditor } from './modules_renderer/editor';
+import { CardEditorMarkdown } from './modules_renderer/editor_markdown';
 import {
   getRenderOffsetHeight,
   getRenderOffsetWidth,
@@ -48,7 +48,7 @@ let cardCssStyle: CardCssStyle = {
 
 let suppressFocusEvent = false;
 
-const cardEditor: ICardEditor = new CardEditor();
+const cardEditor: ICardEditor = new CardEditorMarkdown();
 
 const close = () => {
   window.close();

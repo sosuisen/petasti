@@ -284,6 +284,7 @@ const renderCardStyle = () => {
         '}';
       iframeDoc.head.appendChild(style);
 
+      // @ts-ignore
       iframeDoc.body.style.zoom = `${cardStore.getState().sketch.style.zoom}`;
     }
   } catch (e) {

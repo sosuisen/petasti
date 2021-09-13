@@ -219,7 +219,8 @@ export class Card implements ICard {
     this.sketch.date.modifiedDate = cardSketch?.date?.modifiedDate ?? time;
 
     this.indexUrl = url.format({
-      pathname: path.join(__dirname, '../index.html'),
+      // pathname: path.join(__dirname, '../index.html'),
+      pathname: path.join(__dirname, '../index_markdown.html'),
       protocol: 'file:',
       slashes: true,
       query: {

@@ -1,0 +1,14 @@
+/**
+ * TreeStickies
+ * © 2021 Hidekazu Kubota
+ */
+ 
+ body > #card > #editor{
+  padding: 0px;
+  margin: 0px;
+  top: 18px;  
+  border: 0px;
+  visibility: hidden;
+  position: absolute;
+  z-index: 50;
+}
