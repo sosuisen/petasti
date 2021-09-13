@@ -8,7 +8,6 @@ import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
 import window from './window';
 import { getCtrlDown } from '../modules_common/keys';
 import { cardStore } from './card_store';
-import { note } from '../modules_main/note';
 
 let cardCssStyle: CardCssStyle;
 let cardEditor: ICardEditor;

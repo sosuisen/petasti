@@ -12,3 +12,28 @@
   position: absolute;
   z-index: 50;
 }
+
+body > #card > #editor > .milkdown{
+ 	/* Font */
+	/* Emoji fonts are added to visualize them nicely in Internet Explorer. */
+	font-family:  'メイリオ', 'Meiryo', sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+	font-size: 14px;
+
+  line-height: 1.2em;
+
+	/* Text color */
+	color: #000;
+
+	/* Remove the background color to make it transparent. */
+	background-color: transparent;
+  padding: 7px 7px 7px 7px;
+  margin: 0px;
+
+  word-wrap: break-word;
+}
+
+body > #card > #editor > .milkdown > .editor * {
+  margin: 0px;
+  margin-block-start: 0em;
+  margin-block-end: 0em;
+}

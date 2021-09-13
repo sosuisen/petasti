@@ -207,38 +207,7 @@ export class CardEditorMarkdown implements ICardEditor {
       return Promise.resolve();
     }
     this._setData();
-    /*
-    const url = cardStore.getState().workState.url;
-    let contCounter = 0;
-    for (;;) {
-      let cont = false;
-      // eslint-disable-next-line no-loop-func, no-await-in-loop
-      await this._setData().catch(async err => {
-        if (err.message === this._errorFailedToSetData) {
-          await sleep(1000);
-          contCounter++;
-          cont = true;
-        }
-        else {
-          // logger.error does not work in ipcRenderer event.
-          console.error(`Error in showEditor ${url}: ${err.message}`);
-          cont = false;
-        }
-      });
-      if (contCounter >= 10) {
-        cont = false;
-        // logger.error does not work in ipcRenderer event.
-        console.error(`Error in showEditor ${url}: too many setData errors`);
-        window.api.alertDialog(url, 'pleaseRestartErrorInOpeningEditor');
-      }
-      if (cont) {
-        // console.debug(`re-trying setData for ${this._cardPropStatus.id}`);
-      }
-      else {
-        break;
-      }
-    }
-    */
+
     const contents = document.getElementById('contents');
     if (contents) {
       contents.style.visibility = 'hidden';
@@ -279,19 +248,6 @@ export class CardEditorMarkdown implements ICardEditor {
     }
     */
 
-    // Expand card to add toolbar.
-    /*
-    const expandedHeight =
-      cardStore.getState().sketch.geometry.height + this._toolBarHeight;
-    window.api.setWindowSize(
-      cardStore.getState().workState.url,
-      cardStore.getState().sketch.geometry.width,
-      expandedHeight
-    );
-    setRenderOffsetHeight(this._toolBarHeight);
-    render(['ContentsRect']);
-    */
-
     // CKEDITOR.instances.editor.focus();
   };
 
@@ -305,26 +261,11 @@ export class CardEditorMarkdown implements ICardEditor {
     clearTimeout(this.execSaveCommandTimeout);
 
     await cardStore.dispatch(cardBodyUpdateCreator(data));
-
-    window.api.setWindowSize(
-      cardStore.getState().workState.url,
-      cardStore.getState().sketch.geometry.width,
-      cardStore.getState().sketch.geometry.height
-    );
-    setRenderOffsetHeight(0);
-    render(['ContentsRect']);
-
-    // Reset editor color to card color
-    render(['TitleBar', 'EditorStyle']);
-
-    const toolbar = document.getElementById('cke_1_bottom');
-    if (toolbar) {
-      toolbar.style.visibility = 'hidden';
-    }
+    */
 
     // eslint-disable-next-line no-unused-expressions
-    CKEDITOR.instances.editor.getSelection()?.removeAllRanges();
-    */
+    //    CKEDITOR.instances.editor.getSelection()?.removeAllRanges();
+
     return Promise.resolve(data);
   };
 
@@ -391,35 +332,21 @@ export class CardEditorMarkdown implements ICardEditor {
       shadowHeight -
       document.getElementById('title')!.offsetHeight
   ): void => {
-    document.getElementById('editor')!.style.width = '200px';
-    document.getElementById('editor')!.style.height = '100px';
     // width of BrowserWindow (namely avatarProp.geometry.width) equals border + padding + content.
-    /*
-    const editor = CKEDITOR.instances.editor;
+
+    const editor = document.getElementById('editor');
     if (editor) {
-      CKEDITOR.instances.editor.resize(width, height);
-      const iframe = document.getElementsByClassName('cke_wysiwyg_frame');
-      if (iframe.item && iframe.item(0)) {
-        (iframe.item(0) as HTMLElement).style.width =
-          document.getElementById('cke_editor')!.offsetWidth + 'px';
-        (iframe.item(0) as HTMLElement).style.height =
-          document.getElementById('cke_editor')!.offsetHeight + 'px';
-      }
+      editor.style.width = width + 'px';
+      editor.style.height = height + 'px';
     }
     else {
       console.error(`Error in setSize: editor is undefined.`);
     }
-
-    const toolbar = document.getElementById('cke_1_bottom');
-    toolbar!.style.width = width + 'px';
-
-    const textcolorBtn = document.getElementsByClassName('cke_button__textcolor');
-    const bgcolorBtn = document.getElementsByClassName('cke_button__bgcolor');
-    (textcolorBtn!.item(0) as HTMLElement).style.display =
-      width < 218 || height < 90 ? 'none' : 'block';
-    (bgcolorBtn!.item(0) as HTMLElement).style.display =
-      width < 252 || height < 90 ? 'none' : 'block';
-    */
+    const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
+    if (milkdownEditor) {
+      milkdownEditor.style.width = width + 'px';
+      milkdownEditor.style.height = height + 'px';
+    }
   };
 
   setColor = (): void => {
@@ -439,23 +366,21 @@ export class CardEditorMarkdown implements ICardEditor {
       uiRgba = 'rgba(204, 204, 204, 1.0)';
     }
 
-    /*
-    const editor = document.getElementById('cke_editor');
+    const editor = document.getElementById('editor');
     if (editor) {
       editor.style.borderTopColor = uiRgba;
     }
-    const toolbar = document.getElementById('cke_1_bottom');
-    if (toolbar) {
-      toolbar.style.backgroundColor = toolbar.style.borderBottomColor = toolbar.style.borderTopColor = uiRgba;
+    // const toolbar = document.getElementById('cke_1_bottom');a
+    // if (toolbar) {
+    // toolbar.style.backgroundColor = toolbar.style.borderBottomColor = toolbar.style.borderTopColor = uiRgba;
+    // }
+
+    const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
+    if (milkdownEditor) {
+      milkdownEditor.style.backgroundColor = backgroundRgba;
     }
 
-    const contents = document.querySelector(
-      '#cke_1_contents .cke_wysiwyg_frame'
-    ) as HTMLElement;
-    if (contents) {
-      contents.style.backgroundColor = backgroundRgba;
-    }
-
+    /*
     const scrollBarRgba = darkenHexColor(
       cardStore.getState().sketch.style.backgroundColor,
       0.85
