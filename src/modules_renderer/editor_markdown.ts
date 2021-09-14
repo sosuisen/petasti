@@ -281,6 +281,11 @@ export class CardEditorMarkdown implements ICardEditor {
   };
 
   setZoom = () => {
+    const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
+    if (milkdownEditor) {
+      // @ts-ignore
+      milkdownEditor.style.zoom = `${cardStore.getState().sketch.style.zoom}`;
+    }
     /*
     if (CKEDITOR.instances.editor.document && CKEDITOR.instances.editor.document.$.body) {
       // @ts-ignore
@@ -310,11 +315,13 @@ export class CardEditorMarkdown implements ICardEditor {
     else {
       console.error(`Error in setSize: editor is undefined.`);
     }
+    /*
     const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
     if (milkdownEditor) {
       milkdownEditor.style.width = width + 'px';
       milkdownEditor.style.height = height + 'px';
     }
+    */
   };
 
   setColor = (): void => {
