@@ -183,7 +183,6 @@ export class CardEditorMarkdown implements ICardEditor {
   private _setData = (): void => {
     this._editor.action(ctx => {
       console.log('# setData replaces existing text');
-      const commandManager = ctx.get(commandsCtx);
       let body = cardStore.getState().body._body;
       if (!body) body = 'Hello, world!';
 
