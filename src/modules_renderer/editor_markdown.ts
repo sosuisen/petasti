@@ -39,6 +39,9 @@ import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
 import { cardStore } from './card_store';
 import { cardBodyUpdateCreator } from './card_action_creator';
 
+const marginTop = 3;
+const marginLeft = 7;
+const padding = 2;
 export class CardEditorMarkdown implements ICardEditor {
   /**
    * Private
@@ -157,6 +160,7 @@ export class CardEditorMarkdown implements ICardEditor {
     this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
       const parser = ctx.get(parserCtx);
+      console.log('setData: ' + body);
       const md = parser(body);
       if (!md) return;
       const tr = editorView.state.tr;
@@ -269,15 +273,16 @@ export class CardEditorMarkdown implements ICardEditor {
   };
 
   getScrollPosition = () => {
-    // const left = CKEDITOR.instances.editor.document.$.scrollingElement!.scrollLeft;
-    // const top = CKEDITOR.instances.editor.document.$.scrollingElement!.scrollTop;
-    return { left: 0, top: 0 };
-    // return { left, top };
+    const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
+    const left = milkdownEditor.scrollLeft * cardStore.getState().sketch.style.zoom;
+    const top = milkdownEditor.scrollTop * cardStore.getState().sketch.style.zoom;
+    return { left, top };
   };
 
   setScrollPosition = (left: number, top: number) => {
-    // CKEDITOR.instances.editor.document.$.scrollingElement!.scrollLeft = left;
-    // CKEDITOR.instances.editor.document.$.scrollingElement!.scrollTop = top;
+    const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
+    milkdownEditor.scrollLeft = left;
+    milkdownEditor.scrollTop = top;
   };
 
   setZoom = () => {
@@ -314,6 +319,12 @@ export class CardEditorMarkdown implements ICardEditor {
     }
     else {
       console.error(`Error in setSize: editor is undefined.`);
+    }
+
+    const innerEditor = document.querySelector('#editor .milkdown .editor') as HTMLElement;
+    if (innerEditor) {
+      innerEditor.style.width = width - marginLeft - padding * 2 + 'px';
+      innerEditor.style.height = height - marginTop * 2 - padding * 2 + 'px';
     }
     /*
     const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
@@ -355,24 +366,19 @@ export class CardEditorMarkdown implements ICardEditor {
       milkdownEditor.style.backgroundColor = backgroundRgba;
     }
 
-    /*
     const scrollBarRgba = darkenHexColor(
       cardStore.getState().sketch.style.backgroundColor,
       0.85
     );
-    const doc = CKEDITOR.instances.editor.document;
-    if (doc) {
-      const style = doc.$.createElement('style');
-      style.innerHTML =
-        'body::-webkit-scrollbar { width: 7px; background-color: ' +
-        backgroundRgba +
-        '}\n' +
-        'body::-webkit-scrollbar-thumb { background-color: ' +
-        scrollBarRgba +
-        '}';
-      doc.getHead().$.appendChild(style);
-    }
-    */
+    const style = window.document.createElement('style');
+    style.innerHTML =
+      '.milkdown::-webkit-scrollbar { width: 7px; background-color: ' +
+      backgroundRgba +
+      '}\n' +
+      '.milkdown::-webkit-scrollbar-thumb { background-color: ' +
+      scrollBarRgba +
+      '}';
+    window.document.head.appendChild(style);
   };
 
   execAfterMouseDown = (func: () => Promise<void>) => {
