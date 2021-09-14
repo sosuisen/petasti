@@ -182,18 +182,17 @@ export class CardEditorMarkdown implements ICardEditor {
 
   private _setData = (): void => {
     this._editor.action(ctx => {
-      console.log('# setData replaces existing text');
       let body = cardStore.getState().body._body;
-      if (!body) body = 'Hello, world!';
-
+      if (!body) body = '';
       const editorView = ctx.get(editorViewCtx);
       const parser = ctx.get(parserCtx);
-
-      editorView.state.doc = parser('initial data')!;
+      const md = parser(body);
+      if (!md) return;
       const tr = editorView.state.tr;
-      // console.log(editorView.state.doc.toString());
+      // setData replaces existing text
       const newState = editorView.state.apply(
-        tr.insertText(body, 0, editorView.state.doc.content.size)
+        // tr.insertText(md, 0, editorView.state.doc.content.size)
+        tr.replaceSelectionWith(md)
       );
       editorView.updateState(newState);
     });
@@ -250,20 +249,24 @@ export class CardEditorMarkdown implements ICardEditor {
     // CKEDITOR.instances.editor.focus();
   };
 
-  endEdit = (): Promise<string> => {
+  endEdit = async (): Promise<string> => {
     this._isEditing = false;
 
     // Save data to AvatarProp
 
-    const data = ''; // from milkdown
-    /*
-    clearTimeout(this.execSaveCommandTimeout);
+    const data = this._editor.action(ctx => {
+      const editorView = ctx.get(editorViewCtx);
+      const serializer = ctx.get(serializerCtx);
+      return serializer(editorView.state.doc); // editorView.state.doc is ProseNode
+    });
 
     await cardStore.dispatch(cardBodyUpdateCreator(data));
-    */
+
+    // Reset editor color to card color
+    render(['TitleBar', 'EditorStyle']);
 
     // eslint-disable-next-line no-unused-expressions
-    //    CKEDITOR.instances.editor.getSelection()?.removeAllRanges();
+    // CKEDITOR.instances.editor.getSelection()?.removeAllRanges();
 
     return Promise.resolve(data);
   };
