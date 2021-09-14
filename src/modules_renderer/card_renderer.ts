@@ -121,7 +121,8 @@ const renderContentsData = (): Promise<void> => {
     const html = `<!DOCTYPE html>
   <html>
     <head>
-      <link href='./css/ckeditor-rxdesktop-contents.css' type='text/css' rel='stylesheet' />
+      <link href='./css/markdown-contents.css' type='text/css' rel='stylesheet' />
+      <link href='./css/markdown-nodes.css' type='text/css' rel='stylesheet' />
       <script> var exports = {}; </script>
       <script type='text/javascript' src='./iframe/contents_frame.js'></script>
     </head>

@@ -5,74 +5,44 @@
 
 import {
   AnyRecord,
-  Cmd,
-  CmdKey,
-  commandsCtx,
-  CommandsReady,
-  createCmdKey,
-  defaultValueCtx,
   Editor,
-  editorStateCtx,
-  editorStateOptionsCtx,
   editorViewCtx,
-  inputRulesCtx,
-  keymapCtx,
-  MilkdownPlugin,
-  nodeViewCtx,
-  Parser,
   parserCtx,
-  prosePluginsCtx,
   rootCtx,
-  schemaCtx,
   serializerCtx,
 } from '@milkdown/core';
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
 import { nord } from '@milkdown/theme-nord';
 import {
+  blockquote,
   bulletList,
+  codeFence,
   commonmark,
   commonmarkNodes,
   commonmarkPlugins,
+  doc,
+  hardbreak,
+  heading,
+  hr,
+  image,
   listItem,
-  PopListItem,
-  SinkListItem,
-  SplitListItem,
+  orderedList,
+  paragraph,
   SupportedKeys,
+  text,
 } from '@milkdown/preset-commonmark';
 import { history } from '@milkdown/plugin-history';
 import { emoji } from '@milkdown/plugin-emoji';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
-import {
-  getRenderOffsetHeight,
-  getRenderOffsetWidth,
-  render,
-  setRenderOffsetHeight,
-  shadowHeight,
-  shadowWidth,
-} from './card_renderer';
-import { DRAG_IMAGE_MARGIN } from '../modules_common/const';
-import { sleep } from '../modules_common/utils';
+import { render, shadowHeight, shadowWidth } from './card_renderer';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
-import { saveCardColor } from './save';
-import window from './window';
 import { cardStore } from './card_store';
-import { cardBodyUpdateCreator, cardGeometryUpdateCreator } from './card_action_creator';
-
-type DefaultValue =
-  | string
-  | { type: 'html'; dom: HTMLElement }
-  | { type: 'json'; value: AnyRecord };
+import { cardBodyUpdateCreator } from './card_action_creator';
 
 export class CardEditorMarkdown implements ICardEditor {
   /**
    * Private
    */
-  private _errorFailedToSetData = 'Failed to set data.';
-
-  private _toolBarHeight = 28;
-
-  private _startEditorFirstTime = true;
-
   private _cardCssStyle!: CardCssStyle; // cardCssStyle is set by loadUI()
 
   /**
@@ -86,7 +56,6 @@ export class CardEditorMarkdown implements ICardEditor {
   private _isEditing = false;
 
   private _editor!: Editor;
-  private _loadBody!: (body: string) => void;
   /**
    * queueSaveCommand
    * Queuing and execute only last save command to avoid frequent save.
@@ -117,18 +86,32 @@ export class CardEditorMarkdown implements ICardEditor {
       // doc: [(proseNode: ProseNode) => console.log(proseNode)], // print Node of ProseMirror
     };
 
-    const listItemNodes = commonmarkNodes.configure(listItem, {
-      keymap: {
-        [SupportedKeys.SinkListItem]: ['Tab', 'Alt-Shift-ArrowRight'],
-        [SupportedKeys.PopListItem]: ['Shift-Tab', 'Alt-Shift-ArrowLeft'],
-      },
-    });
-
-    const bulletListNodes = commonmarkNodes.configure(bulletList, {
-      keymap: {
-        [SupportedKeys.BulletList]: 'Tab',
-      },
-    });
+    // Reset each mark to be headless.
+    // https://github.com/Saul-Mirone/milkdown/discussions/107
+    const commonmarks = commonmarkNodes
+      .configure(blockquote, { headless: true })
+      .configure(bulletList, {
+        headless: true,
+        keymap: {
+          [SupportedKeys.BulletList]: 'Tab',
+        },
+      })
+      .configure(codeFence, { headless: true })
+      .configure(doc, { headless: true })
+      .configure(hardbreak, { headless: true })
+      .configure(heading, { headless: true })
+      .configure(hr, { headless: true })
+      .configure(image, { headless: true })
+      .configure(listItem, {
+        headless: true,
+        keymap: {
+          [SupportedKeys.SinkListItem]: ['Tab', 'Alt-Shift-ArrowRight'],
+          [SupportedKeys.PopListItem]: ['Shift-Tab', 'Alt-Shift-ArrowLeft'],
+        },
+      })
+      .configure(orderedList, { headless: true })
+      .configure(paragraph, { headless: true })
+      .configure(text, { headless: true });
 
     this._editor = await Editor.make()
       .config(ctx => {
@@ -137,12 +120,11 @@ export class CardEditorMarkdown implements ICardEditor {
       })
       .use(nord)
       .use(commonmark)
+      .use(commonmarkNodes)
       .use(history)
       .use(listener)
-      .use(emoji)
+      .use(emoji.headless())
       .use(commonmarkPlugins)
-      .use(listItemNodes)
-      .use(bulletListNodes)
       .create();
 
     // Set default value of link target to _blank
@@ -169,16 +151,6 @@ export class CardEditorMarkdown implements ICardEditor {
           }
         });
       */
-  };
-
-  private _imeWorkaround = async (): Promise<void> => {
-    /**
-     * This is workaround for Japanese IME & CKEditor on Windows.
-     * IME window is unintentionally opened only at the first time of inputting Japanese.
-     * Expected behavior is that IME always work inline on CKEditor.
-     * A silly workaround is to blur and focus this browser window.
-     */
-    await window.api.blurAndFocusWithSuppressEvents(cardStore.getState().workState.url);
   };
 
   public setData = (body: string): void => {
@@ -235,15 +207,6 @@ export class CardEditorMarkdown implements ICardEditor {
     render(['EditorStyle']);
 
     return Promise.resolve();
-
-    /*
-    if (this._startEditorFirstTime) {
-      this._startEditorFirstTime = false;
-      await this._imeWorkaround();
-    }
-    */
-
-    // CKEDITOR.instances.editor.focus();
   };
 
   endEdit = async (): Promise<string> => {
@@ -292,8 +255,6 @@ export class CardEditorMarkdown implements ICardEditor {
     this.startEdit();
     render(['TitleBar', 'TitleBarStyle']);
 
-    // CKEDITOR.instances.editor.focus();
-
     // In code mode, editor background color is changed to white.
   };
 
@@ -305,8 +266,6 @@ export class CardEditorMarkdown implements ICardEditor {
      * and reset width and height of cke_wysiwyg_frame
      */
     render(['TitleBar', 'TitleBarStyle', 'EditorStyle', 'EditorRect']);
-
-    // CKEDITOR.instances.editor.focus();
   };
 
   getScrollPosition = () => {
