@@ -448,7 +448,7 @@ const onRenderCard = (url: string, cardBody: CardBody, cardSketch: CardSketch) =
 
   initCardRenderer(cardCssStyle, cardEditor);
 
-  // cardEditor.setCard(cardPropStatus);
+  cardEditor.setData(cardStore.getState().body._body);
 
   document.getElementById('card')!.style.visibility = 'visible';
 
@@ -551,10 +551,8 @@ const filterContentsFrameMessage = (event: MessageEvent): ContentsFrameMessage =
   return msg;
 };
 
-const startEditor = async (x: number, y: number) => {
-  await cardEditor.showEditor().catch((e: Error) => {
-    console.error(`Error in startEditor: ${e.message}`);
-  });
+const startEditor = (x: number, y: number) => {
+  cardEditor.showEditor();
 
   // Set scroll position of editor to that of iframe
   const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
@@ -685,9 +683,7 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
     render(['TitleBar', 'CardStyle', 'ContentsData', 'ContentsRect']);
 
     window.api.focus(cardStore.getState().workState.url);
-    await cardEditor.showEditor().catch((err: Error) => {
-      console.error(`Error in loading image: ${err.message}`);
-    });
+    cardEditor.showEditor();
     cardEditor.startEdit();
   });
 

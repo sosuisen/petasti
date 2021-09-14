@@ -114,6 +114,8 @@ const renderTitleBarStyle = () => {
 const renderContentsData = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     //    console.debug('renderContentsData');
+    // ${cardStore.getState().body._body}
+    const body = cardEditor.getHTML();
 
     // Script and CSS loaded from contents_frame.html are remained after document.write().
     const html = `<!DOCTYPE html>
@@ -124,7 +126,7 @@ const renderContentsData = (): Promise<void> => {
       <script type='text/javascript' src='./iframe/contents_frame.js'></script>
     </head>
     <body>
-      ${cardStore.getState().body._body}
+      ${body}
     </body>
   </html>`;
     try {

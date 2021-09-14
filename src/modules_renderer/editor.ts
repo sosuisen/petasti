@@ -205,10 +205,10 @@ export class CardEditor implements ICardEditor {
     await window.api.blurAndFocusWithSuppressEvents(cardStore.getState().workState.url);
   };
 
-  private _setData = (): Promise<void> => {
+  private _setData = (body: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       try {
-        CKEDITOR.instances.editor.setData(cardStore.getState().body._body, {
+        CKEDITOR.instances.editor.setData(body, {
           callback: () => {
             // setData may be fail. Watch out.
             resolve();
@@ -218,6 +218,39 @@ export class CardEditor implements ICardEditor {
         reject(new Error(this._errorFailedToSetData));
       }
     });
+  };
+
+  public setData = async (body: string): Promise<void> => {
+    const url = cardStore.getState().workState.url;
+    let contCounter = 0;
+    for (;;) {
+      let cont = false;
+      // eslint-disable-next-line no-loop-func, no-await-in-loop
+      await this._setData(body).catch(async err => {
+        if (err.message === this._errorFailedToSetData) {
+          await sleep(1000);
+          contCounter++;
+          cont = true;
+        }
+        else {
+          // logger.error does not work in ipcRenderer event.
+          console.error(`Error in showEditor ${url}: ${err.message}`);
+          cont = false;
+        }
+      });
+      if (contCounter >= 10) {
+        cont = false;
+        // logger.error does not work in ipcRenderer event.
+        console.error(`Error in showEditor ${url}: too many setData errors`);
+        window.api.alertDialog(url, 'pleaseRestartErrorInOpeningEditor');
+      }
+      if (cont) {
+        // console.debug(`re-trying setData for ${this._cardPropStatus.id}`);
+      }
+      else {
+        break;
+      }
+    }
   };
 
   private _addDragAndDropEvent = () => {
@@ -312,39 +345,9 @@ export class CardEditor implements ICardEditor {
     });
   };
 
-  showEditor = async (): Promise<void> => {
+  showEditor = (): void => {
     if (this.isOpened) {
       return;
-    }
-    const url = cardStore.getState().workState.url;
-    let contCounter = 0;
-    for (;;) {
-      let cont = false;
-      // eslint-disable-next-line no-loop-func, no-await-in-loop
-      await this._setData().catch(async err => {
-        if (err.message === this._errorFailedToSetData) {
-          await sleep(1000);
-          contCounter++;
-          cont = true;
-        }
-        else {
-          // logger.error does not work in ipcRenderer event.
-          console.error(`Error in showEditor ${url}: ${err.message}`);
-          cont = false;
-        }
-      });
-      if (contCounter >= 10) {
-        cont = false;
-        // logger.error does not work in ipcRenderer event.
-        console.error(`Error in showEditor ${url}: too many setData errors`);
-        window.api.alertDialog(url, 'pleaseRestartErrorInOpeningEditor');
-      }
-      if (cont) {
-        // console.debug(`re-trying setData for ${this._cardPropStatus.id}`);
-      }
-      else {
-        break;
-      }
     }
 
     const contents = document.getElementById('contents');
@@ -438,6 +441,10 @@ export class CardEditor implements ICardEditor {
     return data;
   };
 
+  getHTML = (): string => {
+    return CKEDITOR.instances.editor.getData();
+  };
+
   toggleCodeMode = () => {
     if (!this.isCodeMode) {
       this.startCodeMode();
@@ -486,6 +493,7 @@ export class CardEditor implements ICardEditor {
 
   setZoom = () => {
     if (CKEDITOR.instances.editor.document && CKEDITOR.instances.editor.document.$.body) {
+      // @ts-ignore
       CKEDITOR.instances.editor.document.$.body.style.zoom = `${
         cardStore.getState().sketch.style.zoom
       }`;

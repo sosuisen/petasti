@@ -18,6 +18,7 @@ import {
   inputRulesCtx,
   keymapCtx,
   MilkdownPlugin,
+  nodeViewCtx,
   Parser,
   parserCtx,
   prosePluginsCtx,
@@ -180,10 +181,8 @@ export class CardEditorMarkdown implements ICardEditor {
     await window.api.blurAndFocusWithSuppressEvents(cardStore.getState().workState.url);
   };
 
-  private _setData = (): void => {
+  public setData = (body: string): void => {
     this._editor.action(ctx => {
-      let body = cardStore.getState().body._body;
-      if (!body) body = '';
       const editorView = ctx.get(editorViewCtx);
       const parser = ctx.get(parserCtx);
       const md = parser(body);
@@ -200,11 +199,10 @@ export class CardEditorMarkdown implements ICardEditor {
 
   private _addDragAndDropEvent = () => {};
 
-  showEditor = (): Promise<void> => {
+  showEditor = (): void => {
     if (this.isOpened) {
-      return Promise.resolve();
+      return;
     }
-    this._setData();
 
     const contents = document.getElementById('contents');
     if (contents) {
@@ -224,13 +222,12 @@ export class CardEditorMarkdown implements ICardEditor {
     this.isOpened = true;
 
     render(['TitleBar', 'EditorRect', 'EditorStyle']);
-
-    return Promise.resolve();
   };
 
   hideEditor = () => {
     this.isOpened = false;
-    // document.getElementById('contents')!.style.visibility = 'visible';
+    document.getElementById('contents')!.style.visibility = 'visible';
+    document.getElementById('editor')!.style.visibility = 'hidden';
   };
 
   startEdit = () => {
@@ -269,6 +266,16 @@ export class CardEditorMarkdown implements ICardEditor {
     // CKEDITOR.instances.editor.getSelection()?.removeAllRanges();
 
     return Promise.resolve(data);
+  };
+
+  getHTML = (): string => {
+    const dom = this._editor.action(ctx => {
+      const editorView = ctx.get(editorViewCtx);
+      // const dom = editorView.nodeDOM(0);
+      return editorView.dom;
+    });
+    console.log('# innerHTML: ' + dom.innerHTML);
+    return dom.innerHTML;
   };
 
   toggleCodeMode = () => {

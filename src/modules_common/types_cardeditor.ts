@@ -12,7 +12,7 @@ export interface ICardEditor {
 
   loadUI(cardCssStyle: CardCssStyle): Promise<void>; // A Promise resolves when required initialization is finished.
 
-  showEditor(): Promise<void>;
+  showEditor(): void;
   hideEditor(): void;
 
   startEdit(): Promise<void>;
@@ -26,6 +26,9 @@ export interface ICardEditor {
   setZoom(): void;
   setSize(width?: number, height?: number): void;
   setColor(): void;
+
+  setData(data: string): void;
+  getHTML(): string;
 
   execAfterMouseDown(func: () => Promise<void>): void;
 }
