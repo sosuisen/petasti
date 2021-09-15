@@ -83,7 +83,7 @@ export class CardEditorMarkdown implements ICardEditor {
           console.log(getMarkdown());
         },
       ], // print Markdown
-      // doc: [(proseNode: ProseNode) => console.log(proseNode)], // print Node of ProseMirror
+      doc: [(proseNode: any) => console.log(proseNode.toString())], // print Node of ProseMirror
     };
 
     // Reset each mark to be headless.
@@ -98,7 +98,13 @@ export class CardEditorMarkdown implements ICardEditor {
       })
       .configure(codeFence, { headless: true })
       .configure(doc, { headless: true })
-      .configure(hardbreak, { headless: true })
+      .configure(hardbreak, {
+        headless: true,
+        keymap: {
+          // [SupportedKeys.HardBreak]: ['Enter', 'Shift-Enter'],
+          [SupportedKeys.HardBreak]: ['Shift-Enter'],
+        },
+      })
       .configure(heading, { headless: true })
       .configure(hr, { headless: true })
       .configure(image, { headless: true })
@@ -157,7 +163,9 @@ export class CardEditorMarkdown implements ICardEditor {
     this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
       const parser = ctx.get(parserCtx);
+      console.log('#body : ' + body);
       const md = parser(body);
+      console.log('#parsed : ' + md!.content!.toString());
       if (!md) return;
       const tr = editorView.state.tr;
       // setData replaces existing text
