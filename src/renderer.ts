@@ -566,15 +566,16 @@ const startEditor = (x: number, y: number) => {
 };
 
 const endEditor = async () => {
-  cardEditor.hideEditor();
-
   await cardEditor.endEdit(); // body will be saved in endEdit()
-
   render();
 
-  const { left, top } = cardEditor.getScrollPosition();
-  const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
-  iframe.contentWindow!.scrollTo(left, top);
+  // Must wait until card is zoomed to scroll correctly
+  setTimeout(() => {
+    const { left, top } = cardEditor.getScrollPosition();
+    const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
+    iframe.contentWindow!.scrollTo(left, top);
+    cardEditor.hideEditor();
+  }, 100);
 };
 
 const startEditorByClick = (clickEvent: InnerClickEvent) => {
