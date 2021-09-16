@@ -413,7 +413,7 @@ const onMoveByHand = (geometry: Geometry, modifiedDate: string, changeFrom: Chan
 };
 
 // Render card data
-const onRenderCard = (url: string, cardBody: CardBody, cardSketch: CardSketch) => {
+const onRenderCard = async (url: string, cardBody: CardBody, cardSketch: CardSketch) => {
   cardStore.dispatch({
     type: 'card-body-init',
     payload: cardBody,
@@ -448,7 +448,7 @@ const onRenderCard = (url: string, cardBody: CardBody, cardSketch: CardSketch) =
 
   initCardRenderer(cardCssStyle, cardEditor);
 
-  cardEditor.setData(cardStore.getState().body._body);
+  await cardEditor.setData(cardStore.getState().body._body);
 
   document.getElementById('card')!.style.visibility = 'visible';
 

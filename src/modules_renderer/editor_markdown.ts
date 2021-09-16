@@ -5,6 +5,7 @@
 
 import {
   AnyRecord,
+  defaultValueCtx,
   Editor,
   editorViewCtx,
   parserCtx,
@@ -38,6 +39,7 @@ import { render, shadowHeight, shadowWidth } from './card_renderer';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
 import { cardStore } from './card_store';
 import { cardBodyUpdateCreator } from './card_action_creator';
+import { addFormats } from 'typed-intl';
 
 const marginTop = 3;
 const marginLeft = 7;
@@ -80,6 +82,34 @@ export class CardEditorMarkdown implements ICardEditor {
   loadUI = async (_cardCssStyle: CardCssStyle): Promise<void> => {
     this._cardCssStyle = _cardCssStyle;
 
+    return await Promise.resolve();
+    // Set default value of link target to _blank
+    /*
+      CKEDITOR.on('dialogDefinition', function (ev) {
+        const dialogName = ev.data.name;
+        const dialogDefinition = ev.data.definition;
+        if (dialogName === 'link') {
+          const targetTab = dialogDefinition.getContents('target');
+          const targetField = targetTab.get('linkTargetType');
+          targetField.default = '_blank';
+        }
+      });
+      */
+
+    // Change event
+    /*
+        CKEDITOR.instances.editor.on('change', async () => {
+          const data = CKEDITOR.instances.editor.getData();
+          if (cardStore.getState().body._body !== data) {
+            await cardStore.dispatch(cardBodyUpdateCreator(data));
+
+            render(['TitleBar']);
+          }
+        });
+      */
+  };
+
+  public setData = async (body: string): Promise<void> => {
     const mdListener = {
       markdown: [
         (getMarkdown: () => string) => {
@@ -91,7 +121,7 @@ export class CardEditorMarkdown implements ICardEditor {
 
     // Reset each mark to be headless.
     // https://github.com/Saul-Mirone/milkdown/discussions/107
-    const commonmarks = commonmarkNodes
+    commonmarkNodes
       .configure(blockquote, { headless: true })
       .configure(bulletList, {
         headless: true,
@@ -126,6 +156,7 @@ export class CardEditorMarkdown implements ICardEditor {
       .config(ctx => {
         ctx.set(rootCtx, document.querySelector('#editor'));
         ctx.set(listenerCtx, mdListener);
+        ctx.set(defaultValueCtx, body);
       })
       .use(nord)
       .use(commonmark)
@@ -135,34 +166,7 @@ export class CardEditorMarkdown implements ICardEditor {
       .use(emoji.headless())
       .use(commonmarkPlugins)
       .create();
-
-    // Set default value of link target to _blank
     /*
-      CKEDITOR.on('dialogDefinition', function (ev) {
-        const dialogName = ev.data.name;
-        const dialogDefinition = ev.data.definition;
-        if (dialogName === 'link') {
-          const targetTab = dialogDefinition.getContents('target');
-          const targetField = targetTab.get('linkTargetType');
-          targetField.default = '_blank';
-        }
-      });
-      */
-
-    // Change event
-    /*
-        CKEDITOR.instances.editor.on('change', async () => {
-          const data = CKEDITOR.instances.editor.getData();
-          if (cardStore.getState().body._body !== data) {
-            await cardStore.dispatch(cardBodyUpdateCreator(data));
-
-            render(['TitleBar']);
-          }
-        });
-      */
-  };
-
-  public setData = (body: string): void => {
     this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
       const parser = ctx.get(parserCtx);
@@ -178,6 +182,7 @@ export class CardEditorMarkdown implements ICardEditor {
       );
       editorView.updateState(newState);
     });
+    */
   };
 
   private _addDragAndDropEvent = () => {};
@@ -225,11 +230,13 @@ export class CardEditorMarkdown implements ICardEditor {
 
     // Save data to AvatarProp
 
-    const data = this._editor.action(ctx => {
+    let data = this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
       const serializer = ctx.get(serializerCtx);
       return serializer(editorView.state.doc); // editorView.state.doc is ProseNode
     });
+    data = data.replace(/\n{4}/g, '\n\n&nbsp;\n\n');
+    data = data.replace(/^\n/, '&nbsp;\n\n');
 
     await cardStore.dispatch(cardBodyUpdateCreator(data));
 

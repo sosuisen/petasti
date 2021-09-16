@@ -27,7 +27,7 @@ export interface ICardEditor {
   setSize(width?: number, height?: number): void;
   setColor(): void;
 
-  setData(data: string): void;
+  setData(data: string): Promise<void>;
   getHTML(): string;
 
   execAfterMouseDown(func: () => Promise<void>): void;
