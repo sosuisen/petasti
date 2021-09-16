@@ -34,12 +34,12 @@ import {
 } from '@milkdown/preset-commonmark';
 import { history } from '@milkdown/plugin-history';
 import { emoji } from '@milkdown/plugin-emoji';
+import { addFormats } from 'typed-intl';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
 import { render, shadowHeight, shadowWidth } from './card_renderer';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
 import { cardStore } from './card_store';
 import { cardBodyUpdateCreator } from './card_action_creator';
-import { addFormats } from 'typed-intl';
 
 const marginTop = 3;
 const marginLeft = 7;
@@ -166,6 +166,18 @@ export class CardEditorMarkdown implements ICardEditor {
       .use(emoji.headless())
       .use(commonmarkPlugins)
       .create();
+
+    this._editor.action(ctx => {
+      const editorView = ctx.get(editorViewCtx);
+      const innerHTML = editorView.dom.innerHTML;
+      const fixedHTML = innerHTML.replace(
+        /<p class="paragraph">&nbsp;<\/p>/g,
+        '<p class="paragraph"></p>'
+      );
+      console.log('inner: ' + innerHTML);
+      console.log('fixed: ' + fixedHTML);
+      editorView.dom.innerHTML = fixedHTML;
+    });
     /*
     this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
@@ -235,7 +247,13 @@ export class CardEditorMarkdown implements ICardEditor {
       const serializer = ctx.get(serializerCtx);
       return serializer(editorView.state.doc); // editorView.state.doc is ProseNode
     });
-    data = data.replace(/\n{4}/g, '\n\n&nbsp;\n\n');
+    data = data.replace(/\n\n(\n\n+?)([^\n])/g, (match, p1, p2) => {
+      let result = '\n';
+      for (let i = 0; i < p1.length / 2; i++) {
+        result += '\n&nbsp;\n';
+      }
+      return result + '\n' + p2;
+    });
     data = data.replace(/^\n/, '&nbsp;\n\n');
 
     await cardStore.dispatch(cardBodyUpdateCreator(data));
