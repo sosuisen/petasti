@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "module": "ES2015",
+    "module": "esnext",
     "target": "ES2019",
     "strict": true,
     "noImplicitAny": true,
