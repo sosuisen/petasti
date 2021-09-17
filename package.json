@@ -27,14 +27,21 @@
     "start-all": "npm run compile-all && npx electron .",
     "start-all-clean": "npm run compile-all-clean && npx electron .",
     "start": "npm run start-all",
-    "make": "npm run compile-all-clean && rm -rf ./installer/* && node --experimental-modules --experimental-json-modules packager.mjs",
+    "make": "npm run copy-milkdown && npm run compile-all-clean && rm -rf ./installer/* && node --experimental-modules --experimental-json-modules packager.mjs",
     "link-milkdown-core": "cd node_modules/@milkdown && rm -rf core && npx cross-env MSYS=winsymlinks:nativestrict ln -s ../../../milkdown/packages/core . && cd ../../",
     "link-milkdown-plugin-emoji": "cd node_modules/@milkdown && rm -rf plugin-emoji && npx cross-env MSYS=winsymlinks:nativestrict ln -s ../../../milkdown/packages/plugin-emoji . && cd ../../",
     "link-milkdown-plugin-history": "cd node_modules/@milkdown && rm -rf plugin-history && npx cross-env MSYS=winsymlinks:nativestrict ln -s ../../../milkdown/packages/plugin-history . && cd ../../",
     "link-milkdown-plugin-listener": "cd node_modules/@milkdown && rm -rf plugin-listener && npx cross-env MSYS=winsymlinks:nativestrict ln -s ../../../milkdown/packages/plugin-listener . && cd ../../",
     "link-milkdown-preset-commonmark": "cd node_modules/@milkdown && rm -rf preset-commonmark && npx cross-env MSYS=winsymlinks:nativestrict ln -s ../../../milkdown/packages/preset-commonmark . && cd ../../",
     "link-milkdown-theme-nord": "cd node_modules/@milkdown && rm -rf theme-nord && npx cross-env MSYS=winsymlinks:nativestrict ln -s ../../../milkdown/packages/theme-nord . && cd ../../",
-    "link-milkdown": "npm run link-milkdown-core && npm run link-milkdown-plugin-emoji && npm run link-milkdown-plugin-history && npm run link-milkdown-plugin-listener && npm run link-milkdown-preset-commonmark && npm run link-milkdown-theme-nord"
+    "link-milkdown": "npm run link-milkdown-core && npm run link-milkdown-plugin-emoji && npm run link-milkdown-plugin-history && npm run link-milkdown-plugin-listener && npm run link-milkdown-preset-commonmark && npm run link-milkdown-theme-nord",
+    "copy-milkdown-core": "cd node_modules/@milkdown && rm -rf core && cp -rL ../../../milkdown/packages/core . && cd ../../",
+    "copy-milkdown-plugin-emoji": "cd node_modules/@milkdown && rm -rf plugin-emoji && cp -rL ../../../milkdown/packages/plugin-emoji . && cd ../../",
+    "copy-milkdown-plugin-history": "cd node_modules/@milkdown && rm -rf plugin-history && cp -rL ../../../milkdown/packages/plugin-history . && cd ../../",
+    "copy-milkdown-plugin-listener": "cd node_modules/@milkdown && rm -rf plugin-listener && cp -rL ../../../milkdown/packages/plugin-listener . && cd ../../",
+    "copy-milkdown-preset-commonmark": "cd node_modules/@milkdown && rm -rf preset-commonmark && cp -rL ../../../milkdown/packages/preset-commonmark . && cd ../../",
+    "copy-milkdown-theme-nord": "cd node_modules/@milkdown && rm -rf theme-nord && cp -rL ../../../milkdown/packages/theme-nord . && cd ../../",
+    "copy-milkdown": "npm run copy-milkdown-core && npm run copy-milkdown-plugin-emoji && npm run copy-milkdown-plugin-history && npm run copy-milkdown-plugin-listener && npm run copy-milkdown-preset-commonmark && npm run copy-milkdown-theme-nord"    
   },
   "keywords": [],
   "author": {
@@ -80,6 +87,7 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
+    "@emotion/babel-plugin": "^11.3.0",
     "@milkdown/core": "^4.11.2",
     "@milkdown/plugin-emoji": "^4.11.2",
     "@milkdown/plugin-history": "^4.11.2",
@@ -93,6 +101,8 @@
     "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^9.0.1",
     "git-documentdb": "^0.4.6",
+    "lodash.toarray": "^4.4.0",
+    "prosemirror-schema-basic": "^1.1.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-redux": "^7.2.4",

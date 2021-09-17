@@ -51,6 +51,8 @@ const createInstaller = async () => {
       setupExe: `${name}-${packageJson.version}-Setup.exe`,
       noMsi: true
     }).catch (e => console.log(`Error in Windows Installer: ${e.message}`));
+
+  console.log('### Alert: "npm run link-milkdown" again!!!');
 };
 
 createInstaller();
