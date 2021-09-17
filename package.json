@@ -41,7 +41,7 @@
     "copy-milkdown-plugin-listener": "cd node_modules/@milkdown && rm -rf plugin-listener && cp -rL ../../../milkdown/packages/plugin-listener . && cd ../../",
     "copy-milkdown-preset-commonmark": "cd node_modules/@milkdown && rm -rf preset-commonmark && cp -rL ../../../milkdown/packages/preset-commonmark . && cd ../../",
     "copy-milkdown-theme-nord": "cd node_modules/@milkdown && rm -rf theme-nord && cp -rL ../../../milkdown/packages/theme-nord . && cd ../../",
-    "copy-milkdown": "npm run copy-milkdown-core && npm run copy-milkdown-plugin-emoji && npm run copy-milkdown-plugin-history && npm run copy-milkdown-plugin-listener && npm run copy-milkdown-preset-commonmark && npm run copy-milkdown-theme-nord"    
+    "copy-milkdown": "npm run copy-milkdown-core && npm run copy-milkdown-plugin-emoji && npm run copy-milkdown-plugin-history && npm run copy-milkdown-plugin-listener && npm run copy-milkdown-preset-commonmark && npm run copy-milkdown-theme-nord"
   },
   "keywords": [],
   "author": {
@@ -87,7 +87,6 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
-    "@emotion/babel-plugin": "^11.3.0",
     "@milkdown/core": "^4.11.2",
     "@milkdown/plugin-emoji": "^4.11.2",
     "@milkdown/plugin-history": "^4.11.2",
@@ -101,8 +100,6 @@
     "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^9.0.1",
     "git-documentdb": "^0.4.6",
-    "lodash.toarray": "^4.4.0",
-    "prosemirror-schema-basic": "^1.1.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-redux": "^7.2.4",
