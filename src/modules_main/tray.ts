@@ -149,7 +149,7 @@ export const setTrayContextMenu = () => {
           value: `${MESSAGE('noteName', String(noteStore.getState().size + 1))}`,
           inputAttrs: {
             type: 'text',
-            required: 'true',
+            required: true,
           },
           height: 200,
         }).catch(e => console.error(e.message));
@@ -195,7 +195,7 @@ export const setTrayContextMenu = () => {
           value: noteProp!.name,
           inputAttrs: {
             type: 'text',
-            required: 'true',
+            required: true,
           },
           height: 200,
         }).catch(e => console.error(e.message));

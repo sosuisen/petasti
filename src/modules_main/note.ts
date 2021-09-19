@@ -227,8 +227,8 @@ class Note implements INote {
         conflictResolutionStrategy: 'ours-diff',
         live: true,
       };
-    } catch (err: unknown) {
-      showDialog(undefined, 'error', 'databaseCreateError', (err as Error).message);
+    } catch (err) {
+      showDialog(undefined, 'error', 'databaseCreateError', err.message);
       console.log(err);
       app.exit();
     }
