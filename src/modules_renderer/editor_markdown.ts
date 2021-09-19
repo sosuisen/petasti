@@ -4,16 +4,14 @@
  */
 
 import {
-  AnyRecord,
   defaultValueCtx,
   Editor,
   editorViewCtx,
-  parserCtx,
   rootCtx,
   serializerCtx,
-} from '@milkdown/core';
-import { listener, listenerCtx } from '@milkdown/plugin-listener';
-import { nord } from '@milkdown/theme-nord';
+} from '@sosuisen/milkdown-core';
+import { listener, listenerCtx } from '@sosuisen/milkdown-plugin-listener';
+import { nord } from '@sosuisen/milkdown-theme-nord';
 import {
   blockquote,
   bulletList,
@@ -31,10 +29,9 @@ import {
   paragraph,
   SupportedKeys,
   text,
-} from '@milkdown/preset-commonmark';
-import { history } from '@milkdown/plugin-history';
-import { emoji } from '@milkdown/plugin-emoji';
-import { addFormats } from 'typed-intl';
+} from '@sosuisen/milkdown-preset-commonmark';
+import { history } from '@sosuisen/milkdown-plugin-history';
+import { emoji } from '@sosuisen/milkdown-plugin-emoji';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
 import { render, shadowHeight, shadowWidth } from './card_renderer';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
