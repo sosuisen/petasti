@@ -5,12 +5,10 @@
 
 blockquote
 {
-	font-style: italic;
-	font-family: Georgia, Times, "Times New Roman", serif;
-	padding: 2px 0;
-	border-style: solid;
-	border-color: #ccc;
-	border-width: 0;
+  padding-left: 1.875rem;
+  line-height: 1.75rem;
+  border-left: 4px solid #ccc;
+  background-color: #f5f8fa;
 }
 
 a
