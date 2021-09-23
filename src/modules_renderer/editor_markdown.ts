@@ -34,6 +34,7 @@ import {
   paragraph,
   SupportedKeys,
   text,
+  WrapInBulletList,
 } from '@sosuisen/milkdown-preset-commonmark';
 import { history } from '@sosuisen/milkdown-plugin-history';
 import { emoji } from '@sosuisen/milkdown-plugin-emoji';
@@ -122,7 +123,7 @@ export class CardEditorMarkdown implements ICardEditor {
       doc: [(proseNode: any) => console.log(proseNode.toString())], // print Node of ProseMirror
     };
 
-
+/*
     const WrapInTopBulletList = createCmdKey();
     const wrapInTopBulletPlugin: MilkdownPlugin = () => {
       // Prepare: this part will be executed when plugin is registered in milkdown by .use method.
@@ -140,15 +141,22 @@ export class CardEditorMarkdown implements ICardEditor {
         });
       }
     };
+    */
     document.getElementById('editor')!.addEventListener('keydown', (event: KeyboardEvent) => {
       if (event.code === 'Tab') {
-        console.log('# Tab key pressed');
         this._editor.action((ctx) => {
-          console.log('# Call command');
-          const commandManager = ctx.get(commandsCtx);
-          commandManager.call(WrapInTopBulletList); // turn to h1 by default
-        })
-        event.preventDefault();
+          const editorView = ctx.get(editorViewCtx);
+          const ref = editorView.state.selection;
+          var $from = ref.$from;
+          var $to = ref.$to;
+          var range = $from.blockRange($to);
+          // console.log('# parent: ' + range?.parent.type.name);
+          if (range?.parent.type.name === 'doc') {
+            const commandManager = ctx.get(commandsCtx);
+            commandManager.call(WrapInBulletList); // turn to h1 by default
+            event.preventDefault();
+          };
+        });
       }
     });
 
@@ -199,7 +207,7 @@ export class CardEditorMarkdown implements ICardEditor {
       .use(history)
       .use(listener)
       .use(emoji.headless())
-      .use(wrapInTopBulletPlugin)
+      // .use(wrapInTopBulletPlugin)
       .use(commonmarkPlugins)
       .create();
 
