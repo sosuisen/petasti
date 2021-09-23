@@ -228,7 +228,7 @@ class Note implements INote {
         live: true,
       };
     } catch (err) {
-      showDialog(undefined, 'error', 'databaseCreateError', err.message);
+      showDialog(undefined, 'error', 'databaseCreateError', (err as Error).message);
       console.log(err);
       app.exit();
     }

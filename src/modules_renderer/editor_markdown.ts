@@ -4,10 +4,15 @@
  */
 
 import {
+  commandsCtx,
+  CommandsReady,
+  createCmdKey,
   defaultValueCtx,
   Editor,
   editorViewCtx,
+  MilkdownPlugin,
   rootCtx,
+  schemaCtx,
   serializerCtx,
 } from '@sosuisen/milkdown-core';
 import { listener, listenerCtx } from '@sosuisen/milkdown-plugin-listener';
@@ -37,6 +42,7 @@ import { render, shadowHeight, shadowWidth } from './card_renderer';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
 import { cardStore } from './card_store';
 import { cardBodyUpdateCreator } from './card_action_creator';
+import { wrapIn } from 'prosemirror-commands';
 
 const marginTop = 3;
 const marginLeft = 7;
@@ -116,15 +122,47 @@ export class CardEditorMarkdown implements ICardEditor {
       doc: [(proseNode: any) => console.log(proseNode.toString())], // print Node of ProseMirror
     };
 
+
+    const WrapInTopBulletList = createCmdKey();
+    const wrapInTopBulletPlugin: MilkdownPlugin = () => {
+      // Prepare: this part will be executed when plugin is registered in milkdown by .use method.
+      return async (ctx) => {
+        // Run: this part will be executed when plugin is actually loaded.
+        // wait for command manager ready
+        await ctx.wait(CommandsReady);
+  
+        const commandManager = ctx.get(commandsCtx);
+        const schema = ctx.get(schemaCtx);
+  
+        commandManager.create(WrapInTopBulletList, () => {
+          console.log('# Command is called');
+          return wrapIn(schema.nodes.bulletList);
+        });
+      }
+    };
+    document.getElementById('editor')!.addEventListener('keydown', (event: KeyboardEvent) => {
+      if (event.code === 'Tab') {
+        console.log('# Tab key pressed');
+        this._editor.action((ctx) => {
+          console.log('# Call command');
+          const commandManager = ctx.get(commandsCtx);
+          commandManager.call(WrapInTopBulletList); // turn to h1 by default
+        })
+        event.preventDefault();
+      }
+    });
+
+
+
     // Reset each mark to be headless.
     // https://github.com/Saul-Mirone/milkdown/discussions/107
     commonmarkNodes
       .configure(blockquote, { headless: true })
       .configure(bulletList, {
         headless: true,
-        keymap: {
-          [SupportedKeys.BulletList]: 'Tab',
-        },
+//        keymap: {
+          // [SupportedKeys.BulletList]: 'Tab',
+//        },
       })
       .configure(codeFence, { headless: true })
       .configure(doc, { headless: true })
@@ -161,6 +199,7 @@ export class CardEditorMarkdown implements ICardEditor {
       .use(history)
       .use(listener)
       .use(emoji.headless())
+      .use(wrapInTopBulletPlugin)
       .use(commonmarkPlugins)
       .create();
 
