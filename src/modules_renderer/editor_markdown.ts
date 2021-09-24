@@ -43,7 +43,6 @@ import { render, shadowHeight, shadowWidth } from './card_renderer';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
 import { cardStore } from './card_store';
 import { cardBodyUpdateCreator } from './card_action_creator';
-import { wrapIn } from 'prosemirror-commands';
 
 const marginTop = 3;
 const marginLeft = 7;
@@ -87,18 +86,6 @@ export class CardEditorMarkdown implements ICardEditor {
     this._cardCssStyle = _cardCssStyle;
 
     return await Promise.resolve();
-    // Set default value of link target to _blank
-    /*
-      CKEDITOR.on('dialogDefinition', function (ev) {
-        const dialogName = ev.data.name;
-        const dialogDefinition = ev.data.definition;
-        if (dialogName === 'link') {
-          const targetTab = dialogDefinition.getContents('target');
-          const targetField = targetTab.get('linkTargetType');
-          targetField.default = '_blank';
-        }
-      });
-      */
 
     // Change event
     /*
@@ -123,44 +110,25 @@ export class CardEditorMarkdown implements ICardEditor {
       doc: [(proseNode: any) => console.log(proseNode.toString())], // print Node of ProseMirror
     };
 
-/*
-    const WrapInTopBulletList = createCmdKey();
-    const wrapInTopBulletPlugin: MilkdownPlugin = () => {
-      // Prepare: this part will be executed when plugin is registered in milkdown by .use method.
-      return async (ctx) => {
-        // Run: this part will be executed when plugin is actually loaded.
-        // wait for command manager ready
-        await ctx.wait(CommandsReady);
-  
-        const commandManager = ctx.get(commandsCtx);
-        const schema = ctx.get(schemaCtx);
-  
-        commandManager.create(WrapInTopBulletList, () => {
-          console.log('# Command is called');
-          return wrapIn(schema.nodes.bulletList);
-        });
-      }
-    };
-    */
-    document.getElementById('editor')!.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (event.code === 'Tab') {
-        this._editor.action((ctx) => {
-          const editorView = ctx.get(editorViewCtx);
-          const ref = editorView.state.selection;
-          var $from = ref.$from;
-          var $to = ref.$to;
-          var range = $from.blockRange($to);
-          // console.log('# parent: ' + range?.parent.type.name);
-          if (range?.parent.type.name === 'doc') {
-            const commandManager = ctx.get(commandsCtx);
-            commandManager.call(WrapInBulletList); // turn to h1 by default
-            event.preventDefault();
-          };
-        });
-      }
-    });
-
-
+    document
+      .getElementById('editor')!
+      .addEventListener('keydown', (event: KeyboardEvent) => {
+        if (event.code === 'Tab') {
+          this._editor.action(ctx => {
+            const editorView = ctx.get(editorViewCtx);
+            const ref = editorView.state.selection;
+            const $from = ref.$from;
+            const $to = ref.$to;
+            const range = $from.blockRange($to);
+            // console.log('# parent: ' + range?.parent.type.name);
+            if (range?.parent.type.name === 'doc') {
+              const commandManager = ctx.get(commandsCtx);
+              commandManager.call(WrapInBulletList); // turn to h1 by default
+              event.preventDefault();
+            }
+          });
+        }
+      });
 
     // Reset each mark to be headless.
     // https://github.com/Saul-Mirone/milkdown/discussions/107
@@ -168,9 +136,9 @@ export class CardEditorMarkdown implements ICardEditor {
       .configure(blockquote, { headless: true })
       .configure(bulletList, {
         headless: true,
-//        keymap: {
-          // [SupportedKeys.BulletList]: 'Tab',
-//        },
+        //        keymap: {
+        // [SupportedKeys.BulletList]: 'Tab',
+        //        },
       })
       .configure(codeFence, { headless: true })
       .configure(doc, { headless: true })
@@ -218,8 +186,8 @@ export class CardEditorMarkdown implements ICardEditor {
         /<p class="paragraph">&nbsp;<\/p>/g,
         '<p class="paragraph"></p>'
       );
-      console.log('inner: ' + innerHTML);
-      console.log('fixed: ' + fixedHTML);
+      // console.log('inner: ' + innerHTML);
+      // console.log('fixed: ' + fixedHTML);
       editorView.dom.innerHTML = fixedHTML;
     });
     /*
