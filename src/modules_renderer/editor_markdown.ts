@@ -37,6 +37,7 @@ import {
   text,
   WrapInBulletList,
 } from '@sosuisen/milkdown-preset-commonmark';
+import { gfm } from '@sosuisen/milkdown-preset-gfm';
 import { history } from '@sosuisen/milkdown-plugin-history';
 import { emoji } from '@sosuisen/milkdown-plugin-emoji';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
@@ -166,6 +167,8 @@ export class CardEditorMarkdown implements ICardEditor {
       .configure(paragraph, { headless: true })
       .configure(text, { headless: true });
 
+    // gfmNodes.configure(taskListItem, { headless: true });
+
     this._editor = await Editor.make()
       .config(ctx => {
         ctx.set(rootCtx, document.querySelector('#editor'));
@@ -173,6 +176,7 @@ export class CardEditorMarkdown implements ICardEditor {
         ctx.set(defaultValueCtx, body);
       })
       .use(nord)
+      .use(gfm)
       .use(commonmark)
       .use(commonmarkNodes)
       .use(history)
