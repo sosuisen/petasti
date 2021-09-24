@@ -102,6 +102,8 @@ export class CardEditorMarkdown implements ICardEditor {
   };
 
   public setData = async (body: string): Promise<void> => {
+    // console.log('# load body: ' + body);
+
     const mdListener = {
       markdown: [
         (getMarkdown: () => string) => {
@@ -183,6 +185,25 @@ export class CardEditorMarkdown implements ICardEditor {
 
     this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
+
+      // Remove UI of code-fence and set language to <pre>
+      const codeFences = editorView.dom.getElementsByClassName('code-fence');
+      if (codeFences && codeFences.length > 0) {
+        for (let i = 0; i < codeFences.length; i++) {
+          const codeFenceElm = codeFences[i] as HTMLDivElement;
+          const ui = codeFenceElm.getElementsByClassName('code-fence_select-wrapper');
+          if (ui && ui.length > 0) {
+            const uiElm = ui[0];
+            if (uiElm) codeFenceElm.removeChild(uiElm);
+          }
+          const pre = codeFenceElm.getElementsByTagName('pre');
+          if (pre && pre.length > 0) {
+            const preElm = pre[0];
+            preElm.dataset.language = codeFenceElm.dataset.language;
+          }
+        }
+      }
+
       const innerHTML = editorView.dom.innerHTML;
       const fixedHTML = innerHTML.replace(
         /<p class="paragraph">&nbsp;<\/p>/g,
