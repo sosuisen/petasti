@@ -71,3 +71,114 @@ a > img {
 	border: none;
 	outline: 1px solid #0782C1;
 }
+
+/**
+ * code-fence
+ */
+div.code-fence {
+  background-color: #f5f8fa;
+  color: #000;
+  font-size: 0.85rem;
+  padding: 1.2rem 0.4rem 1.4rem;
+  border-radius: 4px;
+  font-family: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
+}
+
+div.code-fence > * {
+  margin: 0px;
+}
+
+div.code-fence .code-fence_select-wrapper {
+  position: relative;
+}
+
+div.code-fence .code-fence_value {
+    width: 10.25rem;
+    box-sizing: border-box;
+    border-radius: 4px;
+    margin: 0 1.2rem 1.2rem;
+    border: 1px solid rgba(216,222,233, 1);
+    box-shadow: 0px 1px 1px rgba(151, 153, 158, 0.14), 0px 2px 1px rgba(59, 66, 82, 0.12), 0px 1px 3px rgba(59,66,82, 0.2);
+    cursor: pointer;
+    background-color: #ffffff;
+    position: relative;
+    display: flex;
+    color: rgba(46, 52, 64, 0.87);
+    letter-spacing: 0.5px;
+    height: 2.625rem;
+    align-items: center;
+}
+
+div.code-fence .code-fence_value > *:last-child {
+  width: 2.625rem;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgba(76, 86, 106, 0.87);
+  border-left: 1px solid rgb(216,222,233);
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+
+div.code-fence .code-fence_value > *:last-child:hover {
+  background: rgb(236,239,244);
+  color: rgb(94,129,172);
+}
+
+div.code-fence .code-fence_value > span:first-child {
+  padding-left: 1rem;
+  flex: 1;
+  font-weight: 500;
+}
+
+div.code-fence .code-fence_select-option {
+  list-style: none;
+  line-height: 2rem;
+  padding-left: 1rem;
+  cursor: pointer;
+}
+
+div.code-fence .code-fence_select-option:hover {
+  background: rgba(129,161,193, 0.12);
+  color: rgb(94,129,172);
+}
+
+div.code-fence .code-fence_select[data-fold='true'] {
+  display: none;
+}
+
+div.code-fence .code-fence_select {
+  font-weight: 500;
+  position: absolute;
+  z-index: 1;
+  top: 2.625rem;
+  box-sizing: border-box;
+  left: 1.2rem;
+  padding: 0.5rem 0;
+  max-height: 16.75rem;
+  width: 10.25rem;
+  border: 1px solid rgba(216,222,233, 1);
+  box-shadow: 0px 1px 1px rgba(151, 153, 158, 0.14), 0px 2px 1px rgba(59, 66, 82, 0.12), 0px 1px 3px rgba(59,66,82, 0.2);
+  background-color: #ffffff;
+  border-top: none;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(129,161,193, 0.38) rgba(129,161,193, 0.12);
+}
+
+div.code-fence code {
+  line-height: 1.5;
+}
+
+div.code-fence pre {
+  font-family: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', 'monospace';
+  margin: 0 1.2rem !important;
+  overflow-x: scroll;
+  white-space: pre !important;
+  padding-bottom: 1.4rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(129,161,193, 0.38) rgba(129,161,193, 0.12);
+}

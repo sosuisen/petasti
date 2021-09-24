@@ -29,7 +29,7 @@ body > #card > #editor > .milkdown{
 body > #card > #editor > .milkdown > .editor {
 	/* Font */
 	/* Emoji fonts are added to visualize them nicely in Internet Explorer. */
-	font-family:  'メイリオ', 'Meiryo', sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-family:  sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';  
 	font-size: 14px;
 
 	/* Text color */
