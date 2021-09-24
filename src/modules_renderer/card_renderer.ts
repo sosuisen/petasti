@@ -121,6 +121,7 @@ const renderContentsData = (): Promise<void> => {
     const html = `<!DOCTYPE html>
   <html>
     <head>
+      <link href='./fontawesome/css/all.min.css' type='text/css' rel='stylesheet'>
       <link href='./css/markdown-contents.css' type='text/css' rel='stylesheet' />
       <link href='./css/markdown-nodes.css' type='text/css' rel='stylesheet' />
       <script> var exports = {}; </script>
