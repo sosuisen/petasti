@@ -38,6 +38,7 @@ import {
   WrapInBulletList,
 } from '@sosuisen/milkdown-preset-commonmark';
 import { tooltip } from '@sosuisen/milkdown-plugin-tooltip';
+import { slash } from '@sosuisen/milkdown-plugin-slash';
 import { gfm } from '@sosuisen/milkdown-preset-gfm';
 import { history } from '@sosuisen/milkdown-plugin-history';
 import { emoji } from '@sosuisen/milkdown-plugin-emoji';
@@ -185,6 +186,7 @@ export class CardEditorMarkdown implements ICardEditor {
       .use(prism)
       .use(emoji.headless())
       .use(tooltip)
+//      .use(slash)
       // .use(wrapInTopBulletPlugin)
       .use(commonmarkPlugins)
       .create();
