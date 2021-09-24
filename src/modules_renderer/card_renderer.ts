@@ -122,6 +122,7 @@ const renderContentsData = (): Promise<void> => {
   <html>
     <head>
       <link href='./fontawesome/css/all.min.css' type='text/css' rel='stylesheet'>
+      <link href='css/prism-material-light.css?20210924' type='text/css' rel='stylesheet'>      
       <link href='./css/markdown-contents.css' type='text/css' rel='stylesheet' />
       <link href='./css/markdown-nodes.css' type='text/css' rel='stylesheet' />
       <script> var exports = {}; </script>

@@ -15,6 +15,7 @@ import {
   schemaCtx,
   serializerCtx,
 } from '@sosuisen/milkdown-core';
+import { prism } from '@sosuisen/milkdown-plugin-prism';
 import { listener, listenerCtx } from '@sosuisen/milkdown-plugin-listener';
 import { nord } from '@sosuisen/milkdown-theme-nord';
 import {
@@ -174,6 +175,7 @@ export class CardEditorMarkdown implements ICardEditor {
       .use(commonmarkNodes)
       .use(history)
       .use(listener)
+      .use(prism)
       .use(emoji.headless())
       // .use(wrapInTopBulletPlugin)
       .use(commonmarkPlugins)
