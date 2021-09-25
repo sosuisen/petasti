@@ -77,6 +77,56 @@ a > img {
 }
 
 /**
+ * task-list-item
+ */
+li.task-list-item {
+  list-style-type: none;
+  position: relative;
+}
+ 
+li.task-list-item > div {
+  overflow: hidden;
+}
+
+li.task-list-item > div > p:first-child{
+  margin-block-start: 0px;
+}
+
+li.task-list-item > label {
+  position: absolute;
+  top: 0;
+  left: -1.2rem;
+  display: inline-block;
+  width: 1.5rem;
+}
+
+li.task-list-item > label > input {
+  display: none;
+}
+
+li.task-list-item > label:before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 4px;
+}
+
+li.task-list-item > label:hover:before {
+  background: rgb(236,239,244);
+}
+
+li.task-list-item[data-checked='true'] > label {
+  color: rgb(94, 129, 172);
+} 
+
+li.task-list-item[data-checked='false'] > label {
+  color: rgba(76, 86, 106, 0.87);
+}
+
+
+/**
  * code-fence
  */
 div.code-fence {

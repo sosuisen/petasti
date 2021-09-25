@@ -23,6 +23,7 @@ import {
   bulletList,
   codeFence,
   doc,
+  gfm,
   hardbreak,
   heading,
   hr,
@@ -31,9 +32,9 @@ import {
   orderedList,
   paragraph,
   SupportedKeys,
+  taskListItem,
   text,
   WrapInBulletList,
-  gfm
 } from '@sosuisen/milkdown-preset-gfm';
 import { tooltip } from '@sosuisen/milkdown-plugin-tooltip';
 import { slash } from '@sosuisen/milkdown-plugin-slash';
@@ -102,7 +103,7 @@ export class CardEditorMarkdown implements ICardEditor {
   };
 
   public setData = async (body: string): Promise<void> => {
-    // console.log('# load body: ' + body);
+    console.log('# load body: ' + body);
 
     const mdListener = {
       markdown: [
@@ -135,7 +136,7 @@ export class CardEditorMarkdown implements ICardEditor {
 
     // Reset each mark to be headless.
     // https://github.com/Saul-Mirone/milkdown/discussions/107
-    
+
     gfm
       .configure(blockquote, { headless: true })
       .configure(bulletList, {
@@ -165,9 +166,8 @@ export class CardEditorMarkdown implements ICardEditor {
       })
       .configure(orderedList, { headless: true })
       .configure(paragraph, { headless: true })
-      .configure(text, { headless: true });
-
-    // gfm.configure(taskListItem, { headless: true });
+      .configure(text, { headless: true })
+      .configure(taskListItem, { headless: true });
 
     this._editor = await Editor.make()
       .config(ctx => {
@@ -182,9 +182,10 @@ export class CardEditorMarkdown implements ICardEditor {
       .use(prism)
       .use(emoji.headless())
       .use(tooltip)
-//      .use(slash)
+      //      .use(slash)
       .create();
 
+    // eslint-disable-next-line complexity
     this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
 
@@ -224,14 +225,36 @@ export class CardEditorMarkdown implements ICardEditor {
         }
       }
 
+      // Remove label from TaskListItem
+      const taskListItems = editorView.dom.getElementsByClassName('task-list-item');
+      if (taskListItems && taskListItems.length > 0) {
+        for (let i = 0; i < taskListItems.length; i++) {
+          const taskListItemElm = taskListItems[i] as HTMLDivElement;
+          const div = taskListItemElm.getElementsByTagName('div');
+          if (div && div.length > 0) {
+            const divElm = div[0];
+            divElm.childNodes.forEach(child => {
+              taskListItemElm.appendChild(child);
+            });
+            taskListItemElm.removeChild(divElm);
+          }
+          const label = taskListItemElm.getElementsByTagName('label');
+          if (label && label.length > 0) {
+            const labelElm = label[0];
+            if (labelElm) taskListItemElm.removeChild(labelElm);
+          }
+        }
+      }
+
       const innerHTML = editorView.dom.innerHTML;
       const fixedHTML = innerHTML.replace(
         /<p class="paragraph">&nbsp;<\/p>/g,
         '<p class="paragraph"></p>'
       );
-      // console.log('inner: ' + innerHTML);
-      // console.log('fixed: ' + fixedHTML);
+      console.log('inner: ' + innerHTML);
+      console.log('fixed: ' + fixedHTML);
       editorView.dom.innerHTML = fixedHTML;
+      // editorView.dom.innerHTML = innerHTML;
     });
     /*
     this._editor.action(ctx => {
