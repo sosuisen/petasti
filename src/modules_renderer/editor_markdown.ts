@@ -22,9 +22,6 @@ import {
   blockquote,
   bulletList,
   codeFence,
-  commonmark,
-  commonmarkNodes,
-  commonmarkPlugins,
   doc,
   hardbreak,
   heading,
@@ -36,10 +33,10 @@ import {
   SupportedKeys,
   text,
   WrapInBulletList,
-} from '@sosuisen/milkdown-preset-commonmark';
+  gfm
+} from '@sosuisen/milkdown-preset-gfm';
 import { tooltip } from '@sosuisen/milkdown-plugin-tooltip';
 import { slash } from '@sosuisen/milkdown-plugin-slash';
-import { gfm } from '@sosuisen/milkdown-preset-gfm';
 import { history } from '@sosuisen/milkdown-plugin-history';
 import { emoji } from '@sosuisen/milkdown-plugin-emoji';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
@@ -138,7 +135,8 @@ export class CardEditorMarkdown implements ICardEditor {
 
     // Reset each mark to be headless.
     // https://github.com/Saul-Mirone/milkdown/discussions/107
-    commonmarkNodes
+    
+    gfm
       .configure(blockquote, { headless: true })
       .configure(bulletList, {
         headless: true,
@@ -169,7 +167,7 @@ export class CardEditorMarkdown implements ICardEditor {
       .configure(paragraph, { headless: true })
       .configure(text, { headless: true });
 
-    // gfmNodes.configure(taskListItem, { headless: true });
+    // gfm.configure(taskListItem, { headless: true });
 
     this._editor = await Editor.make()
       .config(ctx => {
@@ -179,16 +177,12 @@ export class CardEditorMarkdown implements ICardEditor {
       })
       .use(nord)
       .use(gfm)
-      .use(commonmark)
-      .use(commonmarkNodes)
       .use(history)
       .use(listener)
       .use(prism)
       .use(emoji.headless())
       .use(tooltip)
 //      .use(slash)
-      // .use(wrapInTopBulletPlugin)
-      .use(commonmarkPlugins)
       .create();
 
     this._editor.action(ctx => {
@@ -208,6 +202,24 @@ export class CardEditorMarkdown implements ICardEditor {
           if (pre && pre.length > 0) {
             const preElm = pre[0];
             preElm.dataset.language = codeFenceElm.dataset.language;
+          }
+        }
+      }
+
+      // Remove icon and placeholder in image
+      const images = editorView.dom.getElementsByClassName('image');
+      if (images && images.length > 0) {
+        for (let i = 0; i < images.length; i++) {
+          const imageElm = images[i] as HTMLDivElement;
+          const icon = imageElm.getElementsByClassName('icon');
+          if (icon && icon.length > 0) {
+            const iconElm = icon[0];
+            if (iconElm) imageElm.removeChild(iconElm);
+          }
+          const placeholder = imageElm.getElementsByClassName('placeholder');
+          if (placeholder && placeholder.length > 0) {
+            const placeholderElm = placeholder[0];
+            if (placeholderElm) imageElm.removeChild(placeholderElm);
           }
         }
       }
