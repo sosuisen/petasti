@@ -40,6 +40,8 @@ import { tooltip } from '@sosuisen/milkdown-plugin-tooltip';
 import { slash } from '@sosuisen/milkdown-plugin-slash';
 import { history } from '@sosuisen/milkdown-plugin-history';
 import { emoji } from '@sosuisen/milkdown-plugin-emoji';
+import { Node as ProseNode } from 'prosemirror-model';
+import { TextSelection } from 'prosemirror-state';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
 import { render, shadowHeight, shadowWidth } from './card_renderer';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
@@ -49,6 +51,86 @@ import { cardBodyUpdateCreator } from './card_action_creator';
 const marginTop = 3;
 const marginLeft = 7;
 const padding = 2;
+
+function getNodeEndpoints (
+  context: ProseNode,
+  node: ProseNode
+): null | { from: number; to: number } {
+  let offset = 0;
+  console.log(
+    `# getNodeEndpoint, context[${context.type.name}(${context.textContent})], node[${node.type.name}(${node.textContent})]`
+  );
+
+  if (context === node) {
+    console.log(
+      `  -(match)-> ${JSON.stringify({ from: offset, to: offset + node.nodeSize })}`
+    );
+    return { from: offset, to: offset + node.nodeSize };
+  }
+
+  if (context.type.name === 'text') {}
+
+  if (node.isBlock) {
+    console.log(
+      `context[${context.type.name}(${context.textContent})] size ${context.content.child.length}`
+    );
+
+    for (let i = 0; i < context.content.child.length; i++) {
+      console.log(`context[${context.type.name}(${context.textContent})] index ${i}`);
+
+      const result = getNodeEndpoints(context.content.child(i), node);
+      if (result) {
+        console.log(
+          `  -> ${JSON.stringify({
+            // from: result.from + offset + (context.type.kind === null ? 0 : 1),
+            // to: result.to + offset + (context.type.kind === null ? 0 : 1),
+            from: result.from + offset + 1, // Add opening tag of context. Its length is one.
+            to: result.to + offset + 1, // Add opening tag of context. Its length is one.
+          })}`
+        );
+
+        return {
+          // from: result.from + offset + (context.type.kind === null ? 0 : 1),
+          // to: result.to + offset + (context.type.kind === null ? 0 : 1),
+          from: result.from + offset + 1,
+          to: result.to + offset + 1,
+        };
+      }
+      offset += context.content.child(i).nodeSize;
+    }
+    return null;
+  }
+  return null;
+}
+
+const findText = (rootDoc: ProseNode, proseNode: ProseNode, txt: string) => {
+  let result: TextSelection[] = [];
+
+  console.log(`### findText ${proseNode.type.name}(${proseNode.textContent})`);
+
+  if (proseNode.isTextblock) {
+    let index = 0;
+    let foundAt;
+    const ep = getNodeEndpoints(rootDoc, proseNode);
+    // if (ep == null) return result;
+    while ((foundAt = proseNode.textContent.slice(index).search(new RegExp(txt))) > -1) {
+      const sel = new TextSelection(
+        rootDoc.resolve(ep!.from + index + foundAt + 1),
+        rootDoc.resolve(ep!.from + index + foundAt + txt.length + 1)
+      );
+      console.log(`Selection: ${sel.from}, ${sel.to}`);
+      result.push(sel);
+      index = index + foundAt + txt.length;
+    }
+  }
+  else {
+    proseNode.content.forEach(
+      (child, i) => (result = result.concat(findText(rootDoc, child, txt)))
+    );
+  }
+  return result;
+};
+
 export class CardEditorMarkdown implements ICardEditor {
   /**
    * Private
@@ -111,7 +193,17 @@ export class CardEditorMarkdown implements ICardEditor {
           console.log(getMarkdown());
         },
       ], // print Markdown
-      doc: [(proseNode: any) => console.log(proseNode.toString())], // print Node of ProseMirror
+      doc: [
+        (proseNode: any) => {
+          console.log(proseNode.toString());
+
+          this._editor.action(ctx => {
+            const editorView = ctx.get(editorViewCtx);
+            const result = findText(editorView.state.doc, editorView.state.doc, 'a');
+            console.log('# Search result: ' + JSON.stringify(result));
+          });
+        },
+      ], // print Node of ProseMirror
     };
 
     document
@@ -185,6 +277,7 @@ export class CardEditorMarkdown implements ICardEditor {
       //      .use(slash)
       .create();
 
+    /*
     // eslint-disable-next-line complexity
     this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
@@ -256,6 +349,7 @@ export class CardEditorMarkdown implements ICardEditor {
       editorView.dom.innerHTML = fixedHTML;
       // editorView.dom.innerHTML = innerHTML;
     });
+    */
     /*
     this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
