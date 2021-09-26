@@ -68,14 +68,12 @@ function getNodeEndpoints (
     return { from: offset, to: offset + node.nodeSize };
   }
 
-  if (context.type.name === 'text') {}
-
   if (node.isBlock) {
     console.log(
-      `context[${context.type.name}(${context.textContent})] size ${context.content.child.length}`
+      `context[${context.type.name}(${context.textContent})] size ${context.content.childCount}`
     );
 
-    for (let i = 0; i < context.content.child.length; i++) {
+    for (let i = 0; i < context.content.childCount; i++) {
       console.log(`context[${context.type.name}(${context.textContent})] index ${i}`);
 
       const result = getNodeEndpoints(context.content.child(i), node);
