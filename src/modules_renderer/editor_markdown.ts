@@ -142,7 +142,7 @@ export class CardEditorMarkdown implements ICardEditor {
       let index = 0;
       let foundAt;
       const ep = this.calcNodePosition(rootDoc, proseNode);
-      // if (ep == null) return result;
+
       while ((foundAt = proseNode.textContent.slice(index).search(new RegExp(txt))) > -1) {
         const sel = new TextSelection(
           rootDoc.resolve(ep!.from + index + foundAt),
@@ -156,6 +156,33 @@ export class CardEditorMarkdown implements ICardEditor {
     else {
       proseNode.content.forEach(
         (child, i) => (result = result.concat(this.findText(rootDoc, child, txt)))
+      );
+    }
+    return result;
+  };
+
+  findExtraNBSP = (rootDoc: ProseNode, proseNode: ProseNode) => {
+    let result: TextSelection[] = [];
+
+    console.log(`### findExtraNBSP ${proseNode.type.name}(${proseNode.textContent})`);
+
+    if (proseNode.isTextblock) {
+      let index = 0;
+      let foundAt;
+      const ep = this.calcNodePosition(rootDoc, proseNode);
+
+      if (proseNode.type.name === 'paragraph' && proseNode.textContent ===  '\u00a0') {
+        const sel = new TextSelection(
+          rootDoc.resolve(ep!.from),
+          rootDoc.resolve(ep!.from + 1)
+        );
+        console.log(`Selection: ${sel.from}, ${sel.to}`);
+        result.push(sel);
+      }
+    }
+    else {
+      proseNode.content.forEach(
+        (child, i) => (result = result.concat(this.findExtraNBSP(rootDoc, child)))
       );
     }
     return result;
@@ -258,7 +285,8 @@ export class CardEditorMarkdown implements ICardEditor {
      */
     this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
-      const selections = this.findText(editorView.state.doc, editorView.state.doc, '\u00a0'); // Finde &nbsp;
+      // const selections = this.findText(editorView.state.doc, editorView.state.doc, '\u00a0'); // Find &nbsp;
+      const selections = this.findExtraNBSP(editorView.state.doc, editorView.state.doc); // Find <p>&nbsp;</p>
       console.log('# Search result: ' + JSON.stringify(selections));
       let selection: TextSelection | undefined;
       let offset = 0;
