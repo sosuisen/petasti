@@ -194,12 +194,6 @@ export class CardEditorMarkdown implements ICardEditor {
       doc: [
         (proseNode: any) => {
           console.log(proseNode.toString());
-
-          this._editor.action(ctx => {
-            const editorView = ctx.get(editorViewCtx);
-            const result = findText(editorView.state.doc, editorView.state.doc, 'a');
-            console.log('# Search result: ' + JSON.stringify(result));
-          });
         },
       ], // print Node of ProseMirror
     };
@@ -274,6 +268,33 @@ export class CardEditorMarkdown implements ICardEditor {
       .use(tooltip)
       //      .use(slash)
       .create();
+
+    this._editor.action(ctx => {
+      const editorView = ctx.get(editorViewCtx);
+      const selections = findText(editorView.state.doc, editorView.state.doc, '\u00a0'); // Finde &nbsp;
+      // let selections = findText(editorView.state.doc, editorView.state.doc, 'a'); // Finde &nbsp;
+      console.log('# Search result: ' + JSON.stringify(selections));
+      const transforms = [];
+      let selection: TextSelection | undefined;
+
+      let offset = 0;
+      while ((selection = selections.shift())) {
+        const from = selection.from + offset - 1;
+        const to = selection.to + offset - 1; // 1??
+        const newState = editorView.state.apply(
+          editorView.state.tr.deleteRange(from, to)
+          // editorView.state.tr.insertText('x', selection.from, selection.to)
+        );
+        console.log(`# transformed: (${from}, ${to}) ` + newState.doc.toString());
+        editorView.updateState(newState);
+
+        // delete a chanacter
+        offset--;
+
+        // transforms.push(transform);
+        // selections = selections.map(s => s.map(editorView.state.doc, transform.maps[0]))
+      }
+    });
 
     /*
     // eslint-disable-next-line complexity
