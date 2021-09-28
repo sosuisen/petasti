@@ -97,7 +97,11 @@ export type MessagesRenderer = {
 };
 export type MessageLabelRenderer = keyof MessagesRenderer;
 
-export type Messages = MessagesMain & MessagesNote & MessagesSettings & MessagesLanguage & MessagesRenderer;
+export type Messages = MessagesMain &
+  MessagesNote &
+  MessagesSettings &
+  MessagesLanguage &
+  MessagesRenderer;
 export type MessageLabel = keyof Messages;
 
 const LANGUAGES_COMMON: MessagesLanguage = {
@@ -161,10 +165,12 @@ const SETTINGS_ENGLISH: MessagesSettings = {
 };
 
 const RENDERER_ENGLISH: MessagesRenderer = {
-  exitCode: 'Press $1 + Enter to exit from code',
+  exitCode: 'Press $1 + Down to exit from code',
 };
 
-export const messageLabelsForRenderer: MessageLabelRenderer[]  = Object.keys(RENDERER_ENGLISH) as MessageLabelRenderer[];
+export const messageLabelsForRenderer: MessageLabelRenderer[] = Object.keys(
+  RENDERER_ENGLISH
+) as MessageLabelRenderer[];
 
 export const ENGLISH: Messages = {
   ...LANGUAGES_COMMON,
@@ -269,7 +275,7 @@ const SETTINGS_JAPANESE: MessagesSettings = {
 };
 
 const RENDERER_JAPANESE: MessagesRenderer = {
-  exitCode: '$1 + Enter キーでコードの外側へ',
+  exitCode: '$1 + ↓ でコードの外へカーソル移動',
 };
 
 export const JAPANESE: Messages = {
@@ -319,7 +325,6 @@ export const JAPANESE: Messages = {
   lightgray: 'ライトグレー',
   transparent: '透明',
 };
-
 
 export const availableLanguages = ['en', 'ja'];
 export const defaultLanguage = 'en';
