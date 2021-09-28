@@ -11,7 +11,6 @@ import {
   MilkdownPlugin,
   rootCtx,
   serializerCtx,
-  createCtx
 } from '@sosuisen/milkdown-core';
 import { prism } from '@sosuisen/milkdown-plugin-prism';
 import { listener, listenerCtx } from '@sosuisen/milkdown-plugin-listener';
@@ -85,10 +84,9 @@ export class CardEditorMarkdown implements ICardEditor {
     return `<img id="${id}" src="${src}" alt="${alt}" width="${width}" height="${height}" />`;
   };
 
-  adjustEditorSizeFromImage2Plugin = async (imgWidth: number, imgHeight: number) => { };
+  adjustEditorSizeFromImage2Plugin = async (imgWidth: number, imgHeight: number) => {};
 
-
-  calcNodePosition(
+  calcNodePosition (
     context: ProseNode,
     node: ProseNode
   ): null | { from: number; to: number } {
@@ -171,11 +169,11 @@ export class CardEditorMarkdown implements ICardEditor {
     console.log(`### findExtraNBSP ${proseNode.type.name}(${proseNode.textContent})`);
 
     if (proseNode.isTextblock) {
-      let index = 0;
+      const index = 0;
       let foundAt;
       const ep = this.calcNodePosition(rootDoc, proseNode);
 
-      if (proseNode.type.name === 'paragraph' && proseNode.textContent ===  '\u00a0') {
+      if (proseNode.type.name === 'paragraph' && proseNode.textContent === '\u00a0') {
         const sel = new TextSelection(
           rootDoc.resolve(ep!.from),
           rootDoc.resolve(ep!.from + 1)
@@ -263,13 +261,20 @@ export class CardEditorMarkdown implements ICardEditor {
       .configure(orderedList, { headless: true })
       .configure(paragraph, { headless: true })
       .configure(text, { headless: true })
-      .configure(taskListItem, { headless: true });
+      .configure(taskListItem, {
+        headless: true,
+        keymap: {
+          [SupportedKeys.SinkListItem]: ['Tab', 'Alt-Shift-ArrowRight'],
+          [SupportedKeys.PopListItem]: ['Shift-Tab', 'Alt-Shift-ArrowLeft'],
+          [SupportedKeys.TaskList]: ['Mod-Enter'],
+        },
+      });
 
     /**
      * i18n
      */
     const messages: Record<string, string> = getConfig().messages;
-    messages['Meta'] = getConfig().os === 'darwin' ? 'Cmd' : 'Ctrl';
+    messages.Meta = getConfig().os === 'darwin' ? 'Cmd' : 'Ctrl';
 
     /**
      * Create editor
@@ -318,7 +323,7 @@ export class CardEditorMarkdown implements ICardEditor {
     });
   };
 
-  private _addDragAndDropEvent = () => { };
+  private _addDragAndDropEvent = () => {};
 
   showEditor = (): void => {
     if (this.isOpened) {
