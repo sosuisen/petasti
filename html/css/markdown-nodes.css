@@ -133,10 +133,16 @@ div.code-fence {
   background-color: #f5f8fa;
   color: #000;
   font-size: 0.85rem;
-  padding: 1.2rem 0.4rem 1.4rem;
+  padding: 0.4rem 0.4rem 0rem 0.4rem;
   border-radius: 4px;
   font-family: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
 }
+
+div.code-fence pre::webkit-scrollbar {
+  width: thin;
+  color: rgba(129,161,193, 0.38) rgba(129,161,193, 0.12);
+}
+
 
 div.code-fence > * {
   margin: 0px;
@@ -147,11 +153,17 @@ div.code-fence .code-fence_select-wrapper {
 }
 
 div.code-fence .code-fence_footer {
-  display: none;
+  visibility: hidden;
+  color: #a0a8aa;
+  font-size: 12px;
+}
+
+div.code-fence .code-fence_footer .fas {
+  margin-right: 3px;
 }
 
 body > #card > #editor > .milkdown > .editor div.code-fence .code-fence_footer {
-  display: block;
+  visibility: visible;
 }
 
 div.code-fence .code-fence_value {

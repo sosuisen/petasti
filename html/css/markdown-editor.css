@@ -10,7 +10,7 @@
   border: 0px;
   visibility: hidden;
   position: absolute;
-  z-index: 50;
+  z-index: 5;
 }
 
 body > #card > #editor > .milkdown{
