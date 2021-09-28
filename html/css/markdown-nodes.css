@@ -146,6 +146,14 @@ div.code-fence .code-fence_select-wrapper {
   position: relative;
 }
 
+div.code-fence .code-fence_footer {
+  display: none;
+}
+
+body > #card > #editor > .milkdown > .editor div.code-fence .code-fence_footer {
+  display: block;
+}
+
 div.code-fence .code-fence_value {
     width: 10.25rem;
     box-sizing: border-box;
