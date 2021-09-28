@@ -30,6 +30,7 @@ import {
   CardSketch,
   CardStatus,
   ICard,
+  RendererConfig,
 } from '../modules_common/types';
 import { cacheOfCard } from './card_cache';
 import { setContextMenu } from './card_context_menu';
@@ -39,6 +40,8 @@ import {
   setZIndexOfBottomCard,
   setZIndexOfTopCard,
 } from './card_zindex';
+import { messagesRenderer } from './messages';
+import { platform } from 'os';
 
 /**
  * Focus control
@@ -425,7 +428,21 @@ export class Card implements ICard {
       this.window.setPosition(this.sketch.geometry.x, this.sketch.geometry.y);
       console.debug(`renderCard in main [${this.url}] ${this.body._body.substr(0, 40)}`);
       this.window.showInactive();
-      this.window.webContents.send('render-card', this.url, this.body, this.sketch); // CardProp must be serialize because passing non-JavaScript objects to IPC methods is deprecated and will throw an exception beginning with Electron 9.
+      let myOS: 'win32' | 'darwin' | 'linux' = 'win32';
+      if (process.platform === 'win32') {
+        myOS = 'win32';
+      }
+      else if (process.platform === 'darwin') {
+        myOS = 'darwin';
+      }
+      else {
+        myOS = 'linux';
+      }
+      const config: RendererConfig = {
+        messages: messagesRenderer,
+        os: myOS,
+      };
+      this.window.webContents.send('render-card', this.url, this.body, this.sketch, config);
       const checkTimer = setInterval(() => {
         if (this.renderingCompleted) {
           clearInterval(checkTimer);

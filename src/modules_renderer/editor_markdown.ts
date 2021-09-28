@@ -8,8 +8,10 @@ import {
   defaultValueCtx,
   Editor,
   editorViewCtx,
+  MilkdownPlugin,
   rootCtx,
   serializerCtx,
+  createCtx
 } from '@sosuisen/milkdown-core';
 import { prism } from '@sosuisen/milkdown-plugin-prism';
 import { listener, listenerCtx } from '@sosuisen/milkdown-plugin-listener';
@@ -35,6 +37,7 @@ import {
 import { tooltip } from '@sosuisen/milkdown-plugin-tooltip';
 import { slash } from '@sosuisen/milkdown-plugin-slash';
 import { history } from '@sosuisen/milkdown-plugin-history';
+import { i18n, i18nCtx } from '@sosuisen/milkdown-plugin-i18n';
 import { emoji } from '@sosuisen/milkdown-plugin-emoji';
 import { Node as ProseNode } from 'prosemirror-model';
 import { TextSelection } from 'prosemirror-state';
@@ -43,6 +46,7 @@ import { render, shadowHeight, shadowWidth } from './card_renderer';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
 import { cardStore } from './card_store';
 import { cardBodyUpdateCreator } from './card_action_creator';
+import { getConfig } from './config';
 
 const marginTop = 3;
 const marginLeft = 7;
@@ -262,6 +266,12 @@ export class CardEditorMarkdown implements ICardEditor {
       .configure(taskListItem, { headless: true });
 
     /**
+     * i18n
+     */
+    const messages: Record<string, string> = getConfig().messages;
+    messages['Meta'] = getConfig().os === 'darwin' ? 'Cmd' : 'Ctrl';
+
+    /**
      * Create editor
      */
     this._editor = await Editor.make()
@@ -269,7 +279,9 @@ export class CardEditorMarkdown implements ICardEditor {
         ctx.set(rootCtx, document.querySelector('#editor'));
         ctx.set(listenerCtx, mdListener);
         ctx.set(defaultValueCtx, body);
+        ctx.set(i18nCtx, messages);
       })
+      .use(i18n)
       .use(nord)
       .use(gfm)
       .use(history)

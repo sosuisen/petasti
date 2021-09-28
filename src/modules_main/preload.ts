@@ -5,7 +5,9 @@
 import { contextBridge, ipcRenderer, MouseInputEvent } from 'electron';
 import { ChangedFile } from 'git-documentdb';
 import { DatabaseCommand } from '../modules_common/db.types';
-import { CardBody, CardSketch, Geometry, SavingTarget } from '../modules_common/types';
+import { MessagesRenderer } from '../modules_common/i18n';
+import { CardBody, CardSketch, Geometry, RendererConfig, SavingTarget } from '../modules_common/types';
+import { messagesRenderer } from './messages';
 
 contextBridge.exposeInMainWorld('api', {
   /**
@@ -113,10 +115,11 @@ ipcRenderer.on(
     event: Electron.IpcRendererEvent,
     sketchUrl: string,
     cardBody: CardBody,
-    cardSketch: CardSketch
+    cardSketch: CardSketch,
+    config: RendererConfig
   ) =>
     window.postMessage(
-      { command: 'render-card', sketchUrl, cardBody, cardSketch },
+      { command: 'render-card', sketchUrl, cardBody, cardSketch, config },
       'file://'
     )
 );

@@ -2,10 +2,13 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-import { MessageLabel, Messages } from '../modules_common/i18n';
+import { MessageLabel, messageLabelsForRenderer, Messages, MessagesRenderer } from '../modules_common/i18n';
 
 // Utility for i18n
 let messages: Messages;
+
+export let messagesRenderer: MessagesRenderer = {} as unknown as MessagesRenderer;
+
 export const MESSAGE = (label: MessageLabel, ...args: string[]) => {
   // let message: string = note.info.messages[label];
   let message: string = messages[label];
@@ -20,4 +23,8 @@ export const MESSAGE = (label: MessageLabel, ...args: string[]) => {
 
 export const setMessages = (mes: Messages) => {
   messages = mes;
+
+  messageLabelsForRenderer.forEach(label => {
+    messagesRenderer[label] = mes[label];
+  });
 };

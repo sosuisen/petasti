@@ -92,8 +92,12 @@ type MessagesLanguage = {
   ja: string;
 };
 
-export type Messages = MessagesMain & MessagesNote & MessagesSettings & MessagesLanguage;
+export type MessagesRenderer = {
+  exitCode: string;
+};
+export type MessageLabelRenderer = keyof MessagesRenderer;
 
+export type Messages = MessagesMain & MessagesNote & MessagesSettings & MessagesLanguage & MessagesRenderer;
 export type MessageLabel = keyof Messages;
 
 const LANGUAGES_COMMON: MessagesLanguage = {
@@ -155,10 +159,18 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   saveSyncSettingsButton: 'Apply sync settings',
   reloadNotebookByCombine: 'App will be restarted to update the database.',
 };
+
+const RENDERER_ENGLISH: MessagesRenderer = {
+  exitCode: 'Press $1 + Enter to exit from code',
+};
+
+export const messageLabelsForRenderer: MessageLabelRenderer[]  = Object.keys(RENDERER_ENGLISH) as MessageLabelRenderer[];
+
 export const ENGLISH: Messages = {
   ...LANGUAGES_COMMON,
   ...NOTE_ENGLISH,
   ...SETTINGS_ENGLISH,
+  ...RENDERER_ENGLISH,
   databaseCreateError: 'Error: Cannot create database',
   exit: 'Exit',
   zoomIn: 'Zoom In',
@@ -255,10 +267,16 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   saveSyncSettingsButton: '同期設定を保存',
   reloadNotebookByCombine: 'データベース更新のためアプリが再起動されます。',
 };
+
+const RENDERER_JAPANESE: MessagesRenderer = {
+  exitCode: '$1 + Enter キーでコードの外側へ',
+};
+
 export const JAPANESE: Messages = {
   ...LANGUAGES_COMMON,
   ...NOTE_JAPANESE,
   ...SETTINGS_JAPANESE,
+  ...RENDERER_JAPANESE,
   databaseCreateError: 'エラー：データベースを作成できませんでした。',
   exit: '終了',
   zoomIn: '拡大',
@@ -301,6 +319,7 @@ export const JAPANESE: Messages = {
   lightgray: 'ライトグレー',
   transparent: '透明',
 };
+
 
 export const availableLanguages = ['en', 'ja'];
 export const defaultLanguage = 'en';

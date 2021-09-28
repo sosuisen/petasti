@@ -5,7 +5,7 @@
 
 import { ChangedFile } from 'git-documentdb';
 import { cardStore } from './modules_renderer/card_store';
-import { CardBody, CardSketch, CardStyle, Geometry } from './modules_common/types';
+import { CardBody, CardSketch, CardStyle, Geometry, RendererConfig } from './modules_common/types';
 import {
   CardCssStyle,
   contentsFrameCommand,
@@ -39,6 +39,9 @@ import {
   cardWorkStateStatusUpdateCreator,
 } from './modules_renderer/card_action_creator';
 import { ChangeFrom } from './modules_renderer/card_types';
+import { MessagesRenderer } from './modules_common/i18n';
+import { setMessages } from './modules_renderer/messages_renderer';
+import { setConfig } from './modules_renderer/config';
 
 let sketchUrlEncoded: string;
 
@@ -324,7 +327,7 @@ window.addEventListener('message', event => {
       onMoveByHand(event.data.geometry, event.data.modifiedDate, 'remote');
       break;
     case 'render-card':
-      onRenderCard(event.data.sketchUrl, event.data.cardBody, event.data.cardSketch);
+      onRenderCard(event.data.sketchUrl, event.data.cardBody, event.data.cardSketch, event.data.config);
       break;
     case 'resize-by-hand':
       console.log('# resize on main');
@@ -413,7 +416,10 @@ const onMoveByHand = (geometry: Geometry, modifiedDate: string, changeFrom: Chan
 };
 
 // Render card data
-const onRenderCard = async (url: string, cardBody: CardBody, cardSketch: CardSketch) => {
+const onRenderCard = async (url: string, cardBody: CardBody, cardSketch: CardSketch, config: RendererConfig) => {
+  setConfig(config);
+  setMessages(config.messages);
+
   cardStore.dispatch({
     type: 'card-body-init',
     payload: cardBody,

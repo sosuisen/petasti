@@ -4,6 +4,7 @@
  */
 
 import { BrowserWindow } from 'electron';
+import { MessagesRenderer } from './i18n';
 
 export type CartaDate = {
   createdDate: string;
@@ -116,3 +117,8 @@ export interface ICard {
 }
 
 export type CardMap = Map<string, ICard>;
+
+export type RendererConfig = {
+  messages: MessagesRenderer;
+  os: 'win32' | 'darwin' | 'linux';
+}
