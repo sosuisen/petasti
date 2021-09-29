@@ -138,28 +138,25 @@ div.code-fence {
   font-family: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
 }
 
-div.code-fence pre::webkit-scrollbar {
-  width: thin;
-  color: rgba(129,161,193, 0.38) rgba(129,161,193, 0.12);
-}
-
-
 div.code-fence > * {
   margin: 0px;
 }
 
 div.code-fence .code-fence_select-wrapper {
-  position: relative;
+  position: absolute;
+  right: 0px;
 }
 
 div.code-fence .code-fence_footer {
   visibility: hidden;
   color: #a0a8aa;
   font-size: 12px;
+  margin-left: 0.3rem;
 }
 
 div.code-fence .code-fence_footer .fas {
   margin-right: 3px;
+  cursor: pointer;
 }
 
 body > #card > #editor > .milkdown > .editor div.code-fence .code-fence_footer {
@@ -167,25 +164,26 @@ body > #card > #editor > .milkdown > .editor div.code-fence .code-fence_footer {
 }
 
 div.code-fence .code-fence_value {
-    width: 10.25rem;
+    width: 8.25rem;
     box-sizing: border-box;
     border-radius: 4px;
     margin: 0 1.2rem 1.2rem;
     border: 1px solid rgba(216,222,233, 1);
-    box-shadow: 0px 1px 1px rgba(151, 153, 158, 0.14), 0px 2px 1px rgba(59, 66, 82, 0.12), 0px 1px 3px rgba(59,66,82, 0.2);
+
     cursor: pointer;
     background-color: #ffffff;
     position: relative;
     display: flex;
     color: rgba(46, 52, 64, 0.87);
     letter-spacing: 0.5px;
-    height: 2.625rem;
+    height: 1.2rem;
     align-items: center;
 }
 
 div.code-fence .code-fence_value > *:last-child {
-  width: 2.625rem;
+  width: 1.625rem;
   height: 100%;
+  font-size: 9px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -226,12 +224,13 @@ div.code-fence .code-fence_select {
   font-weight: 500;
   position: absolute;
   z-index: 1;
-  top: 2.625rem;
+  top: 0.4rem;
+  margin-left: 0px;
   box-sizing: border-box;
   left: 1.2rem;
   padding: 0.5rem 0;
   max-height: 16.75rem;
-  width: 10.25rem;
+  width: 8.25rem;
   border: 1px solid rgba(216,222,233, 1);
   box-shadow: 0px 1px 1px rgba(151, 153, 158, 0.14), 0px 2px 1px rgba(59, 66, 82, 0.12), 0px 1px 3px rgba(59,66,82, 0.2);
   background-color: #ffffff;
@@ -240,8 +239,18 @@ div.code-fence .code-fence_select {
   display: flex;
   flex-direction: column;
   scrollbar-width: thin;
-  scrollbar-color: rgba(129,161,193, 0.38) rgba(129,161,193, 0.12);
+  scrollbar-color: #f5f8fa #a5a8af;
 }
+
+div.code-fence .code-fence_select::-webkit-scrollbar {
+  width: 7px;
+  background-color: #f5f8fa;
+}
+
+div.code-fence .code-fence_select::-webkit-scrollbar-thumb {
+  background-color: #a5a8af;
+}
+
 
 div.code-fence code {
   line-height: 1.5;
@@ -249,11 +258,19 @@ div.code-fence code {
 
 div.code-fence pre {
   font-family: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', 'monospace';
-  margin: 0 1.2rem !important;
+  margin: 1.4rem 0.3rem 0rem 0.3rem;
   overflow-x: scroll;
   white-space: pre !important;
-  padding-bottom: 1.4rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(129,161,193, 0.38) rgba(129,161,193, 0.12);
+  scrollbar-color: #f5f8fa #a5a8af;
 }
 
+div.code-fence pre::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+  background-color: #f5f8fa;
+}
+
+div.code-fence pre::-webkit-scrollbar-thumb {
+  background-color: #a5a8af;
+}
