@@ -143,8 +143,7 @@ div.code-fence > * {
 }
 
 div.code-fence .code-fence_select-wrapper {
-  position: absolute;
-  right: 0px;
+  float: right;
 }
 
 div.code-fence .code-fence_footer {
@@ -167,7 +166,8 @@ div.code-fence .code-fence_value {
     width: 8.25rem;
     box-sizing: border-box;
     border-radius: 4px;
-    margin: 0 1.2rem 1.2rem;
+    margin: 0 0rem 1.2rem;
+    margin-block-end: 0px;
     border: 1px solid rgba(216,222,233, 1);
 
     cursor: pointer;
@@ -222,10 +222,10 @@ div.code-fence .code-fence_select[data-fold='true'] {
 
 div.code-fence .code-fence_select {
   font-weight: 500;
-  position: absolute;
-  z-index: 1;
-  top: 0.4rem;
+  float:right;
+  margin-block-start: 0px;
   margin-left: 0px;
+  z-index: 1;  
   box-sizing: border-box;
   left: 1.2rem;
   padding: 0.5rem 0;
