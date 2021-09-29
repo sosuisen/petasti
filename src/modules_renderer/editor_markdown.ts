@@ -11,7 +11,8 @@ import {
   MilkdownPlugin,
   rootCtx,
   serializerCtx,
-  createCtx
+  createCtx,
+  schemaCtx
 } from '@sosuisen/milkdown-core';
 import { prism } from '@sosuisen/milkdown-plugin-prism';
 import { listener, listenerCtx } from '@sosuisen/milkdown-plugin-listener';
@@ -229,6 +230,27 @@ export class CardEditorMarkdown implements ICardEditor {
               const commandManager = ctx.get(commandsCtx);
               commandManager.call(WrapInBulletList); // turn to BulletList
               event.preventDefault();
+            }
+          });
+        }
+        else if (event.code === 'Backspace') {
+          this._editor.action(ctx => {
+            const editorView = ctx.get(editorViewCtx);
+            const ref = editorView.state.selection;          
+            const $from = ref.$from;
+            const $to = ref.$to;
+            const range = $from.blockRange($to);
+
+            if ($from.pos === 1 && $to.pos === 1  
+              && range?.parent.type.name === 'doc'
+              && ref.$head.parent.type.name === 'fence'
+              ) {
+                const schema = ctx.get(schemaCtx);
+                const newState = editorView.state.apply(
+                  editorView.state.tr.setNodeMarkup($from.pos-1, schema.nodes.paragraph)
+                );
+                editorView.updateState(newState);
+                event.preventDefault();
             }
           });
         }
