@@ -63,7 +63,7 @@ export class CardEditorMarkdown implements ICardEditor {
   /**
    * Public
    */
-  public hasCodeMode = true;
+  public hasCodeMode = false;
   public isCodeMode = false;
 
   public isOpened = false;

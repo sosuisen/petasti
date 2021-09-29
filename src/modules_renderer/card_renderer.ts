@@ -83,7 +83,7 @@ const renderTitleBar = () => {
   document.getElementById('titleBar')!.style.left = titleBarLeft + 'px';
   document.getElementById('titleBar')!.style.width = barwidth + 'px';
 
-  if (cardEditor.isOpened) {
+  if (cardEditor.isOpened && cardEditor.hasCodeMode) {
     document.getElementById('codeBtn')!.style.visibility = 'visible';
   }
   else {
