@@ -177,7 +177,7 @@ export class CardEditorMarkdown implements ICardEditor {
       let foundAt;
       const ep = this.calcNodePosition(rootDoc, proseNode);
 
-      if (proseNode.type.name === 'paragraph' && proseNode.textContent ===  '\u00a0') {
+      if (proseNode.type.name === 'paragraph' && proseNode.textContent === '\u00a0') {
         const sel = new TextSelection(
           rootDoc.resolve(ep!.from),
           rootDoc.resolve(ep!.from + 1)
@@ -236,21 +236,21 @@ export class CardEditorMarkdown implements ICardEditor {
         else if (event.code === 'Backspace') {
           this._editor.action(ctx => {
             const editorView = ctx.get(editorViewCtx);
-            const ref = editorView.state.selection;          
+            const ref = editorView.state.selection;
             const $from = ref.$from;
             const $to = ref.$to;
             const range = $from.blockRange($to);
 
-            if ($from.pos === 1 && $to.pos === 1  
+            if ($from.pos === 1 && $to.pos === 1
               && range?.parent.type.name === 'doc'
               && ref.$head.parent.type.name === 'fence'
-              ) {
-                const schema = ctx.get(schemaCtx);
-                const newState = editorView.state.apply(
-                  editorView.state.tr.setNodeMarkup($from.pos-1, schema.nodes.paragraph)
-                );
-                editorView.updateState(newState);
-                event.preventDefault();
+            ) {
+              const schema = ctx.get(schemaCtx);
+              const newState = editorView.state.apply(
+                editorView.state.tr.setNodeMarkup($from.pos - 1, schema.nodes.paragraph)
+              );
+              editorView.updateState(newState);
+              event.preventDefault();
             }
           });
         }
@@ -286,7 +286,12 @@ export class CardEditorMarkdown implements ICardEditor {
       .configure(orderedList, { headless: true })
       .configure(paragraph, { headless: true })
       .configure(text, { headless: true })
-      .configure(taskListItem, { headless: true });
+      .configure(taskListItem, {
+        headless: true,
+        keymap: {
+          [SupportedKeys.TaskList]: ['Mod-Enter']
+        }
+      });
 
     /**
      * i18n
@@ -395,7 +400,7 @@ export class CardEditorMarkdown implements ICardEditor {
     /**
      * Replace empty new lines in the editor area with &nbsp; to keep new lines in markdown. 
      */
-     data = data.replace(/\n\n(\n\n+?)([^\n])/g, (match, p1, p2) => {
+    data = data.replace(/\n\n(\n\n+?)([^\n])/g, (match, p1, p2) => {
       let result = '\n';
       for (let i = 0; i < p1.length / 2; i++) {
         result += '\n&nbsp;\n';
@@ -513,7 +518,7 @@ export class CardEditorMarkdown implements ICardEditor {
     if (innerEditor) {
       const innerWidth = width / cardStore.getState().sketch.style.zoom - marginLeft * 2 - padding * 2 - scrollBarWidth * cardStore.getState().sketch.style.zoom;
       const innerHeight = height / cardStore.getState().sketch.style.zoom - marginTop * 2 - padding * 2;
-      
+
       innerEditor.style.width = innerWidth + 'px';
       innerEditor.style.height = innerHeight + 'px';
     }

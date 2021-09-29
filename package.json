@@ -83,7 +83,7 @@
     "@sosuisen/milkdown-plugin-prism": "^4.11.1",
     "@sosuisen/milkdown-plugin-slash": "^4.11.2",
     "@sosuisen/milkdown-plugin-tooltip": "^4.11.3-alpha.1",
-    "@sosuisen/milkdown-preset-gfm": "^4.11.2-alpha.12",
+    "@sosuisen/milkdown-preset-gfm": "^4.11.2-alpha.13",
     "@sosuisen/milkdown-theme-nord": "^4.11.1",
     "@types/prosemirror-model": "^1.13.2",
     "@types/prosemirror-state": "^1.2.7",

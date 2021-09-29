@@ -251,12 +251,14 @@ ipcMain.handle('get-uuid', () => {
 
 ipcMain.handle(
   'send-mouse-input',
-  (event, url: string, mouseInputEvent: MouseInputEvent) => {
+  (event, url: string, mouseInputEvent: MouseInputEvent[]) => {
     const cardWindow = cacheOfCard.get(url);
     if (!cardWindow) {
       return;
     }
-    cardWindow.window.webContents.sendInputEvent(mouseInputEvent);
+    mouseInputEvent.forEach(event => {
+      cardWindow.window.webContents.sendInputEvent(event);
+    });
   }
 );
 
