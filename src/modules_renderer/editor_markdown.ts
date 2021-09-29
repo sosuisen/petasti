@@ -50,6 +50,7 @@ import { getConfig } from './config';
 
 const marginTop = 3;
 const marginLeft = 7;
+const scrollBarWidth = 7;
 const padding = 2;
 
 export class CardEditorMarkdown implements ICardEditor {
@@ -476,7 +477,7 @@ export class CardEditorMarkdown implements ICardEditor {
 
     const innerEditor = document.querySelector('#editor .milkdown .editor') as HTMLElement;
     if (innerEditor) {
-      innerEditor.style.width = width - marginLeft - padding * 2 + 'px';
+      innerEditor.style.width = width - marginLeft * 2 - scrollBarWidth - padding * 2 + 'px';
       innerEditor.style.height = height - marginTop * 2 - padding * 2 + 'px';
     }
     /*
@@ -525,7 +526,7 @@ export class CardEditorMarkdown implements ICardEditor {
     );
     const style = window.document.createElement('style');
     style.innerHTML =
-      '.milkdown::-webkit-scrollbar { width: 7px; background-color: ' +
+      '.milkdown::-webkit-scrollbar { width: ' + scrollBarWidth + 'px; background-color: ' +
       backgroundRgba +
       '}\n' +
       '.milkdown::-webkit-scrollbar-thumb { background-color: ' +
