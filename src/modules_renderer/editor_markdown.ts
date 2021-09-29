@@ -369,7 +369,11 @@ export class CardEditorMarkdown implements ICardEditor {
       const serializer = ctx.get(serializerCtx);
       return serializer(editorView.state.doc); // editorView.state.doc is ProseNode
     });
-    data = data.replace(/\n\n(\n\n+?)([^\n])/g, (match, p1, p2) => {
+
+    /**
+     * Replace empty new lines in the editor area with &nbsp; to keep new lines in markdown. 
+     */
+     data = data.replace(/\n\n(\n\n+?)([^\n])/g, (match, p1, p2) => {
       let result = '\n';
       for (let i = 0; i < p1.length / 2; i++) {
         result += '\n&nbsp;\n';
@@ -377,6 +381,13 @@ export class CardEditorMarkdown implements ICardEditor {
       return result + '\n' + p2;
     });
     data = data.replace(/^\n/, '&nbsp;\n\n');
+
+    /**
+     * \n in code-fence was escaped by replacing with \r to avoid to be replaced with &nbsp;
+     * So replace \r with \n to revert it.
+     */
+
+    data = data.replace(/\r/g, '\n');
 
     await cardStore.dispatch(cardBodyUpdateCreator(data));
 
