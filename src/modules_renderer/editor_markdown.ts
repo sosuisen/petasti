@@ -5,14 +5,14 @@
 
 import {
   commandsCtx,
+  createCtx,
   defaultValueCtx,
   Editor,
   editorViewCtx,
   MilkdownPlugin,
   rootCtx,
+  schemaCtx,
   serializerCtx,
-  createCtx,
-  schemaCtx
 } from '@sosuisen/milkdown-core';
 import { prism } from '@sosuisen/milkdown-plugin-prism';
 import { listener, listenerCtx } from '@sosuisen/milkdown-plugin-listener';
@@ -87,35 +87,40 @@ export class CardEditorMarkdown implements ICardEditor {
     return `<img id="${id}" src="${src}" alt="${alt}" width="${width}" height="${height}" />`;
   };
 
-  adjustEditorSizeFromImage2Plugin = async (imgWidth: number, imgHeight: number) => { };
+  adjustEditorSizeFromImage2Plugin = async (imgWidth: number, imgHeight: number) => {};
 
-
-  calcNodePosition(
+  calcNodePosition (
     context: ProseNode,
     node: ProseNode
   ): null | { from: number; to: number } {
     let offset = 0;
+    /*
     console.log(
       `# getNodeEndpoint, context[${context.type.name}(${context.textContent})], node[${node.type.name}(${node.textContent})]`
     );
-
+    */
     if (context === node) {
+      /*
       console.log(
         `  -(match)-> ${JSON.stringify({ from: offset, to: offset + node.nodeSize })}`
       );
+      */
       return { from: offset, to: offset + node.nodeSize };
     }
 
     if (node.isBlock) {
+      /*
       console.log(
         `context[${context.type.name}(${context.textContent})] size ${context.content.childCount}`
       );
+      */
 
       for (let i = 0; i < context.content.childCount; i++) {
-        console.log(`context[${context.type.name}(${context.textContent})] index ${i}`);
+        // console.log(`context[${context.type.name}(${context.textContent})] index ${i}`);
 
         const result = this.calcNodePosition(context.content.child(i), node);
         if (result) {
+          /*
           console.log(
             `  -> ${JSON.stringify({
               // from: result.from + offset + (context.type.kind === null ? 0 : 1),
@@ -124,7 +129,7 @@ export class CardEditorMarkdown implements ICardEditor {
               to: result.to + offset + 1, // Add opening tag of context. Its length is one.
             })}`
           );
-
+          */
           return {
             // from: result.from + offset + (context.type.kind === null ? 0 : 1),
             // to: result.to + offset + (context.type.kind === null ? 0 : 1),
@@ -142,7 +147,7 @@ export class CardEditorMarkdown implements ICardEditor {
   findText = (rootDoc: ProseNode, proseNode: ProseNode, txt: string) => {
     let result: TextSelection[] = [];
 
-    console.log(`### findText ${proseNode.type.name}(${proseNode.textContent})`);
+    // console.log(`### findText ${proseNode.type.name}(${proseNode.textContent})`);
 
     if (proseNode.isTextblock) {
       let index = 0;
@@ -154,7 +159,7 @@ export class CardEditorMarkdown implements ICardEditor {
           rootDoc.resolve(ep!.from + index + foundAt),
           rootDoc.resolve(ep!.from + index + foundAt + txt.length)
         );
-        console.log(`Selection: ${sel.from}, ${sel.to}`);
+        // console.log(`Selection: ${sel.from}, ${sel.to}`);
         result.push(sel);
         index = index + foundAt + txt.length;
       }
@@ -170,10 +175,10 @@ export class CardEditorMarkdown implements ICardEditor {
   findExtraNBSP = (rootDoc: ProseNode, proseNode: ProseNode) => {
     let result: TextSelection[] = [];
 
-    console.log(`### findExtraNBSP ${proseNode.type.name}(${proseNode.textContent})`);
+    // console.log(`### findExtraNBSP ${proseNode.type.name}(${proseNode.textContent})`);
 
     if (proseNode.isTextblock) {
-      let index = 0;
+      const index = 0;
       let foundAt;
       const ep = this.calcNodePosition(rootDoc, proseNode);
 
@@ -182,7 +187,7 @@ export class CardEditorMarkdown implements ICardEditor {
           rootDoc.resolve(ep!.from),
           rootDoc.resolve(ep!.from + 1)
         );
-        console.log(`Selection: ${sel.from}, ${sel.to}`);
+        // console.log(`Selection: ${sel.from}, ${sel.to}`);
         result.push(sel);
       }
     }
@@ -200,7 +205,7 @@ export class CardEditorMarkdown implements ICardEditor {
   };
 
   public setData = async (body: string): Promise<void> => {
-    console.log('# load body: ' + body);
+    // console.log('# load body: ' + body);
 
     const mdListener = {
       markdown: [
@@ -241,9 +246,11 @@ export class CardEditorMarkdown implements ICardEditor {
             const $to = ref.$to;
             const range = $from.blockRange($to);
 
-            if ($from.pos === 1 && $to.pos === 1
-              && range?.parent.type.name === 'doc'
-              && ref.$head.parent.type.name === 'fence'
+            if (
+              $from.pos === 1 &&
+              $to.pos === 1 &&
+              range?.parent.type.name === 'doc' &&
+              ref.$head.parent.type.name === 'fence'
             ) {
               const schema = ctx.get(schemaCtx);
               const newState = editorView.state.apply(
@@ -289,15 +296,15 @@ export class CardEditorMarkdown implements ICardEditor {
       .configure(taskListItem, {
         headless: true,
         keymap: {
-          [SupportedKeys.TaskList]: ['Mod-Enter']
-        }
+          [SupportedKeys.TaskList]: ['Mod-Enter'],
+        },
       });
 
     /**
      * i18n
      */
     const messages: Record<string, string> = getConfig().messages;
-    messages['Meta'] = getConfig().os === 'darwin' ? 'Cmd' : 'Ctrl';
+    messages.Meta = getConfig().os === 'darwin' ? 'Cmd' : 'Ctrl';
 
     /**
      * Create editor
@@ -327,7 +334,7 @@ export class CardEditorMarkdown implements ICardEditor {
       const editorView = ctx.get(editorViewCtx);
       // const selections = this.findText(editorView.state.doc, editorView.state.doc, '\u00a0'); // Find &nbsp;
       const selections = this.findExtraNBSP(editorView.state.doc, editorView.state.doc); // Find <p>&nbsp;</p>
-      console.log('# Search result: ' + JSON.stringify(selections));
+      // console.log('# Search result: ' + JSON.stringify(selections));
       let selection: TextSelection | undefined;
       let offset = 0;
       while ((selection = selections.shift())) {
@@ -337,7 +344,7 @@ export class CardEditorMarkdown implements ICardEditor {
           editorView.state.tr.deleteRange(from, to)
           // editorView.state.tr.insertText('x', selection.from, selection.to)
         );
-        console.log(`# transformed: (${from}, ${to}) ` + newState.doc.toString());
+        // console.log(`# transformed: (${from}, ${to}) ` + newState.doc.toString());
         editorView.updateState(newState);
 
         // delete a character
@@ -346,7 +353,7 @@ export class CardEditorMarkdown implements ICardEditor {
     });
   };
 
-  private _addDragAndDropEvent = () => { };
+  private _addDragAndDropEvent = () => {};
 
   showEditor = (): void => {
     if (this.isOpened) {
@@ -398,7 +405,7 @@ export class CardEditorMarkdown implements ICardEditor {
     });
 
     /**
-     * Replace empty new lines in the editor area with &nbsp; to keep new lines in markdown. 
+     * Replace empty new lines in the editor area with &nbsp; to keep new lines in markdown.
      */
     data = data.replace(/\n\n(\n\n+?)([^\n])/g, (match, p1, p2) => {
       let result = '\n';
@@ -516,8 +523,13 @@ export class CardEditorMarkdown implements ICardEditor {
 
     const innerEditor = document.querySelector('#editor .milkdown .editor') as HTMLElement;
     if (innerEditor) {
-      const innerWidth = width / cardStore.getState().sketch.style.zoom - marginLeft * 2 - padding * 2 - scrollBarWidth * cardStore.getState().sketch.style.zoom;
-      const innerHeight = height / cardStore.getState().sketch.style.zoom - marginTop * 2 - padding * 2;
+      const innerWidth =
+        width / cardStore.getState().sketch.style.zoom -
+        marginLeft * 2 -
+        padding * 2 -
+        scrollBarWidth * cardStore.getState().sketch.style.zoom;
+      const innerHeight =
+        height / cardStore.getState().sketch.style.zoom - marginTop * 2 - padding * 2;
 
       innerEditor.style.width = innerWidth + 'px';
       innerEditor.style.height = innerHeight + 'px';
@@ -568,7 +580,9 @@ export class CardEditorMarkdown implements ICardEditor {
     );
     const style = window.document.createElement('style');
     style.innerHTML =
-      '.milkdown::-webkit-scrollbar { width: ' + scrollBarWidth + 'px; background-color: ' +
+      '.milkdown::-webkit-scrollbar { width: ' +
+      scrollBarWidth +
+      'px; background-color: ' +
       backgroundRgba +
       '}\n' +
       '.milkdown::-webkit-scrollbar-thumb { background-color: ' +
