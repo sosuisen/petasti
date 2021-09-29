@@ -414,7 +414,16 @@ export class CardEditorMarkdown implements ICardEditor {
       }
       return result + '\n' + p2;
     });
+    // heading \n
     data = data.replace(/^\n/, '&nbsp;\n\n');
+    // trailing \n
+    data = data.replace(/(\n\n+?)$/g, (match, p1) => {
+      let result = '\n';
+      for (let i = 0; i < p1.length / 2; i++) {
+        result += '\n&nbsp;\n';
+      }
+      return result;
+    });
 
     /**
      * \n in code-fence was escaped by replacing with \r to avoid to be replaced with &nbsp;
