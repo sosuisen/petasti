@@ -444,6 +444,7 @@ export class CardEditorMarkdown implements ICardEditor {
     if (milkdownEditor) {
       // @ts-ignore
       milkdownEditor.style.zoom = `${cardStore.getState().sketch.style.zoom}`;
+      this.setSize();
     }
     /*
     if (CKEDITOR.instances.editor.document && CKEDITOR.instances.editor.document.$.body) {
@@ -477,8 +478,11 @@ export class CardEditorMarkdown implements ICardEditor {
 
     const innerEditor = document.querySelector('#editor .milkdown .editor') as HTMLElement;
     if (innerEditor) {
-      innerEditor.style.width = width - marginLeft * 2 - scrollBarWidth - padding * 2 + 'px';
-      innerEditor.style.height = height - marginTop * 2 - padding * 2 + 'px';
+      const innerWidth = width / cardStore.getState().sketch.style.zoom - marginLeft * 2 - padding * 2 - scrollBarWidth * cardStore.getState().sketch.style.zoom;
+      const innerHeight = height / cardStore.getState().sketch.style.zoom - marginTop * 2 - padding * 2;
+      
+      innerEditor.style.width = innerWidth + 'px';
+      innerEditor.style.height = innerHeight + 'px';
     }
     /*
     const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
