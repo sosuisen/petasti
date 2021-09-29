@@ -29,6 +29,7 @@ interface WindowWithAPI extends Window {
     finishRenderCard: (url: string) => Promise<void>;
     focus: (url: string) => Promise<void>;
     getUuid: () => Promise<string>;
+    openURL: (url: string) => Promise<void>;
     sendLeftMouseDown: (url: string, x: number, y: number) => Promise<void>;
     setTitle: (url: string, title: string) => Promise<void>;
     setWindowSize: (

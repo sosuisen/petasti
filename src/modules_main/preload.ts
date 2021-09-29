@@ -5,9 +5,7 @@
 import { contextBridge, ipcRenderer, MouseInputEvent } from 'electron';
 import { ChangedFile } from 'git-documentdb';
 import { DatabaseCommand } from '../modules_common/db.types';
-import { MessagesRenderer } from '../modules_common/i18n';
-import { CardBody, CardSketch, Geometry, RendererConfig, SavingTarget } from '../modules_common/types';
-import { messagesRenderer } from './messages';
+import { CardBody, CardSketch, Geometry, RendererConfig } from '../modules_common/types';
 
 contextBridge.exposeInMainWorld('api', {
   /**
@@ -53,6 +51,9 @@ contextBridge.exposeInMainWorld('api', {
   },
   getUuid: () => {
     return ipcRenderer.invoke('get-uuid');
+  },
+  openURL: (url: string) => {
+    return ipcRenderer.invoke('openURL', url);
   },
   sendLeftMouseDown: (url: string, x: number, y: number) => {
     const leftMouseDown: MouseInputEvent = {

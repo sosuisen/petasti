@@ -41,7 +41,6 @@ import {
   setZIndexOfTopCard,
 } from './card_zindex';
 import { messagesRenderer } from './messages';
-import { platform } from 'os';
 
 /**
  * Focus control

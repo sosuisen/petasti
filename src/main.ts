@@ -3,7 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { app, ipcMain, MouseInputEvent } from 'electron';
+import { app, ipcMain, MouseInputEvent, shell } from 'electron';
 import {
   Card,
   createCardWindow,
@@ -224,6 +224,10 @@ ipcMain.handle('focus', (event, url: string) => {
   }
 });
 
+ipcMain.handle('openURL', (event, url: string) => {
+  shell.openExternal(url);
+});
+
 ipcMain.handle('set-title', (event, url: string, title: string) => {
   const card = cacheOfCard.get(url);
   if (card) {
@@ -256,8 +260,8 @@ ipcMain.handle(
     if (!cardWindow) {
       return;
     }
-    mouseInputEvent.forEach(event => {
-      cardWindow.window.webContents.sendInputEvent(event);
+    mouseInputEvent.forEach(e => {
+      cardWindow.window.webContents.sendInputEvent(e);
     });
   }
 );

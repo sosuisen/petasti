@@ -10,6 +10,7 @@ import {
   Editor,
   editorViewCtx,
   MilkdownPlugin,
+  prosePluginFactory,
   rootCtx,
   schemaCtx,
   serializerCtx,
@@ -27,6 +28,7 @@ import {
   heading,
   hr,
   image,
+  link,
   listItem,
   orderedList,
   paragraph,
@@ -41,13 +43,15 @@ import { history } from '@sosuisen/milkdown-plugin-history';
 import { i18n, i18nCtx } from '@sosuisen/milkdown-plugin-i18n';
 import { emoji } from '@sosuisen/milkdown-plugin-emoji';
 import { Node as ProseNode } from 'prosemirror-model';
-import { TextSelection } from 'prosemirror-state';
+import { EditorState, Plugin as ProsePlugin, TextSelection } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
 import { render, shadowHeight, shadowWidth } from './card_renderer';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
 import { cardStore } from './card_store';
 import { cardBodyUpdateCreator } from './card_action_creator';
 import { getConfig } from './config';
+import window from './window';
 
 const marginTop = 3;
 const marginLeft = 7;
@@ -264,6 +268,45 @@ export class CardEditorMarkdown implements ICardEditor {
       });
 
     /**
+     * View event plugin
+     * update is invoked when view is changed by key and mouse
+     */
+    const viewEventPlugin = new ProsePlugin({
+      view (editorView) {
+        return {
+          update: (view: EditorView, prevState: EditorState) => {
+            const marks = view.state.selection.$head.marks();
+            const markNames = marks.map(mark => mark.type.name);
+            if (view.state.selection.empty && markNames.includes('link')) {
+              console.log(
+                '# View event all text in the same paragraph: ' +
+                  view.state.selection.$head.node().textContent
+              );
+              console.log(
+                '# View event nodeAfter.type: ' +
+                  view.state.selection.$head.nodeAfter!.type.name
+              );
+              console.log(
+                '# View event node selected text: ' +
+                  view.state.selection.$head.nodeBefore!.textContent +
+                  view.state.selection.$head.nodeAfter!.textContent
+              );
+
+              // Click link
+              const url =
+                view.state.selection.$head.nodeBefore!.textContent +
+                view.state.selection.$head.nodeAfter!.textContent;
+              console.log('# ViewEvent click: ' + url);
+              window.api.openURL(url);
+            }
+          },
+          destroy: () => {},
+        };
+      },
+    });
+    const prosePlugin = prosePluginFactory(viewEventPlugin);
+
+    /**
      * Reset each mark to be headless.
      * https://github.com/Saul-Mirone/milkdown/discussions/107
      */
@@ -316,6 +359,7 @@ export class CardEditorMarkdown implements ICardEditor {
         ctx.set(defaultValueCtx, body);
         ctx.set(i18nCtx, messages);
       })
+      .use(prosePlugin)
       .use(i18n)
       .use(nord)
       .use(gfm)
