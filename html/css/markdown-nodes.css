@@ -30,6 +30,22 @@ ol,ul,dl
 	margin-left: 0.5em;
 }
 
+ul[data-collapsed='true'] {
+  display: none;
+}
+
+ul[data-collapsed='false'] {
+  display: block;
+}
+
+ol[data-collapsed='true'] {
+  display: none;
+}
+
+ol[data-collapsed='false'] {
+  display: block;
+}
+
 h1,h2,h3,h4,h5,h6
 {
 	font-weight: normal;
