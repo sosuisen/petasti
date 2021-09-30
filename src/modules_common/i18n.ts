@@ -165,7 +165,7 @@ const SETTINGS_ENGLISH: MessagesSettings = {
 };
 
 const RENDERER_ENGLISH: MessagesRenderer = {
-  exitCode: 'Press $1 + Down to exit from code',
+  exitCode: 'Press $1+Shift+Down to exit the code',
 };
 
 export const messageLabelsForRenderer: MessageLabelRenderer[] = Object.keys(
@@ -275,7 +275,7 @@ const SETTINGS_JAPANESE: MessagesSettings = {
 };
 
 const RENDERER_JAPANESE: MessagesRenderer = {
-  exitCode: '$1 + ↓ でコードの外へカーソル移動',
+  exitCode: '$1+Shift+ ↓ でカーソルをコード外へ',
 };
 
 export const JAPANESE: Messages = {
