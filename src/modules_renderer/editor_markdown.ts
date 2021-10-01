@@ -32,6 +32,7 @@ import {
   listItem,
   orderedList,
   paragraph,
+  SinkTaskListItem,
   SupportedKeys,
   taskListItem,
   text,
@@ -42,7 +43,7 @@ import { slash } from '@sosuisen/milkdown-plugin-slash';
 import { history } from '@sosuisen/milkdown-plugin-history';
 import { i18n, i18nCtx } from '@sosuisen/milkdown-plugin-i18n';
 import { emoji } from '@sosuisen/milkdown-plugin-emoji';
-import { Node as ProseNode } from 'prosemirror-model';
+import { Fragment, Node as ProseNode, Slice } from 'prosemirror-model';
 import { EditorState, Plugin as ProsePlugin, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
@@ -445,7 +446,30 @@ export class CardEditorMarkdown implements ICardEditor {
     let data = this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
       const serializer = ctx.get(serializerCtx);
-      return serializer(editorView.state.doc); // editorView.state.doc is ProseNode
+      const newDoc = editorView.state.doc.cut(0); // clone
+      const stack: ProseNode[] = [];
+      stack.push(newDoc);
+      while (stack.length > 0) {
+        const node = stack.pop();
+        if (node!.childCount > 0) {
+          node!.forEach(child => stack.push(child));
+        }
+
+        if (node!.type.name === 'list_item' && node!.attrs.collapsed) {
+          const textNode = editorView.state.schema.text('{.summary}');
+          const paragraphNode = editorView.state.schema.nodes.paragraph.create(
+            null,
+            textNode,
+            null
+          );
+          // @ts-ignore
+          const newFragment = Fragment.fromArray([...node!.content.content, paragraphNode]);
+          node!.content = newFragment;
+          console.log(node!.toString());
+        }
+      }
+      // return serializer(editorView.state.doc); // editorView.state.doc is ProseNode
+      return serializer(newDoc);
     });
 
     /**
