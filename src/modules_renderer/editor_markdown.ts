@@ -46,6 +46,7 @@ import { emoji } from '@sosuisen/milkdown-plugin-emoji';
 import { Fragment, Node as ProseNode, Slice } from 'prosemirror-model';
 import { EditorState, Plugin as ProsePlugin, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
+import { first } from 'rxjs';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
 import { render, shadowHeight, shadowWidth } from './card_renderer';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
@@ -177,29 +178,42 @@ export class CardEditorMarkdown implements ICardEditor {
     return result;
   };
 
-  findExtraNBSP = (rootDoc: ProseNode, proseNode: ProseNode) => {
-    let result: TextSelection[] = [];
+  findExtraTag = (rootDoc: ProseNode, proseNode: ProseNode) => {
+    let result: {
+      type: 'nbsp' | 'summary';
+      selection: TextSelection;
+    }[] = [];
 
-    // console.log(`### findExtraNBSP ${proseNode.type.name}(${proseNode.textContent})`);
+    // console.log(`### findExtraTag ${proseNode.type.name}(${proseNode.textContent})`);
 
     if (proseNode.isTextblock) {
       const index = 0;
       let foundAt;
       const ep = this.calcNodePosition(rootDoc, proseNode);
 
-      if (proseNode.type.name === 'paragraph' && proseNode.textContent === '\u00a0') {
-        const sel = new TextSelection(
-          rootDoc.resolve(ep!.from),
-          rootDoc.resolve(ep!.from + 1)
-        );
-        // console.log(`Selection: ${sel.from}, ${sel.to}`);
-        result.push(sel);
+      if (proseNode.type.name === 'paragraph') {
+        if (proseNode.textContent === '\u00a0') {
+          const selection = new TextSelection(
+            rootDoc.resolve(ep!.from),
+            rootDoc.resolve(ep!.from + 1)
+          );
+          // console.log(`Selection: ${sel.from}, ${sel.to}`);
+          result.push({ type: 'nbsp', selection });
+        }
+        else if (proseNode.textContent === '{.summary}') {
+          const selection = new TextSelection(
+            rootDoc.resolve(ep!.from),
+            rootDoc.resolve(ep!.from + 10)
+          );
+          // console.log(`Selection: ${sel.from}, ${sel.to}`);
+          result.push({ type: 'summary', selection });
+        }
       }
     }
     else {
-      proseNode.content.forEach(
-        (child, i) => (result = result.concat(this.findExtraNBSP(rootDoc, child)))
-      );
+      proseNode.content.forEach((child, i) => {
+        result = result.concat(this.findExtraTag(rootDoc, child));
+      });
     }
     return result;
   };
@@ -378,22 +392,69 @@ export class CardEditorMarkdown implements ICardEditor {
     this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
       // const selections = this.findText(editorView.state.doc, editorView.state.doc, '\u00a0'); // Find &nbsp;
-      const selections = this.findExtraNBSP(editorView.state.doc, editorView.state.doc); // Find <p>&nbsp;</p>
+      const results = this.findExtraTag(editorView.state.doc, editorView.state.doc); // Find <p>&nbsp;</p>
       // console.log('# Search result: ' + JSON.stringify(selections));
-      let selection: TextSelection | undefined;
+      let result:
+        | {
+            type: 'nbsp' | 'summary';
+            selection: TextSelection;
+          }
+        | undefined;
       let offset = 0;
-      while ((selection = selections.shift())) {
-        const from = selection.from + offset;
-        const to = selection.to + offset;
-        const newState = editorView.state.apply(
-          editorView.state.tr.deleteRange(from, to)
-          // editorView.state.tr.insertText('x', selection.from, selection.to)
-        );
-        // console.log(`# transformed: (${from}, ${to}) ` + newState.doc.toString());
-        editorView.updateState(newState);
+      while ((result = results.shift())) {
+        const from = result.selection.from + offset;
+        const to = result.selection.to + offset;
+        if (result.type === 'nbsp') {
+          const newState = editorView.state.apply(
+            editorView.state.tr.deleteRange(from, to)
+            // editorView.state.tr.insertText('x', selection.from, selection.to)
+          );
+          // console.log(`# transformed: (${from}, ${to}) ` + newState.doc.toString());
+          editorView.updateState(newState);
 
-        // delete a character
-        offset--;
+          // delete a character
+          offset--;
+        }
+        else if (result.type === 'summary') {
+          const $from = editorView.state.doc.resolve(result.selection.from + offset);
+          const $to = editorView.state.doc.resolve(result.selection.to + offset);
+          const range = $from.blockRange($to);
+          console.log('# parent of summary: ' + range?.parent.type.name);
+          if (range?.parent.type.name === 'list_item') {
+            console.log(editorView.state.doc.toString());
+            const start = $from.before($from.depth - 1); // start position of parent
+
+            const newItemState = editorView.state.apply(
+              editorView.state.tr.setNodeMarkup(start, undefined, {
+                collapsed: true,
+              })
+            );
+            editorView.updateState(newItemState);
+
+            range?.parent.forEach((child, offsetFromParent, index) => {
+              if (child.type.name === 'bullet_list' || child.type.name === 'ordered_list') {
+                console.log('children index: ' + start + ' + ' + offsetFromParent + ' + 1');
+                const newState = editorView.state.apply(
+                  editorView.state.tr.setNodeMarkup(
+                    start + offsetFromParent + 1,
+                    undefined,
+                    {
+                      collapsed: true,
+                    }
+                  )
+                );
+                editorView.updateState(newState);
+              }
+            });
+          }
+          const newState = editorView.state.apply(
+            editorView.state.tr.deleteRange(from - 1, to + 1)
+          );
+          editorView.updateState(newState);
+
+          // delete marks and characters
+          offset -= 12; // paragraph("{.summary}")
+        }
       }
     });
   };
@@ -446,8 +507,12 @@ export class CardEditorMarkdown implements ICardEditor {
     let data = this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
       const serializer = ctx.get(serializerCtx);
-      const newDoc = editorView.state.doc.cut(0); // clone
+
+      const json = editorView.state.doc.toJSON();
+      const newDoc = ProseNode.fromJSON(editorView.state.schema, json); // clone
+
       const stack: ProseNode[] = [];
+
       stack.push(newDoc);
       while (stack.length > 0) {
         const node = stack.pop();
@@ -463,11 +528,24 @@ export class CardEditorMarkdown implements ICardEditor {
             null
           );
           // @ts-ignore
-          const newFragment = Fragment.fromArray([...node!.content.content, paragraphNode]);
+          const firstChild = node!.content.content.shift();
+          let newFragment;
+          if (firstChild) {
+            newFragment = Fragment.fromArray([
+              firstChild,
+              paragraphNode,
+              // @ts-ignore
+              ...node!.content.content,
+            ]);
+          }
+          else {
+            newFragment = Fragment.fromArray([paragraphNode]);
+          }
           node!.content = newFragment;
           console.log(node!.toString());
         }
       }
+
       // return serializer(editorView.state.doc); // editorView.state.doc is ProseNode
       return serializer(newDoc);
     });
