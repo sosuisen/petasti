@@ -27,7 +27,7 @@ ol,ul,dl
 {
   line-height: 1.1em;    
 	padding: 0 0 0 1em;
-	margin-left: 0.5em;
+	margin-left: 0.4em;
 }
 
 ul[data-collapsed='true'] {
@@ -90,6 +90,43 @@ a > img {
 	margin: 1px;
 	border: none;
 	outline: 1px solid #0782C1;
+}
+
+/**
+ * list-item
+ */
+li.list-item {
+  list-style-type: disc;
+  position: relative;
+}
+
+li.list-item[data-collapsed='true'] {
+  list-style-type: circle;
+} 
+
+li.list-item > label {
+  position: absolute;
+  top: 0;
+  left: -1.6rem;
+  display: inline-block;
+  width: 1.5rem;
+  color: rgba(76, 86, 106, 0.87); 
+  cursor: pointer;
+}
+
+li.list-item > label > span {
+  color: rgba(76, 86, 106, 0.30); 
+}
+
+li.list-item > label:hover > span {
+  visibility: visible;
+  color: rgba(76, 86, 106, 0.80); 
+}
+
+ 
+
+li > label > span.fa-caret-right {
+  margin-left: 2px;
 }
 
 /**
