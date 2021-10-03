@@ -117,16 +117,19 @@ li.list-item > label {
   cursor: pointer;
 }
 
-li.list-item > label > span {
-  color: rgba(76, 86, 106, 0.20); 
+li.list-item label > span {
+  display: none;
+  color: rgba(76, 86, 106, 0.40); 
+}
+
+li.list-item:hover label > span {
+  display: block;
+  transition: all 0.2s ease-in-out;
 }
 
 li.list-item > label:hover > span {
-  visibility: visible;
-  color: rgba(76, 86, 106, 0.80); 
+  color: rgba(76, 86, 106, 0.90); 
 }
-
- 
 
 li > label > span.fa-caret-right {
   margin-left: 2px;
