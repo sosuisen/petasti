@@ -26,7 +26,7 @@ a
 ol,ul,dl
 {
   line-height: 1.1em;    
-	padding: 0 0 0 1.5em;
+	padding: 0 0 0 1em;
 }
 
 ul[data-collapsed='true'] {
@@ -95,8 +95,9 @@ a > img {
  * list-item
  */
 li.list-item {
-  list-style-type: disc;
+  list-style-type: '•';
   position: relative;
+  padding-left: 7px;
 }
 
 li.list-item::marker {
@@ -104,22 +105,26 @@ li.list-item::marker {
 }
 
 li.list-item[data-collapsed='true'] {
-  list-style-type: circle;
+  list-style-type: '⊕';
 } 
+
+li.list-item[data-collapsed='true']::marker {
+  font-size: 0.8rem;
+  font-weight: bold;
+}
 
 li.list-item > label {
   position: absolute;
   top: 0;
-  left: -1.7rem;
+  left: -1.2rem;
   display: inline-block;
   width: 1.5rem;
-  color: rgba(76, 86, 106, 0.87); 
+  color: rgba(76, 86, 106, 0.40); 
   cursor: pointer;
 }
 
 li.list-item label > span {
   display: none;
-  color: rgba(76, 86, 106, 0.40); 
 }
 
 li.list-item:hover label > span {
@@ -139,31 +144,72 @@ li > label > span.fa-caret-right {
  * task-list-item
  */
 li.task-list-item {
-  list-style-type: none;
+  list-style-type: '•';
   position: relative;
-}
- 
-li.task-list-item > div {
-  overflow: hidden;
+  padding-left: 28px;
 }
 
-li.task-list-item > div > p:first-child{
-  margin-block-start: 0px;
+li.task-list-item::marker {
+  font-size: 1rem;
 }
 
-li.task-list-item > label {
+li.task-list-item[data-collapsed='true'] {
+  list-style-type: '⊕';
+} 
+
+li.task-list-item[data-collapsed='true']::marker {
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+
+li.task-list-item > label.collapse {
   position: absolute;
   top: 0;
   left: -1.2rem;
   display: inline-block;
   width: 1.5rem;
+  color: rgba(76, 86, 106, 0.87); 
+  cursor: pointer;
 }
 
-li.task-list-item > label > input {
+li.task-list-item label.collapse > span {
   display: none;
 }
 
-li.task-list-item > label:before {
+li.task-list-item:hover label.collapse > span {
+  display: block;
+  transition: all 0.2s ease-in-out;
+}
+
+li.task-list-item > label.collapse:hover > span {
+  color: rgba(76, 86, 106, 0.90); 
+}
+
+li > label.collapse > span.fa-caret-right {
+  margin-left: 2px;
+  margin-top: -1px;
+}
+
+
+li.task-list-item > div > p:first-child{
+  margin-block-start: 0px;
+}
+
+li.task-list-item > label.check {
+  position: absolute;
+  top: 0;
+  left: 0.6rem;
+  display: inline-block;
+  width: 1.5rem;
+  cursor: pointer;
+}
+
+li.task-list-item > label.check > input {
+  display: none;
+}
+
+li.task-list-item > label.check:before {
   position: absolute;
   top: 0;
   right: 0;
@@ -172,16 +218,16 @@ li.task-list-item > label:before {
   border-radius: 4px;
 }
 
-li.task-list-item > label:hover:before {
+li.task-list-item > label.check:hover:before {
   background: rgb(236,239,244);
 }
 
-li.task-list-item[data-checked='true'] > label {
-  color: rgb(94, 129, 172);
+li.task-list-item[data-checked='true'] > label.check {
+  color: rgb(0, 0, 0);
 } 
 
-li.task-list-item[data-checked='false'] > label {
-  color: rgba(76, 86, 106, 0.87);
+li.task-list-item[data-checked='false'] > label.check {
+  color: rgba(0, 0, 0, 0.7);
 }
 
 
