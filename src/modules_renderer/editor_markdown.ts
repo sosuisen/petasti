@@ -54,6 +54,7 @@ import { cardStore } from './card_store';
 import { cardBodyUpdateCreator } from './card_action_creator';
 import { getConfig } from './config';
 import window from './window';
+import { getCtrlDown, getMetaDown } from '../modules_common/keys';
 
 const marginTop = 3;
 const marginLeft = 7;
@@ -93,9 +94,9 @@ export class CardEditorMarkdown implements ICardEditor {
     return `<img id="${id}" src="${src}" alt="${alt}" width="${width}" height="${height}" />`;
   };
 
-  adjustEditorSizeFromImage2Plugin = async (imgWidth: number, imgHeight: number) => {};
+  adjustEditorSizeFromImage2Plugin = async (imgWidth: number, imgHeight: number) => { };
 
-  calcNodePosition (
+  calcNodePosition(
     context: ProseNode,
     node: ProseNode
   ): null | { from: number; to: number } {
@@ -280,6 +281,50 @@ export class CardEditorMarkdown implements ICardEditor {
             }
           });
         }
+        else if (
+          ((getConfig().os !== 'darwin' && getCtrlDown()) || (getConfig().os === 'darwin' && getMetaDown()) )
+          && (event.code === 'ArrowUp' || event.code === 'ArrowDown')) {
+            const isCollapse = event.code === 'ArrowUp' ? true : false;
+          this._editor.action(ctx => {
+            const editorView = ctx.get(editorViewCtx);
+
+            const ref = editorView.state.selection;
+            const $from = ref.$from;
+            const $to = ref.$to;
+            const range = $from.blockRange($to);
+
+            console.log('# parent: ' + range?.parent?.type.name);
+            if (range?.parent?.type.name === 'list_item') {
+              console.log(editorView.state.doc.toString());
+              const start = $from.before($from.depth - 1); // start position of parent
+
+              const newItemState = editorView.state.apply(
+                editorView.state.tr.setNodeMarkup(start, undefined, {
+                  collapsed: isCollapse,
+                })
+              );
+              editorView.updateState(newItemState);
+
+              range?.parent.forEach((child, offsetFromParent, index) => {
+                if (child.type.name === 'bullet_list' || child.type.name === 'ordered_list') {
+                  console.log('children index: ' + start + ' + ' + offsetFromParent + ' + 1');
+                  const newState = editorView.state.apply(
+                    editorView.state.tr.setNodeMarkup(
+                      start + offsetFromParent + 1,
+                      undefined,
+                      {
+                        collapsed: isCollapse,
+                      }
+                    )
+                  );
+                  editorView.updateState(newState);
+                }
+              });
+              event.preventDefault();
+            }
+          });
+
+        }
       });
 
     /**
@@ -287,7 +332,7 @@ export class CardEditorMarkdown implements ICardEditor {
      * update is invoked when view is changed by key and mouse
      */
     const viewEventPlugin = new ProsePlugin({
-      view (editorView) {
+      view(editorView) {
         return {
           update: (view: EditorView, prevState: EditorState) => {
             const marks = view.state.selection.$head.marks();
@@ -295,16 +340,16 @@ export class CardEditorMarkdown implements ICardEditor {
             if (view.state.selection.empty && markNames.includes('link')) {
               console.log(
                 '# View event all text in the same paragraph: ' +
-                  view.state.selection.$head.node().textContent
+                view.state.selection.$head.node().textContent
               );
               console.log(
                 '# View event nodeAfter.type: ' +
-                  view.state.selection.$head.nodeAfter!.type.name
+                view.state.selection.$head.nodeAfter!.type.name
               );
               console.log(
                 '# View event node selected text: ' +
-                  view.state.selection.$head.nodeBefore!.textContent +
-                  view.state.selection.$head.nodeAfter!.textContent
+                view.state.selection.$head.nodeBefore!.textContent +
+                view.state.selection.$head.nodeAfter!.textContent
               );
 
               // Click link
@@ -315,7 +360,7 @@ export class CardEditorMarkdown implements ICardEditor {
               window.api.openURL(url);
             }
           },
-          destroy: () => {},
+          destroy: () => { },
         };
       },
     });
@@ -396,9 +441,9 @@ export class CardEditorMarkdown implements ICardEditor {
       // console.log('# Search result: ' + JSON.stringify(selections));
       let result:
         | {
-            type: 'nbsp' | 'summary';
-            selection: TextSelection;
-          }
+          type: 'nbsp' | 'summary';
+          selection: TextSelection;
+        }
         | undefined;
       let offset = 0;
       while ((result = results.shift())) {
@@ -459,7 +504,7 @@ export class CardEditorMarkdown implements ICardEditor {
     });
   };
 
-  private _addDragAndDropEvent = () => {};
+  private _addDragAndDropEvent = () => { };
 
   showEditor = (): void => {
     if (this.isOpened) {
