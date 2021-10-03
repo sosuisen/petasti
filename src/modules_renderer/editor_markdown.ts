@@ -298,7 +298,10 @@ export class CardEditorMarkdown implements ICardEditor {
             console.log('# parent: ' + range?.parent?.type.name);
 
             let isChanged = false;
-            if (range?.parent?.type.name === 'list_item') {
+            if (
+              range?.parent?.type.name === 'list_item' ||
+              range?.parent?.type.name === 'task_list_item'
+            ) {
               console.log(editorView.state.doc.toString());
               const start = $from.before($from.depth - 1); // start position of parent
 
@@ -412,6 +415,8 @@ export class CardEditorMarkdown implements ICardEditor {
         headless: true,
         keymap: {
           [SupportedKeys.TaskList]: ['Mod-Enter'],
+          [SupportedKeys.SinkListItem]: ['Tab', 'Alt-Shift-ArrowRight'],
+          [SupportedKeys.PopListItem]: ['Shift-Tab', 'Alt-Shift-ArrowLeft'],
         },
       });
 
