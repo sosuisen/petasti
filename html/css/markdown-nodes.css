@@ -26,8 +26,7 @@ a
 ol,ul,dl
 {
   line-height: 1.1em;    
-	padding: 0 0 0 1em;
-	margin-left: 0.4em;
+	padding: 0 0 0 1.5em;
 }
 
 ul[data-collapsed='true'] {
@@ -100,6 +99,10 @@ li.list-item {
   position: relative;
 }
 
+li.list-item::marker {
+  font-size: 1rem;
+}
+
 li.list-item[data-collapsed='true'] {
   list-style-type: circle;
 } 
@@ -107,7 +110,7 @@ li.list-item[data-collapsed='true'] {
 li.list-item > label {
   position: absolute;
   top: 0;
-  left: -1.6rem;
+  left: -1.7rem;
   display: inline-block;
   width: 1.5rem;
   color: rgba(76, 86, 106, 0.87); 
@@ -115,7 +118,7 @@ li.list-item > label {
 }
 
 li.list-item > label > span {
-  color: rgba(76, 86, 106, 0.30); 
+  color: rgba(76, 86, 106, 0.20); 
 }
 
 li.list-item > label:hover > span {
