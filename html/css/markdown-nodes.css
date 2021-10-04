@@ -28,7 +28,7 @@ a
 	color: #0782C1;
 }
 
-ol,ul,dl
+dl
 {
   line-height: 1.1em;    
 	padding: 0 0 0 1em;
@@ -97,8 +97,14 @@ a > img {
 }
 
 /**
- * list-item
+ * Unordered List
  */
+ul
+{
+  line-height: 1.1em;    
+	padding: 0 0 0 1em;
+}
+
 ul > li.list-item {
   list-style-type: '•';
   position: relative;
@@ -116,6 +122,44 @@ ul > li.list-item[data-collapsed='true'] {
   padding-left: 4px;
 } 
 
+ul > li.list-item > label {
+  position: absolute;
+  top: 0;
+  left: -1.2rem;
+  display: inline-block;
+  width: 1.5rem;
+  color: rgba(76, 86, 106, 0.40); 
+  cursor: pointer;
+}
+
+ul > li.list-item label > span {
+  display: none;
+}
+
+ul > li.list-item:hover label > span {
+  display: block;
+  transition: all 0.2s ease-in-out;
+}
+
+ul > li.list-item > label:hover > span {
+  color: rgba(76, 86, 106, 0.90); 
+}
+
+ul > li > label > span.fa-caret-right {
+  margin-left: 1px;
+  margin-top: 3px;
+  transition: all 0.2s ease-in-out;
+}
+
+/**
+ * Ordered list
+ */
+ol
+{
+  line-height: 1.1em;    
+	padding: 0 0 0 1em;
+}
+
 ol > li.list-item {
   position: relative;
   margin-left: 4px;
@@ -128,19 +172,8 @@ ol > li.list-item::marker {
 }
 
 ol > li.list-item[data-collapsed='true']::marker {
-  font-weight: bold;
   font-style: italic;
 } 
-
-ul > li.list-item > label {
-  position: absolute;
-  top: 0;
-  left: -1.2rem;
-  display: inline-block;
-  width: 1.5rem;
-  color: rgba(76, 86, 106, 0.40); 
-  cursor: pointer;
-}
 
 ol > li.list-item > label {
   position: absolute;
@@ -152,22 +185,24 @@ ol > li.list-item > label {
   cursor: pointer;
 }
 
-li.list-item label > span {
-  display: none;
+ol > li.list-item label > span {
+  display: none; 
+  margin-left: -2px;
 }
 
-li.list-item:hover label > span {
+ol > li.list-item:hover label > span {
   display: block;
   transition: all 0.2s ease-in-out;
 }
 
-li.list-item > label:hover > span {
+ol > li.list-item > label:hover > span {
   color: rgba(76, 86, 106, 0.90); 
 }
 
-li > label > span.fa-caret-right {
+ol > li > label > span.fa-caret-right {
   margin-left: 1px;
-  margin-top: 3px;
+  margin-top: 1px;
+  transition: all 0.2s ease-in-out;
 }
 
 /**
@@ -180,18 +215,15 @@ li.task-list-item {
 }
 
 li.task-list-item::marker {
-  font-size: 1rem;
+  font-family: 'Libertine Regular';
+  font-size: 1.5rem;
 }
 
 li.task-list-item[data-collapsed='true'] {
   list-style-type: '⊕';
+  margin-left: 3px;
+  padding-left: 25px;
 } 
-
-li.task-list-item[data-collapsed='true']::marker {
-  font-size: 0.8rem;
-  font-weight: bold;
-}
-
 
 li.task-list-item > label.collapse {
   position: absolute;
@@ -217,8 +249,9 @@ li.task-list-item > label.collapse:hover > span {
 }
 
 li > label.collapse > span.fa-caret-right {
-  margin-left: 2px;
-  margin-top: -1px;
+  margin-left: 1px;
+  margin-top: 3px;
+  transition: all 0.2s ease-in-out;
 }
 
 
@@ -229,27 +262,19 @@ li.task-list-item > div > p:first-child{
 li.task-list-item > label.check {
   position: absolute;
   top: 0;
-  left: 0.6rem;
+  left: 7px;
+  top: 3px;
   display: inline-block;
   width: 1.5rem;
   cursor: pointer;
 }
 
+li.task-list-item[data-collapsed='true'] > label.check {
+  left: 4px;
+}
+
 li.task-list-item > label.check > input {
   display: none;
-}
-
-li.task-list-item > label.check:before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  border-radius: 4px;
-}
-
-li.task-list-item > label.check:hover:before {
-  background: rgb(236,239,244);
 }
 
 li.task-list-item[data-checked='true'] > label.check {
