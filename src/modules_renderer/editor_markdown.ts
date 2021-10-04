@@ -5,11 +5,9 @@
 
 import {
   commandsCtx,
-  createCtx,
   defaultValueCtx,
   Editor,
   editorViewCtx,
-  MilkdownPlugin,
   prosePluginFactory,
   rootCtx,
   schemaCtx,
@@ -28,11 +26,9 @@ import {
   heading,
   hr,
   image,
-  link,
   listItem,
   orderedList,
   paragraph,
-  SinkTaskListItem,
   SupportedKeys,
   taskListItem,
   text,
@@ -46,7 +42,6 @@ import { emoji } from '@sosuisen/milkdown-plugin-emoji';
 import { Fragment, Node as ProseNode, Slice } from 'prosemirror-model';
 import { EditorState, Plugin as ProsePlugin, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
-import { first } from 'rxjs';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
 import { render, shadowHeight, shadowWidth } from './card_renderer';
 import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
@@ -295,14 +290,12 @@ export class CardEditorMarkdown implements ICardEditor {
             const $to = ref.$to;
             const range = $from.blockRange($to);
 
-            console.log('# parent: ' + range?.parent?.type.name);
-
             let isChanged = false;
             if (
               range?.parent?.type.name === 'list_item' ||
               range?.parent?.type.name === 'task_list_item'
             ) {
-              console.log(editorView.state.doc.toString());
+              // console.log(editorView.state.doc.toString());
               const start = $from.before($from.depth - 1); // start position of parent
 
               range?.parent.forEach((child, offsetFromParent, index) => {
@@ -311,9 +304,9 @@ export class CardEditorMarkdown implements ICardEditor {
                   child.type.name === 'ordered_list'
                 ) {
                   isChanged = true;
-                  console.log(
-                    'children index: ' + start + ' + ' + offsetFromParent + ' + 1'
-                  );
+                  // console.log(
+                  //  'children index: ' + start + ' + ' + offsetFromParent + ' + 1'
+                  // );
                   const newState = editorView.state.apply(
                     editorView.state.tr.setNodeMarkup(
                       start + offsetFromParent + 1,
@@ -353,6 +346,7 @@ export class CardEditorMarkdown implements ICardEditor {
             const marks = view.state.selection.$head.marks();
             const markNames = marks.map(mark => mark.type.name);
             if (view.state.selection.empty && markNames.includes('link')) {
+              /*
               console.log(
                 '# View event all text in the same paragraph: ' +
                   view.state.selection.$head.node().textContent
@@ -366,12 +360,12 @@ export class CardEditorMarkdown implements ICardEditor {
                   view.state.selection.$head.nodeBefore!.textContent +
                   view.state.selection.$head.nodeAfter!.textContent
               );
-
+              */
               // Click link
               const url =
                 view.state.selection.$head.nodeBefore!.textContent +
                 view.state.selection.$head.nodeAfter!.textContent;
-              console.log('# ViewEvent click: ' + url);
+              // console.log('# ViewEvent click: ' + url);
               window.api.openURL(url);
             }
           },
@@ -481,9 +475,9 @@ export class CardEditorMarkdown implements ICardEditor {
           const $from = editorView.state.doc.resolve(result.selection.from + offset);
           const $to = editorView.state.doc.resolve(result.selection.to + offset);
           const range = $from.blockRange($to);
-          console.log('# parent of summary: ' + range?.parent.type.name);
+          // console.log('# parent of summary: ' + range?.parent.type.name);
           if (range?.parent.type.name === 'list_item') {
-            console.log(editorView.state.doc.toString());
+            //  console.log(editorView.state.doc.toString());
             const start = $from.before($from.depth - 1); // start position of parent
 
             const newItemState = editorView.state.apply(
@@ -495,7 +489,7 @@ export class CardEditorMarkdown implements ICardEditor {
 
             range?.parent.forEach((child, offsetFromParent, index) => {
               if (child.type.name === 'bullet_list' || child.type.name === 'ordered_list') {
-                console.log('children index: ' + start + ' + ' + offsetFromParent + ' + 1');
+                // console.log('children index: ' + start + ' + ' + offsetFromParent + ' + 1');
                 const newState = editorView.state.apply(
                   editorView.state.tr.setNodeMarkup(
                     start + offsetFromParent + 1,
@@ -604,7 +598,7 @@ export class CardEditorMarkdown implements ICardEditor {
             newFragment = Fragment.fromArray([paragraphNode]);
           }
           node!.content = newFragment;
-          console.log(node!.toString());
+          // console.log(node!.toString());
         }
       }
 
