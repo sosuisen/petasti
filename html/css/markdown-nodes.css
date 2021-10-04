@@ -3,6 +3,11 @@
  * © 2021 Hidekazu Kubota
  */
 
+ @font-face {
+	font-family: 'Libertine Regular';
+	src: url(./LinLibertine_Rah.ttf);
+}
+
 p
 {
   line-height: 1.1em;
@@ -101,17 +106,15 @@ li.list-item {
 }
 
 li.list-item::marker {
-  font-size: 1rem;
+  font-family: 'Libertine Regular';
+  font-size: 1.5rem;
 }
 
 li.list-item[data-collapsed='true'] {
   list-style-type: '⊕';
+  margin-left: 3px;
+  padding-left: 4px;
 } 
-
-li.list-item[data-collapsed='true']::marker {
-  font-size: 0.8rem;
-  font-weight: bold;
-}
 
 li.list-item > label {
   position: absolute;
@@ -137,7 +140,8 @@ li.list-item > label:hover > span {
 }
 
 li > label > span.fa-caret-right {
-  margin-left: 2px;
+  margin-left: 1px;
+  margin-top: 3px;
 }
 
 /**
