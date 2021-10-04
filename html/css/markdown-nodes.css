@@ -99,27 +99,53 @@ a > img {
 /**
  * list-item
  */
-li.list-item {
+ul > li.list-item {
   list-style-type: '•';
   position: relative;
   padding-left: 7px;
 }
 
-li.list-item::marker {
+ul > li.list-item::marker {
   font-family: 'Libertine Regular';
   font-size: 1.5rem;
 }
 
-li.list-item[data-collapsed='true'] {
+ul > li.list-item[data-collapsed='true'] {
   list-style-type: '⊕';
   margin-left: 3px;
   padding-left: 4px;
 } 
 
-li.list-item > label {
+ol > li.list-item {
+  position: relative;
+  margin-left: 4px;
+  padding-left: 3px;
+}
+
+ol > li.list-item::marker {
+  font-family: 'Libertine Regular';
+  font-size: 1rem;
+}
+
+ol > li.list-item[data-collapsed='true']::marker {
+  font-weight: bold;
+  font-style: italic;
+} 
+
+ul > li.list-item > label {
   position: absolute;
   top: 0;
   left: -1.2rem;
+  display: inline-block;
+  width: 1.5rem;
+  color: rgba(76, 86, 106, 0.40); 
+  cursor: pointer;
+}
+
+ol > li.list-item > label {
+  position: absolute;
+  top: 0;
+  left: -1.4rem;
   display: inline-block;
   width: 1.5rem;
   color: rgba(76, 86, 106, 0.40); 
