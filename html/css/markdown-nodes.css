@@ -99,6 +99,15 @@ ul
 	padding: 0 0 0 1em;
 }
 
+body > ul:hover, .editor > ul:hover, body > ol:hover, .editor > ol:hover  {
+  border-right: 2px solid rgba(76, 86, 106, 0.20); 
+  transition: all 0.4s ease-in-out;
+}
+
+body > ul, .editor > ul, body > ol, .editor > ol {
+  border-right: 2px solid transparent;
+}
+
 ul > li.list-item {
   list-style-type: '•';
   position: relative;
@@ -120,16 +129,16 @@ ul > li.list-item > label {
 }
 
 ul > li.list-item label > span {
-  visibility: hidden;
+  color: transparent;
+  transition: all 0.2s ease-in-out;  
 }
 
 ul > li.list-item:hover label > span {
-  visibility: visible;
-  transition: all 0.2s ease-in-out;
+  color: rgba(76, 86, 106, 0.40); 
 }
 
 ul > li.list-item[data-collapsed='true'] > label > span {
-  visibility: visible;
+  color: rgba(76, 86, 106, 0.40); 
 } 
 
 ul > li.list-item > label:hover > span {
@@ -139,7 +148,6 @@ ul > li.list-item > label:hover > span {
 ul > li > label > span.fa-caret-right {
   margin-left: 1px;
   margin-top: 0px;
-  transition: all 0.2s ease-in-out;
 }
 
 /**
@@ -172,17 +180,17 @@ ol > li.list-item > label {
 }
 
 ol > li.list-item label > span {
-  visibility: hidden;
+  color: transparent;
+  transition: all 0.2s ease-in-out;  
   margin-left: -2px;
 }
 
 ol > li.list-item:hover label > span {
-  visibility: visible;
-  transition: all 0.2s ease-in-out;
+  color: rgba(76, 86, 106, 0.40); 
 }
 
 ol > li.list-item[data-collapsed='true'] > label > span {
-  visibility: visible;
+  color: rgba(76, 86, 106, 0.40); 
 } 
 
 ol > li.list-item > label:hover > span {
@@ -192,7 +200,6 @@ ol > li.list-item > label:hover > span {
 ol > li > label > span.fa-caret-right {
   margin-left: 1px;
   margin-top: 1px;
-  transition: all 0.2s ease-in-out;
 }
 
 
@@ -220,16 +227,16 @@ li.task-list-item > label.collapse {
 }
 
 li.task-list-item label.collapse > span {
-  visibility: hidden;
+  color: transparent;
+  transition: all 0.2s ease-in-out;  
 }
 
 li.task-list-item:hover label.collapse > span {
-  visibility: visible;
-  transition: all 0.2s ease-in-out;
+  color: rgba(76, 86, 106, 0.40); 
 }
 
 li.task-list-item[data-collapsed='true'] > label.collapse > span {
-  visibility: visible;
+  color: rgba(76, 86, 106, 0.40); 
 } 
 
 li.task-list-item > label.collapse:hover > span {
@@ -239,7 +246,6 @@ li.task-list-item > label.collapse:hover > span {
 li.task-list-item > label.collapse > span.fa-caret-right {
   margin-left: 1px;
   margin-top: 0px;
-  transition: all 0.2s ease-in-out;
 }
 
 
