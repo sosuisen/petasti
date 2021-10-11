@@ -35,6 +35,7 @@ type MessagesMain = {
   gray: string;
   lightgray: string;
   transparent: string;
+  addToDictionary: string;
 };
 
 type MessagesNote = {
@@ -218,6 +219,7 @@ export const ENGLISH: Messages = {
   gray: 'gray',
   lightgray: 'lightgray',
   transparent: 'transparent',
+  addToDictionary: 'Add to dictionary',
 };
 
 const NOTE_JAPANESE: MessagesNote = {
@@ -324,6 +326,7 @@ export const JAPANESE: Messages = {
   gray: 'グレー',
   lightgray: 'ライトグレー',
   transparent: '透明',
+  addToDictionary: '辞書に追加',
 };
 
 export const availableLanguages = ['en', 'ja'];
