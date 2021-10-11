@@ -121,4 +121,4 @@ export type CardMap = Map<string, ICard>;
 export type RendererConfig = {
   messages: MessagesRenderer;
   os: 'win32' | 'darwin' | 'linux';
-}
+};

@@ -168,7 +168,7 @@ export class CardEditorMarkdown implements ICardEditor {
     }
     else {
       proseNode.content.forEach(
-        (child, i) => (result = result.concat(this.findText(rootDoc, child, txt)))
+        (child, i) => (result = [...result, ...this.findText(rootDoc, child, txt)])
       );
     }
     return result;
@@ -208,7 +208,7 @@ export class CardEditorMarkdown implements ICardEditor {
     }
     else {
       proseNode.content.forEach((child, i) => {
-        result = result.concat(this.findExtraTag(rootDoc, child));
+        result = [...result, ...this.findExtraTag(rootDoc, child)];
       });
     }
     return result;
