@@ -2,7 +2,7 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-import { MenuItemConstructorOptions } from 'electron';
+import { BrowserWindow, MenuItemConstructorOptions } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { cardColors, ColorName } from '../modules_common/color';
 import { Geometry, ICard } from '../modules_common/types';
@@ -108,74 +108,101 @@ export const setContextMenu = (note: INote, card: ICard) => {
       actions.copyLink({}),
       actions.separator(),
     ],
-    prepend: () => [
-      {
-        label: MESSAGE('noteMove'),
-        submenu: [...moveToNotes],
-      },
-      {
-        label: MESSAGE('noteCopy'),
-        submenu: [...copyToNotes],
-      },
-      {
-        label: MESSAGE('zoomIn'),
-        click: () => {
-          card.window.webContents.send('zoom-in');
+    prepend: (defaultActions, params, browserWindow) => {
+      const menus: MenuItemConstructorOptions[] = [
+        {
+          label: MESSAGE('noteMove'),
+          submenu: [...moveToNotes],
         },
-      },
-      {
-        label: MESSAGE('zoomOut'),
-        click: () => {
-          card.window.webContents.send('zoom-out');
+        {
+          label: MESSAGE('noteCopy'),
+          submenu: [...copyToNotes],
         },
-      },
-      {
-        label: MESSAGE('sendToBack'),
-        click: () => {
-          // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
+        {
+          label: MESSAGE('zoomIn'),
+          click: () => {
+            card.window.webContents.send('zoom-in');
+          },
+        },
+        {
+          label: MESSAGE('zoomOut'),
+          click: () => {
+            card.window.webContents.send('zoom-out');
+          },
+        },
+        {
+          label: MESSAGE('sendToBack'),
+          click: () => {
+            // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 
-          // Database Update
-          if (card.sketch.geometry.z === getZIndexOfBottomCard()) {
-            return card.sketch.geometry.z;
-          }
-
-          const zIndex = getZIndexOfBottomCard() - 1;
-          // console.debug(`new zIndex: ${zIndex}`);
-          const newGeom = JSON.parse(JSON.stringify(card.sketch.geometry)) as Geometry;
-          newGeom.z = zIndex;
-
-          // Async
-          const modifiedDate = getCurrentDateAndTime();
-          note.updateCardGeometry(card.url, newGeom, modifiedDate);
-
-          // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-
-          const backToFront: ICard[] = [...cacheOfCard.values()].sort((a, b) => {
-            if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
-            if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
-            return 0;
-          });
-          setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
-          setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
-          backToFront.forEach(myCard => {
-            if (myCard.window && !myCard.window.isDestroyed()) {
-              myCard!.suppressFocusEventOnce = true;
-              myCard!.window.focus();
+            // Database Update
+            if (card.sketch.geometry.z === getZIndexOfBottomCard()) {
+              return card.sketch.geometry.z;
             }
-          });
 
-          card.window.webContents.send('send-to-back', zIndex, modifiedDate);
+            const zIndex = getZIndexOfBottomCard() - 1;
+            // console.debug(`new zIndex: ${zIndex}`);
+            const newGeom = JSON.parse(JSON.stringify(card.sketch.geometry)) as Geometry;
+            newGeom.z = zIndex;
+
+            // Async
+            const modifiedDate = getCurrentDateAndTime();
+            note.updateCardGeometry(card.url, newGeom, modifiedDate);
+
+            // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
+
+            const backToFront: ICard[] = [...cacheOfCard.values()].sort((a, b) => {
+              if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
+              if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
+              return 0;
+            });
+            setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
+            setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
+            backToFront.forEach(myCard => {
+              if (myCard.window && !myCard.window.isDestroyed()) {
+                myCard!.suppressFocusEventOnce = true;
+                myCard!.window.focus();
+              }
+            });
+
+            card.window.webContents.send('send-to-back', zIndex, modifiedDate);
+          },
         },
-      },
-      {
-        label: card.sketch.condition.locked ? MESSAGE('unlockCard') : MESSAGE('lockCard'),
-        click: () => {
-          card.sketch.condition.locked = !card.sketch.condition.locked;
-          card.window.webContents.send('set-lock', card.sketch.condition.locked);
-          resetContextMenu();
+        {
+          label: card.sketch.condition.locked ? MESSAGE('unlockCard') : MESSAGE('lockCard'),
+          click: () => {
+            card.sketch.condition.locked = !card.sketch.condition.locked;
+            card.window.webContents.send('set-lock', card.sketch.condition.locked);
+            resetContextMenu();
+          },
         },
-      },
-    ],
+      ];
+
+      if (params.dictionarySuggestions.length > 0) {
+        menus.push({ type: 'separator' });
+      }
+      // Add each spelling suggestion
+      for (const suggestion of params.dictionarySuggestions) {
+        menus.push({
+          label: suggestion,
+          click: () =>
+            (browserWindow as BrowserWindow).webContents.replaceMisspelling(suggestion),
+        });
+      }
+
+      // Allow users to add the misspelled word to the dictionary
+      if (params.misspelledWord) {
+        menus.push({
+          label: MESSAGE('addToDictionary'),
+          click: () =>
+            (browserWindow as BrowserWindow).webContents.session.addWordToSpellCheckerDictionary(
+              params.misspelledWord
+            ),
+        });
+        menus.push({ type: 'separator' });
+      }
+      return menus;
+    },
     append: () => [
       setColor('yellow'),
       setColor('red'),
