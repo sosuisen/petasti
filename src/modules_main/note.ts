@@ -174,6 +174,7 @@ class Note implements INote {
         localDir: defaultDataDir,
         dbName: SETTINGS_DB_NAME,
         logLevel: 'trace',
+        serializeFormat: 'front-matter',
       });
       await this._settingsDB.open();
 
@@ -192,6 +193,7 @@ class Note implements INote {
         dbName: this._settings.currentNotebookName,
         debounceTime: 3000,
         logLevel: 'trace',
+        serializeFormat: 'front-matter',
       };
 
       this._bookDB = new GitDocumentDB(bookDbOption);
