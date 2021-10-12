@@ -125,7 +125,7 @@ export class Card implements ICard {
 
   public body: CardBody = {
     version: CARD_VERSION,
-    type: 'text/html',
+    type: 'text/markdown',
     user: 'local',
     date: {
       modifiedDate: '',
