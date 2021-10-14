@@ -8,10 +8,13 @@ import {
   defaultValueCtx,
   Editor,
   editorViewCtx,
+  parserCtx,
+  ParserReady,
   prosePluginFactory,
   rootCtx,
   schemaCtx,
   serializerCtx,
+  SerializerReady,
 } from '@sosuisen/milkdown-core';
 import { prism } from '@sosuisen/milkdown-plugin-prism';
 import { listener, listenerCtx } from '@sosuisen/milkdown-plugin-listener';
@@ -216,28 +219,11 @@ export class CardEditorMarkdown implements ICardEditor {
 
   loadUI = async (_cardCssStyle: CardCssStyle): Promise<void> => {
     this._cardCssStyle = _cardCssStyle;
-    return await Promise.resolve();
-  };
-
-  public setData = async (body: string): Promise<void> => {
-    // console.log('# load body: ' + body);
-
-    const mdListener = {
-      markdown: [
-        (getMarkdown: () => string) => {
-          console.log(getMarkdown());
-        },
-      ], // print Markdown
-      doc: [
-        (proseNode: any) => {
-          console.log(proseNode.toString());
-        },
-      ], // print Node of ProseMirror
-    };
 
     document
       .getElementById('editor')!
       .addEventListener('keydown', (event: KeyboardEvent) => {
+        if (this._editor === undefined) return;
         if (event.code === 'Tab') {
           this._editor.action(ctx => {
             const editorView = ctx.get(editorViewCtx);
@@ -336,46 +322,6 @@ export class CardEditorMarkdown implements ICardEditor {
       });
 
     /**
-     * View event plugin
-     * update is invoked when view is changed by key and mouse
-     */
-    const viewEventPlugin = new ProsePlugin({
-      view (editorView) {
-        return {
-          update: (view: EditorView, prevState: EditorState) => {
-            const marks = view.state.selection.$head.marks();
-            const markNames = marks.map(mark => mark.type.name);
-            if (view.state.selection.empty && markNames.includes('link')) {
-              /*
-              console.log(
-                '# View event all text in the same paragraph: ' +
-                  view.state.selection.$head.node().textContent
-              );
-              console.log(
-                '# View event nodeAfter.type: ' +
-                  view.state.selection.$head.nodeAfter!.type.name
-              );
-              console.log(
-                '# View event node selected text: ' +
-                  view.state.selection.$head.nodeBefore!.textContent +
-                  view.state.selection.$head.nodeAfter!.textContent
-              );
-              */
-              // Click link
-              const url =
-                view.state.selection.$head.nodeBefore!.textContent +
-                view.state.selection.$head.nodeAfter!.textContent;
-              // console.log('# ViewEvent click: ' + url);
-              window.api.openURL(url);
-            }
-          },
-          destroy: () => {},
-        };
-      },
-    });
-    const prosePlugin = prosePluginFactory(viewEventPlugin);
-
-    /**
      * Reset each mark to be headless.
      * https://github.com/Saul-Mirone/milkdown/discussions/107
      */
@@ -414,12 +360,69 @@ export class CardEditorMarkdown implements ICardEditor {
         },
       });
 
+    return await Promise.resolve();
+  };
+
+  public createEditor = async (): Promise<void> => {
     /**
      * i18n
      */
     const messages: Record<string, string> = getConfig().messages;
     messages.Meta = getConfig().os === 'darwin' ? 'Cmd' : 'Ctrl';
 
+    const mdListener = {
+      markdown: [
+        (getMarkdown: () => string) => {
+          console.log(getMarkdown());
+        },
+      ], // print Markdown
+      doc: [
+        (proseNode: any) => {
+          console.log(proseNode.toString());
+        },
+      ], // print Node of ProseMirror
+    };
+
+    /**
+     * View event plugin
+     * update is invoked when view is changed by key and mouse
+     */
+    const viewEventPlugin = new ProsePlugin({
+      view (editorView) {
+        return {
+          update: (view: EditorView, prevState: EditorState) => {
+            const marks = view.state.selection.$head.marks();
+            const markNames = marks.map(mark => mark.type.name);
+            if (view.state.selection.empty && markNames.includes('link')) {
+              /*
+            console.log(
+              '# View event all text in the same paragraph: ' +
+                view.state.selection.$head.node().textContent
+            );
+            console.log(
+              '# View event nodeAfter.type: ' +
+                view.state.selection.$head.nodeAfter!.type.name
+            );
+            console.log(
+              '# View event node selected text: ' +
+                view.state.selection.$head.nodeBefore!.textContent +
+                view.state.selection.$head.nodeAfter!.textContent
+            );
+            */
+              // Click link
+              const url =
+                view.state.selection.$head.nodeBefore!.textContent +
+                view.state.selection.$head.nodeAfter!.textContent;
+              // console.log('# ViewEvent click: ' + url);
+              window.api.openURL(url);
+            }
+          },
+          destroy: () => {},
+        };
+      },
+    });
+
+    const prosePlugin = prosePluginFactory(viewEventPlugin);
     /**
      * Create editor
      */
@@ -427,7 +430,7 @@ export class CardEditorMarkdown implements ICardEditor {
       .config(ctx => {
         ctx.set(rootCtx, document.querySelector('#editor'));
         ctx.set(listenerCtx, mdListener);
-        ctx.set(defaultValueCtx, body);
+        // ctx.set(defaultValueCtx, body);
         ctx.set(i18nCtx, messages);
       })
       .use(prosePlugin)
@@ -441,14 +444,38 @@ export class CardEditorMarkdown implements ICardEditor {
       .use(tooltip)
       //      .use(slash)
       .create();
+  };
+
+  public setData = (body: string): void => {
+    console.log('# load body: ' + body);
 
     /**
      * Replace paragraph(&nbsp) with paragraph
      */
     this._editor.action(ctx => {
+      const parser = ctx.get(parserCtx);
+      const newDoc = parser(body);
+
+      if (newDoc === undefined || newDoc === null) return;
+      // console.log('newDoc: ' + newDoc!.toString());
+
       const editorView = ctx.get(editorViewCtx);
+
+      const tr = editorView.state.tr.replace(
+        0,
+        editorView.state.doc.content.size,
+        new Slice(Fragment.from(newDoc), 0, 0)
+      );
+
+      /*
+      const newState = editorView.state.apply(tr);
+      editorView.updateState(newState);
+      */
+
+      // console.log(`# delete existing tree: ` + newState.doc.toString());
+
       // const selections = this.findText(editorView.state.doc, editorView.state.doc, '\u00a0'); // Find &nbsp;
-      const results = this.findExtraTag(editorView.state.doc, editorView.state.doc); // Find <p>&nbsp;</p>
+      const results = this.findExtraTag(newDoc, newDoc); // Find <p>&nbsp;</p>
       // console.log('# Search result: ' + JSON.stringify(selections));
       let result:
         | {
@@ -461,35 +488,52 @@ export class CardEditorMarkdown implements ICardEditor {
         const from = result.selection.from + offset;
         const to = result.selection.to + offset;
         if (result.type === 'nbsp') {
+          tr.deleteRange(from, to);
+          /*
           const newState = editorView.state.apply(
             editorView.state.tr.deleteRange(from, to)
             // editorView.state.tr.insertText('x', selection.from, selection.to)
           );
           // console.log(`# transformed: (${from}, ${to}) ` + newState.doc.toString());
           editorView.updateState(newState);
-
+          */
           // delete a character
           offset--;
         }
         else if (result.type === 'summary') {
+          /*
           const $from = editorView.state.doc.resolve(result.selection.from + offset);
           const $to = editorView.state.doc.resolve(result.selection.to + offset);
+          */
+          const $from = tr.doc.resolve(result.selection.from + offset);
+          const $to = tr.doc.resolve(result.selection.to + offset);
+
           const range = $from.blockRange($to);
           // console.log('# parent of summary: ' + range?.parent.type.name);
           if (range?.parent.type.name === 'list_item') {
             //  console.log(editorView.state.doc.toString());
             const start = $from.before($from.depth - 1); // start position of parent
 
+            tr.setNodeMarkup(start, undefined, {
+              collapsed: true,
+            });
+            /*
             const newItemState = editorView.state.apply(
               editorView.state.tr.setNodeMarkup(start, undefined, {
                 collapsed: true,
               })
             );
             editorView.updateState(newItemState);
+            */
 
             range?.parent.forEach((child, offsetFromParent, index) => {
               if (child.type.name === 'bullet_list' || child.type.name === 'ordered_list') {
                 // console.log('children index: ' + start + ' + ' + offsetFromParent + ' + 1');
+
+                tr.setNodeMarkup(start + offsetFromParent + 1, undefined, {
+                  collapsed: true,
+                });
+                /*
                 const newState = editorView.state.apply(
                   editorView.state.tr.setNodeMarkup(
                     start + offsetFromParent + 1,
@@ -500,18 +544,25 @@ export class CardEditorMarkdown implements ICardEditor {
                   )
                 );
                 editorView.updateState(newState);
+                */
               }
             });
           }
+
+          tr.deleteRange(from - 1, to + 1);
+          /*
           const newState = editorView.state.apply(
             editorView.state.tr.deleteRange(from - 1, to + 1)
           );
           editorView.updateState(newState);
-
+          */
           // delete marks and characters
           offset -= 12; // paragraph("{.summary}")
         }
       }
+
+      const newState = editorView.state.apply(tr);
+      editorView.updateState(newState);
     });
   };
 
