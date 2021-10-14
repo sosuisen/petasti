@@ -469,6 +469,7 @@ const onRenderCard = async (
 
   initCardRenderer(cardCssStyle, cardEditor);
 
+  await cardEditor.createEditor();
   await cardEditor.setData(cardStore.getState().body._body);
 
   document.getElementById('card')!.style.visibility = 'visible';
@@ -561,7 +562,8 @@ const onSyncCardBody = async (changedFile: ChangedFile, enqueueTime: string) => 
   else if (changedFile.operation === 'delete') {
     await cardStore.dispatch(cardBodyUpdateCreator('', 'remote', enqueueTime));
   }
-  render(['ContentsData']);
+  cardEditor.setData(cardStore.getState().body._body);
+  render(['ContentsData', 'CardStyle']);
 };
 
 const filterContentsFrameMessage = (event: MessageEvent): ContentsFrameMessage => {

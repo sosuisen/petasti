@@ -10,6 +10,7 @@ import {
   Sync,
   TaskMetadata,
 } from 'git-documentdb';
+import { validate } from 'terser-webpack-plugin/node_modules/schema-utils/declarations/validate';
 import { showDialog } from './utils_main';
 import { INote } from './note_types';
 import { CardBody, CardSketch, NoteProp } from '../modules_common/types';
@@ -24,6 +25,7 @@ import {
 import { emitter } from './event';
 import { APP_SCHEME } from '../modules_common/const';
 import { createCardWindow, sortCardWindows } from './card';
+import { validateCardId } from './validator';
 
 export const initSync = async (note: INote): Promise<Sync | undefined> => {
   let sync: Sync | undefined;
@@ -47,6 +49,9 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
         }
         else if (changedFile.operation === 'delete') {
           cardBodyId = (changedFile.old.doc as JsonDoc)._id;
+        }
+        if (!validateCardId(cardBodyId)) {
+          continue;
         }
 
         const newUrl = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardBodyId}`;
@@ -92,6 +97,9 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           propChanges.push(changedFile);
         }
         else {
+          if (!validateCardId(cardId)) {
+            continue;
+          }
           // Update card sketch
           const newUrl = `${APP_SCHEME}://local/${sketchId}`;
           console.log(`# change sketch <${changedFile.operation}> ${newUrl}`);
