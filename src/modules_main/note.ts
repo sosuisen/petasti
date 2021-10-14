@@ -5,7 +5,7 @@
  */
 import path from 'path';
 
-import { app, BrowserWindow, ipcMain, nativeImage } from 'electron';
+import { app, BrowserWindow, nativeImage } from 'electron';
 import {
   Collection,
   CollectionOptions,
@@ -32,6 +32,7 @@ import {
   Geometry,
   ICard,
   NoteProp,
+  Snapshot,
 } from '../modules_common/types';
 import {
   defaultDataDir,
@@ -48,11 +49,9 @@ import {
 } from '../modules_common/i18n';
 import { APP_ICON_NAME, APP_SCHEME, SETTINGS_DB_NAME } from '../modules_common/const';
 
-import { handlers } from './event';
 import { showDialog } from './utils_main';
 import { initSync } from './sync';
 import { MESSAGE, setMessages } from './messages';
-import { destroyTray, initializeTaskTray } from './tray';
 import { cacheOfCard } from './card_cache';
 import { INote, NoteState } from './note_types';
 import { noteStore } from './note_store';
@@ -83,6 +82,11 @@ class Note implements INote {
   private _noteCollection!: Collection;
   get noteCollection (): Collection {
     return this._noteCollection;
+  }
+
+  private _snapshotCollection!: Collection;
+  get snapshotCollection (): Collection {
+    return this._snapshotCollection;
   }
 
   private _cardCollection!: Collection;
@@ -254,6 +258,7 @@ class Note implements INote {
     // Create collections
     this._cardCollection = this._bookDB.collection('card');
     this._noteCollection = this._bookDB.collection('note');
+    this._snapshotCollection = this._bookDB.collection('snapshot');
 
     // Load note properties
     const noteDirList = await this._noteCollection.getCollections();
@@ -829,6 +834,10 @@ class Note implements INote {
         .catch(err => reject(err));
     }).catch((err: Error) => console.log(`Error in deletingCardBody: ${err.message}`));
     return (task as unknown) as TaskMetadata;
+  };
+
+  createSnapshot = async (snap: Snapshot): Promise<void> => {
+    await this._snapshotCollection.put(snap);
   };
 }
 

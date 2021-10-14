@@ -118,6 +118,19 @@ export interface ICard {
 
 export type CardMap = Map<string, ICard>;
 
+export type Snapshot = {
+  version: string;
+  name: string;
+  backgroundColor: string;
+  backgroundImage: string;
+  note: NoteProp;
+  cards: {
+    _id: string;
+    sketch: Omit<CardSketch, '_id'>;
+    body: Omit<CardBody, '_id'>;
+  }[];
+};
+
 export type RendererConfig = {
   messages: MessagesRenderer;
   os: 'win32' | 'darwin' | 'linux';

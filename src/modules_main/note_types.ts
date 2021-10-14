@@ -20,6 +20,7 @@ import {
   Geometry,
   ICard,
   NoteProp,
+  Snapshot,
 } from '../modules_common/types';
 
 export type NoteState = Map<string, NoteProp>;
@@ -71,6 +72,7 @@ export interface INote {
     cardSketch: CardSketch,
     modifiedDate: string
   ) => Promise<TaskMetadata>;
+  createSnapshot: (snap: Snapshot) => Promise<void>;
 
   deleteCardSketch: (cardUrl: string) => Promise<void>;
 
