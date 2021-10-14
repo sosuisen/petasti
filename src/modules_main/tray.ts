@@ -20,7 +20,7 @@ import {
   APP_SCHEME,
   DEFAULT_CARD_GEOMETRY,
 } from '../modules_common/const';
-import { CardSketch, Snapshot } from '../modules_common/types';
+import { CardBody, CardSketch, Snapshot } from '../modules_common/types';
 import { MESSAGE } from './messages';
 import { cacheOfCard } from './card_cache';
 import { INote } from './note_types';
@@ -255,24 +255,42 @@ export const setTrayContextMenu = () => {
         const name = noteProp!.name + ' ' + getCurrentDateAndTime();
         const backgroundColor = '#D9E5FF';
         const backgroundImage = '';
-        cacheOfCard.forEach(card => {});
+        const cards: {
+          _id: string;
+          sketch: Omit<CardSketch, '_id'>;
+          body: Omit<CardBody, '_id'>;
+        }[] = [];
+        let _body = '';
+        [...cacheOfCard.values()]
+          .sort((a, b) => {
+            // The last modified card is the first.
+            if (a.body.date.modifiedDate > b.body.date.modifiedDate) return -1;
+            else if (a.body.date.modifiedDate < b.body.date.modifiedDate) return 1;
+            return 0;
+          })
+          .forEach(tmpCard => {
+            const clonedBody = JSON.parse(JSON.stringify(tmpCard.body));
+            delete clonedBody._id;
+            const clonedSketch = JSON.parse(JSON.stringify(tmpCard.sketch));
+            delete clonedSketch._id;
+            cards.push({
+              _id: tmpCard.body._id,
+              body: clonedBody,
+              sketch: clonedSketch,
+            });
+            if (_body !== '') {
+              _body += '\n---\n';
+            }
+            _body += clonedBody._body;
+          });
         const snapshot: Snapshot = {
           version: '1.0',
           name,
           backgroundColor,
           backgroundImage,
           note: noteProp!,
-          cards: [...cacheOfCard.values()].map(tmpCard => {
-            const clonedBody = JSON.parse(JSON.stringify(tmpCard.body));
-            delete clonedBody._id;
-            const clonedSketch = JSON.parse(JSON.stringify(tmpCard.sketch));
-            delete clonedSketch._id;
-            return {
-              _id: tmpCard.body._id,
-              body: clonedBody,
-              sketch: clonedSketch,
-            };
-          }),
+          cards,
+          _body,
         };
         await note.createSnapshot(snapshot);
       },

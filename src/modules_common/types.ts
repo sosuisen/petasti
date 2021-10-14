@@ -129,6 +129,7 @@ export type Snapshot = {
     sketch: Omit<CardSketch, '_id'>;
     body: Omit<CardBody, '_id'>;
   }[];
+  _body: string;
 };
 
 export type RendererConfig = {
