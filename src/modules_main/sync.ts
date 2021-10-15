@@ -41,6 +41,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
   note.cardCollection.onSyncEvent(
     sync,
     'localChange',
+    // eslint-disable-next-line complexity
     (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
       for (const changedFile of changes) {
         let cardBodyId = '';
@@ -60,6 +61,8 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
 
         if (card !== undefined) {
           if (changedFile.operation === 'insert' || changedFile.operation === 'update') {
+            // _body is dropped when _body is empty.
+            (changedFile.new.doc as CardBody)._body ??= '';
             card.body = changedFile.new.doc as CardBody;
           }
           else if (changedFile.operation === 'delete') {
