@@ -163,6 +163,9 @@ export const setTrayContextMenu = () => {
           return;
         }
         const [newNoteProp] = await note.createNote(newName as string, true);
+        setTrayContextMenu();
+
+        /*
         closeSettings();
 
         if (cacheOfCard.size === 0) {
@@ -180,7 +183,7 @@ export const setTrayContextMenu = () => {
           }
           // wait 'window-all-closed' event
         }
-
+        */
         // setTrayContextMenu() will be called in change-note event.
       },
     },
