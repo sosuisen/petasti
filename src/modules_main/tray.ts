@@ -255,7 +255,28 @@ export const setTrayContextMenu = () => {
       label: MESSAGE('saveSnapshot'),
       click: async () => {
         const noteProp = noteStore.getState().get(note.settings.currentNoteId);
-        const name = noteProp!.name + ' ' + getCurrentDateAndTime();
+        const defaultName = noteProp!.name + ' ' + getCurrentDateAndTime();
+
+        const newName: string | void | null = await prompt({
+          title: MESSAGE('saveSnapshot'),
+          label: MESSAGE('snapshotName'),
+          value: defaultName,
+          inputAttrs: {
+            type: 'text',
+            required: 'true',
+          },
+          height: 200,
+        }).catch(e => console.error(e.message));
+
+        if (
+          newName === null ||
+          newName === undefined ||
+          newName === '' ||
+          (newName as string).match(/^\s+$/)
+        ) {
+          return;
+        }
+
         const backgroundColor = '#D9E5FF';
         const backgroundImage = '';
         const cards: {
@@ -288,7 +309,7 @@ export const setTrayContextMenu = () => {
           });
         const snapshot: Snapshot = {
           version: '1.0',
-          name,
+          name: newName as string,
           backgroundColor,
           backgroundImage,
           note: noteProp!,

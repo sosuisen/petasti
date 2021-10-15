@@ -37,6 +37,7 @@ type MessagesMain = {
   transparent: string;
   addToDictionary: string;
   saveSnapshot: string;
+  snapshotName: string;
 };
 
 type MessagesNote = {
@@ -222,6 +223,7 @@ export const ENGLISH: Messages = {
   transparent: 'transparent',
   addToDictionary: 'Add to dictionary',
   saveSnapshot: 'Save snapshot',
+  snapshotName: 'Enter snapshot name',
 };
 
 const NOTE_JAPANESE: MessagesNote = {
@@ -330,6 +332,7 @@ export const JAPANESE: Messages = {
   transparent: '透明',
   addToDictionary: '辞書に追加',
   saveSnapshot: 'スナップショット保存',
+  snapshotName: 'スナップショット名を入力してください',
 };
 
 export const availableLanguages = ['en', 'ja'];
