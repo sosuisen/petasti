@@ -100,6 +100,7 @@ export interface ICard {
 
   status: CardStatus;
 
+  setPosition: (x: number, y: number, animation: boolean) => void;
   removeWindowListenersExceptClosedEvent: () => void;
   removeWindowListeners: () => void;
   window: BrowserWindow;

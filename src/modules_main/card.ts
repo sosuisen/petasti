@@ -7,6 +7,7 @@ import path from 'path';
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { DebounceQueue } from 'rx-queue';
 import { TaskMetadata } from 'git-documentdb';
+import bezier from 'bezier-easing';
 import {
   generateNewCardId,
   getCardIdFromUrl,
@@ -41,6 +42,10 @@ import {
   setZIndexOfTopCard,
 } from './card_zindex';
 import { messagesRenderer } from './messages';
+/**
+ * Easing
+ */
+const easing = bezier(0.42, 0, 0.58, 1);
 
 /**
  * Focus control
@@ -397,6 +402,41 @@ export class Card implements ICard {
     else {
       console.debug(`# blur ${this.url}`);
       this.window.webContents.send('card-blurred');
+    }
+  };
+
+  private _moveFromX = 0;
+  private _moveFromY = 0;
+  private _moveToX = 0;
+  private _moveToY = 0;
+  private _moveAnimeTimer: NodeJS.Timeout | undefined = undefined;
+  private _moveAnimeCurrentTime = 0;
+  public setPosition = (x: number, y: number, animation: boolean) => {
+    if (!animation) {
+      this.window.setPosition(x, y);
+    }
+    else {
+      [this._moveFromX, this._moveFromY] = this.window.getPosition();
+      this._moveToX = x;
+      this._moveToY = y;
+      this._moveAnimeCurrentTime = 0;
+      if (this._moveAnimeTimer !== undefined) {
+        clearInterval(this._moveAnimeTimer);
+      }
+      this._moveAnimeTimer = setInterval(() => {
+        this._moveAnimeCurrentTime += 0.1;
+        const rate = easing(this._moveAnimeCurrentTime);
+        if (this._moveAnimeCurrentTime >= 1) {
+          clearInterval(this._moveAnimeTimer!);
+          this._moveAnimeTimer = undefined;
+          this.window.setPosition(this._moveToX, this._moveToY);
+        }
+        else {
+          const nextX = (this._moveToX - this._moveFromX) * rate + this._moveFromX;
+          const nextY = (this._moveToY - this._moveFromY) * rate + this._moveFromY;
+          this.window.setPosition(Math.floor(nextX), Math.floor(nextY));
+        }
+      }, 100);
     }
   };
 

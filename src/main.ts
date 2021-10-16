@@ -245,7 +245,8 @@ ipcMain.handle('set-window-size', (event, url: string, width: number, height: nu
 ipcMain.handle('set-window-position', (event, url: string, x: number, y: number) => {
   const card = cacheOfCard.get(url);
   // eslint-disable-next-line no-unused-expressions
-  card?.window.setPosition(x, y);
+  // card?.window.setPosition(x, y);
+  card?.setPosition(x, y, true);
   return card?.window.getBounds();
 });
 

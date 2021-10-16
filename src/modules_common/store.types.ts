@@ -21,10 +21,12 @@ export const dataDirName = 'tree_stickies_data';
  *
  * TODO: Default path for Mac / Linux is needed.
  */
+/*
 export const defaultDataDir = app.isPackaged
   ? path.join(__dirname, `../../../../../../${dataDirName}`)
   : path.join(__dirname, `../../${dataDirName}`);
-// export const defaultDataDir = 'C:\\Users\\hidek\\AppData\\Local\\tree_stickies_data';
+  */
+export const defaultDataDir = 'C:\\Users\\hidek\\AppData\\Local\\tree_stickies_data';
 
 /**
  * Temporal State
