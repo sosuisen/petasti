@@ -90,6 +90,9 @@ export const sortCardWindows = () => {
   const backToFront = sortCards();
   backToFront.forEach(card => {
     if (card.window && !card.window.isDestroyed()) {
+      if (card.window.isMinimized()) {
+        card.window.restore();
+      }
       card.window.moveTop();
     }
   });

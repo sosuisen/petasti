@@ -6,7 +6,7 @@ import path from 'path';
 import prompt from 'electron-prompt';
 import { app, Menu, MenuItemConstructorOptions, Tray } from 'electron';
 import { closeSettings, openSettings } from './settings';
-import { createCardWindow } from './card';
+import { createCardWindow, sortCardWindows } from './card';
 import { emitter } from './event';
 import {
   generateNewCardId,
@@ -329,6 +329,13 @@ export const setTrayContextMenu = () => {
         }
       },
     },
+    {
+      label: MESSAGE('redisplayCards'),
+      click: () => {
+        sortCardWindows();
+      },
+    },
+
     {
       label: MESSAGE('settings'),
       click: () => {

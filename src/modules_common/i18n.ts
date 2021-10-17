@@ -38,6 +38,7 @@ type MessagesMain = {
   addToDictionary: string;
   saveSnapshot: string;
   snapshotName: string;
+  redisplayCards: string;
 };
 
 type MessagesNote = {
@@ -224,6 +225,7 @@ export const ENGLISH: Messages = {
   addToDictionary: 'Add to dictionary',
   saveSnapshot: 'Save snapshot',
   snapshotName: 'Enter snapshot name',
+  redisplayCards: 'Bring cards to front',
 };
 
 const NOTE_JAPANESE: MessagesNote = {
@@ -333,6 +335,7 @@ export const JAPANESE: Messages = {
   addToDictionary: '辞書に追加',
   saveSnapshot: 'スナップショット保存',
   snapshotName: 'スナップショット名を入力してください',
+  redisplayCards: 'カードを最前面表示',
 };
 
 export const availableLanguages = ['en', 'ja'];
