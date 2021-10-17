@@ -164,6 +164,7 @@ export const setTrayContextMenu = () => {
         }
         const [newNoteProp] = await note.createNote(newName as string, true);
         setTrayContextMenu();
+        cacheOfCard.forEach(card => card.resetContextMenu());
 
         /*
         closeSettings();
