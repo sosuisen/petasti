@@ -425,3 +425,30 @@ div.code-fence pre::-webkit-scrollbar {
 div.code-fence pre::-webkit-scrollbar-thumb {
   background-color: #a5a8af;
 }
+
+.emoji-wrapper {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.emoji-wrapper > .emoji {
+    height: 1em;
+    width: 1em;
+    margin: 0 0.05em 0 0.1em;
+    vertical-align: -0.1em;
+}
+
+.emoji-picker__wrapper {
+  top: 24px !important; /* height of titlebar */
+  left: auto !important;
+  width: 100% !important;
+}
+
+.emoji-picker__wrapper > .emoji-picker {
+  max-width: 90%;
+}
+
+.emoji-picker__overlay {
+  display: none !important;
+}
