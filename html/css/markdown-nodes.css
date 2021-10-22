@@ -222,7 +222,7 @@ li.task-list-item > label.collapse {
   top: 0;
   left: -1.2rem;
   display: inline-block;
-  width: 1.5rem;
+  width: 0.7rem;
   color: rgba(76, 86, 106, 0.40); 
   cursor: pointer;
 }
@@ -260,7 +260,7 @@ li.task-list-item > label.check {
   left: -8px;
   top: 1px;
   display: inline-block;
-  width: 1.5rem;
+  width: 1rem;
   cursor: pointer;
 }
 
