@@ -3,7 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { app, ipcMain, MouseInputEvent, shell } from 'electron';
+import { app, ipcMain, MouseInputEvent, shell, powerMonitor } from 'electron';
 import {
   Card,
   createCardWindow,
@@ -16,7 +16,6 @@ import { note } from './modules_main/note';
 import { CardBody, CardSketch } from './modules_common/types';
 import { addSettingsHandler } from './modules_main/settings_eventhandler';
 import { cacheOfCard } from './modules_main/card_cache';
-import { setZIndexOfBottomCard, setZIndexOfTopCard } from './modules_main/card_zindex';
 import { DatabaseCommand } from './modules_common/db.types';
 
 // process.on('unhandledRejection', console.dir);
@@ -285,5 +284,12 @@ ipcMain.handle('db', async (event, command: DatabaseCommand) => {
     }
     default:
       break;
+  }
+});
+
+powerMonitor.on('resume', () => {
+  if (note.sync) {
+    note.sync.pause();
+    note.sync.resume();
   }
 });
