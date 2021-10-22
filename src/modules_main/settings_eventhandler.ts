@@ -3,19 +3,22 @@
  * © 2021 Hidekazu Kubota
  */
 import { BrowserWindow, dialog, ipcMain } from 'electron';
+import fs from 'fs-extra';
 import { selectPreferredLanguage } from 'typed-intl';
 import { Sync, SyncResult } from 'git-documentdb';
 import { DatabaseCommand } from '../modules_common/db.types';
 import { availableLanguages, defaultLanguage, MessageLabel } from '../modules_common/i18n';
 import { emitter } from './event';
 import { settingsDialog } from './settings';
-import { DIALOG_BUTTON } from '../modules_common/const';
+import { DIALOG_BUTTON, notebookDbName } from '../modules_common/const';
 import { cacheOfCard } from './card_cache';
 import { MESSAGE, setMessages } from './messages';
 import { showDialog } from './utils_main';
 import { INote } from './note_types';
 import { setTrayContextMenu } from './tray';
 import { initSync } from './sync';
+import { getCurrentDateAndTime } from '../modules_common/utils';
+import { settings } from 'cluster';
 
 export const addSettingsHandler = (note: INote) => {
   // Request from settings dialog
@@ -150,8 +153,33 @@ export const addSettingsHandler = (note: INote) => {
         }
         break;
       }
+      case 'export-data': {
+        const file = openDirectorySelectorDialog(MESSAGE('exportDataButton'));
+        if (file) {
+          const filepath =
+            file[0] +
+            '/treestickies_' +
+            getCurrentDateAndTime().replace(/\s/g, '_').replace(/:/g, '') +
+            '.json';
+          exportJSON(filepath);
+        }
+      }
     }
   });
+
+  const exportJSON = async (filepath: string) => {
+    const cards = await note.bookDB.find({ prefix: 'card/' });
+    const notes = await note.bookDB.find({ prefix: 'note/' });
+
+    const bookObj = {
+      app: note.info.appinfo.name,
+      version: note.info.appinfo.version,
+      cards,
+      notes,
+    };
+
+    fs.writeJSON(filepath, bookObj, { spaces: 2 });
+  };
 };
 
 const openDirectorySelectorDialog = (message: string) => {

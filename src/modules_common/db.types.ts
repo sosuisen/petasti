@@ -71,6 +71,10 @@ export type DatabaseResumeSync = {
   command: 'db-resume-sync';
 };
 
+export type DatabaseExportData = {
+  command: 'export-data';
+};
+
 export type DatabaseCommand =
   | DatabaseCardBodyUpdate
   | DatabaseCardSketchUpdate
@@ -83,4 +87,5 @@ export type DatabaseCommand =
   | DatabaseDataStorePathUpdate
   | DatabaseTestSync
   | DatabasePauseSync
-  | DatabaseResumeSync;
+  | DatabaseResumeSync
+  | DatabaseExportData;

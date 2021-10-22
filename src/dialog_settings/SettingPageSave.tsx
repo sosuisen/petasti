@@ -12,6 +12,7 @@ import { DIALOG_BUTTON } from '../modules_common/const';
 import { selectorDataStorePath, selectorMessages } from './selector';
 import { dataDirName } from '../modules_common/store.types';
 import { settingsDataStorePathUpdateCreator } from './action_creator';
+import window from './window';
 
 export interface SettingPageSaveProps {
   item: MenuItemProps;
@@ -76,6 +77,16 @@ export function SettingPageSave (props: SettingPageSaveProps) {
             */
   };
 
+  const onExportDataButtonClick = async () => {
+    await window.api
+      .db({
+        command: 'export-data',
+      })
+      .catch(e => {
+        console.error(`Failed to open directory selector dialog: ${e.message}`);
+      });
+  };
+
   const buttonStyle = (color: ColorName) => ({
     backgroundColor: uiColors[color],
   });
@@ -93,6 +104,18 @@ export function SettingPageSave (props: SettingPageSaveProps) {
           {messages.saveChangeFilePathButton}
         </button>
         <div styleName='saveFilePathValue'>{dataStorePath}</div>
+      </div>
+      <br style={{ clear: 'both' }} />
+      <hr></hr>
+      <div styleName='exportData'>
+        <div styleName='exportDataLabel'>{messages.exportData}:</div>
+        <button
+          styleName='exportDataButton'
+          onClick={onExportDataButtonClick}
+          style={buttonStyle('red')}
+        >
+          {messages.exportDataButton}
+        </button>
       </div>
     </SettingPageTemplate>
   );
