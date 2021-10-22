@@ -63,6 +63,16 @@ export const addSettingsHandler = (note: INote) => {
             note.sync = undefined;
           }
         }
+        else if (note.sync) {
+          if (note.settings.sync.remoteUrl !== note.sync.remoteURL) {
+            note.bookDB.removeSync(note.sync.remoteURL);
+            // eslint-disable-next-line require-atomic-updates
+            note.sync = await initSync(note);
+          }
+          else {
+            // nop
+          }
+        }
         else {
           // eslint-disable-next-line require-atomic-updates
           note.sync = await initSync(note);
