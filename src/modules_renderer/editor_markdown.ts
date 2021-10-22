@@ -293,6 +293,7 @@ export class CardEditorMarkdown implements ICardEditor {
                   // console.log(
                   //  'children index: ' + start + ' + ' + offsetFromParent + ' + 1'
                   // );
+
                   const newState = editorView.state.apply(
                     editorView.state.tr.setNodeMarkup(
                       start + offsetFromParent + 1,
@@ -307,10 +308,21 @@ export class CardEditorMarkdown implements ICardEditor {
               });
 
               if (isChanged) {
-                const newItemState = editorView.state.apply(
-                  editorView.state.tr.setNodeMarkup(start, undefined, {
+                let attr;
+                if (range?.parent?.type.name === 'list_item') {
+                  attr = {
                     collapsed: isCollapse,
-                  })
+                  };
+                }
+                else if (range?.parent?.type.name === 'task_list_item') {
+                  attr = {
+                    collapsed: isCollapse,
+                    checked: range?.parent.attrs.checked,
+                  };
+                }
+
+                const newItemState = editorView.state.apply(
+                  editorView.state.tr.setNodeMarkup(start, undefined, attr)
                 );
                 editorView.updateState(newItemState);
               }
