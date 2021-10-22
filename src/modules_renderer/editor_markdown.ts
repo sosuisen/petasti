@@ -333,6 +333,38 @@ export class CardEditorMarkdown implements ICardEditor {
         }
       });
 
+    document.getElementById('editor')!.addEventListener('click', (event: MouseEvent) => {
+      this._editor.action(ctx => {
+        const view = ctx.get(editorViewCtx);
+
+        const marks = view.state.selection.$head.marks();
+        const markNames = marks.map(mark => mark.type.name);
+        if (view.state.selection.empty && markNames.includes('link')) {
+          /*
+            console.log(
+              '# View event all text in the same paragraph: ' +
+                view.state.selection.$head.node().textContent
+            );
+            console.log(
+              '# View event nodeAfter.type: ' +
+                view.state.selection.$head.nodeAfter!.type.name
+            );
+            console.log(
+              '# View event node selected text: ' +
+                view.state.selection.$head.nodeBefore!.textContent +
+                view.state.selection.$head.nodeAfter!.textContent
+            );
+*/
+          // Click link
+          const url =
+            view.state.selection.$head.nodeBefore!.textContent +
+            view.state.selection.$head.nodeAfter!.textContent;
+          // console.log('# ViewEvent click: ' + url);
+          window.api.openURL(url);
+        }
+      });
+    });
+
     /**
      * Reset each mark to be headless.
      * https://github.com/Saul-Mirone/milkdown/discussions/107
@@ -403,10 +435,11 @@ export class CardEditorMarkdown implements ICardEditor {
       view (editorView) {
         return {
           update: (view: EditorView, prevState: EditorState) => {
+            /*
             const marks = view.state.selection.$head.marks();
             const markNames = marks.map(mark => mark.type.name);
             if (view.state.selection.empty && markNames.includes('link')) {
-              /*
+
             console.log(
               '# View event all text in the same paragraph: ' +
                 view.state.selection.$head.node().textContent
@@ -420,7 +453,7 @@ export class CardEditorMarkdown implements ICardEditor {
                 view.state.selection.$head.nodeBefore!.textContent +
                 view.state.selection.$head.nodeAfter!.textContent
             );
-            */
+
               // Click link
               const url =
                 view.state.selection.$head.nodeBefore!.textContent +
@@ -428,6 +461,7 @@ export class CardEditorMarkdown implements ICardEditor {
               // console.log('# ViewEvent click: ' + url);
               window.api.openURL(url);
             }
+          */
           },
           destroy: () => {},
         };
