@@ -3,7 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { app, ipcMain, MouseInputEvent, shell, powerMonitor } from 'electron';
+import { app, ipcMain, MouseInputEvent, powerMonitor, shell } from 'electron';
 import {
   Card,
   createCardWindow,
