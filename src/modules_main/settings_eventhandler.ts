@@ -10,7 +10,7 @@ import { DatabaseCommand } from '../modules_common/db.types';
 import { availableLanguages, defaultLanguage, MessageLabel } from '../modules_common/i18n';
 import { emitter } from './event';
 import { settingsDialog } from './settings';
-import { DIALOG_BUTTON, notebookDbName } from '../modules_common/const';
+import { DIALOG_BUTTON, notebookDbName, SCHEMA_VERSION } from '../modules_common/const';
 import { cacheOfCard } from './card_cache';
 import { MESSAGE, setMessages } from './messages';
 import { showDialog } from './utils_main';
@@ -170,12 +170,15 @@ export const addSettingsHandler = (note: INote) => {
   const exportJSON = async (filepath: string) => {
     const cards = await note.bookDB.find({ prefix: 'card/' });
     const notes = await note.bookDB.find({ prefix: 'note/' });
+    const snapshots = await note.bookDB.find({ prefix: 'snapshot/' });
 
     const bookObj = {
+      schemaVersion: SCHEMA_VERSION,
       app: note.info.appinfo.name,
       version: note.info.appinfo.version,
       cards,
       notes,
+      snapshots,
     };
 
     fs.writeJSON(filepath, bookObj, { spaces: 2 });

@@ -50,3 +50,5 @@ export const MINIMUM_WINDOW_WIDTH = 185; // 180 + shadowWidth
 export const MINIMUM_WINDOW_HEIGHT = 80;
 
 export const SETTINGS_DB_NAME = 'local_settings';
+
+export const SCHEMA_VERSION = 0.1;
