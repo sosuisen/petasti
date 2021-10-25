@@ -147,7 +147,7 @@ const initializeUIEvents = () => {
           'confirmClosing'
         )
         .then((res: number) => {
-          if (res === DIALOG_BUTTON.default) {
+          if (res === DIALOG_BUTTON.ok) {
             // OK
             suppressFocusEvent = true; // Suppress focus event in order not to focus and save this card just after closing card window.
             deleteCardSketch(cardPropStatus);

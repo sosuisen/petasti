@@ -8,7 +8,7 @@ import { CardCondition, CardStyle, Geometry } from './types';
 
 export const DIALOG_BUTTON = {
   error: -1,
-  default: 0,
+  ok: 0,
   cancel: 1,
 };
 

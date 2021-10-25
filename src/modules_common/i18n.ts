@@ -90,6 +90,12 @@ type MessagesSettings = {
   saveSyncSettingsButton: string;
   reloadNotebookByCombine: string;
   invalidSchemaVersion: string;
+  importConfirmation: string;
+  importSyncAlert: string;
+  importingDataProgressBarTitle: string;
+  importingDataProgressBarBody: string;
+  importingDataProgressBarProgress: string;
+  completed: string;
 };
 
 type MessagesLanguage = {
@@ -168,6 +174,15 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   saveSyncSettingsButton: 'Apply sync settings',
   reloadNotebookByCombine: 'App will be restarted to update the database.',
   invalidSchemaVersion: 'Cannot import this data because the version (ver.$1) is invalid.',
+  importConfirmation:
+    'Imports data from a file. The current data will be overwritten and erased. Are you sure you want to proceed?',
+  importSyncAlert:
+    'Synchronization has been stopped. Before resuming synchronization again, please delete the remote repository that is currently being synchronized. If you do not delete it, the data in the remote repository will be merged into the imported data after the synchronization.',
+  importingDataProgressBarTitle: 'Importing...',
+  importingDataProgressBarBody:
+    'Please do not manipulate the cards or notes during the import process.',
+  importingDataProgressBarProgress: 'Import $1 out of $2',
+  completed: 'Completed',
 };
 
 const RENDERER_ENGLISH: MessagesRenderer = {
@@ -284,6 +299,15 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   reloadNotebookByCombine: 'データベース更新のためアプリが再起動されます。',
   invalidSchemaVersion:
     'このバージョン（ver.$1）のデータをインポートすることはできません。',
+  importConfirmation:
+    'データをファイルからインポートします。現在のデータは上書きで消去されます。進めてよろしいですか？',
+  importSyncAlert:
+    '同期を停止しました。同期を再開する前に、現在の同期先のリモートリポジトリを削除してください。削除しない場合、同期時にリモートリポジトリのデータがインポートしたデータへ結合されます。',
+  importingDataProgressBarTitle: 'インポート中...',
+  importingDataProgressBarBody:
+    'インポート処理中はカードやノートを操作しないようお願いします。',
+  importingDataProgressBarProgress: '$2 個のうち $1 個をインポートしました',
+  completed: '完了しました',
 };
 
 const RENDERER_JAPANESE: MessagesRenderer = {

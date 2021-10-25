@@ -16,6 +16,7 @@ import {
 } from 'git-documentdb';
 import { decodeTime, ulid } from 'ulid';
 import { hmtid } from 'hmtid';
+import ProgressBar from 'electron-progressbar';
 import { DatabaseCommand } from '../modules_common/db.types';
 import { availableLanguages, defaultLanguage, MessageLabel } from '../modules_common/i18n';
 import { emitter } from './event';
@@ -23,7 +24,7 @@ import { closeSettings, settingsDialog } from './settings';
 import { DIALOG_BUTTON, SCHEMA_VERSION } from '../modules_common/const';
 import { cacheOfCard } from './card_cache';
 import { MESSAGE, setMessages } from './messages';
-import { showDialog } from './utils_main';
+import { showConfirmDialog, showDialog } from './utils_main';
 import { INote } from './note_types';
 import { setTrayContextMenu } from './tray';
 import { initSync } from './sync';
@@ -171,7 +172,7 @@ export const addSettingsHandler = (note: INote) => {
         break;
       }
       case 'import-data': {
-        const file = openFileSelectorDialog(MESSAGE('exportDataButton'), [
+        const file = openFileSelectorDialog(MESSAGE('importDataButton'), [
           { name: 'JSON', extensions: ['json'] },
           { name: 'All Files', extensions: ['*'] },
         ]);
@@ -184,7 +185,8 @@ export const addSettingsHandler = (note: INote) => {
   });
 
   const exportJSON = async (filepath: string) => {
-    if (note.sync) note.sync.pause();
+    if (note.sync && note.sync.options.live) note.sync.pause();
+
     const cards = await note.bookDB.find({ prefix: 'card/' });
     const notes = await note.bookDB.find({ prefix: 'note/' });
     const snapshots = await note.bookDB.find({ prefix: 'snapshot/' });
@@ -199,19 +201,78 @@ export const addSettingsHandler = (note: INote) => {
     };
 
     await fs.writeJSON(filepath, bookObj, { spaces: 2 });
-    if (note.sync) note.sync.resume();
+
+    if (note.sync && note.sync.options.live) note.sync.resume();
   };
 
   // eslint-disable-next-line complexity
   const importJSON = async (filepath: string) => {
-    if (note.sync) note.sync.pause();
+    if (note.sync && note.sync.options.live) note.sync.pause();
+
     // console.debug('Start import JSON from ' + filepath);
     const jsonObj = readJSONSync(filepath);
 
     if (jsonObj.schemaVersion !== 0.1) {
-      showDialog(settingsDialog, 'question', 'invalidSchemaVersion', jsonObj.schemaVersion);
+      showDialog(settingsDialog, 'error', 'invalidSchemaVersion', jsonObj.schemaVersion);
       return;
     }
+
+    const confirmResult = showConfirmDialog(
+      settingsDialog,
+      'question',
+      ['btnOK', 'btnCancel'],
+      'importConfirmation'
+    );
+
+    if (confirmResult !== DIALOG_BUTTON.ok) {
+      return;
+    }
+
+    const sortedCards = (jsonObj.cards as JsonDoc[]).sort((a, b) => {
+      if (a._id > b._id) return 1;
+      else if (a._id < b._id) return -1;
+      return 0;
+    });
+
+    const sortedNotes = (jsonObj.notes as JsonDoc[]).sort((a, b) => {
+      if (a._id > b._id) return 1;
+      else if (a._id < b._id) return -1;
+      return 0;
+    });
+
+    const sortedSnapshots = (jsonObj.snapshots as JsonDoc[]).sort((a, b) => {
+      if (a._id > b._id) return 1;
+      else if (a._id < b._id) return -1;
+      return 0;
+    });
+
+    if (note.settings.sync.enabled) {
+      showDialog(settingsDialog, 'info', 'importSyncAlert');
+      note.settings.sync.enabled = false;
+      await note.settingsDB.put(note.settings, {
+        debounceTime: 0,
+      });
+    }
+
+    const maxValue = sortedCards.length + sortedNotes.length + sortedSnapshots.length;
+    const progressBar = new ProgressBar({
+      indeterminate: false,
+      text: MESSAGE('importingDataProgressBarTitle'),
+      detail: MESSAGE('importingDataProgressBarBody'),
+      maxValue,
+    });
+    progressBar
+      .on('completed', () => {
+        progressBar.detail = MESSAGE('completed');
+      })
+      // @ts-ignore
+      .on('progress', (value: number) => {
+        progressBar.detail = MESSAGE(
+          'importingDataProgressBarProgress',
+          `${value}`,
+          `${maxValue}`
+        );
+      });
 
     // Create temporary repository
     const tmpNewDbName = 'tmpNew' + ulid();
@@ -233,24 +294,6 @@ export const addSettingsHandler = (note: INote) => {
       // eslint-disable-next-line require-atomic-updates
       tmpBookDB.committer = note.bookDB.committer;
       await tmpBookDB.saveAuthor();
-
-      const sortedCards = (jsonObj.cards as JsonDoc[]).sort((a, b) => {
-        if (a._id > b._id) return 1;
-        else if (a._id < b._id) return -1;
-        return 0;
-      });
-
-      const sortedNotes = (jsonObj.notes as JsonDoc[]).sort((a, b) => {
-        if (a._id > b._id) return 1;
-        else if (a._id < b._id) return -1;
-        return 0;
-      });
-
-      const sortedSnapshots = (jsonObj.snapshots as JsonDoc[]).sort((a, b) => {
-        if (a._id > b._id) return 1;
-        else if (a._id < b._id) return -1;
-        return 0;
-      });
 
       if (jsonObj.schemaVersion === 0.1) {
         const cardIdMap: Record<string, string> = {};
@@ -303,16 +346,19 @@ export const addSettingsHandler = (note: INote) => {
       for (const card of sortedCards) {
         // eslint-disable-next-line no-await-in-loop
         await tmpBookDB.put(card);
+        progressBar.value++;
       }
 
       for (const tmpNote of sortedNotes) {
         // eslint-disable-next-line no-await-in-loop
         await tmpBookDB.put(tmpNote);
+        progressBar.value++;
       }
 
       for (const snapshot of sortedSnapshots) {
         // eslint-disable-next-line no-await-in-loop
         await tmpBookDB.put(snapshot);
+        progressBar.value++;
       }
 
       await tmpBookDB.close();
@@ -326,6 +372,7 @@ export const addSettingsHandler = (note: INote) => {
         console.log(error);
       });
     } catch (err) {
+      progressBar.close();
       showDialog(undefined, 'error', 'databaseCreateError', (err as Error).message);
       console.log(err);
       if (fs.existsSync(tmpOldWorkingDir)) {
@@ -338,7 +385,10 @@ export const addSettingsHandler = (note: INote) => {
       if (tmpBookDB !== undefined) {
         await tmpBookDB.destroy();
       }
+      if (note.sync && note.sync.options.live) note.sync.resume();
+      return;
     }
+
     // Restart
     showDialog(settingsDialog, 'info', 'reloadNotebookByCombine');
     // eslint-disable-next-line require-atomic-updates
@@ -393,7 +443,13 @@ ipcMain.handle(
 
 ipcMain.handle(
   'confirm-dialog',
-  (event, url: string, buttonLabels: MessageLabel[], label: MessageLabel) => {
+  (
+    event,
+    url: string,
+    buttonLabels: MessageLabel[],
+    label: MessageLabel,
+    ...msg: string[]
+  ) => {
     let win: BrowserWindow;
     if (url === 'settingsDialog') {
       win = settingsDialog;
@@ -405,14 +461,6 @@ ipcMain.handle(
       }
       win = card.window;
     }
-
-    const buttons: string[] = buttonLabels.map(buttonLabel => MESSAGE(buttonLabel));
-    return dialog.showMessageBoxSync(win, {
-      type: 'question',
-      buttons: buttons,
-      defaultId: DIALOG_BUTTON.default,
-      cancelId: DIALOG_BUTTON.cancel,
-      message: MESSAGE(label),
-    });
+    showConfirmDialog(win, 'question', buttonLabels, label, ...msg);
   }
 );

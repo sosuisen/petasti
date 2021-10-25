@@ -50,7 +50,7 @@ export function SettingPageSave (props: SettingPageSaveProps) {
           'saveChangeFilePathAlert'
         )
         .then((res: number) => {
-          if (res === DIALOG_BUTTON.default) {
+          if (res === DIALOG_BUTTON.ok) {
             // OK
             const saveDir = path.join(newPath, dataDirName);
             try {
