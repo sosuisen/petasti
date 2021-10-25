@@ -124,6 +124,7 @@ export type Snapshot = {
   name: string;
   backgroundColor: string;
   backgroundImage: string;
+  createdDate: string;
   note: NoteProp;
   cards: {
     _id: string;

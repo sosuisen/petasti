@@ -313,6 +313,7 @@ export const setTrayContextMenu = () => {
           name: newName as string,
           backgroundColor,
           backgroundImage,
+          createdDate: getCurrentDateAndTime(),
           note: noteProp!,
           cards,
           _body,
