@@ -603,16 +603,15 @@ export class Card implements ICard {
     globalShortcut.register(opt + '+T', () => {
       this._note.tray.popUpContextMenu();
     });
+    globalShortcut.registerAll(['CommandOrControl+Plus', 'CommandOrControl+numadd'], () => {
+      this.window.webContents.send('zoom-in');
+    });
+    globalShortcut.registerAll(['CommandOrControl+-', 'CommandOrControl+numsub'], () => {
+      this.window.webContents.send('zoom-out');
+    });
   };
 
   private _removeShortcuts = () => {
-    let opt = 'Alt';
-    if (process.platform === 'darwin') {
-      opt = 'Option';
-    }
-    globalShortcut.unregister('CommandOrControl+R');
-    globalShortcut.unregister('CommandOrControl+W');
-    globalShortcut.unregister(opt + '+C');
-    globalShortcut.unregister(opt + '+T');
+    globalShortcut.unregisterAll();
   };
 }
