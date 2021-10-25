@@ -600,6 +600,9 @@ export class Card implements ICard {
         y: 30,
       });
     });
+    globalShortcut.register(opt + '+T', () => {
+      this._note.tray.popUpContextMenu();
+    });
   };
 
   private _removeShortcuts = () => {
@@ -610,5 +613,6 @@ export class Card implements ICard {
     globalShortcut.unregister('CommandOrControl+R');
     globalShortcut.unregister('CommandOrControl+W');
     globalShortcut.unregister(opt + '+C');
+    globalShortcut.unregister(opt + '+T');
   };
 }

@@ -2,7 +2,7 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, Tray } from 'electron';
 import {
   Collection,
   GitDocumentDB,
@@ -37,6 +37,8 @@ export interface INote {
   info: InfoState;
 
   sync: Sync | undefined;
+
+  tray: Tray;
 
   translations: Translator<Messages>;
 

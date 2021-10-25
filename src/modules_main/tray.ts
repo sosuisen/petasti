@@ -410,6 +410,8 @@ export const initializeTaskTray = (store: INote) => {
   ) {
     openSettings(note);
   }
+
+  note.tray = tray;
 };
 
 const updateTrayContextMenu = () => {

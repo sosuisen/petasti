@@ -5,7 +5,7 @@
  */
 import path from 'path';
 
-import { app, BrowserWindow, nativeImage } from 'electron';
+import { app, BrowserWindow, nativeImage, Tray } from 'electron';
 import {
   Collection,
   CollectionOptions,
@@ -152,6 +152,11 @@ class Note implements INote {
   get translations (): Translator<Messages> {
     return this._translations;
   }
+
+  /**
+   * Tray
+   */
+  tray!: Tray;
 
   /**
    * loadNoteBook
