@@ -2,10 +2,11 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-import { monotonicFactory } from 'ulid';
+import { ulid } from 'ulid';
+import { monotonicFactory as monotonicFactoryHmtid } from 'hmtid';
 import { APP_SCHEME } from './const';
 
-const ulid = monotonicFactory();
+const hmtid = monotonicFactoryHmtid();
 
 export const sleep = (msec: number) =>
   new Promise<void>(resolve => setTimeout(resolve, msec));
@@ -23,12 +24,12 @@ export const getRandomInt = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min)) + min;
 };
 
-export const generateId = () => {
+export const generateUlid = () => {
   return ulid(Date.now());
 };
 
 export const generateNewCardId = () => {
-  return 'c' + ulid(Date.now());
+  return 'c' + hmtid(Date.now());
 };
 
 export const getLocationFromUrl = (cardUrl: string): string => {

@@ -15,7 +15,7 @@ import {
   SyncResult,
 } from 'git-documentdb';
 import { decodeTime, ulid } from 'ulid';
-import { hmtid } from 'hmtid';
+import { monotonicFactory as monotonicFactoryHmtid } from 'hmtid';
 import ProgressBar from 'electron-progressbar';
 import { DatabaseCommand } from '../modules_common/db.types';
 import { availableLanguages, defaultLanguage, MessageLabel } from '../modules_common/i18n';
@@ -296,6 +296,7 @@ export const addSettingsHandler = (note: INote) => {
       await tmpBookDB.saveAuthor();
 
       if (jsonObj.schemaVersion === 0.1) {
+        let hmtid = monotonicFactoryHmtid();
         const cardIdMap: Record<string, string> = {};
         sortedCards.forEach(card => {
           const oldId = card._id;
@@ -305,6 +306,7 @@ export const addSettingsHandler = (note: INote) => {
           cardIdMap[oldId.substring(5)] = newId.substring(5);
         });
 
+        hmtid = monotonicFactoryHmtid();
         const noteIdMap: Record<string, string> = {};
         sortedNotes.forEach(tmpNote => {
           const oldId = tmpNote._id;
@@ -329,12 +331,16 @@ export const addSettingsHandler = (note: INote) => {
           tmpNote._id = newId;
         });
 
+        hmtid = monotonicFactoryHmtid();
         sortedSnapshots.forEach(snapshot => {
           const oldId = snapshot._id;
           const newId = 'snapshot/s' + hmtid(decodeTime(oldId.substring(9)));
           console.log(newId);
           snapshot._id = newId;
-
+          snapshot.createdDate = new Date(decodeTime(oldId.substring(9)))
+            .toISOString()
+            .replace(/^(.+?)T(.+?)\..+?$/, '$1 $2');
+          console.log(snapshot.createdDate);
           (snapshot.cards as JsonDoc[]).forEach(tmpCard => {
             tmpCard._id = cardIdMap[tmpCard._id];
           });

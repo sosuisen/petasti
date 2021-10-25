@@ -17,9 +17,9 @@ import {
   TaskMetadata,
 } from 'git-documentdb';
 import { selectPreferredLanguage, translate, Translator } from 'typed-intl';
-import { monotonicFactory } from 'ulid';
+import { monotonicFactory as monotonicFactoryHmtid } from 'hmtid';
 import {
-  generateId,
+  generateUlid,
   getCardIdFromUrl,
   getCurrentDateAndTime,
   getNoteIdFromUrl,
@@ -60,8 +60,8 @@ import { Card } from './card';
 import { closeSettings } from './settings';
 
 export const generateNewNoteId = () => {
-  const ulid = monotonicFactory();
-  return 'n' + ulid(Date.now());
+  const hmtid = monotonicFactoryHmtid();
+  return 'n' + hmtid(Date.now());
 };
 
 class Note implements INote {
@@ -198,14 +198,15 @@ class Note implements INote {
         debounceTime: 3000,
         logLevel: 'trace',
         serializeFormat: 'front-matter',
+        idGenerator: monotonicFactoryHmtid(),
       };
 
       this._bookDB = new GitDocumentDB(bookDbOption);
 
       const openResult = await this._bookDB.open();
       if (openResult.isNew) {
-        const terminalId = generateId();
-        const userId = generateId();
+        const terminalId = generateUlid();
+        const userId = generateUlid();
         const author = {
           name: userId,
           email: terminalId + '@localhost',
@@ -258,7 +259,9 @@ class Note implements INote {
     // Create collections
     this._cardCollection = this._bookDB.collection('card');
     this._noteCollection = this._bookDB.collection('note');
-    this._snapshotCollection = this._bookDB.collection('snapshot');
+    this._snapshotCollection = this._bookDB.collection('snapshot', {
+      namePrefix: 's',
+    });
 
     // Load note properties
     const noteDirList = await this._noteCollection.getCollections();
