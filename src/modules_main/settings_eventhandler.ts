@@ -206,6 +206,8 @@ export const addSettingsHandler = (note: INote) => {
     await fs.writeJSON(filepath, bookObj, { spaces: 2 });
 
     if (note.sync && note.sync.options.live) note.sync.resume();
+
+    showDialog(settingsDialog, 'info', 'completed');
   };
 
   // eslint-disable-next-line complexity
