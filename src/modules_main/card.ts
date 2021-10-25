@@ -4,7 +4,7 @@
  */
 import url from 'url';
 import path from 'path';
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain, shell } from 'electron';
 import { DebounceQueue } from 'rx-queue';
 import { TaskMetadata } from 'git-documentdb';
 import bezier from 'bezier-easing';
@@ -42,6 +42,7 @@ import {
   setZIndexOfTopCard,
 } from './card_zindex';
 import { messagesRenderer } from './messages';
+
 /**
  * Easing
  */
@@ -357,6 +358,8 @@ export class Card implements ICard {
    * Listen focus event in Main Process.
    */
   private _focusListener = () => {
+    this._addShortcuts();
+
     if (this.recaptureGlobalFocusEventAfterLocalFocusEvent) {
       this.recaptureGlobalFocusEventAfterLocalFocusEvent = false;
       setGlobalFocusEventListenerPermission(true);
@@ -398,6 +401,8 @@ export class Card implements ICard {
   };
 
   private _blurListener = () => {
+    this._removeShortcuts();
+
     if (this.suppressBlurEventOnce) {
       console.debug(`skip blur event listener ${this.url}`);
       this.suppressBlurEventOnce = false;
@@ -568,5 +573,42 @@ export class Card implements ICard {
         createCardWindow(this._note, newUrl, cardBody!, newCardSketch);
       })
       .catch(e => console.log(e));
+  };
+
+  private _addShortcuts = () => {
+    // Available shortcuts
+    // https://github.com/electron/electron/blob/main/docs/api/accelerator.md
+    let opt = 'Alt';
+    if (process.platform === 'darwin') {
+      opt = 'Option';
+    }
+
+    globalShortcut.register('CommandOrControl+R', () => {
+      // Disable reload
+      // nop
+    });
+    globalShortcut.register('CommandOrControl+W', () => {
+      // Disable close
+      // nop
+    });
+    globalShortcut.register(opt + '+C', () => {
+      // Context menu
+      this.window.webContents.sendInputEvent({
+        button: 'right',
+        type: 'mouseUp',
+        x: 30,
+        y: 30,
+      });
+    });
+  };
+
+  private _removeShortcuts = () => {
+    let opt = 'Alt';
+    if (process.platform === 'darwin') {
+      opt = 'Option';
+    }
+    globalShortcut.unregister('CommandOrControl+R');
+    globalShortcut.unregister('CommandOrControl+W');
+    globalShortcut.unregister(opt + '+C');
   };
 }
