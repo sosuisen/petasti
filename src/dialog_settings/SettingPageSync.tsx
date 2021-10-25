@@ -103,7 +103,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
         });
       if (result !== 'succeed' && result !== 'combine') {
         console.log(result);
-        setTestSyncDialogMessage(messages.syncError);
+        setTestSyncDialogMessage(messages.syncError.replace('$1', result));
         return;
       }
       // Success
