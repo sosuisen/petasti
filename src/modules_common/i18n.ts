@@ -96,6 +96,7 @@ type MessagesSettings = {
   importingDataProgressBarBody: string;
   importingDataProgressBarProgress: string;
   completed: string;
+  exportDataAlert: string;
 };
 
 type MessagesLanguage = {
@@ -183,6 +184,8 @@ const SETTINGS_ENGLISH: MessagesSettings = {
     'Please do not manipulate the cards or notes during the import process.',
   importingDataProgressBarProgress: 'Import $1 out of $2',
   completed: 'Completed',
+  exportDataAlert:
+    'Only current cards, notes, and snapshots will be exported. Past changes and deleted data will not be included.',
 };
 
 const RENDERER_ENGLISH: MessagesRenderer = {
@@ -308,6 +311,8 @@ const SETTINGS_JAPANESE: MessagesSettings = {
     'インポート処理中はカードやノートを操作しないようお願いします。',
   importingDataProgressBarProgress: '$2 個のうち $1 個をインポートしました',
   completed: '完了しました',
+  exportDataAlert:
+    '現在のカード、ノート、スナップショットのみエクスポートされます。過去の変更履歴や削除されたデータは含まれません。',
 };
 
 const RENDERER_JAPANESE: MessagesRenderer = {

@@ -160,6 +160,8 @@ export const addSettingsHandler = (note: INote) => {
         break;
       }
       case 'export-data': {
+        showDialog(settingsDialog, 'info', 'exportDataAlert');
+
         const file = openDirectorySelectorDialog(MESSAGE('exportDataButton'));
         if (file) {
           const filepath =
@@ -195,6 +197,7 @@ export const addSettingsHandler = (note: INote) => {
       schemaVersion: SCHEMA_VERSION,
       app: note.info.appinfo.name,
       appVersion: note.info.appinfo.version,
+      createdDate: getCurrentDateAndTime(),
       cards,
       notes,
       snapshots,
