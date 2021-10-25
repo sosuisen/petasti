@@ -89,6 +89,7 @@ type MessagesSettings = {
   syncIntervalAlert: string;
   saveSyncSettingsButton: string;
   reloadNotebookByCombine: string;
+  invalidSchemaVersion: string;
 };
 
 type MessagesLanguage = {
@@ -166,6 +167,7 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   syncIntervalAlert: 'Please enter a number greater than or equal to 10.',
   saveSyncSettingsButton: 'Apply sync settings',
   reloadNotebookByCombine: 'App will be restarted to update the database.',
+  invalidSchemaVersion: 'Cannot import this data because the version (ver.$1) is invalid.',
 };
 
 const RENDERER_ENGLISH: MessagesRenderer = {
@@ -181,7 +183,7 @@ export const ENGLISH: Messages = {
   ...NOTE_ENGLISH,
   ...SETTINGS_ENGLISH,
   ...RENDERER_ENGLISH,
-  databaseCreateError: 'Error: Cannot create database',
+  databaseCreateError: 'Error: Cannot create database($1)',
   exit: 'Exit',
   zoomIn: 'Zoom In',
   zoomOut: 'Zoom Out',
@@ -198,7 +200,7 @@ export const ENGLISH: Messages = {
     'Trying to open external website $1. Allow if you think it is safe, otherwise it must be removed.',
   securityLocalNavigationError:
     'Script is trying to open $1, but it cannot be allowed. The card will be removed.',
-  syncError: 'Error: Cannot sync with remote',
+  syncError: 'Error: Cannot sync with remote($1)',
   btnCloseCard: 'Close card',
   btnOK: 'OK',
   btnAllow: 'Allow',
@@ -248,9 +250,9 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   settingPageSync: '同期',
   settingPageSave: 'データ保存',
   settingPageAbout: 'アプリの情報',
-  exportData: '手動で書き出し（JSON形式）',
+  exportData: '書き出し（JSON形式）',
   exportDataButton: '書き出し先を選択',
-  importData: '手動で読み込み（JSON形式）',
+  importData: '読み込み（JSON形式）',
   importDataButton: '読み込み元ファイルを選択',
   saveDetailedText: '自動的に次の場所へ保存',
   saveFilePath: 'このフォルダに保存',
@@ -280,6 +282,8 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   syncIntervalAlert: '10以上の値を入力してください',
   saveSyncSettingsButton: '同期設定を保存',
   reloadNotebookByCombine: 'データベース更新のためアプリが再起動されます。',
+  invalidSchemaVersion:
+    'このバージョン（ver.$1）のデータをインポートすることはできません。',
 };
 
 const RENDERER_JAPANESE: MessagesRenderer = {
@@ -291,7 +295,7 @@ export const JAPANESE: Messages = {
   ...NOTE_JAPANESE,
   ...SETTINGS_JAPANESE,
   ...RENDERER_JAPANESE,
-  databaseCreateError: 'エラー：データベースを作成できませんでした。',
+  databaseCreateError: 'エラー：データベースを作成できませんでした。($1)',
   exit: '終了',
   zoomIn: '拡大',
   zoomOut: '縮小',
@@ -308,7 +312,8 @@ export const JAPANESE: Messages = {
     '外部サイト $1 を開こうとしています。安全な場合のみ許可してください。\n許可しない場合、このカードは削除されます。',
   securityLocalNavigationError:
     'スクリプトが $1 を開こうとしていますが、許可できません。このカードを削除します。',
-  syncError: 'エラー：リモートと同期することができませんでした。同期を再設定してください。',
+  syncError:
+    'エラー：リモートと同期することができませんでした。同期を再設定してください。($1)',
   btnCloseCard: 'カードを閉じる',
   btnOK: 'はい',
   btnAllow: '許可する',

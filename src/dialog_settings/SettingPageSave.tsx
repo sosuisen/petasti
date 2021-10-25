@@ -87,6 +87,16 @@ export function SettingPageSave (props: SettingPageSaveProps) {
       });
   };
 
+  const onImportDataButtonClick = async () => {
+    await window.api
+      .db({
+        command: 'import-data',
+      })
+      .catch(e => {
+        console.error(`Failed to open directory selector dialog: ${e.message}`);
+      });
+  };
+
   const buttonStyle = (color: ColorName) => ({
     backgroundColor: uiColors[color],
   });
@@ -115,6 +125,16 @@ export function SettingPageSave (props: SettingPageSaveProps) {
           style={buttonStyle('red')}
         >
           {messages.exportDataButton}
+        </button>
+      </div>
+      <div styleName='importData'>
+        <div styleName='importDataLabel'>{messages.importData}:</div>
+        <button
+          styleName='importDataButton'
+          onClick={onImportDataButtonClick}
+          style={buttonStyle('red')}
+        >
+          {messages.importDataButton}
         </button>
       </div>
     </SettingPageTemplate>

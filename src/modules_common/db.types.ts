@@ -75,6 +75,10 @@ export type DatabaseExportData = {
   command: 'export-data';
 };
 
+export type DatabaseImportData = {
+  command: 'import-data';
+};
+
 export type DatabaseCommand =
   | DatabaseCardBodyUpdate
   | DatabaseCardSketchUpdate
@@ -88,4 +92,5 @@ export type DatabaseCommand =
   | DatabaseTestSync
   | DatabasePauseSync
   | DatabaseResumeSync
-  | DatabaseExportData;
+  | DatabaseExportData
+  | DatabaseImportData;

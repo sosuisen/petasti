@@ -10,10 +10,9 @@ export const showDialog = (
   target: BrowserWindow | undefined,
   type: 'info' | 'error' | 'question',
   label: MessageLabel,
-  msg?: string
+  ...msg: string[]
 ) => {
-  let message = MESSAGE(label);
-  if (msg !== undefined) message += `(${msg})`;
+  const message = MESSAGE(label, ...msg);
 
   if (target instanceof BrowserWindow) {
     dialog.showMessageBoxSync(target, {

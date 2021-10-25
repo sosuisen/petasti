@@ -3,14 +3,24 @@
  * © 2021 Hidekazu Kubota
  */
 import { BrowserWindow, dialog, ipcMain } from 'electron';
-import fs from 'fs-extra';
+import fs, { readJSONSync } from 'fs-extra';
+import rimraf from 'rimraf';
 import { selectPreferredLanguage } from 'typed-intl';
-import { Sync, SyncResult } from 'git-documentdb';
+import {
+  CollectionOptions,
+  DatabaseOptions,
+  GitDocumentDB,
+  JsonDoc,
+  Sync,
+  SyncResult,
+} from 'git-documentdb';
+import { decodeTime, ulid } from 'ulid';
+import { hmtid } from 'hmtid';
 import { DatabaseCommand } from '../modules_common/db.types';
 import { availableLanguages, defaultLanguage, MessageLabel } from '../modules_common/i18n';
 import { emitter } from './event';
-import { settingsDialog } from './settings';
-import { DIALOG_BUTTON, notebookDbName, SCHEMA_VERSION } from '../modules_common/const';
+import { closeSettings, settingsDialog } from './settings';
+import { DIALOG_BUTTON, SCHEMA_VERSION } from '../modules_common/const';
 import { cacheOfCard } from './card_cache';
 import { MESSAGE, setMessages } from './messages';
 import { showDialog } from './utils_main';
@@ -18,16 +28,11 @@ import { INote } from './note_types';
 import { setTrayContextMenu } from './tray';
 import { initSync } from './sync';
 import { getCurrentDateAndTime } from '../modules_common/utils';
-import { settings } from 'cluster';
 
 export const addSettingsHandler = (note: INote) => {
   // Request from settings dialog
   ipcMain.handle('open-directory-selector-dialog', (event, message: string) => {
     return openDirectorySelectorDialog(message);
-  });
-
-  ipcMain.handle('open-file-selector-dialog', (event, message: string) => {
-    return openFileSelectorDialog(message);
   });
 
   ipcMain.handle('close-cardio', async event => {
@@ -163,11 +168,23 @@ export const addSettingsHandler = (note: INote) => {
             '.json';
           exportJSON(filepath);
         }
+        break;
+      }
+      case 'import-data': {
+        const file = openFileSelectorDialog(MESSAGE('exportDataButton'), [
+          { name: 'JSON', extensions: ['json'] },
+          { name: 'All Files', extensions: ['*'] },
+        ]);
+        if (file) {
+          importJSON(file[0]);
+        }
+        break;
       }
     }
   });
 
   const exportJSON = async (filepath: string) => {
+    if (note.sync) note.sync.pause();
     const cards = await note.bookDB.find({ prefix: 'card/' });
     const notes = await note.bookDB.find({ prefix: 'note/' });
     const snapshots = await note.bookDB.find({ prefix: 'snapshot/' });
@@ -175,13 +192,165 @@ export const addSettingsHandler = (note: INote) => {
     const bookObj = {
       schemaVersion: SCHEMA_VERSION,
       app: note.info.appinfo.name,
-      version: note.info.appinfo.version,
+      appVersion: note.info.appinfo.version,
       cards,
       notes,
       snapshots,
     };
 
-    fs.writeJSON(filepath, bookObj, { spaces: 2 });
+    await fs.writeJSON(filepath, bookObj, { spaces: 2 });
+    if (note.sync) note.sync.resume();
+  };
+
+  // eslint-disable-next-line complexity
+  const importJSON = async (filepath: string) => {
+    if (note.sync) note.sync.pause();
+    // console.debug('Start import JSON from ' + filepath);
+    const jsonObj = readJSONSync(filepath);
+
+    if (jsonObj.schemaVersion !== 0.1) {
+      showDialog(settingsDialog, 'question', 'invalidSchemaVersion', jsonObj.schemaVersion);
+      return;
+    }
+
+    // Create temporary repository
+    const tmpNewDbName = 'tmpNew' + ulid();
+    const tmpOldWorkingDir = note.bookDB.workingDir + '_' + ulid();
+    const bookDbOption: DatabaseOptions & CollectionOptions = {
+      localDir: note.settings.dataStorePath,
+      dbName: tmpNewDbName,
+      debounceTime: 3000,
+      logLevel: 'trace',
+      serializeFormat: 'front-matter',
+    };
+    let tmpBookDB: GitDocumentDB | undefined;
+    try {
+      tmpBookDB = new GitDocumentDB(bookDbOption);
+      await tmpBookDB.open();
+
+      // eslint-disable-next-line require-atomic-updates
+      tmpBookDB.author = note.bookDB.author;
+      // eslint-disable-next-line require-atomic-updates
+      tmpBookDB.committer = note.bookDB.committer;
+      await tmpBookDB.saveAuthor();
+
+      const sortedCards = (jsonObj.cards as JsonDoc[]).sort((a, b) => {
+        if (a._id > b._id) return 1;
+        else if (a._id < b._id) return -1;
+        return 0;
+      });
+
+      const sortedNotes = (jsonObj.notes as JsonDoc[]).sort((a, b) => {
+        if (a._id > b._id) return 1;
+        else if (a._id < b._id) return -1;
+        return 0;
+      });
+
+      const sortedSnapshots = (jsonObj.snapshots as JsonDoc[]).sort((a, b) => {
+        if (a._id > b._id) return 1;
+        else if (a._id < b._id) return -1;
+        return 0;
+      });
+
+      if (jsonObj.schemaVersion === 0.1) {
+        const cardIdMap: Record<string, string> = {};
+        sortedCards.forEach(card => {
+          const oldId = card._id;
+          const newId = 'card/c' + hmtid(decodeTime(oldId.substring(6)));
+          card._id = newId;
+
+          cardIdMap[oldId.substring(5)] = newId.substring(5);
+        });
+
+        const noteIdMap: Record<string, string> = {};
+        sortedNotes.forEach(tmpNote => {
+          const oldId = tmpNote._id;
+          const found = oldId.match(/^note\/(.+?)\/(.+)$/);
+          const oldNoteId = found[1];
+          let childId = found[2]; // cardId or 'prop'
+          if (cardIdMap[childId]) {
+            childId = cardIdMap[childId];
+          }
+          let newNoteId = '';
+          if (noteIdMap[oldNoteId]) {
+            newNoteId = noteIdMap[oldNoteId];
+          }
+          else {
+            newNoteId = 'n' + hmtid(decodeTime(oldNoteId.substring(1)));
+            noteIdMap[oldNoteId] = newNoteId;
+          }
+          newNoteId = 'note/' + newNoteId;
+
+          const newId = newNoteId + '/' + childId;
+          console.log(newId);
+          tmpNote._id = newId;
+        });
+
+        sortedSnapshots.forEach(snapshot => {
+          const oldId = snapshot._id;
+          const newId = 'snapshot/s' + hmtid(decodeTime(oldId.substring(9)));
+          console.log(newId);
+          snapshot._id = newId;
+
+          (snapshot.cards as JsonDoc[]).forEach(tmpCard => {
+            tmpCard._id = cardIdMap[tmpCard._id];
+          });
+
+          snapshot.note._id = noteIdMap[snapshot.note._id];
+        });
+      }
+
+      for (const card of sortedCards) {
+        // eslint-disable-next-line no-await-in-loop
+        await tmpBookDB.put(card);
+      }
+
+      for (const tmpNote of sortedNotes) {
+        // eslint-disable-next-line no-await-in-loop
+        await tmpBookDB.put(tmpNote);
+      }
+
+      for (const snapshot of sortedSnapshots) {
+        // eslint-disable-next-line no-await-in-loop
+        await tmpBookDB.put(snapshot);
+      }
+
+      await tmpBookDB.close();
+
+      await note.bookDB.close();
+      await fs.rename(note.bookDB.workingDir, tmpOldWorkingDir);
+      await fs.rename(tmpBookDB.workingDir, note.bookDB.workingDir);
+      // Removing tmpOldWorkingDir is not important.
+      // Exec rimraf asynchronously, do not wait and do not catch errors.
+      rimraf(tmpOldWorkingDir, error => {
+        console.log(error);
+      });
+    } catch (err) {
+      showDialog(undefined, 'error', 'databaseCreateError', (err as Error).message);
+      console.log(err);
+      if (fs.existsSync(tmpOldWorkingDir)) {
+        // Restore directory names
+        if (fs.existsSync(note.bookDB.workingDir)) {
+          await fs.rename(note.bookDB.workingDir, tmpBookDB!.workingDir);
+        }
+        await fs.rename(tmpOldWorkingDir, note.bookDB.workingDir);
+      }
+      if (tmpBookDB !== undefined) {
+        await tmpBookDB.destroy();
+      }
+    }
+    // Restart
+    showDialog(settingsDialog, 'info', 'reloadNotebookByCombine');
+    // eslint-disable-next-line require-atomic-updates
+    note.changingToNoteId = 'restart';
+    try {
+      // Remove listeners firstly to avoid focus another card in closing process
+      closeSettings();
+      cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
+      cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
+    } catch (error) {
+      console.error(error);
+    }
   };
 };
 
@@ -194,33 +363,33 @@ const openDirectorySelectorDialog = (message: string) => {
   return file;
 };
 
-const openFileSelectorDialog = (message: string) => {
+const openFileSelectorDialog = (message: string, filters: any[]) => {
   const file: string[] | undefined = dialog.showOpenDialogSync(settingsDialog, {
     properties: ['openFile'],
-    filters: [
-      { name: 'JSON', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] },
-    ],
+    filters,
     title: message,
     message: message, // macOS only
   });
   return file;
 };
 
-ipcMain.handle('alert-dialog', (event, url: string, label: MessageLabel) => {
-  let win: BrowserWindow;
-  if (url === 'settingsDialog') {
-    win = settingsDialog;
-  }
-  else {
-    const card = cacheOfCard.get(url);
-    if (!card) {
-      return;
+ipcMain.handle(
+  'alert-dialog',
+  (event, url: string, label: MessageLabel, ...msg: string[]) => {
+    let win: BrowserWindow;
+    if (url === 'settingsDialog') {
+      win = settingsDialog;
     }
-    win = card.window;
+    else {
+      const card = cacheOfCard.get(url);
+      if (!card) {
+        return;
+      }
+      win = card.window;
+    }
+    showDialog(win, 'question', label, ...msg);
   }
-  showDialog(win, 'question', label);
-});
+);
 
 ipcMain.handle(
   'confirm-dialog',

@@ -218,10 +218,10 @@ class Note implements INote {
         this._bookDB.author = author;
         // eslint-disable-next-line require-atomic-updates
         this._bookDB.committer = committer;
-        this._bookDB.saveAuthor();
+        await this._bookDB.saveAuthor();
       }
       else {
-        this._bookDB.loadAuthor();
+        await this._bookDB.loadAuthor();
         // eslint-disable-next-line require-atomic-updates
         this._bookDB.committer = this._bookDB.author;
       }
@@ -300,13 +300,11 @@ class Note implements INote {
     }
     else if (
       this._settings.currentNoteId === undefined ||
-      this._settings.currentNoteId === ''
+      this._settings.currentNoteId === '' ||
+      noteStore.getState().get(this._settings.currentNoteId) === undefined
     ) {
       this._settings.currentNoteId = this.getSortedNoteIdList()[0];
       await this._settingsDB.put(this._settings);
-    }
-    else if (noteStore.getState().get(this._settings.currentNoteId) === undefined) {
-      createNoteFlag = true;
     }
 
     if (createNoteFlag) {
