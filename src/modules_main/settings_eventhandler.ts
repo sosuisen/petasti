@@ -217,7 +217,7 @@ export const addSettingsHandler = (note: INote) => {
     // console.debug('Start import JSON from ' + filepath);
     const jsonObj = readJSONSync(filepath);
 
-    if (jsonObj.schemaVersion !== 0.1) {
+    if (jsonObj.schemaVersion > 0.2) {
       showDialog(settingsDialog, 'error', 'invalidSchemaVersion', jsonObj.schemaVersion);
       return;
     }
