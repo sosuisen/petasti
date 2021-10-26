@@ -8,6 +8,7 @@ import {
   defaultValueCtx,
   Editor,
   editorViewCtx,
+  editorViewOptionsCtx,
   parserCtx,
   ParserReady,
   prosePluginFactory,
@@ -80,8 +81,6 @@ export class CardEditorMarkdown implements ICardEditor {
   private _previousDoc: {
     [key: string]: any;
   } = {};
-
-  // private _saveInterval: NodeJS.Timeout | undefined = undefined;
 
   getImageTag = (
     id: string,
@@ -637,11 +636,7 @@ export class CardEditorMarkdown implements ICardEditor {
       const editorView = ctx.get(editorViewCtx);
       return editorView.state.doc.toJSON();
     });
-    /*
-    this._saveInterval = setInterval(() => {
-      this._saveBody();
-    }, 1500);
-    */
+
     render(['EditorStyle']);
 
     return Promise.resolve();

@@ -87,6 +87,10 @@ const initializeUIEvents = () => {
     return false;
   });
 
+  document.getElementById('contents')!.addEventListener('mousedown', event => {
+    startEditorByClick({ x: event.screenX, y: event.screenY } as InnerClickEvent);
+  });
+
   // eslint-disable-next-line no-unused-expressions
   document.getElementById('newBtn')?.addEventListener('click', async () => {
     // Position of a new card is relative to this card.
@@ -223,7 +227,7 @@ const initializeUIEvents = () => {
     prevMouseY = event.screenY;
   });
 };
-
+/*
 const waitIframeInitializing = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
@@ -273,7 +277,7 @@ const initializeContentsFrameEvents = () => {
     }
   });
 };
-
+*/
 const onload = async () => {
   window.removeEventListener('load', onload, false);
 
@@ -299,13 +303,13 @@ const onload = async () => {
 
   initializeUIEvents();
 
-  await Promise.all([cardEditor.loadUI(cardCssStyle), waitIframeInitializing()]).catch(
-    e => {
-      console.error(e.message);
-    }
-  );
+  //  await Promise.all([cardEditor.loadUI(cardCssStyle), waitIframeInitializing()]).catch(
+  await cardEditor.loadUI(cardCssStyle).catch(e => {
+    console.error(e.message);
+  });
 
-  initializeContentsFrameEvents();
+  // initializeContentsFrameEvents();
+
   window.api.finishLoad(sketchUrlEncoded);
 };
 
@@ -475,7 +479,8 @@ const onRenderCard = async (
 
   document.getElementById('card')!.style.visibility = 'visible';
 
-  render()
+  render();
+  /*  
     .then(() => {
       const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
       // Listen load event for reload()
@@ -486,6 +491,7 @@ const onRenderCard = async (
     .catch(e => {
       console.error(`Error in render-card: ${e.message}`);
     });
+    */
 
   window.api.finishRenderCard(cardStore.getState().workState.url).catch((e: Error) => {
     // logger.error does not work in ipcRenderer event.
@@ -567,6 +573,7 @@ const onSyncCardBody = async (changedFile: ChangedFile, enqueueTime: string) => 
   render(['ContentsData', 'CardStyle']);
 };
 
+/*
 const filterContentsFrameMessage = (event: MessageEvent): ContentsFrameMessage => {
   const msg: ContentsFrameMessage = event.data;
   if (!contentsFrameCommand.includes(msg.command)) {
@@ -574,14 +581,21 @@ const filterContentsFrameMessage = (event: MessageEvent): ContentsFrameMessage =
   }
   return msg;
 };
+*/
 
 const startEditor = (x: number, y: number) => {
   cardEditor.showEditor();
 
+  const contents = document.getElementById('contents');
+  const scrollTop = contents!.scrollTop;
+  const scrollLeft = contents!.scrollLeft;
+
+  /*
   // Set scroll position of editor to that of iframe
   const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
   const scrollTop = iframe.contentWindow!.scrollY;
   const scrollLeft = iframe.contentWindow!.scrollX;
+  */
   cardEditor.setScrollPosition(scrollLeft, scrollTop);
 
   const offsetY = document.getElementById('title')!.offsetHeight;
@@ -594,12 +608,18 @@ const endEditor = async () => {
   render();
 
   // Must wait until card is zoomed to scroll correctly
-  setTimeout(() => {
-    const { left, top } = cardEditor.getScrollPosition();
+  //  setTimeout(() => {
+  const { left, top } = cardEditor.getScrollPosition();
+
+  const contents = document.getElementById('contents');
+  contents!.scrollTop = top;
+  contents!.scrollLeft = left;
+  /*
     const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
     iframe.contentWindow!.scrollTo(left, top);
-    cardEditor.hideEditor();
-  }, 100);
+    */
+  cardEditor.hideEditor();
+  //  }, 100);
 };
 
 const startEditorByClick = (clickEvent: InnerClickEvent) => {

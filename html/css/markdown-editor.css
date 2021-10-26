@@ -52,3 +52,51 @@ body > #card > #editor > .milkdown > .editor > * {
   margin-block-start: 0.3em;
   margin-block-end: 0.3em;
 }
+
+/**
+ * contents
+ */
+
+ body > #card > #contents {
+	/* Remove the background color to make it transparent. */
+	background-color: transparent;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
+  overflow-x: hidden;
+  overflow-y: scroll;
+
+  padding: 0px;
+  margin: 0px;
+
+}
+
+body > #card > #contents > #contentsFrame {
+  /* Font */
+	/* Emoji fonts are added to visualize them nicely in Internet Explorer. */
+  font-family:  sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';  
+	font-size: 14px;
+
+	/* Text color */
+	color: #000;
+
+	margin: 3px 7px 3px 7px;
+  padding: 2px;
+
+  	/* Remove the background color to make it transparent. */
+	background-color: transparent;
+
+  word-wrap: break-word;
+}
+
+/* Custom scroll bar */
+ body > #card > #contents::-webkit-scrollbar-thumb{
+  border-radius: 7px;
+}
+
+body > #card > #contents > * {
+  margin-block-start: 0.3em;
+  margin-block-end: 0.3em;
+}
+

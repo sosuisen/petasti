@@ -111,11 +111,13 @@ const renderTitleBarStyle = () => {
   }
 };
 
-const renderContentsData = (): Promise<void> => {
+const renderContentsData = (): void => {
+  document.getElementById('contentsFrame')!.innerHTML = cardEditor.getHTML();
+  /*
   return new Promise((resolve, reject) => {
     //    console.debug('renderContentsData');
     // ${cardStore.getState().body._body}
-    const body = cardEditor.getHTML();
+   
 
     // Script and CSS loaded from contents_frame.html are remained after document.write().
     const html = `<!DOCTYPE html>
@@ -145,6 +147,7 @@ const renderContentsData = (): Promise<void> => {
       reject(e);
     }
   });
+  */
 };
 
 const renderCardAndContentsRect = () => {
@@ -214,6 +217,7 @@ const renderCardAndContentsRect = () => {
     cardCssStyle.borderWidth * 2 + 'px';
 };
 
+// eslint-disable-next-line complexity
 const renderCardStyle = () => {
   /**
    * The card cannot be moved by mouse when #title is hidden.
@@ -277,6 +281,7 @@ const renderCardStyle = () => {
   );
 
   // eslint-disable-next-line no-useless-catch
+  /*
   try {
     const iframeDoc = (document.getElementById('contentsFrame') as HTMLIFrameElement)
       .contentDocument;
@@ -296,7 +301,20 @@ const renderCardStyle = () => {
     }
   } catch (e) {
     console.error(e);
-  }
+  }] */
+  const contents = document.getElementById('contents') as HTMLElement;
+  // @ts-ignore
+  contents.style.zoom = `${cardStore.getState().sketch.style.zoom}`;
+
+  const style = window.document.createElement('style');
+  style.innerHTML =
+    'body::-webkit-scrollbar { width: 7px; background-color: ' +
+    backgroundRgba +
+    '}\n' +
+    'body::-webkit-scrollbar-thumb { background-color: ' +
+    scrollBarRgba +
+    '}';
+  window.document.head.appendChild(style);
 };
 
 const renderEditorStyle = () => {
@@ -315,7 +333,7 @@ export const setTitleMessage = (msg: string) => {
 };
 
 // eslint-disable-next-line complexity
-export const render = async (
+export const render = (
   options: CardRenderOptions[] = [
     'TitleBar',
     'TitleBarStyle',
@@ -333,9 +351,12 @@ export const render = async (
     options = options.filter(opt => opt !== 'ContentsData');
 
     if (cardStore.getState().body._id !== '') {
+      renderContentsData();
+      /*
       await renderContentsData().catch(e =>
         console.error('Error in renderContentsData: ' + e)
       );
+      */
     }
   }
 

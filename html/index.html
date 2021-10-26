@@ -4,9 +4,11 @@
 <head>
   <meta charset='utf-8'> 
   <link type='text/css' href='fontawesome/css/all.min.css' rel='stylesheet'>
+  <link type='text/css' href='css/prism-material-light.css?20210924' rel='stylesheet'>
   <link type='text/css' href='css/card.css?20200629' rel='stylesheet'>
+  <link type='text/css' href='css/markdown-editor.css?20210914' rel='stylesheet'>
+  <link type='text/css' href='css/markdown-nodes.css?20210914' rel='stylesheet'>
   <script type='text/javascript' src='renderer.js'></script>
-  <script type='text/javascript' src='ckeditor/ckeditor.js?20200901'></script>
 </head>
 
 <body>
@@ -18,10 +20,8 @@
       <div id='codeBtn' class='code-btn title-btn'><i class='fas fa-code title-btn-icon'></i></div>
       <div id='closeBtn' class='close-btn title-btn'><i id='closeIcon' class='fas fa-minus-circle title-btn-icon'></i></div>
     </div>
-    <div id='contents' class='contents'>
-      <iframe id='contentsFrame' sandbox='allow-forms allow-same-origin allow-scripts allow-popups' frameborder=0 class='contentsFrame' src='iframe/contents_frame.html'></iframe>
-    </div>
-    <textarea id='editor'></textarea>   
+    <div id='contents' class='contents'><div id='contentsFrame' class='contentsFrame'></div></div>
+    <div id='editor'></div>   
   </div>
   <div id='windowMask' class='window-mask'></div>
   <div id='resizeAreaRight' class='resize-area resize-area-ew'></div>
