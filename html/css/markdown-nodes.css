@@ -258,7 +258,7 @@ li.task-list-item > label.check {
   position: absolute;
   top: 0;
   left: -8px;
-  top: -1px;
+  top: 0px;
   display: inline-block;
   width: 1rem;
   cursor: pointer;
