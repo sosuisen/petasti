@@ -215,17 +215,6 @@ const renderCardAndContentsRect = () => {
 };
 
 const renderCardStyle = () => {
-  if (cardStore.getState().workState.status === 'Focused') {
-    document.getElementById(
-      'card'
-    )!.style.border = `${cardCssStyle.borderWidth}px solid red`;
-  }
-  else if (cardStore.getState().workState.status === 'Blurred') {
-    document.getElementById(
-      'card'
-    )!.style.border = `${cardCssStyle.borderWidth}px solid transparent`;
-  }
-
   /**
    * The card cannot be moved by mouse when #title is hidden.
    * When hidden, #title changes to visible at the first mouse down.
@@ -260,11 +249,39 @@ const renderCardStyle = () => {
 
   document.getElementById('title')!.style.backgroundColor = uiRgba;
 
+  if (cardStore.getState().workState.status === 'Focused') {
+    /*
+    document.getElementById(
+      'card'
+    )!.style.border = `${cardCssStyle.borderWidth}px solid red`;
+    */
+    /*
+    const borderRgba = convertHexColorToRgba(
+      cardStore.getState().sketch.style.uiColor,
+      0.5
+    );
+    document.getElementById(
+      'card'
+    )!.style.border = `${cardCssStyle.borderWidth}px solid ${borderRgba}`;
+    */
+    document.getElementById(
+      'card'
+    )!.style.border = `1px solid black`;
+  }
+  else if (cardStore.getState().workState.status === 'Blurred') {
+    document.getElementById(
+      'card'
+    )!.style.border = `none`;
+  }
+
   let boxShadow = 'none';
   if (
-    cardStore.getState().sketch.style.opacity !== 0 ||
-    cardStore.getState().workState.status === 'Focused'
+    cardStore.getState().sketch.style.opacity !== 0 &&
+    cardStore.getState().workState.status !== 'Focused'
   ) {
+    boxShadow = '5px 5px 3px 0px rgba(128,128,128, .2)';
+  }
+  if (cardStore.getState().workState.status === 'Focused') {
     boxShadow = '5px 5px 3px 0px rgba(0,0,0, .2)';
   }
   document.getElementById('card')!.style.boxShadow = boxShadow;
