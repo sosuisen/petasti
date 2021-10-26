@@ -16,7 +16,7 @@ export interface ICardEditor {
   hideEditor(): void;
 
   startEdit(): Promise<void>;
-  endEdit(): Promise<string>;
+  endEdit(): Promise<void>;
   toggleCodeMode(): void;
   startCodeMode(): void;
   endCodeMode(): void;
@@ -30,8 +30,6 @@ export interface ICardEditor {
   createEditor(): Promise<void>;
   setData(data: string): void;
   getHTML(): string;
-
-  execAfterMouseDown(func: () => Promise<void>): void;
 }
 
 export type CardCssStyle = {

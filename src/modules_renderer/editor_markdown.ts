@@ -76,11 +76,12 @@ export class CardEditorMarkdown implements ICardEditor {
   private _isEditing = false;
 
   private _editor!: Editor;
-  /**
-   * queueSaveCommand
-   * Queuing and execute only last save command to avoid frequent save.
-   */
-  execSaveCommandTimeout = 0;
+
+  private _previousDoc: {
+    [key: string]: any;
+  } = {};
+
+  // private _saveInterval: NodeJS.Timeout | undefined = undefined;
 
   getImageTag = (
     id: string,
@@ -423,6 +424,7 @@ export class CardEditorMarkdown implements ICardEditor {
       doc: [
         (proseNode: any) => {
           console.log(proseNode.toString());
+          this._saveBody(proseNode);
         },
       ], // print Node of ProseMirror
     };
@@ -630,22 +632,42 @@ export class CardEditorMarkdown implements ICardEditor {
 
   startEdit = () => {
     this._isEditing = true;
+
+    this._previousDoc = this._editor.action(ctx => {
+      const editorView = ctx.get(editorViewCtx);
+      return editorView.state.doc.toJSON();
+    });
+    /*
+    this._saveInterval = setInterval(() => {
+      this._saveBody();
+    }, 1500);
+    */
     render(['EditorStyle']);
 
     return Promise.resolve();
   };
 
-  endEdit = async (): Promise<string> => {
-    this._isEditing = false;
-
-    // Save data to AvatarProp
+  private _saveBody = async (proseNode?: ProseNode) => {
+    let currentDoc: { [key: string]: any };
+    if (proseNode !== undefined) {
+      currentDoc = proseNode.toJSON();
+    }
+    else {
+      currentDoc = this._editor.action(ctx => {
+        const editorView = ctx.get(editorViewCtx);
+        return editorView.state.doc.toJSON();
+      });
+      if (JSON.stringify(currentDoc) === JSON.stringify(this._previousDoc)) {
+        return;
+      }
+    }
+    this._previousDoc = currentDoc;
 
     let data = this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
       const serializer = ctx.get(serializerCtx);
 
-      const json = editorView.state.doc.toJSON();
-      const newDoc = ProseNode.fromJSON(editorView.state.schema, json); // clone
+      const newDoc = ProseNode.fromJSON(editorView.state.schema, currentDoc); // clone
 
       const stack: ProseNode[] = [];
 
@@ -718,14 +740,17 @@ export class CardEditorMarkdown implements ICardEditor {
     data = data.replace(/\r/g, '\n');
 
     await cardStore.dispatch(cardBodyUpdateCreator(data));
+  };
+
+  endEdit = async (): Promise<void> => {
+    this._isEditing = false;
+
+    // clearInterval(this._saveInterval!);
+
+    await this._saveBody();
 
     // Reset editor color to card color
     render(['TitleBar', 'EditorStyle']);
-
-    // eslint-disable-next-line no-unused-expressions
-    // CKEDITOR.instances.editor.getSelection()?.removeAllRanges();
-
-    return Promise.resolve(data);
   };
 
   getHTML = (): string => {
@@ -883,9 +908,5 @@ export class CardEditorMarkdown implements ICardEditor {
       scrollBarRgba +
       '}';
     window.document.head.appendChild(style);
-  };
-
-  execAfterMouseDown = (func: () => Promise<void>) => {
-    // CKEDITOR.instances.editor.document.once('mousedown', e => func());
   };
 }

@@ -122,9 +122,7 @@ const initializeUIEvents = () => {
   document.getElementById('closeBtn')?.addEventListener('click', async event => {
     if (cardEditor.isOpened) {
       cardEditor.hideEditor();
-      const _body = await cardEditor.endEdit();
-      await cardStore.dispatch(cardBodyUpdateCreator(_body));
-
+      await cardEditor.endEdit();
       render(['TitleBar', 'ContentsData', 'ContentsRect']);
     }
 
@@ -379,7 +377,10 @@ const onResizeByHand = async (geometry: Geometry) => {
   render(['TitleBar', 'ContentsRect', 'EditorRect']);
 };
 
-const onCardClose = () => {
+const onCardClose = async () => {
+  if (cardEditor.isOpened) {
+    await endEditor();
+  }
   close();
 };
 
@@ -584,7 +585,7 @@ const startEditor = (x: number, y: number) => {
   cardEditor.setScrollPosition(scrollLeft, scrollTop);
 
   const offsetY = document.getElementById('title')!.offsetHeight;
-  cardEditor.execAfterMouseDown(cardEditor.startEdit);
+  cardEditor.startEdit();
   window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y + offsetY);
 };
 
