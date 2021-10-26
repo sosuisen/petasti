@@ -5,7 +5,7 @@
  */
 p
 {
-  line-height: 1.1em;
+  line-height: 1.3em;
 }
 
 blockquote
@@ -48,7 +48,7 @@ ol[data-collapsed='false'] {
 h1,h2,h3,h4,h5,h6
 {
 	font-weight: normal;
-	line-height: 1.2;
+	line-height: 1.2em;
 }
 
 hr
