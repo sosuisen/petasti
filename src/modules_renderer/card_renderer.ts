@@ -250,28 +250,14 @@ const renderCardStyle = () => {
   document.getElementById('title')!.style.backgroundColor = uiRgba;
 
   if (cardStore.getState().workState.status === 'Focused') {
-    /*
     document.getElementById(
       'card'
-    )!.style.border = `${cardCssStyle.borderWidth}px solid red`;
-    */
-    /*
-    const borderRgba = convertHexColorToRgba(
-      cardStore.getState().sketch.style.uiColor,
-      0.5
-    );
-    document.getElementById(
-      'card'
-    )!.style.border = `${cardCssStyle.borderWidth}px solid ${borderRgba}`;
-    */
-    document.getElementById(
-      'card'
-    )!.style.border = `1px solid black`;
+    )!.style.border = `${cardCssStyle.borderWidth}px solid ${uiRgba}`;
   }
   else if (cardStore.getState().workState.status === 'Blurred') {
     document.getElementById(
       'card'
-    )!.style.border = `none`;
+    )!.style.border = `${cardCssStyle.borderWidth}px solid transparent`;
   }
 
   let boxShadow = 'none';
