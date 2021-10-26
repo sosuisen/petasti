@@ -12,6 +12,7 @@ import {
   generateNewCardId,
   getCardIdFromUrl,
   getCurrentDateAndTime,
+  getRandomInt,
   getSketchIdFromUrl,
 } from '../modules_common/utils';
 import {
@@ -42,6 +43,7 @@ import {
   setZIndexOfTopCard,
 } from './card_zindex';
 import { messagesRenderer } from './messages';
+import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
 
 /**
  * Easing
@@ -103,6 +105,44 @@ export const sortCardWindows = () => {
 /**
  * Create card
  */
+let color = { ...cardColors };
+// @ts-ignore
+delete color.transparent;
+
+export const createRandomColorCard = async (note: INote) => {
+  const geometry = { ...DEFAULT_CARD_GEOMETRY };
+  geometry.x += getRandomInt(30, 100);
+  geometry.y += getRandomInt(30, 100);
+
+  let colorList = Object.entries(color);
+  if (colorList.length === 0) {
+    color = { ...cardColors };
+    // @ts-ignore
+    delete color.transparent;
+    colorList = Object.entries(color);
+  }
+  const newColor: ColorName = colorList[getRandomInt(0, colorList.length)][0] as ColorName;
+  delete color[newColor];
+
+  const bgColor: string = cardColors[newColor];
+
+  const cardId = generateNewCardId();
+
+  const newUrl = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
+
+  const cardSketch: Partial<CardSketch> = {
+    geometry,
+    style: {
+      uiColor: darkenHexColor(bgColor),
+      backgroundColor: bgColor,
+      opacity: 1.0,
+      zoom: 1.0,
+    },
+  };
+
+  await createCardWindow(note, newUrl, {}, cardSketch);
+};
+
 export const createCardWindow = async (
   note: INote,
   noteIdOrUrl: string,
@@ -602,6 +642,34 @@ export class Card implements ICard {
     });
     globalShortcut.register(opt + '+T', () => {
       this._note.tray.popUpContextMenu();
+    });
+    globalShortcut.registerAll(['CommandOrControl+N', opt + '+N'], () => {
+      createRandomColorCard(this._note);
+    });
+    globalShortcut.registerAll(['CommandOrControl+Shift+N', opt + '+Shift+N'], () => {
+      const cardId = generateNewCardId();
+      const newUrl = `${APP_SCHEME}://local/${this._note.settings.currentNoteId}/${cardId}`;
+
+      const geometry = { ...DEFAULT_CARD_GEOMETRY };
+      geometry.x = this.sketch.geometry.x + 30;
+      geometry.y = this.sketch.geometry.y + 30;
+      const newBody: Partial<CardBody> = {};
+      const newSketch: Partial<CardSketch> = {
+        geometry: {
+          x: geometry.x,
+          y: geometry.y,
+          z: geometry.z, // z will be overwritten in createCard()
+          width: geometry.width,
+          height: geometry.height,
+        },
+        style: {
+          uiColor: this.sketch.style.uiColor,
+          backgroundColor: this.sketch.style.backgroundColor,
+          opacity: this.sketch.style.opacity,
+          zoom: this.sketch.style.zoom,
+        },
+      };
+      createCardWindow(this._note, newUrl, newBody, newSketch);
     });
     globalShortcut.registerAll(['CommandOrControl+Plus', 'CommandOrControl+numadd'], () => {
       this.window.webContents.send('zoom-in');

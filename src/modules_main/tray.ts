@@ -6,20 +6,10 @@ import path from 'path';
 import prompt from 'electron-prompt';
 import { app, Menu, MenuItemConstructorOptions, Tray } from 'electron';
 import { closeSettings, openSettings } from './settings';
-import { createCardWindow, sortCardWindows } from './card';
+import { createRandomColorCard, sortCardWindows } from './card';
 import { emitter } from './event';
-import {
-  generateNewCardId,
-  getCurrentDateAndTime,
-  getRandomInt,
-} from '../modules_common/utils';
-import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
-import {
-  APP_ICON_NAME,
-  APP_ICON_NAME_MONO,
-  APP_SCHEME,
-  DEFAULT_CARD_GEOMETRY,
-} from '../modules_common/const';
+import { getCurrentDateAndTime } from '../modules_common/utils';
+import { APP_ICON_NAME, APP_ICON_NAME_MONO } from '../modules_common/const';
 import { CardBody, CardSketch, Snapshot } from '../modules_common/types';
 import { MESSAGE } from './messages';
 import { cacheOfCard } from './card_cache';
@@ -43,43 +33,6 @@ export const destroyTray = () => {
 };
 
 let currentLanguage: string;
-let color = { ...cardColors };
-// @ts-ignore
-delete color.transparent;
-
-const createRandomColorCard = async () => {
-  const geometry = { ...DEFAULT_CARD_GEOMETRY };
-  geometry.x += getRandomInt(30, 100);
-  geometry.y += getRandomInt(30, 100);
-
-  let colorList = Object.entries(color);
-  if (colorList.length === 0) {
-    color = { ...cardColors };
-    // @ts-ignore
-    delete color.transparent;
-    colorList = Object.entries(color);
-  }
-  const newColor: ColorName = colorList[getRandomInt(0, colorList.length)][0] as ColorName;
-  delete color[newColor];
-
-  const bgColor: string = cardColors[newColor];
-
-  const cardId = generateNewCardId();
-
-  const url = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
-
-  const cardSketch: Partial<CardSketch> = {
-    geometry,
-    style: {
-      uiColor: darkenHexColor(bgColor),
-      backgroundColor: bgColor,
-      opacity: 1.0,
-      zoom: 1.0,
-    },
-  };
-
-  await createCardWindow(note, url, {}, cardSketch);
-};
 
 export const setTrayContextMenu = () => {
   if (!tray) {
@@ -134,7 +87,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('newCard'),
       click: () => {
-        createRandomColorCard();
+        createRandomColorCard(note);
       },
     },
     {
@@ -399,7 +352,7 @@ export const initializeTaskTray = (store: INote) => {
     // NOTE: double-click does not occur on linux.
     // double-click does not occur on macOS while context-menu is opened.
     // So double-click is only occurred on Windows.
-    createRandomColorCard();
+    createRandomColorCard(note);
   });
 
   // for debug
