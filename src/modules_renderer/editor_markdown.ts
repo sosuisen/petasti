@@ -634,8 +634,8 @@ export class CardEditorMarkdown implements ICardEditor {
     });
 
     render(['EditorStyle']);
-
-    return Promise.resolve();
+    const innerEditor = document.querySelector('#editor .milkdown .editor') as HTMLElement;
+    innerEditor.focus();
   };
 
   private _saveBody = async (proseNode?: ProseNode) => {

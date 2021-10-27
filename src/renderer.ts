@@ -355,6 +355,10 @@ const onCardFocused = (zIndex: number | undefined, modifiedDate: string | undefi
   cardStore.dispatch(cardSketchBringToFrontCreator(zIndex, modifiedDate));
 
   render(['CardStyle', 'ContentsRect']);
+
+  if (!cardEditor.isOpened) {
+    startEditor();
+  }
 };
 
 const onCardBlurred = () => {
@@ -533,7 +537,7 @@ const onSyncCardBody = async (changedFile: ChangedFile, enqueueTime: string) => 
   render(['ContentsData', 'CardStyle']);
 };
 
-const startEditor = (x: number, y: number) => {
+const startEditor = (x?: number, y?: number) => {
   cardEditor.showEditor();
 
   const contents = document.getElementById('contents');
@@ -543,7 +547,9 @@ const startEditor = (x: number, y: number) => {
   cardEditor.setScrollPosition(scrollLeft, scrollTop);
 
   cardEditor.startEdit();
-  window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y);
+  if (x !== undefined && y !== undefined) {
+    window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y);
+  }
 };
 
 const endEditor = async () => {
