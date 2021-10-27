@@ -280,9 +280,16 @@ const renderCardStyle = () => {
 
   document.getElementById('title')!.style.backgroundColor = uiRgba;
 
-  document.getElementById(
-    'card'
-  )!.style.border = `${cardCssStyle.borderWidth}px solid ${uiRgba}`;
+  if (cardStore.getState().sketch.style.opacity !== 0) {
+    document.getElementById(
+      'card'
+    )!.style.border = `${cardCssStyle.borderWidth}px solid ${uiRgba}`;
+  }
+  else {
+    document.getElementById(
+      'card'
+    )!.style.border = `${cardCssStyle.borderWidth}px solid transparent`;
+  }
 
   if (cardStore.getState().workState.status === 'Focused') {
     document.getElementById('card')!.style.opacity = '1.0';
