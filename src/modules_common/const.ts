@@ -46,8 +46,10 @@ export const DEFAULT_CARD_STYLE: CardStyle = {
 // private _DRAG_IMAGE_MARGIN = 20;
 export const DRAG_IMAGE_MARGIN = 50;
 
-export const MINIMUM_WINDOW_WIDTH = 185; // 180 + shadowWidth
-export const MINIMUM_WINDOW_HEIGHT = 80;
+// export const MINIMUM_WINDOW_WIDTH = 185; // 180 + shadowWidth
+// export const MINIMUM_WINDOW_HEIGHT = 80;
+export const MINIMUM_WINDOW_WIDTH = 95; // 90 + shadowWidth
+export const MINIMUM_WINDOW_HEIGHT = 55;
 
 export const SETTINGS_DB_NAME = 'local_settings';
 
