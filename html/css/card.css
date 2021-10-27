@@ -27,6 +27,8 @@ body > .card{
 
   overflow: hidden;
   border-radius: 7px;
+
+  opacity: 0.95;
 }
 
 body > .card > .title{

@@ -280,15 +280,15 @@ const renderCardStyle = () => {
 
   document.getElementById('title')!.style.backgroundColor = uiRgba;
 
+  document.getElementById(
+    'card'
+  )!.style.border = `${cardCssStyle.borderWidth}px solid ${uiRgba}`;
+
   if (cardStore.getState().workState.status === 'Focused') {
-    document.getElementById(
-      'card'
-    )!.style.border = `${cardCssStyle.borderWidth}px solid ${uiRgba}`;
+    document.getElementById('card')!.style.opacity = '1.0';
   }
   else if (cardStore.getState().workState.status === 'Blurred') {
-    document.getElementById(
-      'card'
-    )!.style.border = `${cardCssStyle.borderWidth}px solid transparent`;
+    document.getElementById('card')!.style.opacity = '0.95';
   }
 
   let boxShadow = 'none';
