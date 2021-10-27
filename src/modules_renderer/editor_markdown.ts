@@ -829,8 +829,9 @@ export class CardEditorMarkdown implements ICardEditor {
       console.error(`Error in setSize: editor is undefined.`);
     }
 
+    const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
     const innerEditor = document.querySelector('#editor .milkdown .editor') as HTMLElement;
-    if (innerEditor) {
+    if (milkdownEditor && innerEditor) {
       const innerWidth =
         width / cardStore.getState().sketch.style.zoom -
         CARD_MARGIN_LEFT * 2 -
@@ -841,16 +842,12 @@ export class CardEditorMarkdown implements ICardEditor {
         CARD_MARGIN_TOP * 2 -
         CARD_PADDING * 2;
 
+      milkdownEditor.style.width = innerWidth + 'px';
+      milkdownEditor.style.height = innerHeight + 'px';
+
       innerEditor.style.width = innerWidth + 'px';
       innerEditor.style.height = innerHeight + 'px';
     }
-    /*
-    const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
-    if (milkdownEditor) {
-      milkdownEditor.style.width = width + 'px';
-      milkdownEditor.style.height = height + 'px';
-    }
-    */
   };
 
   setColor = (): void => {
