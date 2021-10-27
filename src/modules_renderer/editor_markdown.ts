@@ -54,11 +54,7 @@ import { cardBodyUpdateCreator } from './card_action_creator';
 import { getConfig } from './config';
 import window from './window';
 import { getCtrlDown, getMetaDown } from '../modules_common/keys';
-
-const marginTop = 3;
-const marginLeft = 7;
-const scrollBarWidth = 7;
-const padding = 2;
+import { CARD_MARGIN_LEFT, CARD_MARGIN_TOP, CARD_PADDING } from '../modules_common/const';
 
 export class CardEditorMarkdown implements ICardEditor {
   /**
@@ -786,16 +782,16 @@ export class CardEditorMarkdown implements ICardEditor {
   };
 
   getScrollPosition = () => {
-    const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
-    const left = milkdownEditor.scrollLeft * cardStore.getState().sketch.style.zoom;
-    const top = milkdownEditor.scrollTop * cardStore.getState().sketch.style.zoom;
+    const editor = document.getElementById('editor') as HTMLElement;
+    const left = editor.scrollLeft;
+    const top = editor.scrollTop;
     return { left, top };
   };
 
   setScrollPosition = (left: number, top: number) => {
-    const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
-    milkdownEditor.scrollLeft = left;
-    milkdownEditor.scrollTop = top;
+    const editor = document.getElementById('editor') as HTMLElement;
+    editor.scrollLeft = left;
+    editor.scrollTop = top;
   };
 
   setZoom = () => {
@@ -839,11 +835,13 @@ export class CardEditorMarkdown implements ICardEditor {
     if (innerEditor) {
       const innerWidth =
         width / cardStore.getState().sketch.style.zoom -
-        marginLeft * 2 -
-        padding * 2 -
-        scrollBarWidth * cardStore.getState().sketch.style.zoom;
+        CARD_MARGIN_LEFT * 2 -
+        CARD_PADDING * 2;
+      //        - CARD_SCROLLBAR_WIDTH * cardStore.getState().sketch.style.zoom;
       const innerHeight =
-        height / cardStore.getState().sketch.style.zoom - marginTop * 2 - padding * 2;
+        height / cardStore.getState().sketch.style.zoom -
+        CARD_MARGIN_TOP * 2 -
+        CARD_PADDING * 2;
 
       innerEditor.style.width = innerWidth + 'px';
       innerEditor.style.height = innerHeight + 'px';
@@ -877,15 +875,7 @@ export class CardEditorMarkdown implements ICardEditor {
     const editor = document.getElementById('editor');
     if (editor) {
       editor.style.borderTopColor = uiRgba;
-    }
-    // const toolbar = document.getElementById('cke_1_bottom');a
-    // if (toolbar) {
-    // toolbar.style.backgroundColor = toolbar.style.borderBottomColor = toolbar.style.borderTopColor = uiRgba;
-    // }
-
-    const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
-    if (milkdownEditor) {
-      milkdownEditor.style.backgroundColor = backgroundRgba;
+      editor.style.backgroundColor = backgroundRgba;
     }
 
     const scrollBarRgba = darkenHexColor(
@@ -894,12 +884,10 @@ export class CardEditorMarkdown implements ICardEditor {
     );
     const style = window.document.createElement('style');
     style.innerHTML =
-      '.milkdown::-webkit-scrollbar { width: ' +
-      scrollBarWidth +
-      'px; background-color: ' +
+      '#editor::-webkit-scrollbar { background-color: ' +
       backgroundRgba +
       '}\n' +
-      '.milkdown::-webkit-scrollbar-thumb { background-color: ' +
+      '#editor::-webkit-scrollbar-thumb { background-color: ' +
       scrollBarRgba +
       '}';
     window.document.head.appendChild(style);

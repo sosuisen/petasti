@@ -4,48 +4,57 @@
  */
  
  body > #card > #editor{
-  padding: 0px;
-  margin: 0px;
-  top: 18px;  
-  border: 0px;
-  visibility: hidden;
   position: absolute;
-  z-index: 5;
-}
-
-body > #card > #editor > .milkdown{
-	/* Remove the background color to make it transparent. */
-	background-color: transparent;
-  position: absolute;
-  padding: 0px;
-  margin: 0px;
+  top: 18px;
+  z-index: 5;  
   width: 100%;
   height: 100%;
+
+  margin: 0px;
+  border: 0px;  
+  padding: 0px;
+
+  visibility: hidden;
 
   overflow-x: hidden;
   overflow-y: scroll;
 }
 
+body > #card > #editor > .milkdown{
+  position: absolute;
+  margin: 0px;
+  padding: 0px;
+
+  /* Remove the background color to make it transparent. */
+	background-color: transparent;
+  box-shadow: none;
+}
+
 body > #card > #editor > .milkdown > .editor {
+  margin: 3px 7px 3px 7px;
+  padding: 2px;
+
+	/* Remove the background color to make it transparent. */
+	background-color: transparent;
+
+  /* Text color */
+	color: #000;
+
 	/* Font */
 	/* Emoji fonts are added to visualize them nicely in Internet Explorer. */
   font-family:  sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';  
 	font-size: 14px;
 
-	/* Text color */
-	color: #000;
-
-	/* Remove the background color to make it transparent. */
-	background-color: transparent;
-	margin: 3px 7px 3px 7px;
-  padding: 2px;
-
   word-wrap: break-word;
 }
 
 /* Custom scroll bar */
-.milkdown::-webkit-scrollbar-thumb{
+#editor::-webkit-scrollbar-thumb{
   border-radius: 7px;
+}
+
+#editor::-webkit-scrollbar{
+  width: 7px;
 }
 
 body > #card > #editor > .milkdown > .editor > * {
@@ -56,21 +65,6 @@ body > #card > #editor > .milkdown > .editor > * {
 /**
  * contents
  */
-
- body > #card > #contents {
-	/* Remove the background color to make it transparent. */
-	background-color: transparent;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-
-  overflow-x: hidden;
-  overflow-y: scroll;
-
-  padding: 0px;
-  margin: 0px;
-
-}
 
 body > #card > #contents > #contentsFrame {
   /* Font */
@@ -91,11 +85,15 @@ body > #card > #contents > #contentsFrame {
 }
 
 /* Custom scroll bar */
- body > #card > #contents::-webkit-scrollbar-thumb{
+body > #card > #contents::-webkit-scrollbar-thumb{
   border-radius: 7px;
 }
 
-body > #card > #contents > * {
+body > #card > #contents::-webkit-scrollbar{
+  width: 7px;
+}
+
+body > #card > #contents > #contentsFrame > * {
   margin-block-start: 0.3em;
   margin-block-end: 0.3em;
 }

@@ -1,7 +1,7 @@
 {
   "name": "tree-stickies",
   "productName": "TreeStickies",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "TreeStickies",
   "main": "dist/main.js",
   "scripts": {

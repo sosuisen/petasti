@@ -8,6 +8,7 @@ import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
 import window from './window';
 import { getCtrlDown } from '../modules_common/keys';
 import { cardStore } from './card_store';
+import { CARD_MARGIN_LEFT, CARD_MARGIN_TOP, CARD_PADDING } from '../modules_common/const';
 
 let cardCssStyle: CardCssStyle;
 let cardEditor: ICardEditor;
@@ -188,6 +189,32 @@ const renderCardAndContentsRect = () => {
   document.getElementById('contents')!.style.width = contentsWidth + 'px';
   document.getElementById('contents')!.style.height = contentsHeight + 'px';
 
+  const contentsFrame = document.getElementById('contentsFrame') as HTMLElement;
+  if (contentsFrame) {
+    const width =
+      cardStore.getState().sketch.geometry.width -
+      cardCssStyle.borderWidth * 2 -
+      shadowWidth;
+    const height =
+      cardStore.getState().sketch.geometry.height -
+      cardCssStyle.borderWidth * 2 -
+      shadowHeight -
+      document.getElementById('title')!.offsetHeight;
+
+    const innerWidth =
+      width / cardStore.getState().sketch.style.zoom -
+      CARD_MARGIN_LEFT * 2 -
+      CARD_PADDING * 2;
+    //        - CARD_SCROLLBAR_WIDTH * cardStore.getState().sketch.style.zoom;
+    const innerHeight =
+      height / cardStore.getState().sketch.style.zoom -
+      CARD_MARGIN_TOP * 2 -
+      CARD_PADDING * 2;
+
+    contentsFrame.style.width = innerWidth + 'px';
+    contentsFrame.style.height = innerHeight + 'px';
+  }
+
   document.getElementById('resizeAreaRight')!.style.top = '0px';
   document.getElementById('resizeAreaRight')!.style.left =
     cardWidth - cardCssStyle.borderWidth + 'px';
@@ -302,16 +329,16 @@ const renderCardStyle = () => {
   } catch (e) {
     console.error(e);
   }] */
-  const contents = document.getElementById('contents') as HTMLElement;
+  const contentsFrame = document.getElementById('contentsFrame') as HTMLElement;
   // @ts-ignore
-  contents.style.zoom = `${cardStore.getState().sketch.style.zoom}`;
+  contentsFrame.style.zoom = `${cardStore.getState().sketch.style.zoom}`;
 
   const style = window.document.createElement('style');
   style.innerHTML =
-    'body::-webkit-scrollbar { width: 7px; background-color: ' +
+    '#contents::-webkit-scrollbar { background-color: ' +
     backgroundRgba +
     '}\n' +
-    'body::-webkit-scrollbar-thumb { background-color: ' +
+    '#contents::-webkit-scrollbar-thumb { background-color: ' +
     scrollBarRgba +
     '}';
   window.document.head.appendChild(style);

@@ -88,7 +88,7 @@ const initializeUIEvents = () => {
   });
 
   document.getElementById('contents')!.addEventListener('mousedown', event => {
-    startEditorByClick({ x: event.screenX, y: event.screenY } as InnerClickEvent);
+    startEditorByClick({ x: event.clientX, y: event.clientY } as InnerClickEvent);
   });
 
   // eslint-disable-next-line no-unused-expressions
@@ -227,57 +227,7 @@ const initializeUIEvents = () => {
     prevMouseY = event.screenY;
   });
 };
-/*
-const waitIframeInitializing = (): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
 
-    const initializingReceived = (event: MessageEvent) => {
-      const msg: ContentsFrameMessage = filterContentsFrameMessage(event);
-      if (msg.command === 'contents-frame-initialized') {
-        clearInterval(iframeLoadTimer);
-        window.removeEventListener('message', initializingReceived);
-        resolve();
-      }
-    };
-    window.addEventListener('message', initializingReceived);
-    let counter = 0;
-    const iframeLoadTimer = setInterval(() => {
-      const msg: ContentsFrameMessage = { command: 'check-initializing', arg: '' };
-      iframe.contentWindow!.postMessage(msg, '*');
-      if (++counter > 100) {
-        clearInterval(iframeLoadTimer);
-        reject(new Error('Cannot load iframe in waitIframeInitializing()'));
-      }
-    }, 100);
-  });
-};
-
-const initializeContentsFrameEvents = () => {
-  const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
-
-  window.addEventListener('message', (event: MessageEvent) => {
-    const msg: ContentsFrameMessage = filterContentsFrameMessage(event);
-    switch (msg.command) {
-      case 'click-parent':
-        // Click request from child frame
-        if (msg.arg !== undefined) {
-          startEditorByClick(JSON.parse(msg.arg) as InnerClickEvent);
-        }
-        break;
-
-      case 'contents-frame-file-dropped':
-        if (msg.arg !== undefined) {
-          addDroppedImage(JSON.parse(msg.arg) as FileDropEvent);
-        }
-        break;
-
-      default:
-        break;
-    }
-  });
-};
-*/
 const onload = async () => {
   window.removeEventListener('load', onload, false);
 
@@ -573,16 +523,6 @@ const onSyncCardBody = async (changedFile: ChangedFile, enqueueTime: string) => 
   render(['ContentsData', 'CardStyle']);
 };
 
-/*
-const filterContentsFrameMessage = (event: MessageEvent): ContentsFrameMessage => {
-  const msg: ContentsFrameMessage = event.data;
-  if (!contentsFrameCommand.includes(msg.command)) {
-    return { command: '', arg: '' };
-  }
-  return msg;
-};
-*/
-
 const startEditor = (x: number, y: number) => {
   cardEditor.showEditor();
 
@@ -590,36 +530,21 @@ const startEditor = (x: number, y: number) => {
   const scrollTop = contents!.scrollTop;
   const scrollLeft = contents!.scrollLeft;
 
-  /*
-  // Set scroll position of editor to that of iframe
-  const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
-  const scrollTop = iframe.contentWindow!.scrollY;
-  const scrollLeft = iframe.contentWindow!.scrollX;
-  */
   cardEditor.setScrollPosition(scrollLeft, scrollTop);
 
-  const offsetY = document.getElementById('title')!.offsetHeight;
   cardEditor.startEdit();
-  window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y + offsetY);
+  window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y);
 };
 
 const endEditor = async () => {
   await cardEditor.endEdit(); // body will be saved in endEdit()
   render();
 
-  // Must wait until card is zoomed to scroll correctly
-  //  setTimeout(() => {
   const { left, top } = cardEditor.getScrollPosition();
-
   const contents = document.getElementById('contents');
   contents!.scrollTop = top;
   contents!.scrollLeft = left;
-  /*
-    const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
-    iframe.contentWindow!.scrollTo(left, top);
-    */
   cardEditor.hideEditor();
-  //  }, 100);
 };
 
 const startEditorByClick = (clickEvent: InnerClickEvent) => {
