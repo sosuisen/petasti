@@ -24,6 +24,9 @@ body > .card{
   visibility: hidden;
   z-index: 0;
   box-shadow: 5px 5px 3px 0px rgba(0,0,0, .2);  
+
+  overflow: hidden;
+  border-radius: 7px;
 }
 
 body > .card > .title{
