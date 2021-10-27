@@ -100,12 +100,12 @@ ul
 	padding: 0 0 0 1em;
 }
 
-body > ul:hover, .editor > ul:hover, body > ol:hover, .editor > ol:hover  {
+#contentsFrame > ul:hover, .editor > ul:hover, #contentsFrame > ol:hover, .editor > ol:hover  {
   border-right: 2px solid rgba(76, 86, 106, 0.20); 
-  transition: all 0.4s ease-in-out;
+  transition: border-right 0.4s ease-in-out;
 }
 
-body > ul, .editor > ul, body > ol, .editor > ol {
+#contentsFrame > ul, .editor > ul, #contentsFrame > ol, .editor > ol {
   border-right: 2px solid transparent;
 }
 

@@ -599,11 +599,6 @@ export class CardEditorMarkdown implements ICardEditor {
       return;
     }
 
-    const contents = document.getElementById('contents');
-    if (contents) {
-      contents.style.visibility = 'hidden';
-    }
-
     const editor = document.getElementById('editor');
     if (editor) {
       editor.style.visibility = 'visible';
@@ -612,7 +607,10 @@ export class CardEditorMarkdown implements ICardEditor {
       throw new Error('editor does not exist.');
     }
 
-    // this._addDragAndDropEvent();
+    const contents = document.getElementById('contents');
+    if (contents) {
+      contents.style.visibility = 'hidden';
+    }
 
     this.isOpened = true;
 
