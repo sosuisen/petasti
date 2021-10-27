@@ -489,3 +489,11 @@ div.code-fence pre::-webkit-scrollbar-thumb {
   margin: 0 0.05em 0 0.1em;
   vertical-align: -0.1em;
 }
+
+.code-inline {
+  background-color: #eeeeee;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', 'monospace';
+  padding: 0px 0.2rem;
+}

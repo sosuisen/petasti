@@ -24,6 +24,7 @@ import {
   blockquote,
   bulletList,
   codeFence,
+  codeInline,
   doc,
   gfm,
   hardbreak,
@@ -388,6 +389,7 @@ export class CardEditorMarkdown implements ICardEditor {
           [SupportedKeys.PopListItem]: ['Shift-Tab', 'Alt-Shift-ArrowLeft'],
         },
       })
+      .configure(codeInline, { headless: true })
       .configure(orderedList, { headless: true })
       .configure(paragraph, { headless: true })
       .configure(text, { headless: true })
