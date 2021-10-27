@@ -33,7 +33,13 @@ import {
 import { darkenHexColor } from './modules_common/color';
 import { saveCardColor } from './modules_renderer/save';
 import window from './modules_renderer/window';
-import { setAltDown, setCtrlDown, setMetaDown, setShiftDown } from './modules_common/keys';
+import {
+  getShiftDown,
+  setAltDown,
+  setCtrlDown,
+  setMetaDown,
+  setShiftDown,
+} from './modules_common/keys';
 import {
   cardBodyUpdateCreator,
   cardConditionLockedUpdateCreator,
@@ -98,6 +104,10 @@ const initializeUIEvents = () => {
     const geometry = { ...DEFAULT_CARD_GEOMETRY };
     geometry.x = cardStore.getState().sketch.geometry.x + 30;
     geometry.y = cardStore.getState().sketch.geometry.y + 30;
+    if (getShiftDown()) {
+      geometry.width = cardStore.getState().sketch.geometry.width;
+      geometry.height = cardStore.getState().sketch.geometry.height;
+    }
     const cardBody: Partial<CardBody> = {};
     const cardSketch: Partial<CardSketch> = {
       geometry: {

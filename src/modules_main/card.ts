@@ -652,6 +652,9 @@ export class Card implements ICard {
       const geometry = { ...DEFAULT_CARD_GEOMETRY };
       geometry.x = this.sketch.geometry.x + 30;
       geometry.y = this.sketch.geometry.y + 30;
+      geometry.width = this.sketch.geometry.width;
+      geometry.height = this.sketch.geometry.height;
+
       const newBody: Partial<CardBody> = {};
       const newSketch: Partial<CardSketch> = {
         geometry: {
