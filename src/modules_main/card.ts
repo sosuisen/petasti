@@ -683,5 +683,12 @@ export class Card implements ICard {
 
   private _removeShortcuts = () => {
     globalShortcut.unregisterAll();
+    let opt = 'Alt';
+    if (process.platform === 'darwin') {
+      opt = 'Option';
+    }
+    globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
+      this._note.tray.popUpContextMenu();
+    });
   };
 }

@@ -4,7 +4,7 @@
  */
 import path from 'path';
 import prompt from 'electron-prompt';
-import { app, Menu, MenuItemConstructorOptions, Tray } from 'electron';
+import { app, globalShortcut, Menu, MenuItemConstructorOptions, Tray } from 'electron';
 import { closeSettings, openSettings } from './settings';
 import { createRandomColorCard, sortCardWindows } from './card';
 import { emitter } from './event';
@@ -84,6 +84,10 @@ export const setTrayContextMenu = () => {
   }
 
   const contextMenu = Menu.buildFromTemplate([
+    ...changeNotes,
+    {
+      type: 'separator',
+    },
     {
       label: MESSAGE('newCard'),
       click: () => {
@@ -201,7 +205,6 @@ export const setTrayContextMenu = () => {
         // setTrayContextMenu() will be called in change-note event.
       },
     },
-    ...changeNotes,
     {
       type: 'separator',
     },
@@ -355,6 +358,13 @@ export const initializeTaskTray = (store: INote) => {
     createRandomColorCard(note);
   });
 
+  let opt = 'Alt';
+  if (process.platform === 'darwin') {
+    opt = 'Option';
+  }
+  globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
+    tray.popUpContextMenu();
+  });
   // for debug
   if (
     !app.isPackaged &&
