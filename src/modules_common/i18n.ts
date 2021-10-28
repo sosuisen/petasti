@@ -44,6 +44,7 @@ type MessagesMain = {
 type MessagesNote = {
   note: string;
   noteNew: string;
+  firstNoteName: string;
   noteName: string;
   noteMove: string;
   noteCopy: string;
@@ -124,6 +125,7 @@ const LANGUAGES_COMMON: MessagesLanguage = {
 const NOTE_ENGLISH: MessagesNote = {
   note: 'Note',
   noteNew: 'New note...',
+  firstNoteName: '#Journal',
   noteName: 'Note $1',
   noteMove: 'Move',
   noteCopy: 'Copy card',
@@ -251,6 +253,7 @@ export const ENGLISH: Messages = {
 const NOTE_JAPANESE: MessagesNote = {
   note: 'ノート',
   noteNew: '新規ノート...',
+  firstNoteName: '#日誌',
   noteName: 'ノート $1',
   noteMove: '移動',
   noteCopy: '分身をコピー',

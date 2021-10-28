@@ -303,8 +303,10 @@ class Note implements INote {
   loadCurrentNote = async (): Promise<CardProperty[]> => {
     // Create note if not exist.
     let createNoteFlag = false;
+    let noteName = '';
     if (noteStore.getState().size === 0) {
       createNoteFlag = true;
+      noteName = MESSAGE('firstNoteName');
     }
     else if (
       this._settings.currentNoteId === undefined ||
@@ -316,7 +318,7 @@ class Note implements INote {
     }
 
     if (createNoteFlag) {
-      const [currentNoteProp, firstCardProp] = await this.createNote();
+      const [currentNoteProp, firstCardProp] = await this.createNote(noteName);
 
       // eslint-disable-next-line require-atomic-updates
       this._settings.currentNoteId = currentNoteProp._id;
@@ -331,7 +333,7 @@ class Note implements INote {
     name?: string,
     waitFirstCardCreation = false
   ): Promise<[NoteProp, CardProperty]> => {
-    if (!name) {
+    if (!name || name === '') {
       name = MESSAGE('noteName', (noteStore.getState().size + 1).toString());
     }
     const noteId = generateNewNoteId();
