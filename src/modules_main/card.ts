@@ -99,6 +99,7 @@ export const sortCardWindows = () => {
       card.window.moveTop();
     }
   });
+  backToFront[backToFront.length - 1].window.focus();
   return backToFront;
 };
 
