@@ -18,6 +18,11 @@ import { addSettingsHandler } from './modules_main/settings_eventhandler';
 import { cacheOfCard } from './modules_main/card_cache';
 import { DatabaseCommand } from './modules_common/db.types';
 
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+}
+
 app.setAppUserModelId('com.squirrel.TreeStickies.TreeStickies');
 // process.on('unhandledRejection', console.dir);
 
