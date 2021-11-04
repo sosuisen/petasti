@@ -8,7 +8,7 @@ import { app, globalShortcut, Menu, MenuItemConstructorOptions, Tray } from 'ele
 import { closeSettings, openSettings } from './settings';
 import { createRandomColorCard, sortCardWindows } from './card';
 import { emitter } from './event';
-import { getCurrentDateAndTime } from '../modules_common/utils';
+import { getCurrentDateAndTime, getCurrentLocalDateAndTime } from '../modules_common/utils';
 import { APP_ICON_NAME, APP_ICON_NAME_MONO } from '../modules_common/const';
 import { CardBody, CardSketch, Snapshot } from '../modules_common/types';
 import { MESSAGE } from './messages';
@@ -212,7 +212,7 @@ export const setTrayContextMenu = () => {
       label: MESSAGE('saveSnapshot'),
       click: async () => {
         const noteProp = noteStore.getState().get(note.settings.currentNoteId);
-        const defaultName = noteProp!.name + ' ' + getCurrentDateAndTime();
+        const defaultName = noteProp!.name + ' ' + getCurrentLocalDateAndTime();
 
         const newName: string | void | null = await prompt({
           title: MESSAGE('saveSnapshot'),

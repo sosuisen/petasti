@@ -16,6 +16,12 @@ export const getCurrentDateAndTime = (): string => {
   return new Date().toISOString().replace(/^(.+?)T(.+?)\..+?$/, '$1 $2');
 };
 
+export const getCurrentLocalDateAndTime = (): string => {
+  return new Date(Date.now() - new Date().getTimezoneOffset() * 60 * 1000)
+    .toISOString()
+    .replace(/^(.+?)T(.+?)\..+?$/, '$1 $2');
+};
+
 export const getRandomInt = (min: number, max: number) => {
   // Get int value between min <= x < max
   min = Math.ceil(min);
