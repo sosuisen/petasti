@@ -98,6 +98,7 @@ export const sortCardWindows = () => {
   const backToFront = sortCards();
   backToFront.forEach(card => {
     if (card.window && !card.window.isDestroyed()) {
+      card.suppressFocusEventOnce = true;
       if (card.window.isMinimized()) {
         card.window.restore();
       }

@@ -412,6 +412,7 @@ export class CardEditorMarkdown implements ICardEditor {
     const messages: Record<string, string> = getConfig().messages;
     messages.Meta = getConfig().os === 'darwin' ? 'Cmd' : 'Ctrl';
 
+    let initialDocUpdate = true;
     const mdListener = {
       markdown: [
         (getMarkdown: () => string) => {
@@ -421,7 +422,12 @@ export class CardEditorMarkdown implements ICardEditor {
       doc: [
         (proseNode: any) => {
           console.log(proseNode.toString());
-          this._saveBody(proseNode);
+          if (initialDocUpdate) {
+            initialDocUpdate = false;
+          }
+          else {
+            this._saveBody(proseNode);
+          }
         },
       ], // print Node of ProseMirror
     };
