@@ -130,7 +130,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
 
               // eslint-disable-next-line max-depth
               if (oldSketch.geometry.z !== newSketch.geometry.z) {
-                sortCardWindows();
+                sortCardWindows(true);
               }
             }
           }
