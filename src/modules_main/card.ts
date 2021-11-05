@@ -94,15 +94,23 @@ const sortCards = () => {
   return backToFront;
 };
 
-export const sortCardWindows = () => {
+export const sortCardWindows = (suppressFocus = false) => {
   const backToFront = sortCards();
   backToFront.forEach(card => {
     if (card.window && !card.window.isDestroyed()) {
-      card.suppressFocusEventOnce = true;
+      if (suppressFocus) card.suppressFocusEvent = true;
+
       if (card.window.isMinimized()) {
         card.window.restore();
       }
       card.window.moveTop();
+
+      // !ALERT: Dirty hack not to call updateCardSketchDoc
+      if (suppressFocus) {
+        setTimeout(() => {
+          card.suppressFocusEvent = false;
+        }, 3000);
+      }
     }
   });
   backToFront[backToFront.length - 1].window.focus();
@@ -217,6 +225,7 @@ export class Card implements ICard {
   /**
    * Focus control
    */
+  public suppressFocusEvent = false;
   public suppressFocusEventOnce = false;
   public suppressBlurEventOnce = false;
   public recaptureGlobalFocusEventAfterLocalFocusEvent = false;
@@ -410,7 +419,7 @@ export class Card implements ICard {
       this.recaptureGlobalFocusEventAfterLocalFocusEvent = false;
       setGlobalFocusEventListenerPermission(true);
     }
-    if (this.suppressFocusEventOnce) {
+    if (this.suppressFocusEventOnce || this.suppressFocusEvent) {
       console.debug(`skip focus event listener ${this.url}`);
       this.suppressFocusEventOnce = false;
     }
