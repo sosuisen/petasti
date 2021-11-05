@@ -440,6 +440,7 @@ class Note implements INote {
     cardSketch: CardSketch,
     modifiedDate: string
   ): Promise<void> => {
+    console.log('updateCard...');
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
 
@@ -498,21 +499,30 @@ class Note implements INote {
     sketchUrl: string,
     geometry: Geometry,
     modifiedTime: string
-  ): Promise<TaskMetadata> => {
+  ): Promise<TaskMetadata | false> => {
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
     let sketch: CardSketch;
     if (card) {
-      card.sketch.geometry = { ...card.sketch.geometry, ...geometry };
-      card.sketch.date.modifiedDate = modifiedTime;
-      sketch = card.sketch;
+      const newJSON = JSON.stringify({ ...card.sketch.geometry, ...geometry });
+      if (JSON.stringify(card.sketch.geometry) !== newJSON) {
+        card.sketch.geometry = JSON.parse(newJSON);
+        card.sketch.date.modifiedDate = modifiedTime;
+        sketch = card.sketch;
+      }
+      else {
+        return false;
+      }
     }
     else {
       console.log('Card does not exist in cacheOfCard: ' + sketchUrl);
+      /*
       sketch = (await this._noteCollection.get(
         getSketchIdFromUrl(sketchUrl)
       )) as CardSketch;
       sketch.geometry = { ...sketch.geometry, ...geometry };
+      */
+      return false;
     }
     const task: TaskMetadata = await this._updateCardSketchDoc(sketch!);
 
@@ -548,20 +558,29 @@ class Note implements INote {
     sketchUrl: string,
     cardSketch: CardSketch,
     modifiedDate: string
-  ): Promise<TaskMetadata> => {
+  ): Promise<TaskMetadata | false> => {
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
     let sketch: CardSketch;
     if (card) {
-      card.sketch = JSON.parse(JSON.stringify(cardSketch));
-      card.sketch.date.modifiedDate = modifiedDate;
-      sketch = card.sketch;
+      const newJSON = JSON.stringify(cardSketch);
+      if (JSON.stringify(card.sketch) !== newJSON) {
+        card.sketch = JSON.parse(newJSON);
+        card.sketch.date.modifiedDate = modifiedDate;
+        sketch = card.sketch;
+      }
+      else {
+        return false;
+      }
     }
     else {
       console.log('Card does not exist in cacheOfCard: ' + sketchUrl);
+      return false;
+      /*
       sketch = (await this._noteCollection.get(
         getSketchIdFromUrl(sketchUrl)
       )) as CardSketch;
+      */
     }
     const task: TaskMetadata = await this._updateCardSketchDoc(sketch!);
 

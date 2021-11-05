@@ -63,7 +63,7 @@ export interface INote {
     sketchUrl: string,
     geometry: Geometry,
     modifiedTime: string
-  ) => Promise<TaskMetadata>;
+  ) => Promise<TaskMetadata | false>;
   createCardSketch: (
     sketchUrl: string,
     cardSketch: CardSketch,
@@ -73,7 +73,7 @@ export interface INote {
     sketchUrl: string,
     cardSketch: CardSketch,
     modifiedDate: string
-  ) => Promise<TaskMetadata>;
+  ) => Promise<TaskMetadata | false>;
   createSnapshot: (snap: Snapshot) => Promise<void>;
 
   deleteCardSketch: (cardUrl: string) => Promise<void>;

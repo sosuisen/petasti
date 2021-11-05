@@ -75,6 +75,7 @@ export const cardSketchUpdateCreator = (
   return async function (dispatch: Dispatch<any>, getState: () => CardState) {
     if (getState().sketch._id === '') return;
 
+    // eslint-disable-next-line complexity
     await lock.acquire('sketch', async () => {
       if (enqueueTime !== undefined) {
         if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
@@ -131,9 +132,11 @@ export const cardSketchUpdateCreator = (
           },
         };
 
-        const taskMetadata: TaskMetadata = await window.api.db(cmd);
-        // eslint-disable-next-line require-atomic-updates
-        bodyUpdatedTime = taskMetadata.enqueueTime!;
+        const taskMetadata: TaskMetadata | false = await window.api.db(cmd);
+        if (taskMetadata !== false) {
+          // eslint-disable-next-line require-atomic-updates
+          bodyUpdatedTime = taskMetadata.enqueueTime!;
+        }
       }
     });
   };
@@ -177,9 +180,11 @@ export const cardGeometryUpdateCreator = (
           },
         };
 
-        const taskMetadata: TaskMetadata = await window.api.db(cmd);
-        // eslint-disable-next-line require-atomic-updates
-        bodyUpdatedTime = taskMetadata.enqueueTime!;
+        const taskMetadata: TaskMetadata | false = await window.api.db(cmd);
+        if (taskMetadata !== false) {
+          // eslint-disable-next-line require-atomic-updates
+          bodyUpdatedTime = taskMetadata.enqueueTime!;
+        }
       }
     });
   };
@@ -222,9 +227,11 @@ export const cardStyleUpdateCreator = (
           },
         };
 
-        const taskMetadata: TaskMetadata = await window.api.db(cmd);
-        // eslint-disable-next-line require-atomic-updates
-        bodyUpdatedTime = taskMetadata.enqueueTime!;
+        const taskMetadata: TaskMetadata | false = await window.api.db(cmd);
+        if (taskMetadata !== false) {
+          // eslint-disable-next-line require-atomic-updates
+          bodyUpdatedTime = taskMetadata.enqueueTime!;
+        }
       }
     });
   };
@@ -267,9 +274,11 @@ export const cardConditionLockedUpdateCreator = (
           },
         };
 
-        const taskMetadata: TaskMetadata = await window.api.db(cmd);
-        // eslint-disable-next-line require-atomic-updates
-        bodyUpdatedTime = taskMetadata.enqueueTime!;
+        const taskMetadata: TaskMetadata | false = await window.api.db(cmd);
+        if (taskMetadata !== false) {
+          // eslint-disable-next-line require-atomic-updates
+          bodyUpdatedTime = taskMetadata.enqueueTime!;
+        }
       }
     });
   };

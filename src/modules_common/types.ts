@@ -107,6 +107,7 @@ export interface ICard {
 
   resetContextMenu: () => void;
 
+  suppressFocusEvent: boolean;
   suppressFocusEventOnce: boolean;
   suppressBlurEventOnce: boolean;
 
