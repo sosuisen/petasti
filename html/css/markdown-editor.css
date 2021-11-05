@@ -86,10 +86,14 @@ body > #card > #contents > #contentsFrame {
 	margin: 3px 7px 3px 7px;
   padding: 2px;
 
-  	/* Remove the background color to make it transparent. */
+  /* Remove the background color to make it transparent. */
 	background-color: transparent;
 
   word-wrap: break-word;
+
+  white-space: break-spaces; /* defined in .ProseMirror */ 
+  font-variant-ligatures: none; /* defined in .ProseMirror */ 
+  font-feature-settings: "liga" 0; /* defined in .ProseMirror */ 
 }
 
 /* Custom scroll bar */
