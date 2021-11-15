@@ -95,7 +95,7 @@
     "electron-prompt": "^1.6.2",
     "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^9.0.1",
-    "git-documentdb": "^0.4.7-alpha.5",
+    "git-documentdb": "^0.4.7-alpha.7",
     "hmtid": "^0.1.1",
     "prosemirror-model": "^1.14.3",
     "prosemirror-state": "^1.3.4",
@@ -108,6 +108,7 @@
     "rimraf": "^3.0.2",
     "rx-queue": "^0.12.6",
     "rxjs": "^7.3.0",
+    "tslog": "^3.2.2",
     "typed-intl": "^1.0.3",
     "ulid": "^2.3.0"
   }

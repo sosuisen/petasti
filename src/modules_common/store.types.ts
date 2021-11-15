@@ -26,6 +26,8 @@ export const defaultDataDir = app.isPackaged
   : path.join(__dirname, `../../${dataDirName}`);
 // export const defaultDataDir = 'C:\\Users\\kubota\\AppData\\Local\\tree_stickies_data';
 
+export const defaultLogDir = defaultDataDir + '/logs/';
+
 /**
  * Temporal State
  */

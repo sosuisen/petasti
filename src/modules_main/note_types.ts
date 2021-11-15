@@ -11,6 +11,7 @@ import {
   TaskMetadata,
 } from 'git-documentdb';
 import { Translator } from 'typed-intl';
+import { Logger } from 'tslog';
 import { Messages } from '../modules_common/i18n';
 import { InfoState, SettingsState } from '../modules_common/store.types';
 import {
@@ -29,6 +30,8 @@ export interface INote {
   remoteOptions: RemoteOptions | undefined;
   bookDB: GitDocumentDB;
   settingsDB: GitDocumentDB;
+
+  logger: Logger;
 
   cardCollection: Collection;
   noteCollection: Collection;

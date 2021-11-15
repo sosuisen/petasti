@@ -4,7 +4,7 @@
  * © 2021 Hidekazu Kubota
  */
 import path from 'path';
-
+import fs from 'fs-extra';
 import { app, BrowserWindow, nativeImage, Tray } from 'electron';
 import {
   Collection,
@@ -18,6 +18,7 @@ import {
 } from 'git-documentdb';
 import { selectPreferredLanguage, translate, Translator } from 'typed-intl';
 import { monotonicFactory as monotonicFactoryHmtid } from 'hmtid';
+import { ILogObject, Logger, TLogLevelName } from 'tslog';
 import {
   generateUlid,
   getCardIdFromUrl,
@@ -36,6 +37,7 @@ import {
 } from '../modules_common/types';
 import {
   defaultDataDir,
+  defaultLogDir,
   InfoState,
   initialSettingsState,
   SettingsState,
@@ -59,13 +61,47 @@ import { noteCreateCreator, noteInitCreator } from './note_action_creator';
 import { Card } from './card';
 import { closeSettings } from './settings';
 
+const logLevel = 'debug';
+
 export const generateNewNoteId = () => {
   const hmtid = monotonicFactoryHmtid();
   return 'n' + hmtid(Date.now());
 };
 
 class Note implements INote {
-  constructor () {}
+  constructor () {
+    this.logger = new Logger({
+      name: 'TreeStickies',
+      minLevel: logLevel,
+      displayDateTime: true,
+      displayFunctionName: false,
+      displayFilePath: 'hidden',
+    });
+
+    this.logger.attachTransport(
+      {
+        silly: this._logToTransport,
+        debug: this._logToTransport,
+        trace: this._logToTransport,
+        info: this._logToTransport,
+        warn: this._logToTransport,
+        error: this._logToTransport,
+        fatal: this._logToTransport,
+      },
+      logLevel
+    );
+  }
+
+  /**
+   * Logger
+   */
+  logger: Logger;
+
+  private _logToTransport (logObject: ILogObject) {
+    const logFileName = 'log.txt';
+    fs.appendFileSync(defaultLogDir + logFileName, logObject.argumentsArray[0] + '\n');
+  }
+
   /**
    * GitDocumentDB
    */
@@ -182,8 +218,9 @@ class Note implements INote {
       this._settingsDB = new GitDocumentDB({
         localDir: defaultDataDir,
         dbName: SETTINGS_DB_NAME,
-        logLevel: 'trace',
         serializeFormat: 'front-matter',
+        logLevel,
+        logToTransport: this._logToTransport,
       });
       await this._settingsDB.open();
 
@@ -201,9 +238,10 @@ class Note implements INote {
         localDir: this._settings.dataStorePath,
         dbName: this._settings.currentNotebookName,
         debounceTime: 3000,
-        logLevel: 'trace',
         serializeFormat: 'front-matter',
         idGenerator: monotonicFactoryHmtid(),
+        logLevel,
+        logToTransport: this._logToTransport,
       };
 
       this._bookDB = new GitDocumentDB(bookDbOption);

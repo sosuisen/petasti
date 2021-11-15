@@ -4,6 +4,7 @@
  */
 
 import { app, ipcMain, MouseInputEvent, powerMonitor, shell } from 'electron';
+import fs from 'fs-extra';
 import {
   Card,
   createCardWindow,
@@ -17,6 +18,8 @@ import { CardBody, CardSketch } from './modules_common/types';
 import { addSettingsHandler } from './modules_main/settings_eventhandler';
 import { cacheOfCard } from './modules_main/card_cache';
 import { DatabaseCommand } from './modules_common/db.types';
+import { defaultLogDir } from './modules_common/store.types';
+import { sleep } from './modules_common/utils';
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -41,6 +44,21 @@ ipcMain.setMaxListeners(1000);
  * Some APIs can only be used after this event occurs.
  */
 const startApp = async (isRestart: boolean) => {
+  // Ensure log directory
+  const retry = 3;
+  for (let i = 0; i < retry + 1; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    const resEnsure = await fs.ensureDir(defaultLogDir).catch((err: Error) => {
+      if (i >= retry) console.error(err.message);
+      return 'cannot_create';
+    });
+    if (resEnsure === 'cannot_create') {
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(2000);
+      console.log('retrying ensureDir in startApp');
+      continue;
+    }
+  }
   // load workspaces
   const cardProps = await note.loadNotebook();
 
