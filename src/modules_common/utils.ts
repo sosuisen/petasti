@@ -17,7 +17,11 @@ export const getCurrentDateAndTime = (): string => {
 };
 
 export const getCurrentLocalDateAndTime = (): string => {
-  return new Date(Date.now() - new Date().getTimezoneOffset() * 60 * 1000)
+  return getLocalDateAndTime(Date.now());
+};
+
+export const getLocalDateAndTime = (msec: number): string => {
+  return new Date(msec - new Date().getTimezoneOffset() * 60 * 1000)
     .toISOString()
     .replace(/^(.+?)T(.+?)\..+?$/, '$1 $2');
 };

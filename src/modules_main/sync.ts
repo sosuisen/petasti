@@ -43,6 +43,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
     'localChange',
     // eslint-disable-next-line complexity
     (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
+      note.logger.debug(JSON.stringify(changes));
       for (const changedFile of changes) {
         let cardBodyId = '';
         if (changedFile.operation === 'insert' || changedFile.operation === 'update') {
@@ -74,6 +75,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
             changedFile,
             taskMetadata.enqueueTime
           );
+          note.logger.debug(`sync-card-body: ${cardBodyId}`);
         }
       }
     }
@@ -84,6 +86,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
     'localChange',
     // eslint-disable-next-line complexity
     async (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
+      note.logger.debug(JSON.stringify(changes));
       const propChanges: ChangedFile[] = [];
       for (const changedFile of changes) {
         let sketchId = '';
@@ -115,6 +118,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
               // eslint-disable-next-line no-await-in-loop
               const cardBody = await note.cardCollection.get(cardId);
               createCardWindow(note, url, cardBody!, changedFile.new.doc as CardSketch);
+              note.logger.debug(`createCardWindow: ${sketchId}`);
             }
           }
           else if (changedFile.operation === 'update') {
@@ -132,6 +136,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
               if (oldSketch.geometry.z !== newSketch.geometry.z) {
                 sortCardWindows(true);
               }
+              note.logger.debug(`sync-card-sketch: ${sketchId}`);
             }
           }
           else if (changedFile.operation === 'delete') {
@@ -140,6 +145,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
               // Delete from remote is superior to update from renderer.
               const url = `${APP_SCHEME}://local/${sketchId}`;
               note.deleteCardSketch(url);
+              note.logger.debug(`deleteCardSketch: ${sketchId}`);
             }
           }
         }
@@ -156,7 +162,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
         }
         const [noteId] = sketchId.split('/');
 
-        console.log(`# change note <${changedFile.operation}> ${noteId}`);
+        note.logger.debug(`change note <${changedFile.operation}> ${noteId}`);
 
         if (changedFile.operation === 'insert') {
           const prop = changedFile.new.doc as NoteProp;
@@ -229,21 +235,22 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
   );
 
   sync.on('combine', async (duplicatedFiles: DuplicatedFile[]) => {
+    note.logger.debug('DBs combined');
     await note.combineDB(undefined);
   });
 
   sync.on('start', () => {
-    console.log('# Start sync...');
+    // note.logger.debug('Sync start...');
     // mainWindow.webContents.send('sync-start');
   });
 
   sync.on('complete', () => {
-    console.log('# Sync completed.');
+    // note.logger.debug('Sync completed.');
     // mainWindow.webContents.send('sync-complete');
   });
 
   sync.on('error', (err: Error) => {
-    console.log('# Sync error: ' + err);
+    note.logger.error('Sync error: ' + err);
     // mainWindow.webContents.send('sync-complete');
   });
 

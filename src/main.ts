@@ -312,7 +312,9 @@ ipcMain.handle('db', async (event, command: DatabaseCommand) => {
 });
 
 powerMonitor.on('resume', () => {
+  note.logger.debug('App resumed');
   if (note.sync) {
+    note.logger.debug('Sync resumed');
     note.sync.pause();
     note.sync.resume();
   }

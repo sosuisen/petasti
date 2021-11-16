@@ -23,6 +23,7 @@ import {
   generateUlid,
   getCardIdFromUrl,
   getCurrentDateAndTime,
+  getLocalDateAndTime,
   getNoteIdFromUrl,
   getSketchIdFromUrl,
 } from '../modules_common/utils';
@@ -99,7 +100,12 @@ class Note implements INote {
 
   private _logToTransport (logObject: ILogObject) {
     const logFileName = 'log.txt';
-    fs.appendFileSync(defaultLogDir + logFileName, logObject.argumentsArray[0] + '\n');
+    fs.appendFileSync(
+      defaultLogDir + logFileName,
+      `${getLocalDateAndTime(logObject.date.getTime())} [${logObject.logLevel}] ${
+        logObject.loggerName
+      } ${logObject.argumentsArray[0]}\n`
+    );
   }
 
   /**
@@ -221,6 +227,7 @@ class Note implements INote {
         serializeFormat: 'front-matter',
         logLevel,
         logToTransport: this._logToTransport,
+        logColorEnabled: false,
       });
       await this._settingsDB.open();
 
@@ -242,6 +249,7 @@ class Note implements INote {
         idGenerator: monotonicFactoryHmtid(),
         logLevel,
         logToTransport: this._logToTransport,
+        logColorEnabled: false,
       };
 
       this._bookDB = new GitDocumentDB(bookDbOption);
