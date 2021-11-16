@@ -66,6 +66,8 @@ export class CardEditorMarkdown implements ICardEditor {
   /**
    * Public
    */
+  public skipSave = true; // Skip save at the first time and when updated by remote
+
   public hasCodeMode = false;
   public isCodeMode = false;
 
@@ -412,7 +414,6 @@ export class CardEditorMarkdown implements ICardEditor {
     const messages: Record<string, string> = getConfig().messages;
     messages.Meta = getConfig().os === 'darwin' ? 'Cmd' : 'Ctrl';
 
-    let initialDocUpdate = true;
     const mdListener = {
       markdown: [
         (getMarkdown: () => string) => {
@@ -422,8 +423,8 @@ export class CardEditorMarkdown implements ICardEditor {
       doc: [
         (proseNode: any) => {
           console.log(proseNode.toString());
-          if (initialDocUpdate) {
-            initialDocUpdate = false;
+          if (this.skipSave) {
+            this.skipSave = false;
           }
           else {
             this._saveBody(proseNode);

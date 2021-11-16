@@ -5,6 +5,7 @@
 
 export interface ICardEditor {
   readonly hasCodeMode: boolean;
+  skipSave: boolean;
   isCodeMode: boolean;
   isOpened: boolean;
 

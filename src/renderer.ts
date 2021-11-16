@@ -533,6 +533,7 @@ const onSyncCardBody = async (changedFile: ChangedFile, enqueueTime: string) => 
   else if (changedFile.operation === 'delete') {
     await cardStore.dispatch(cardBodyUpdateCreator('', 'remote', enqueueTime));
   }
+  cardEditor.skipSave = true;
   cardEditor.setData(cardStore.getState().body._body);
   render(['ContentsData', 'CardStyle']);
 };
