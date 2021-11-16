@@ -413,8 +413,6 @@ export class Card implements ICard {
    * Listen focus event in Main Process.
    */
   private _focusListener = () => {
-    this._addShortcuts();
-
     if (this.recaptureGlobalFocusEventAfterLocalFocusEvent) {
       this.recaptureGlobalFocusEventAfterLocalFocusEvent = false;
       setGlobalFocusEventListenerPermission(true);
@@ -428,6 +426,8 @@ export class Card implements ICard {
     }
     else {
       console.debug(`# focus ${this.url}`);
+
+      this._addShortcuts();
 
       const modifiedTime = getCurrentDateAndTime();
 
