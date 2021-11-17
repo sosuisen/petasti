@@ -65,7 +65,7 @@ import { closeSettings } from './settings';
 const logLevel = 'debug';
 
 export const generateNewNoteId = () => {
-  const hmtid = monotonicFactoryHmtid();
+  const hmtid = monotonicFactoryHmtid(undefined, '-', true);
   return 'n' + hmtid(Date.now());
 };
 
@@ -246,7 +246,7 @@ class Note implements INote {
         dbName: this._settings.currentNotebookName,
         debounceTime: 3000,
         serializeFormat: 'front-matter',
-        idGenerator: monotonicFactoryHmtid(),
+        idGenerator: monotonicFactoryHmtid(undefined, '-', true),
         logLevel,
         logToTransport: this._logToTransport,
         logColorEnabled: false,

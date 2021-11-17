@@ -301,7 +301,7 @@ export const addSettingsHandler = (note: INote) => {
       await tmpBookDB.saveAuthor();
 
       if (jsonObj.schemaVersion === 0.1) {
-        let hmtid = monotonicFactoryHmtid();
+        let hmtid = monotonicFactoryHmtid(undefined, '-', true);
         const cardIdMap: Record<string, string> = {};
         sortedCards.forEach(card => {
           const oldId = card._id;
@@ -311,7 +311,7 @@ export const addSettingsHandler = (note: INote) => {
           cardIdMap[oldId.substring(5)] = newId.substring(5);
         });
 
-        hmtid = monotonicFactoryHmtid();
+        hmtid = monotonicFactoryHmtid(undefined, '-', true);
         const noteIdMap: Record<string, string> = {};
         sortedNotes.forEach(tmpNote => {
           const oldId = tmpNote._id;
@@ -336,7 +336,7 @@ export const addSettingsHandler = (note: INote) => {
           tmpNote._id = newId;
         });
 
-        hmtid = monotonicFactoryHmtid();
+        hmtid = monotonicFactoryHmtid(undefined, '-', true);
         sortedSnapshots.forEach(snapshot => {
           const oldId = snapshot._id;
           const newId = 'snapshot/s' + hmtid(decodeTime(oldId.substring(9)));

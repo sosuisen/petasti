@@ -6,7 +6,7 @@ import { ulid } from 'ulid';
 import { monotonicFactory as monotonicFactoryHmtid } from 'hmtid';
 import { APP_SCHEME } from './const';
 
-const hmtid = monotonicFactoryHmtid();
+const hmtid = monotonicFactoryHmtid(undefined, '-', true);
 
 export const sleep = (msec: number) =>
   new Promise<void>(resolve => setTimeout(resolve, msec));
