@@ -327,10 +327,17 @@ class Note implements INote {
     noteStore.dispatch(noteInitCreator(initialNoteState));
 
     if (this.settings.sync.enabled) {
-      //      this._sync = await initSync(this);
+      try {
+        // Need await to sync remote changes correctly
+        this._sync = await initSync(this);
+      } catch (err) {
+        console.error(err);
+      }
+      /*
       initSync(this)
         .then(sync => (this._sync = sync))
         .catch(err => console.error(err));
+        */
     }
 
     return await this.loadCurrentNote();
