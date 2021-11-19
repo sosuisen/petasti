@@ -96,6 +96,10 @@ type MessagesSettings = {
   importingDataProgressBarTitle: string;
   importingDataProgressBarBody: string;
   importingDataProgressBarProgress: string;
+  synchronizingProgressBarTitle: string;
+  synchronizingProgressBarBody: string;
+  startingAppProgressBarTitle: string;
+  loadingNoteProgressBarBody: string;
   completed: string;
   exportDataAlert: string;
 };
@@ -185,6 +189,10 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   importingDataProgressBarBody:
     'Please do not manipulate the cards or notes during the import process.',
   importingDataProgressBarProgress: 'Import $1 out of $2',
+  synchronizingProgressBarTitle: 'Synchronizing...',
+  synchronizingProgressBarBody: 'Checking remote data...',
+  startingAppProgressBarTitle: 'Starting...',
+  loadingNoteProgressBarBody: 'Checking notes...',
   completed: 'Completed',
   exportDataAlert:
     'Only current cards, notes, and snapshots will be exported. Past changes and deleted data will not be included.',
@@ -313,6 +321,10 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   importingDataProgressBarBody:
     'インポート処理中はカードやノートを操作しないようお願いします。',
   importingDataProgressBarProgress: '$2 個のうち $1 個をインポートしました',
+  synchronizingProgressBarTitle: '同期中...',
+  synchronizingProgressBarBody: 'リモートのデータを確認しています...',
+  startingAppProgressBarTitle: '起動中...',
+  loadingNoteProgressBarBody: 'ノートのデータを確認しています...',
   completed: '完了しました',
   exportDataAlert:
     '現在のカード、ノート、スナップショットのみエクスポートされます。過去の変更履歴や削除されたデータは含まれません。',

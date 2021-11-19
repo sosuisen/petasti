@@ -10,7 +10,6 @@ import {
   Sync,
   TaskMetadata,
 } from 'git-documentdb';
-import { validate } from 'terser-webpack-plugin/node_modules/schema-utils/declarations/validate';
 import { showDialog } from './utils_main';
 import { INote } from './note_types';
 import { CardBody, CardSketch, NoteProp } from '../modules_common/types';

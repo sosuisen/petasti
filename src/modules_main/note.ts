@@ -19,6 +19,7 @@ import {
 import { selectPreferredLanguage, translate, Translator } from 'typed-intl';
 import { monotonicFactory as monotonicFactoryHmtid } from 'hmtid';
 import { ILogObject, Logger, TLogLevelName } from 'tslog';
+import ProgressBar from 'electron-progressbar';
 import {
   generateUlid,
   getCardIdFromUrl,
@@ -220,6 +221,7 @@ class Note implements INote {
     setMessages(this._info.messages);
 
     // Open databases
+    let startingProgressBar: ProgressBar | undefined;
     try {
       this._settingsDB = new GitDocumentDB({
         localDir: defaultDataDir,
@@ -240,6 +242,28 @@ class Note implements INote {
       else {
         this._settings = loadedSettings;
       }
+
+      /**
+       * Set i18n from settings
+       */
+      if (this._settings.language === '') {
+        // eslint-disable-next-line require-atomic-updates
+        this._settings.language = preferredLanguage;
+      }
+      selectPreferredLanguage(availableLanguages, [
+        this._settings.language,
+        defaultLanguage,
+      ]);
+      this._info.messages = this._translations.messages();
+      setMessages(note.info.messages);
+
+      startingProgressBar = new ProgressBar({
+        text: MESSAGE('startingAppProgressBarTitle'),
+        detail: MESSAGE('loadingNoteProgressBarBody'),
+      });
+      startingProgressBar.on('completed', () => {
+        if (startingProgressBar) startingProgressBar.detail = MESSAGE('completed');
+      });
 
       const bookDbOption: DatabaseOptions & CollectionOptions = {
         localDir: this._settings.dataStorePath,
@@ -286,6 +310,7 @@ class Note implements INote {
         live: true,
       };
     } catch (err) {
+      if (startingProgressBar) startingProgressBar.close();
       showDialog(undefined, 'error', 'databaseCreateError', (err as Error).message);
       console.log(err);
       app.exit();
@@ -294,18 +319,6 @@ class Note implements INote {
     if (!this._settingsDB || !this._bookDB) {
       return [];
     }
-
-    if (this._settings.language === '') {
-      // eslint-disable-next-line require-atomic-updates
-      this._settings.language = preferredLanguage;
-    }
-
-    /**
-     * Set i18n from settings
-     */
-    selectPreferredLanguage(availableLanguages, [this._settings.language, defaultLanguage]);
-    this._info.messages = this._translations.messages();
-    setMessages(note.info.messages);
 
     // Create collections
     this._cardCollection = this._bookDB.collection('card');
@@ -317,16 +330,30 @@ class Note implements INote {
     // Load note properties
     const noteDirList = await this._noteCollection.getCollections();
     const initialNoteState: NoteState = new Map();
+    let count = 0;
     for (const noteDir of noteDirList) {
+      count++;
       // eslint-disable-next-line no-await-in-loop
       const prop: NoteProp = (await noteDir.get('prop')) as NoteProp;
       const pathArr = noteDir.collectionPath.split('/'); // collectionPath is note/nXXXXXX/
       prop._id = pathArr[1]; // Set note id instead of 'prop'.
       initialNoteState.set(prop._id, prop);
+
+      if (startingProgressBar) {
+        startingProgressBar.detail =
+          MESSAGE('loadingNoteProgressBarBody') + `(${count}/${noteDirList.length})`;
+      }
     }
     noteStore.dispatch(noteInitCreator(initialNoteState));
 
     if (this.settings.sync.enabled) {
+      if (startingProgressBar) {
+        // eslint-disable-next-line require-atomic-updates
+        startingProgressBar.text = MESSAGE('synchronizingProgressBarTitle');
+        // eslint-disable-next-line require-atomic-updates
+        startingProgressBar.detail = MESSAGE('synchronizingProgressBarBody');
+      }
+
       try {
         // Need await to sync remote changes correctly
         this._sync = await initSync(this);
@@ -338,6 +365,14 @@ class Note implements INote {
         .then(sync => (this._sync = sync))
         .catch(err => console.error(err));
         */
+    }
+
+    if (startingProgressBar) {
+      startingProgressBar.setCompleted();
+      setTimeout(() => {
+        if (startingProgressBar) startingProgressBar.close();
+        startingProgressBar = undefined;
+      }, 500);
     }
 
     return await this.loadCurrentNote();
