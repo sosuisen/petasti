@@ -287,7 +287,7 @@ export const addSettingsHandler = (note: INote) => {
       dbName: tmpNewDbName,
       debounceTime: 3000,
       logLevel: 'trace',
-      serializeFormat: 'front-matter',
+      serialize: 'front-matter',
     };
     let tmpBookDB: GitDocumentDB | undefined;
     try {

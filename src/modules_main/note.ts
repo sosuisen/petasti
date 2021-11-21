@@ -226,7 +226,7 @@ class Note implements INote {
       this._settingsDB = new GitDocumentDB({
         localDir: defaultDataDir,
         dbName: SETTINGS_DB_NAME,
-        serializeFormat: 'front-matter',
+        serialize: 'front-matter',
         logLevel,
         logToTransport: this._logToTransport,
         logColorEnabled: false,
@@ -269,7 +269,7 @@ class Note implements INote {
         localDir: this._settings.dataStorePath,
         dbName: this._settings.currentNotebookName,
         debounceTime: 3000,
-        serializeFormat: 'front-matter',
+        serialize: 'front-matter',
         idGenerator: monotonicFactoryHmtid(undefined, '-', true),
         logLevel,
         logToTransport: this._logToTransport,
