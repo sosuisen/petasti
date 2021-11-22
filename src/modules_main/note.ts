@@ -26,7 +26,6 @@ import {
   getCurrentDateAndTime,
   getLocalDateAndTime,
   getNoteIdFromUrl,
-  getSketchIdFromUrl,
 } from '../modules_common/utils';
 import {
   CardBody,
