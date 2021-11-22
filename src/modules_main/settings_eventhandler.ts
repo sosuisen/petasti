@@ -438,7 +438,6 @@ export const addSettingsHandler = (note: INote) => {
         await tmpSettingsDB.destroy();
       }
 
-
       if (fs.existsSync(tmpOldWorkingDir)) {
         // Restore directory names
         if (fs.existsSync(note.bookDB.workingDir)) {
