@@ -29,6 +29,7 @@ import { INote } from './note_types';
 import { setTrayContextMenu } from './tray';
 import { initSync } from './sync';
 import { getCurrentDateAndTime } from '../modules_common/utils';
+import { defaultDataDir } from '../modules_common/store.types';
 
 export const addSettingsHandler = (note: INote) => {
   // Request from settings dialog
@@ -217,7 +218,7 @@ export const addSettingsHandler = (note: INote) => {
     // console.debug('Start import JSON from ' + filepath);
     const jsonObj = readJSONSync(filepath);
 
-    if (jsonObj.schemaVersion > 0.2) {
+    if (jsonObj.schemaVersion < 0.3) {
       showDialog(settingsDialog, 'error', 'invalidSchemaVersion', jsonObj.schemaVersion);
       return;
     }
@@ -280,17 +281,56 @@ export const addSettingsHandler = (note: INote) => {
       });
 
     // Create temporary repository
-    const tmpNewDbName = 'tmpNew' + ulid();
+    const tmpNewSettingsName = 'tmpNewSettings' + ulid();
+    const tmpOldSettingsWorkingDir = note.settingsDB.workingDir + '_' + ulid();
+    let tmpSettingsDB: GitDocumentDB | undefined;
+
+    const tmpNewDbName = 'tmpNewBook' + ulid();
     const tmpOldWorkingDir = note.bookDB.workingDir + '_' + ulid();
-    const bookDbOption: DatabaseOptions & CollectionOptions = {
-      localDir: note.settings.dataStorePath,
-      dbName: tmpNewDbName,
-      debounceTime: 3000,
-      logLevel: 'trace',
-      serialize: 'front-matter',
-    };
     let tmpBookDB: GitDocumentDB | undefined;
     try {
+      /**
+       * Import settings
+       */
+      const settingsDbOption: DatabaseOptions & CollectionOptions = {
+        localDir: defaultDataDir,
+        dbName: tmpNewSettingsName,
+        serialize: 'front-matter',
+        logLevel: 'trace',
+      };
+
+      tmpSettingsDB = new GitDocumentDB(settingsDbOption);
+      await tmpSettingsDB.open();
+
+      // eslint-disable-next-line require-atomic-updates
+      tmpSettingsDB.author = note.settingsDB.author;
+      // eslint-disable-next-line require-atomic-updates
+      tmpSettingsDB.committer = note.settingsDB.committer;
+      await tmpSettingsDB.saveAuthor();
+      const settings = await note.settingsDB.get('settings');
+      await tmpSettingsDB.put(settings!);
+
+      await tmpSettingsDB.close();
+
+      await note.settingsDB.close();
+      await fs.rename(note.settingsDB.workingDir, tmpOldSettingsWorkingDir);
+      await fs.rename(tmpSettingsDB.workingDir, note.settingsDB.workingDir);
+      // Removing tmpOldWorkingDir is not important.
+      // Exec rimraf asynchronously, do not wait and do not catch errors.
+      rimraf(tmpOldSettingsWorkingDir, error => {
+        console.log(error);
+      });
+
+      const bookDbOption: DatabaseOptions & CollectionOptions = {
+        localDir: note.settings.dataStorePath,
+        dbName: tmpNewDbName,
+        logLevel: 'trace',
+        serialize: 'front-matter',
+      };
+
+      /**
+       * Import book
+       */
       tmpBookDB = new GitDocumentDB(bookDbOption);
       await tmpBookDB.open();
 
@@ -300,18 +340,19 @@ export const addSettingsHandler = (note: INote) => {
       tmpBookDB.committer = note.bookDB.committer;
       await tmpBookDB.saveAuthor();
 
-      if (jsonObj.schemaVersion === 0.1) {
-        let hmtid = monotonicFactoryHmtid(undefined, '-', true);
+      if (jsonObj.schemaVersion === 0.3) {
         const cardIdMap: Record<string, string> = {};
         sortedCards.forEach(card => {
           const oldId = card._id;
-          const newId = 'card/c' + hmtid(decodeTime(oldId.substring(6)));
+          const newId = oldId.replace(
+            /(card\/c)(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(.+?)$/,
+            '$1$2-$3-$4-$5-$6-$7-$8'
+          );
           card._id = newId;
 
           cardIdMap[oldId.substring(5)] = newId.substring(5);
         });
 
-        hmtid = monotonicFactoryHmtid(undefined, '-', true);
         const noteIdMap: Record<string, string> = {};
         sortedNotes.forEach(tmpNote => {
           const oldId = tmpNote._id;
@@ -326,26 +367,25 @@ export const addSettingsHandler = (note: INote) => {
             newNoteId = noteIdMap[oldNoteId];
           }
           else {
-            newNoteId = 'n' + hmtid(decodeTime(oldNoteId.substring(1)));
+            newNoteId = oldNoteId.replace(
+              /(n)(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(.+?)$/,
+              '$1$2-$3-$4-$5-$6-$7-$8'
+            );
             noteIdMap[oldNoteId] = newNoteId;
           }
           newNoteId = 'note/' + newNoteId;
 
           const newId = newNoteId + '/' + childId;
-          console.log(newId);
           tmpNote._id = newId;
         });
 
-        hmtid = monotonicFactoryHmtid(undefined, '-', true);
         sortedSnapshots.forEach(snapshot => {
           const oldId = snapshot._id;
-          const newId = 'snapshot/s' + hmtid(decodeTime(oldId.substring(9)));
-          console.log(newId);
+          const newId = oldId.replace(
+            /(snapshot\/s)(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(.+?)$/,
+            '$1$2-$3-$4-$5-$6-$7-$8'
+          );
           snapshot._id = newId;
-          snapshot.createdDate = new Date(decodeTime(oldId.substring(9)))
-            .toISOString()
-            .replace(/^(.+?)T(.+?)\..+?$/, '$1 $2');
-          console.log(snapshot.createdDate);
           (snapshot.cards as JsonDoc[]).forEach(tmpCard => {
             tmpCard._id = cardIdMap[tmpCard._id];
           });
@@ -386,6 +426,19 @@ export const addSettingsHandler = (note: INote) => {
       progressBar.close();
       showDialog(undefined, 'error', 'databaseCreateError', (err as Error).message);
       console.log(err);
+
+      if (fs.existsSync(tmpOldSettingsWorkingDir)) {
+        // Restore directory names
+        if (fs.existsSync(note.settingsDB.workingDir)) {
+          await fs.rename(note.settingsDB.workingDir, tmpSettingsDB!.workingDir);
+        }
+        await fs.rename(tmpOldSettingsWorkingDir, note.settingsDB.workingDir);
+      }
+      if (tmpSettingsDB !== undefined) {
+        await tmpSettingsDB.destroy();
+      }
+
+
       if (fs.existsSync(tmpOldWorkingDir)) {
         // Restore directory names
         if (fs.existsSync(note.bookDB.workingDir)) {

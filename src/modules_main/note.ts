@@ -18,7 +18,7 @@ import {
 } from 'git-documentdb';
 import { selectPreferredLanguage, translate, Translator } from 'typed-intl';
 import { monotonicFactory as monotonicFactoryHmtid } from 'hmtid';
-import { ILogObject, Logger, TLogLevelName } from 'tslog';
+import { ILogObject, Logger } from 'tslog';
 import ProgressBar from 'electron-progressbar';
 import {
   generateUlid,
