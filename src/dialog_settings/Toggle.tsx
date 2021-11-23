@@ -17,6 +17,7 @@ type ToggleProps = {
   checked: boolean;
   color: string;
   activeColor: string;
+  size: 'large' | 'small';
 };
 export function Toggle (props: ToggleProps) {
   const [toggleValue, setToggleValue] = useState(props.checked);
@@ -32,11 +33,19 @@ export function Toggle (props: ToggleProps) {
     <span
       ref={toggle}
       onClick={handleToggle}
-      styleName={props.checked ? 'toggled toggle-switch' : 'toggle-switch'}
+      styleName={
+        props.checked
+          ? props.size === 'small'
+            ? 'toggled-small toggle-switch-small'
+            : 'toggled toggle-switch'
+          : props.size === 'small'
+            ? 'toggle-switch-small'
+            : 'toggle-switch'
+      }
       style={{ borderColor: props.color }}
     >
       <span
-        styleName='toggle'
+        styleName={props.size === 'small' ? 'toggle-small' : 'toggle'}
         style={{ backgroundColor: props.checked ? props.activeColor : props.color }}
       ></span>
     </span>

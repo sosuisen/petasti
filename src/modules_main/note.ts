@@ -239,6 +239,8 @@ class Note implements INote {
         await this._settingsDB.put(this._settings);
       }
       else {
+        if (loadedSettings.sync.syncAfterChanges === undefined)
+          loadedSettings.sync.syncAfterChanges = true;
         this._settings = loadedSettings;
       }
 
@@ -746,7 +748,7 @@ class Note implements INote {
           debounceTime: 0,
         })
         .then(() => {
-          if (this._sync) {
+          if (this._sync && this._settings.sync.syncAfterChanges) {
             this._sync.trySync();
           }
         })
@@ -764,7 +766,7 @@ class Note implements INote {
           },
         })
         .then(() => {
-          if (this._sync) {
+          if (this._sync && this._settings.sync.syncAfterChanges) {
             this._sync.trySync();
           }
         })
@@ -788,7 +790,7 @@ class Note implements INote {
           },
         })
         .then(() => {
-          if (this._sync) {
+          if (this._sync && this._settings.sync.syncAfterChanges) {
             this._sync.trySync();
           }
         })
@@ -805,7 +807,7 @@ class Note implements INote {
           },
         })
         .then(() => {
-          if (this._sync) {
+          if (this._sync && this._settings.sync.syncAfterChanges) {
             this._sync.trySync();
           }
         })
@@ -829,7 +831,7 @@ class Note implements INote {
           },
         })
         .then(() => {
-          if (this._sync) {
+          if (this._sync && this._settings.sync.syncAfterChanges) {
             this._sync.trySync();
           }
         })
@@ -846,7 +848,7 @@ class Note implements INote {
           },
         })
         .then(() => {
-          if (this._sync) {
+          if (this._sync && this._settings.sync.syncAfterChanges) {
             this._sync.trySync();
           }
         })
@@ -865,7 +867,7 @@ class Note implements INote {
           },
         })
         .then(() => {
-          if (this._sync) {
+          if (this._sync && this._settings.sync.syncAfterChanges) {
             this._sync.trySync();
           }
         })
@@ -895,7 +897,7 @@ class Note implements INote {
           },
         })
         .then(() => {
-          if (this._sync) {
+          if (this._sync && this._settings.sync.syncAfterChanges) {
             this._sync.trySync();
           }
         })
@@ -925,7 +927,7 @@ class Note implements INote {
           },
         })
         .then(() => {
-          if (this._sync) {
+          if (this._sync && this._settings.sync.syncAfterChanges) {
             this._sync.trySync();
           }
         })
@@ -944,7 +946,7 @@ class Note implements INote {
           },
         })
         .then(() => {
-          if (this._sync) {
+          if (this._sync && this._settings.sync.syncAfterChanges) {
             this._sync.trySync();
           }
         })

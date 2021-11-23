@@ -3,9 +3,10 @@
   width: 0px;
   opacity: 0;
 }
+
 .toggle {
-  height: 20px;
-  width: 20px;
+  height: 15px;
+  width: 15px;
   position: absolute;
   border-radius: 10px;
   background-color: #04f;
@@ -16,11 +17,33 @@
   border: solid 2px #04f;
   position: relative;
   display: inline-block;
-  border-radius: 20px;
+  border-radius: 15px;
   padding: 3px;
-  width: 40px;
-  height: 20px;
+  width: 30px;
+  height: 15px;
 }
 .toggled .toggle {
+    right: 3px;
+}
+
+.toggle-small {
+  height: 10px;
+  width: 10px;
+  position: absolute;
+  border-radius: 10px;
+  background-color: #04f;
+  right: 50%;
+  transition: all .3s;
+}
+.toggle-switch-small {
+  border: solid 2px #04f;
+  position: relative;
+  display: inline-block;
+  border-radius: 10px;
+  padding: 3px;
+  width: 20px;
+  height: 10px;
+}
+.toggled-small .toggle-small {
     right: 3px;
 }

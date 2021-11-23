@@ -80,14 +80,13 @@ type MessagesSettings = {
   aboutAppUrl: string;
   testingSync: string;
   syncRemoteUrlHeader: string;
-  syncRemoteUrlFooter: string;
   syncRemoteUrlPlaceholder: string;
   syncPersonalAccessTokenHeader: string;
   syncPersonalAccessTokenFooter: string;
   syncPersonalAccessTokenPlaceholder: string;
   syncIntervalHeader: string;
-  syncIntervalFooter: string;
   syncIntervalAlert: string;
+  syncAfterChangesHeader: string;
   saveSyncSettingsButton: string;
   reloadNotebookByCombine: string;
   invalidSchemaVersion: string;
@@ -167,17 +166,15 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   aboutCopyright: '© 2021 Hidekazu Kubota',
   aboutAppUrl: 'https://github.com/sosuisen/',
   testingSync: 'Testing synchronization...',
-  syncRemoteUrlHeader: 'Remote URL',
-  syncRemoteUrlFooter: 'Please enter your GitHub repository.',
+  syncRemoteUrlHeader: 'Remote repository (GitHub URL)',
   syncRemoteUrlPlaceholder: 'e.g.) https://github.com/your_account/your_repository',
   syncPersonalAccessTokenHeader: 'Personal Access Token',
   syncPersonalAccessTokenFooter:
     'Enter <a target="_blank" href="https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token">your personal access token</a>.',
   syncPersonalAccessTokenPlaceholder: 'e.g) ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-  syncIntervalHeader: 'Interval (sec)',
-  syncIntervalFooter:
-    'Please enter sync interval time greater than or equal to 10 seconds.',
+  syncIntervalHeader: 'Interval (10 or more secs)',
   syncIntervalAlert: 'Please enter a number greater than or equal to 10.',
+  syncAfterChangesHeader: 'Ignore interval and sync when card is saved.',
   saveSyncSettingsButton: 'Apply sync settings',
   reloadNotebookByCombine: 'App will be restarted to update the database.',
   invalidSchemaVersion: 'Cannot import this data because the version (ver.$1) is invalid.',
@@ -299,16 +296,15 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   aboutCopyright: '© 2021 Hidekazu Kubota',
   aboutAppUrl: 'https://github.com/sosuisen/',
   testingSync: '同期のテスト中...',
-  syncRemoteUrlHeader: '同期先のURL',
-  syncRemoteUrlFooter: 'あなたの GitHub リポジトリ名を入力してください。',
+  syncRemoteUrlHeader: '同期先のリポジトリ (GitHub URL)',
   syncRemoteUrlPlaceholder: '例) https://github.com/your_account/your_repository',
   syncPersonalAccessTokenHeader: '個人アクセストークン',
   syncPersonalAccessTokenFooter:
     'あなたの<a target="_blank" href="https://docs.github.com/ja/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token">個人アクセストークン</a>を入力してください。',
   syncPersonalAccessTokenPlaceholder: '例) ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-  syncIntervalHeader: '間隔（秒）',
-  syncIntervalFooter: '同期間隔（10秒以上）を入力してください。',
-  syncIntervalAlert: '10以上の値を入力してください',
+  syncIntervalHeader: '間隔（10秒以上）',
+  syncIntervalAlert: '10秒以上の値を入力してください',
+  syncAfterChangesHeader: 'カード保存時は間隔を無視して同期実行',
   saveSyncSettingsButton: '同期設定を保存',
   reloadNotebookByCombine: 'データベース更新のためアプリが再起動されます。',
   invalidSchemaVersion:

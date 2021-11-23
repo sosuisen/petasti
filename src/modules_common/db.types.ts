@@ -49,6 +49,11 @@ export type DatabaseSyncIntervalUpdate = {
   data: number;
 };
 
+export type DatabaseSyncAfterChangesUpdate = {
+  command: 'db-sync-after-changes-update';
+  data: boolean;
+};
+
 export type DatabaseLanguageUpdate = {
   command: 'db-language-update';
   data: string;
@@ -87,6 +92,7 @@ export type DatabaseCommand =
   | DatabaseSyncRemoteUrlUpdate
   | DatabaseSyncPersonalAccessTokenUpdate
   | DatabaseSyncIntervalUpdate
+  | DatabaseSyncAfterChangesUpdate
   | DatabaseLanguageUpdate
   | DatabaseDataStorePathUpdate
   | DatabaseTestSync

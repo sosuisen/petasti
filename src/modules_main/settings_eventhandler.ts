@@ -113,6 +113,11 @@ export const addSettingsHandler = (note: INote) => {
         await note.settingsDB.put(note.settings);
         break;
       }
+      case 'db-sync-after-changes-update': {
+        note.settings.sync.syncAfterChanges = command.data;
+        await note.settingsDB.put(note.settings);
+        break;
+      }
       case 'db-test-sync': {
         if (note.sync !== undefined) {
           note.bookDB.removeSync(note.sync.remoteURL);

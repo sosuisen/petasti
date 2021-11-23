@@ -7,6 +7,7 @@ import './SettingPageSync.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { ChangeEvent, useState } from 'react';
 import {
+  settingsSyncAfterChangesUpdateCreator,
   settingsSyncEnableUpdateCreator,
   settingsSyncIntervalUpdateCreator,
   settingsSyncPersonalAccessTokenUpdateCreator,
@@ -43,6 +44,9 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
   );
   const [syncIntervalValue, setSyncIntervalValue] = useState(settings.sync.interval / 1000);
   const [syncIntervalAlertValue, setSyncIntervalAlertValue] = useState('');
+  const [syncAfterChangesValue, setSyncAfterChangesValue] = useState(
+    settings.sync.syncAfterChanges
+  );
   const [isTestSyncDialogOpen, setIsTestSyncDialogOpen] = useState(false);
   const [testSyncDialogMessage, setTestSyncDialogMessage] = useState(messages.testingSync);
 
@@ -147,7 +151,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
     }
   };
 
-  const toggleOnChange = (syncEnable: boolean) => {
+  const syncEnabledToggleOnChange = (syncEnable: boolean) => {
     setSyncEnabledValue(syncEnable);
     if (syncEnable) {
       if (validateForm()) {
@@ -157,6 +161,11 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
     else {
       dispatch(settingsSyncEnableUpdateCreator(false));
     }
+  };
+
+  const syncAfterChangesToggleOnChange = (syncAfterChanges: boolean) => {
+    setSyncAfterChangesValue(syncAfterChanges);
+    dispatch(settingsSyncAfterChangesUpdateCreator(syncAfterChanges));
   };
 
   const buttonStyle = (color: ColorName) => ({
@@ -177,12 +186,13 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
         </div>
         <div styleName='testSyncDialogMessage'>{testSyncDialogMessage}</div>
       </dialog>
-      <div styleName='syncToggleButton'>
+      <div styleName='syncEnabledToggleButton'>
         <Toggle
-          color={uiColors.yellow}
-          activeColor={uiColors.green}
+          color={uiColors.red}
+          activeColor={uiColors.yellow}
           checked={syncEnabledValue}
-          onChange={bool => toggleOnChange(bool)}
+          onChange={bool => syncEnabledToggleOnChange(bool)}
+          size='large'
         />
       </div>
       <div styleName='syncToggleLabel'>{syncEnabledValue ? 'On' : 'Off'}</div>
@@ -194,7 +204,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
       >
         {messages.saveSyncSettingsButton}
       </button>
-
+      <br style={{ clear: 'both' }} />
       <div
         styleName='syncSettings'
         style={{ color: syncEnabledValue ? '#000000' : '#606060' }}
@@ -213,8 +223,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
               setIsChanged(true);
             }}
           ></input>
-          <div styleName='syncRemoteUrlAlert'></div>
-          <div styleName='syncRemoteUrlFooter'>{messages.syncRemoteUrlFooter}</div>
+          <br style={{ clear: 'both' }} />
         </div>
         <div styleName='syncPersonalAccessToken'>
           <div styleName='syncPersonalAccessTokenHeader'>
@@ -250,8 +259,17 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
             onChange={changeSyncInterval}
             onBlur={saveSyncInterval}
           ></input>
-          <div styleName='syncIntervalFooter'>{messages.syncIntervalFooter}</div>
           <div styleName='syncIntervalAlert'>{syncIntervalAlertValue}</div>
+          <div styleName='syncAfterChangesHeader'>{messages.syncAfterChangesHeader}</div>
+          <div styleName='syncAfterChangesToggleButton'>
+            <Toggle
+              color={uiColors.red}
+              activeColor={uiColors.yellow}
+              checked={syncAfterChangesValue}
+              onChange={bool => syncAfterChangesToggleOnChange(bool)}
+              size='small'
+            />
+          </div>
         </div>
       </div>
     </SettingPageTemplate>

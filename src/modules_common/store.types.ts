@@ -61,6 +61,7 @@ export type SettingsState = {
       private: boolean;
     };
     interval: number;
+    syncAfterChanges: boolean;
   };
 };
 
@@ -84,6 +85,7 @@ export const initialSettingsState: SettingsState = {
       private: true,
     },
     interval: 30000,
+    syncAfterChanges: true,
   },
 };
 

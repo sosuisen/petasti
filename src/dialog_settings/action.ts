@@ -41,6 +41,11 @@ export interface SettingsSyncIntervalUpdateAction {
   payload: number;
 }
 
+export interface SettingsSyncAfterChangesUpdateAction {
+  type: 'settings-sync-after-changes-update';
+  payload: boolean;
+}
+
 export interface SettingsDataStorePathUpdateAction {
   type: 'settings-data-store-path-update';
   payload: string;
@@ -53,4 +58,5 @@ export type SettingsAction =
   | SettingsSyncRemoteUrlUpdateAction
   | SettingsSyncPersonalAccessTokenUpdateAction
   | SettingsSyncIntervalUpdateAction
+  | SettingsSyncAfterChangesUpdateAction
   | SettingsDataStorePathUpdateAction;

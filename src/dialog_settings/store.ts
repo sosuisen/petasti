@@ -50,6 +50,7 @@ const settingsReducer = (
         private: true,
       },
       interval: 30000,
+      syncAfterChanges: true,
     },
   },
   action: SettingsAction
