@@ -16,6 +16,16 @@ export const getCurrentDateAndTime = (): string => {
   return new Date().toISOString().replace(/^(.+?)T(.+?)\..+?$/, '$1 $2');
 };
 
+export const getCurrentLocalDate = (): string => {
+  return getLocalDate(Date.now());
+};
+
+export const getLocalDate = (msec: number): string => {
+  return new Date(msec - new Date().getTimezoneOffset() * 60 * 1000)
+    .toISOString()
+    .replace(/^(.+?)T.+?\..+?$/, '$1');
+};
+
 export const getCurrentLocalDateAndTime = (): string => {
   return getLocalDateAndTime(Date.now());
 };
