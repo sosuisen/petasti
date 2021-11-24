@@ -8,7 +8,11 @@ import { app, globalShortcut, Menu, MenuItemConstructorOptions, Tray } from 'ele
 import { closeSettings, openSettings } from './settings';
 import { createRandomColorCard, sortCardWindows } from './card';
 import { emitter } from './event';
-import { getCurrentDateAndTime, getCurrentLocalDate, getCurrentLocalDateAndTime } from '../modules_common/utils';
+import {
+  getCurrentDateAndTime,
+  getCurrentLocalDate,
+  getCurrentLocalDateAndTime,
+} from '../modules_common/utils';
 import { APP_ICON_NAME, APP_ICON_NAME_MONO } from '../modules_common/const';
 import { CardBody, CardSketch, Snapshot } from '../modules_common/types';
 import { MESSAGE } from './messages';
