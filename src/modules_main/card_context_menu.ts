@@ -43,7 +43,9 @@ export const setContextMenu = (note: INote, card: ICard) => {
     card.copyToNote(noteId);
   };
 
-  const moveToNotes: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
+  const moveToNotes: MenuItemConstructorOptions[] = [
+    ...noteStore.getState().noteMap.values(),
+  ]
     .sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;
@@ -61,7 +63,9 @@ export const setContextMenu = (note: INote, card: ICard) => {
       return result;
     }, [] as MenuItemConstructorOptions[]);
 
-  const copyToNotes: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
+  const copyToNotes: MenuItemConstructorOptions[] = [
+    ...noteStore.getState().noteMap.values(),
+  ]
     .sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;

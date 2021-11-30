@@ -42,11 +42,11 @@ export const setTrayContextMenu = () => {
   if (!tray) {
     return;
   }
-  const currentNote = noteStore.getState().get(note.settings.currentNoteId);
+  const currentNote = noteStore.getState().noteMap.get(note.settings.currentNoteId);
 
   let changeNotes: MenuItemConstructorOptions[] = [];
   if (currentNote !== null) {
-    changeNotes = [...noteStore.getState().values()]
+    changeNotes = [...noteStore.getState().noteMap.values()]
       .sort(function (a, b) {
         if (a.name > b.name) return 1;
         else if (a.name < b.name) return -1;
@@ -107,7 +107,7 @@ export const setTrayContextMenu = () => {
         const newName: string | void | null = await prompt({
           title: MESSAGE('note'),
           label: MESSAGE('noteNewName'),
-          value: `${MESSAGE('noteName', String(noteStore.getState().size + 1))}`,
+          value: `${MESSAGE('noteName', String(noteStore.getState().noteMap.size + 1))}`,
           inputAttrs: {
             type: 'text',
             required: 'true',
@@ -152,7 +152,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('noteRename'),
       click: async () => {
-        const noteProp = noteStore.getState().get(note.settings.currentNoteId)!;
+        const noteProp = noteStore.getState().noteMap.get(note.settings.currentNoteId)!;
 
         const newName: string | void | null = await prompt({
           title: MESSAGE('note'),
@@ -187,9 +187,9 @@ export const setTrayContextMenu = () => {
     },
     {
       label: MESSAGE('noteDelete'),
-      enabled: noteStore.getState().size > 1,
+      enabled: noteStore.getState().noteMap.size > 1,
       click: async () => {
-        if (noteStore.getState().size <= 1) {
+        if (noteStore.getState().noteMap.size <= 1) {
           return;
         }
         if (cacheOfCard.size > 0) {
@@ -215,7 +215,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('saveSnapshot'),
       click: async () => {
-        const noteProp = noteStore.getState().get(note.settings.currentNoteId);
+        const noteProp = noteStore.getState().noteMap.get(note.settings.currentNoteId);
         const defaultName = noteProp!.name + ' ' + getCurrentLocalDate();
 
         const newName: string | void | null = await prompt({

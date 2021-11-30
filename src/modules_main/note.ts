@@ -44,6 +44,7 @@ import {
   SettingsState,
 } from '../modules_common/store.types';
 import {
+  allMessages,
   availableLanguages,
   defaultLanguage,
   ENGLISH,
@@ -329,8 +330,25 @@ class Note implements INote {
     });
 
     // Load note properties
+    let regExpStr = '(';
+    for (let i = 0; i < availableLanguages.length; i++) {
+      const lang = availableLanguages[i];
+      regExpStr += allMessages[lang].residentNoteName;
+      if (i === availableLanguages.length - 1) {
+        regExpStr += ')';
+      }
+      else {
+        regExpStr += '|';
+      }
+    }
+    const regExpResidentNote = new RegExp(regExpStr, 'i');
+
     const noteDirList = await this._noteCollection.getCollections();
-    const initialNoteState: NoteState = new Map();
+    const initialNoteState: NoteState = {
+      noteMap: new Map(),
+      residentNoteId: '',
+    };
+
     let count = 0;
     for (const noteDir of noteDirList) {
       count++;
@@ -338,7 +356,12 @@ class Note implements INote {
       const prop: NoteProp = (await noteDir.get('prop')) as NoteProp;
       const pathArr = noteDir.collectionPath.split('/'); // collectionPath is note/nXXXXXX/
       prop._id = pathArr[1]; // Set note id instead of 'prop'.
-      initialNoteState.set(prop._id, prop);
+      initialNoteState.noteMap.set(prop._id, prop);
+
+      if (regExpResidentNote.test(prop.name)) {
+        initialNoteState.residentNoteId = prop._id;
+        console.log('# resident note: ' + prop._id);
+      }
 
       if (startingProgressBar) {
         startingProgressBar.detail =
@@ -383,9 +406,16 @@ class Note implements INote {
    * Note
    */
   getSortedNoteIdList = (): string[] => {
-    const sortedNoteIdList = [...noteStore.getState().keys()].sort((a, b) => {
-      if (noteStore.getState().get(a)!.name > noteStore.getState().get(b)!.name) return 1;
-      else if (noteStore.getState().get(a)!.name < noteStore.getState().get(b)!.name)
+    const sortedNoteIdList = [...noteStore.getState().noteMap.keys()].sort((a, b) => {
+      if (
+        noteStore.getState().noteMap.get(a)!.name >
+        noteStore.getState().noteMap.get(b)!.name
+      )
+        return 1;
+      else if (
+        noteStore.getState().noteMap.get(a)!.name <
+        noteStore.getState().noteMap.get(b)!.name
+      )
         return -1;
       return 0;
     });
@@ -396,14 +426,14 @@ class Note implements INote {
     // Create note if not exist.
     let createNoteFlag = false;
     let noteName = '';
-    if (noteStore.getState().size === 0) {
+    if (noteStore.getState().noteMap.size === 0) {
       createNoteFlag = true;
       noteName = MESSAGE('firstNoteName');
     }
     else if (
       this._settings.currentNoteId === undefined ||
       this._settings.currentNoteId === '' ||
-      noteStore.getState().get(this._settings.currentNoteId) === undefined
+      noteStore.getState().noteMap.get(this._settings.currentNoteId) === undefined
     ) {
       this._settings.currentNoteId = this.getSortedNoteIdList()[0];
       await this._settingsDB.put(this._settings);
@@ -426,7 +456,7 @@ class Note implements INote {
     waitFirstCardCreation = false
   ): Promise<[NoteProp, CardProperty]> => {
     if (!name || name === '') {
-      name = MESSAGE('noteName', (noteStore.getState().size + 1).toString());
+      name = MESSAGE('noteName', (noteStore.getState().noteMap.size + 1).toString());
     }
     const noteId = generateNewNoteId();
     const current = getCurrentDateAndTime();

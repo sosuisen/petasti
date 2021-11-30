@@ -53,6 +53,7 @@ type MessagesNote = {
   noteDelete: string;
   noteCannotDelete: string;
   noteNewName: string;
+  residentNoteName: string;
 };
 
 type MessagesSettings = {
@@ -138,6 +139,7 @@ const NOTE_ENGLISH: MessagesNote = {
   noteCannotDelete:
     'To delete note, delete all visible cards or move them to another note.',
   noteNewName: 'Enter new note name',
+  residentNoteName: '{Resident note}',
 };
 
 const SETTINGS_ENGLISH: MessagesSettings = {
@@ -268,6 +270,7 @@ const NOTE_JAPANESE: MessagesNote = {
   noteCannotDelete:
     'ノートを削除するには、表示されているカードを全て削除するか他のノートへ移動してください。',
   noteNewName: '新しいノート名を入力してください',
+  residentNoteName: '{常駐ノート}',
 };
 
 const SETTINGS_JAPANESE: MessagesSettings = {
@@ -385,3 +388,8 @@ export const JAPANESE: Messages = {
 
 export const availableLanguages = ['en', 'ja'];
 export const defaultLanguage = 'en';
+
+export const allMessages: Record<string, Messages> = {
+  en: ENGLISH,
+  ja: JAPANESE,
+};
