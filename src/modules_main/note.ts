@@ -448,7 +448,16 @@ class Note implements INote {
 
       return [firstCardProp];
     }
-    return await this.loadCurrentCards();
+
+    let cards: CardProperty[] = [];
+    if (
+      noteStore.getState().residentNoteId !== '' &&
+      noteStore.getState().residentNoteId !== this._settings.currentNoteId
+    ) {
+      cards = await this.loadCards(noteStore.getState().residentNoteId);
+    }
+    cards.push(...(await this.loadCards(this._settings.currentNoteId)));
+    return cards;
   };
 
   createNote = async (
@@ -498,9 +507,9 @@ class Note implements INote {
     return maxZIndex;
   };
 
-  loadCurrentCards = async (): Promise<CardProperty[]> => {
+  loadCards = async (noteId: string): Promise<CardProperty[]> => {
     const sketchDocs = await this._noteCollection.find({
-      prefix: this._settings.currentNoteId + '/c',
+      prefix: noteId + '/c',
     });
 
     const getCardProp = async (sketchDoc: CardSketch): Promise<CardProperty> => {
