@@ -51,7 +51,7 @@ export const noteModifiedDateUpdateCreator = (
   return async function (dispatch: Dispatch<any>, getState: () => NoteState) {
     await lock.acquire('noteUpdate', async () => {
       if (enqueueTime !== undefined) {
-        const updatedTime = getState().noteMap.get(noteId)?.updatedTime;
+        const updatedTime = getState().get(noteId)?.updatedTime;
         if (updatedTime !== undefined && updatedTime! > enqueueTime) {
           console.log('Block expired remote update');
           return;
@@ -67,7 +67,7 @@ export const noteModifiedDateUpdateCreator = (
       dispatch(noteAction);
 
       if (changeFrom === 'local') {
-        const newProp = getState().noteMap.get(noteId);
+        const newProp = getState().get(noteId);
         if (newProp) {
           const taskMetadata = await note.updateNoteDoc(newProp);
           // eslint-disable-next-line require-atomic-updates
@@ -87,7 +87,7 @@ export const noteUpdateCreator = (
   return async function (dispatch: Dispatch<any>, getState: () => NoteState) {
     await lock.acquire('noteUpdate', async () => {
       if (enqueueTime !== undefined) {
-        const updatedTime = getState().noteMap.get(noteProp._id)?.updatedTime;
+        const updatedTime = getState().get(noteProp._id)?.updatedTime;
         if (updatedTime !== undefined && updatedTime! > enqueueTime) {
           console.log('Block expired remote update');
           return;
@@ -99,7 +99,7 @@ export const noteUpdateCreator = (
       };
       dispatch(noteAction);
       if (changeFrom === 'local') {
-        const newProp = getState().noteMap.get(noteProp._id);
+        const newProp = getState().get(noteProp._id);
         if (newProp) {
           const taskMetadata = await note.updateNoteDoc(newProp);
           // eslint-disable-next-line require-atomic-updates
@@ -118,7 +118,7 @@ export const noteDeleteCreator = (
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => NoteState) {
     await lock.acquire('noteDelete', async () => {
-      const noteProp = getState().noteMap.get(noteId);
+      const noteProp = getState().get(noteId);
       if (noteProp === undefined) {
         return;
       }

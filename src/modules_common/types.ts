@@ -64,6 +64,7 @@ export type NoteProp = {
   user: string;
   date: CartaDate;
 
+  isResident: boolean;
   updatedTime?: string; // only for redux-thunk
 };
 
@@ -138,4 +139,5 @@ export type Snapshot = {
 export type RendererConfig = {
   messages: MessagesRenderer;
   os: 'win32' | 'darwin' | 'linux';
+  isResident: boolean;
 };

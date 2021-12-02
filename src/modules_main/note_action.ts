@@ -33,20 +33,9 @@ export interface NoteDeleteAction {
   payload: string; // NoteProp._id
 }
 
-export interface NoteUpdateResidentAction {
-  type: 'note-resident-update';
-  payload: string;
-}
-
-export interface NoteDeleteResidentAction {
-  type: 'note-resident-delete';
-}
-
 export type NoteAction =
   | NoteInitAction
   | NoteCreateAction
   | NoteModifiedDateUpdateAction
   | NoteUpdateAction
-  | NoteDeleteAction
-  | NoteUpdateResidentAction
-  | NoteDeleteResidentAction;
+  | NoteDeleteAction;

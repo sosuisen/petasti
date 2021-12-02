@@ -4,8 +4,21 @@
  */
 import { BrowserWindow, dialog } from 'electron';
 import { DIALOG_BUTTON } from '../modules_common/const';
-import { MessageLabel } from '../modules_common/i18n';
+import { allMessages, availableLanguages, MessageLabel } from '../modules_common/i18n';
 import { MESSAGE } from './messages';
+
+let regExpStr = '(';
+for (let i = 0; i < availableLanguages.length; i++) {
+  const lang = availableLanguages[i];
+  regExpStr += allMessages[lang].residentNoteName;
+  if (i === availableLanguages.length - 1) {
+    regExpStr += ')';
+  }
+  else {
+    regExpStr += '|';
+  }
+}
+export const regExpResidentNote = new RegExp(regExpStr, 'i');
 
 export const showDialog = (
   target: BrowserWindow | undefined,

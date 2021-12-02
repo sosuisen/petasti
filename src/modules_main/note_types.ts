@@ -24,10 +24,7 @@ import {
   Snapshot,
 } from '../modules_common/types';
 
-export type NoteState = {
-  noteMap: Map<string, NoteProp>;
-  residentNoteId: string;
-};
+export type NoteState = Map<string, NoteProp>;
 
 export interface INote {
   remoteOptions: RemoteOptions | undefined;

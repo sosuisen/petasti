@@ -12,6 +12,7 @@ import {
   generateNewCardId,
   getCardIdFromUrl,
   getCurrentDateAndTime,
+  getNoteIdFromUrl,
   getRandomInt,
   getSketchIdFromUrl,
 } from '../modules_common/utils';
@@ -44,6 +45,7 @@ import {
 } from './card_zindex';
 import { messagesRenderer } from './messages';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
+import { noteStore } from './note_store';
 
 /**
  * Change unit
@@ -543,6 +545,7 @@ export class Card implements ICard {
       const config: RendererConfig = {
         messages: messagesRenderer,
         os: myOS,
+        isResident: noteStore.getState().get(getNoteIdFromUrl(this.url))!.isResident,
       };
       this.window.webContents.send('render-card', this.url, this.body, this.sketch, config);
       const checkTimer = setInterval(() => {

@@ -9,65 +9,33 @@ import { NoteState } from './note_types';
 
 const noteReducer = (
   // eslint-disable-next-line default-param-last
-  state: NoteState = {
-    noteMap: new Map(),
-    residentNoteId: '',
-  },
+  state: NoteState = new Map(),
   action: NoteAction
 ) => {
   switch (action.type) {
     case 'note-init': {
-      const newState = {
-        noteMap: new Map(action.payload.noteMap),
-        residentNoteId: action.payload.residentNoteId,
-      };
+      const newState = new Map(action.payload);
       return newState;
     }
     case 'note-create': {
-      const newState = new Map(state.noteMap);
+      const newState = new Map(state);
       newState.set(action.payload._id, action.payload);
-      return {
-        noteMap: newState,
-        residentNoteId: state.residentNoteId,
-      };
+      return newState;
     }
     case 'note-modified-date-update': {
-      const newState = new Map(state.noteMap);
+      const newState = new Map(state);
       newState.get(action.payload.id)!.date.modifiedDate = action.payload.modifiedDate;
-      return {
-        noteMap: newState,
-        residentNoteId: state.residentNoteId,
-      };
+      return newState;
     }
     case 'note-update': {
-      const newState = new Map(state.noteMap);
+      const newState = new Map(state);
       newState.set(action.payload._id, action.payload);
-      return {
-        noteMap: newState,
-        residentNoteId: state.residentNoteId,
-      };
+      return newState;
     }
     case 'note-delete': {
-      const newState = new Map(state.noteMap);
+      const newState = new Map(state);
       newState.delete(action.payload);
-      return {
-        noteMap: newState,
-        residentNoteId: state.residentNoteId,
-      };
-    }
-    case 'note-resident-update': {
-      const newState = new Map(state.noteMap);
-      return {
-        noteMap: newState,
-        residentNoteId: action.payload,
-      };
-    }
-    case 'note-resident-delete': {
-      const newState = new Map(state.noteMap);
-      return {
-        noteMap: newState,
-        residentNoteId: '',
-      };
+      return newState;
     }
     default:
       return state;

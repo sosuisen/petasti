@@ -8,17 +8,13 @@ import { app, globalShortcut, Menu, MenuItemConstructorOptions, Tray } from 'ele
 import { closeSettings, openSettings } from './settings';
 import { createRandomColorCard, sortCardWindows } from './card';
 import { emitter } from './event';
-import {
-  getCurrentDateAndTime,
-  getCurrentLocalDate,
-  getCurrentLocalDateAndTime,
-} from '../modules_common/utils';
+import { getCurrentDateAndTime, getCurrentLocalDate } from '../modules_common/utils';
 import { APP_ICON_NAME, APP_ICON_NAME_MONO } from '../modules_common/const';
 import { CardBody, CardSketch, Snapshot } from '../modules_common/types';
 import { MESSAGE } from './messages';
 import { cacheOfCard } from './card_cache';
 import { INote } from './note_types';
-import { showDialog } from './utils_main';
+import { regExpResidentNote, showDialog } from './utils_main';
 import { noteStore } from './note_store';
 import { noteDeleteCreator, noteUpdateCreator } from './note_action_creator';
 
@@ -42,11 +38,11 @@ export const setTrayContextMenu = () => {
   if (!tray) {
     return;
   }
-  const currentNote = noteStore.getState().noteMap.get(note.settings.currentNoteId);
+  const currentNote = noteStore.getState().get(note.settings.currentNoteId);
 
   let changeNotes: MenuItemConstructorOptions[] = [];
   if (currentNote !== null) {
-    changeNotes = [...noteStore.getState().noteMap.values()]
+    changeNotes = [...noteStore.getState().values()]
       .sort(function (a, b) {
         if (a.name > b.name) return 1;
         else if (a.name < b.name) return -1;
@@ -107,7 +103,7 @@ export const setTrayContextMenu = () => {
         const newName: string | void | null = await prompt({
           title: MESSAGE('note'),
           label: MESSAGE('noteNewName'),
-          value: `${MESSAGE('noteName', String(noteStore.getState().noteMap.size + 1))}`,
+          value: `${MESSAGE('noteName', String(noteStore.getState().size + 1))}`,
           inputAttrs: {
             type: 'text',
             required: 'true',
@@ -152,7 +148,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('noteRename'),
       click: async () => {
-        const noteProp = noteStore.getState().noteMap.get(note.settings.currentNoteId)!;
+        const noteProp = noteStore.getState().get(note.settings.currentNoteId)!;
 
         const newName: string | void | null = await prompt({
           title: MESSAGE('note'),
@@ -175,6 +171,7 @@ export const setTrayContextMenu = () => {
         }
 
         noteProp.name = newName as string;
+        noteProp.isResident = regExpResidentNote.test(newName as string);
         noteProp.date.modifiedDate = getCurrentDateAndTime();
         await noteStore.dispatch(
           // @ts-ignore
@@ -187,9 +184,9 @@ export const setTrayContextMenu = () => {
     },
     {
       label: MESSAGE('noteDelete'),
-      enabled: noteStore.getState().noteMap.size > 1,
+      enabled: noteStore.getState().size > 1,
       click: async () => {
-        if (noteStore.getState().noteMap.size <= 1) {
+        if (noteStore.getState().size <= 1) {
           return;
         }
         if (cacheOfCard.size > 0) {
@@ -215,7 +212,7 @@ export const setTrayContextMenu = () => {
     {
       label: MESSAGE('saveSnapshot'),
       click: async () => {
-        const noteProp = noteStore.getState().noteMap.get(note.settings.currentNoteId);
+        const noteProp = noteStore.getState().get(note.settings.currentNoteId);
         const defaultName = noteProp!.name + ' ' + getCurrentLocalDate();
 
         const newName: string | void | null = await prompt({

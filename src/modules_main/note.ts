@@ -44,7 +44,6 @@ import {
   SettingsState,
 } from '../modules_common/store.types';
 import {
-  allMessages,
   availableLanguages,
   defaultLanguage,
   ENGLISH,
@@ -53,7 +52,7 @@ import {
 } from '../modules_common/i18n';
 import { APP_ICON_NAME, APP_SCHEME, SETTINGS_DB_NAME } from '../modules_common/const';
 
-import { showDialog } from './utils_main';
+import { regExpResidentNote, showDialog } from './utils_main';
 import { initSync } from './sync';
 import { MESSAGE, setMessages } from './messages';
 import { cacheOfCard } from './card_cache';
@@ -330,24 +329,8 @@ class Note implements INote {
     });
 
     // Load note properties
-    let regExpStr = '(';
-    for (let i = 0; i < availableLanguages.length; i++) {
-      const lang = availableLanguages[i];
-      regExpStr += allMessages[lang].residentNoteName;
-      if (i === availableLanguages.length - 1) {
-        regExpStr += ')';
-      }
-      else {
-        regExpStr += '|';
-      }
-    }
-    const regExpResidentNote = new RegExp(regExpStr, 'i');
-
     const noteDirList = await this._noteCollection.getCollections();
-    const initialNoteState: NoteState = {
-      noteMap: new Map(),
-      residentNoteId: '',
-    };
+    const initialNoteState: NoteState = new Map();
 
     let count = 0;
     for (const noteDir of noteDirList) {
@@ -356,11 +339,14 @@ class Note implements INote {
       const prop: NoteProp = (await noteDir.get('prop')) as NoteProp;
       const pathArr = noteDir.collectionPath.split('/'); // collectionPath is note/nXXXXXX/
       prop._id = pathArr[1]; // Set note id instead of 'prop'.
-      initialNoteState.noteMap.set(prop._id, prop);
+      initialNoteState.set(prop._id, prop);
 
       if (regExpResidentNote.test(prop.name)) {
-        initialNoteState.residentNoteId = prop._id;
+        prop.isResident = true;
         console.log('# resident note: ' + prop._id);
+      }
+      else {
+        prop.isResident = false;
       }
 
       if (startingProgressBar) {
@@ -406,16 +392,9 @@ class Note implements INote {
    * Note
    */
   getSortedNoteIdList = (): string[] => {
-    const sortedNoteIdList = [...noteStore.getState().noteMap.keys()].sort((a, b) => {
-      if (
-        noteStore.getState().noteMap.get(a)!.name >
-        noteStore.getState().noteMap.get(b)!.name
-      )
-        return 1;
-      else if (
-        noteStore.getState().noteMap.get(a)!.name <
-        noteStore.getState().noteMap.get(b)!.name
-      )
+    const sortedNoteIdList = [...noteStore.getState().keys()].sort((a, b) => {
+      if (noteStore.getState().get(a)!.name > noteStore.getState().get(b)!.name) return 1;
+      else if (noteStore.getState().get(a)!.name < noteStore.getState().get(b)!.name)
         return -1;
       return 0;
     });
@@ -426,14 +405,14 @@ class Note implements INote {
     // Create note if not exist.
     let createNoteFlag = false;
     let noteName = '';
-    if (noteStore.getState().noteMap.size === 0) {
+    if (noteStore.getState().size === 0) {
       createNoteFlag = true;
       noteName = MESSAGE('firstNoteName');
     }
     else if (
       this._settings.currentNoteId === undefined ||
       this._settings.currentNoteId === '' ||
-      noteStore.getState().noteMap.get(this._settings.currentNoteId) === undefined
+      noteStore.getState().get(this._settings.currentNoteId) === undefined
     ) {
       this._settings.currentNoteId = this.getSortedNoteIdList()[0];
       await this._settingsDB.put(this._settings);
@@ -449,12 +428,13 @@ class Note implements INote {
       return [firstCardProp];
     }
 
-    let cards: CardProperty[] = [];
-    if (
-      noteStore.getState().residentNoteId !== '' &&
-      noteStore.getState().residentNoteId !== this._settings.currentNoteId
-    ) {
-      cards = await this.loadCards(noteStore.getState().residentNoteId);
+    const cards: CardProperty[] = [];
+    const props = noteStore.getState().values();
+    for (const noteProp of props) {
+      if (noteProp.isResident && noteProp._id !== this._settings.currentNoteId) {
+        // eslint-disable-next-line no-await-in-loop
+        cards.push(...(await this.loadCards(noteProp._id)));
+      }
     }
     cards.push(...(await this.loadCards(this._settings.currentNoteId)));
     return cards;
@@ -465,7 +445,7 @@ class Note implements INote {
     waitFirstCardCreation = false
   ): Promise<[NoteProp, CardProperty]> => {
     if (!name || name === '') {
-      name = MESSAGE('noteName', (noteStore.getState().noteMap.size + 1).toString());
+      name = MESSAGE('noteName', (noteStore.getState().size + 1).toString());
     }
     const noteId = generateNewNoteId();
     const current = getCurrentDateAndTime();
@@ -477,6 +457,7 @@ class Note implements INote {
       },
       name,
       user: 'local',
+      isResident: regExpResidentNote.test(name),
       _id: noteId,
     };
     await noteStore.dispatch(noteCreateCreator(this, newNote));
