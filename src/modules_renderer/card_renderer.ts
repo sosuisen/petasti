@@ -9,6 +9,7 @@ import window from './window';
 import { getCtrlDown } from '../modules_common/keys';
 import { cardStore } from './card_store';
 import { CARD_MARGIN_LEFT, CARD_MARGIN_TOP, CARD_PADDING } from '../modules_common/const';
+import { getConfig } from './config';
 
 let cardCssStyle: CardCssStyle;
 let cardEditor: ICardEditor;
@@ -299,15 +300,18 @@ const renderCardStyle = () => {
   }
 
   let boxShadow = 'none';
-  if (
-    cardStore.getState().sketch.style.opacity !== 0 &&
-    cardStore.getState().workState.status !== 'Focused'
-  ) {
-    boxShadow = '5px 5px 3px 0px rgba(128,128,128, .2)';
+  if (!getConfig().isResident) {
+    if (
+      cardStore.getState().sketch.style.opacity !== 0 &&
+      cardStore.getState().workState.status !== 'Focused'
+    ) {
+      boxShadow = '5px 5px 3px 0px rgba(128,128,128, .2)';
+    }
   }
   if (cardStore.getState().workState.status === 'Focused') {
     boxShadow = '5px 5px 3px 0px rgba(0,0,0, .2)';
   }
+
   document.getElementById('card')!.style.boxShadow = boxShadow;
 
   const scrollBarRgba = convertHexColorToRgba(
