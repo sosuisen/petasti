@@ -10,6 +10,7 @@ import {
   Collection,
   CollectionOptions,
   DatabaseOptions,
+  DeleteResultJsonDoc,
   Err,
   GitDocumentDB,
   RemoteOptions,
@@ -784,6 +785,17 @@ class Note implements INote {
           enqueueCallback: (taskMetadata: TaskMetadata) => {
             resolve(taskMetadata);
           },
+        })
+        .then(() => {
+          return this._noteCollection.find({
+            prefix: noteId,
+          });
+        })
+        .then(docs => {
+          if (docs.length > 0) {
+            return Promise.all(docs.map(doc => this._noteCollection.delete(doc._id)));
+          }
+          return [];
         })
         .then(() => {
           if (this._sync && this._settings.sync.syncAfterChanges) {
