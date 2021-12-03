@@ -335,31 +335,20 @@ export class CardEditorMarkdown implements ICardEditor {
     document.getElementById('editor')!.addEventListener('click', (event: MouseEvent) => {
       this._editor.action(ctx => {
         const view = ctx.get(editorViewCtx);
-
-        const marks = view.state.selection.$head.marks();
-        const markNames = marks.map(mark => mark.type.name);
-        if (view.state.selection.empty && markNames.includes('link')) {
-          /*
-            console.log(
-              '# View event all text in the same paragraph: ' +
-                view.state.selection.$head.node().textContent
-            );
-            console.log(
-              '# View event nodeAfter.type: ' +
-                view.state.selection.$head.nodeAfter!.type.name
-            );
-            console.log(
-              '# View event node selected text: ' +
-                view.state.selection.$head.nodeBefore!.textContent +
-                view.state.selection.$head.nodeAfter!.textContent
-            );
-*/
-          // Click link
-          const url =
-            view.state.selection.$head.nodeBefore!.textContent +
-            view.state.selection.$head.nodeAfter!.textContent;
-          // console.log('# ViewEvent click: ' + url);
-          window.api.openURL(url);
+        if (view.state.selection.empty) {
+          const marks = view.state.selection.$head.marks();
+          for (const mark of marks) {
+            if (mark.type.name === 'link') {
+              const url = mark.attrs.href;
+              // console.log('# ViewEvent click: ' + url);
+              // Click link
+              // const linkText =
+              //  view.state.selection.$head.nodeBefore!.textContent +
+              //  view.state.selection.$head.nodeAfter!.textContent;
+              window.api.openURL(url);
+              break;
+            }
+          }
         }
       });
     });

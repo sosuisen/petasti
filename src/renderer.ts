@@ -549,7 +549,10 @@ const startEditor = (x?: number, y?: number) => {
 
   cardEditor.startEdit();
   if (x !== undefined && y !== undefined) {
-    window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y);
+    // setInterval(() => {
+    //  window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y);
+    // }, 0);
+    // window.api.sendLeftMouseClick(cardStore.getState().workState.url, x, y);
   }
 };
 

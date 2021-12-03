@@ -73,6 +73,21 @@ contextBridge.exposeInMainWorld('api', {
     // return ipcRenderer.invoke('send-mouse-input', url, [leftMouseDown, leftMouseUp]);
     return ipcRenderer.invoke('send-mouse-input', url, [leftMouseDown]);
   },
+  sendLeftMouseClick: (url: string, x: number, y: number) => {
+    const leftMouseDown: MouseInputEvent = {
+      button: 'left',
+      type: 'mouseDown',
+      x,
+      y,
+    };
+    const leftMouseUp: MouseInputEvent = {
+      button: 'left',
+      type: 'mouseUp',
+      x,
+      y,
+    };
+    return ipcRenderer.invoke('send-mouse-input', url, [leftMouseDown, leftMouseUp]);
+  },
   setWindowSize: (url: string, width: number, height: number) => {
     return ipcRenderer.invoke('set-window-size', url, width, height);
   },

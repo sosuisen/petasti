@@ -46,6 +46,7 @@ import {
 import { messagesRenderer } from './messages';
 import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
 import { noteStore } from './note_store';
+import { openURL } from './url_schema';
 
 /**
  * Change unit
@@ -340,7 +341,8 @@ export class Card implements ICard {
     // when target='_blank' is set.
     this.window.webContents.on('new-window', (e, _url) => {
       e.preventDefault();
-      shell.openExternal(_url);
+      openURL(_url);
+      // shell.openExternal(_url);
     });
 
     this.window.webContents.on('did-finish-load', () => {

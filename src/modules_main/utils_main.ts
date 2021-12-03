@@ -2,7 +2,7 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-import { BrowserWindow, dialog } from 'electron';
+import { BrowserWindow, dialog, shell } from 'electron';
 import { DIALOG_BUTTON } from '../modules_common/const';
 import { allMessages, availableLanguages, MessageLabel } from '../modules_common/i18n';
 import { MESSAGE } from './messages';

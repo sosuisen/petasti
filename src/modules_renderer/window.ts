@@ -31,6 +31,7 @@ interface WindowWithAPI extends Window {
     getUuid: () => Promise<string>;
     openURL: (url: string) => Promise<void>;
     sendLeftMouseDown: (url: string, x: number, y: number) => Promise<void>;
+    sendLeftMouseClick: (url: string, x: number, y: number) => Promise<void>;
     setTitle: (url: string, title: string) => Promise<void>;
     setWindowSize: (
       url: string,
