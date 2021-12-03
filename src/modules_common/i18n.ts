@@ -138,7 +138,7 @@ const NOTE_ENGLISH: MessagesNote = {
   noteRename: 'Rename this note',
   noteDelete: 'Delete this note',
   noteCannotDelete:
-    'To delete note, delete all visible cards or move them to another note.',
+    'To delete note, delete all cards in this note or move them to another note.',
   noteNewName: 'Enter new note name',
   residentNoteName: 'Resident note',
   noteCopyUrlToClipboard: 'Copy note URL',
@@ -270,7 +270,7 @@ const NOTE_JAPANESE: MessagesNote = {
   noteRename: 'ノート名を変更',
   noteDelete: 'このノートを削除',
   noteCannotDelete:
-    'ノートを削除するには、表示されているカードを全て削除するか他のノートへ移動してください。',
+    'ノートを削除するには、このノートのカードを全て削除するか他のノートへ移動してください。',
   noteNewName: '新しいノート名を入力してください',
   residentNoteName: '常駐ノート',
   noteCopyUrlToClipboard: 'ノートURLをコピー',

@@ -18,6 +18,7 @@ import { emitter } from './event';
 import {
   getCurrentDateAndTime,
   getCurrentLocalDate,
+  getNoteIdFromUrl,
   getUrlFromNoteId,
 } from '../modules_common/utils';
 import { APP_ICON_NAME, APP_ICON_NAME_MONO } from '../modules_common/const';
@@ -28,6 +29,7 @@ import { INote } from './note_types';
 import { regExpResidentNote, showDialog } from './utils_main';
 import { noteStore } from './note_store';
 import { noteDeleteCreator, noteUpdateCreator } from './note_action_creator';
+import { cardColors } from '../modules_common/color';
 
 /**
  * Task tray
@@ -207,9 +209,11 @@ export const setTrayContextMenu = () => {
         if (noteStore.getState().size <= 1) {
           return;
         }
-        if (cacheOfCard.size > 0) {
-          showDialog(undefined, 'info', 'noteCannotDelete');
-          return;
+        for (const key of cacheOfCard.keys()) {
+          if (getNoteIdFromUrl(key) === note.settings.currentNoteId) {
+            showDialog(undefined, 'info', 'noteCannotDelete');
+            return;
+          }
         }
         const noteIdList = note.getSortedNoteIdList();
         const currentNoteIndex = noteIdList.indexOf(note.settings.currentNoteId);
@@ -217,9 +221,20 @@ export const setTrayContextMenu = () => {
         // Delete current note
         await noteStore.dispatch(noteDeleteCreator(note, note.settings.currentNoteId));
 
+        // Close resident cards
         // eslint-disable-next-line require-atomic-updates
-        note.settings.currentNoteId = noteIdList[nextNoteIndex];
-        emitter.emit('change-note', note.settings.currentNoteId);
+        note.changingToNoteId = noteIdList[nextNoteIndex];
+        try {
+          // Remove listeners firstly to avoid focus another card in closing process
+          cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
+          cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
+        } catch (e) {
+          console.error(e);
+        }
+
+        // eslint-disable-next-line require-atomic-updates
+        // note.settings.currentNoteId = noteIdList[nextNoteIndex];
+        // emitter.emit('change-note', note.settings.currentNoteId);
 
         // setTrayContextMenu() will be called in change-note event.
       },
