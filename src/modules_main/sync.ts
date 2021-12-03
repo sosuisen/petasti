@@ -199,8 +199,18 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
               noteDeleteCreator(note, noteId, 'remote', taskMetadata.enqueueTime)
             );
             if (noteId === note.settings.currentNoteId) {
-              note.settings.currentNoteId = note.getSortedNoteIdList()[0];
-              emitter.emit('change-note', note.settings.currentNoteId);
+              // Close resident cards
+              note.changingToNoteId = noteId;
+              try {
+                // Remove listeners firstly to avoid focus another card in closing process
+                cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
+                cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
+              } catch (e) {
+                console.error(e);
+              }
+
+              // note.settings.currentNoteId = note.getSortedNoteIdList()[0];
+              // emitter.emit('change-note', note.settings.currentNoteId);
               // setTrayContextMenu() will be called in change-note event.
             }
             else {
