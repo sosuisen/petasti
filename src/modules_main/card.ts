@@ -597,10 +597,11 @@ export class Card implements ICard {
     this._note
       .createCardSketch(newUrl, newCardSketch, true)
       .then((task: TaskMetadata) => {
+        // When moveToNote is called from archive window, a card may move to the current note.
         if (task.shortId!.startsWith(this._note.settings.currentNoteId)) {
           return this._note.cardCollection.get(getCardIdFromUrl(newUrl));
         }
-        return Promise.reject(new Error('Note does not match.'));
+        return Promise.reject(new Error('The destination is not the current note.'));        
       })
       .then(cardBody => {
         console.log('Save has been completed: ' + newUrl);
@@ -621,10 +622,11 @@ export class Card implements ICard {
     this._note
       .createCardSketch(newUrl, newCardSketch, true)
       .then((task: TaskMetadata) => {
+        // When copyToNote is called from archive window, a card may copy to the current note.        
         if (task.shortId!.startsWith(this._note.settings.currentNoteId)) {
           return this._note.cardCollection.get(getCardIdFromUrl(newUrl));
         }
-        return Promise.reject(new Error('Note does not match.'));
+        return Promise.reject(new Error('The destination is not the current note.'));
       })
       .then(cardBody => {
         console.log('Save has been completed: ' + newUrl);
