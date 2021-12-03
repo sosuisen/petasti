@@ -19,7 +19,9 @@ import { addSettingsHandler } from './modules_main/settings_eventhandler';
 import { cacheOfCard } from './modules_main/card_cache';
 import { DatabaseCommand } from './modules_common/db.types';
 import { defaultLogDir } from './modules_common/store.types';
-import { sleep } from './modules_common/utils';
+import { getNoteIdFromUrl, sleep } from './modules_common/utils';
+import { APP_SCHEME } from './modules_common/const';
+import { closeSettings } from './modules_main/settings';
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -248,7 +250,35 @@ ipcMain.handle('focus', (event, url: string) => {
 });
 
 ipcMain.handle('openURL', (event, url: string) => {
-  shell.openExternal(url);
+  if (url.startsWith(APP_SCHEME + '://')) {
+    const rexNote = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/note/(n.+?)$`); // treestickies://local/note/noteID
+    const resultNote = url.match(rexNote);
+    if (resultNote && resultNote.length === 2) {
+      // URL is note
+      const noteId = resultNote[1];
+      if (noteId !== note.settings.currentNoteId) {
+        closeSettings();
+        if (cacheOfCard.size === 0) {
+          emitter.emit('change-note', noteId);
+        }
+        else {
+          note.changingToNoteId = noteId;
+          // eslint-disable-next-line max-depth
+          try {
+            // Remove listeners firstly to avoid focus another card in closing process
+            cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
+            cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
+          } catch (e) {
+            console.error(e);
+          }
+          // wait 'window-all-closed' event
+        }
+      }
+    }
+  }
+  else {
+    shell.openExternal(url);
+  }
 });
 
 ipcMain.handle('set-title', (event, url: string, title: string) => {
