@@ -54,6 +54,7 @@ type MessagesNote = {
   noteCannotDelete: string;
   noteNewName: string;
   residentNoteName: string;
+  noteCopyUrlToClipboard: string;
 };
 
 type MessagesSettings = {
@@ -140,6 +141,7 @@ const NOTE_ENGLISH: MessagesNote = {
     'To delete note, delete all visible cards or move them to another note.',
   noteNewName: 'Enter new note name',
   residentNoteName: 'Resident note',
+  noteCopyUrlToClipboard: 'Copy note URL',
 };
 
 const SETTINGS_ENGLISH: MessagesSettings = {
@@ -271,6 +273,7 @@ const NOTE_JAPANESE: MessagesNote = {
     'ノートを削除するには、表示されているカードを全て削除するか他のノートへ移動してください。',
   noteNewName: '新しいノート名を入力してください',
   residentNoteName: '常駐ノート',
+  noteCopyUrlToClipboard: 'ノートURLをコピー',
 };
 
 const SETTINGS_JAPANESE: MessagesSettings = {

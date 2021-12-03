@@ -4,11 +4,22 @@
  */
 import path from 'path';
 import prompt from 'electron-prompt';
-import { app, globalShortcut, Menu, MenuItemConstructorOptions, Tray } from 'electron';
+import {
+  app,
+  clipboard,
+  globalShortcut,
+  Menu,
+  MenuItemConstructorOptions,
+  Tray,
+} from 'electron';
 import { closeSettings, openSettings } from './settings';
 import { createRandomColorCard, sortCardWindows } from './card';
 import { emitter } from './event';
-import { getCurrentDateAndTime, getCurrentLocalDate } from '../modules_common/utils';
+import {
+  getCurrentDateAndTime,
+  getCurrentLocalDate,
+  getUrlFromNoteId,
+} from '../modules_common/utils';
 import { APP_ICON_NAME, APP_ICON_NAME_MONO } from '../modules_common/const';
 import { CardBody, CardSketch, Snapshot } from '../modules_common/types';
 import { MESSAGE } from './messages';
@@ -180,6 +191,13 @@ export const setTrayContextMenu = () => {
 
         setTrayContextMenu();
         cacheOfCard.forEach(card => card.resetContextMenu());
+      },
+    },
+    {
+      label: MESSAGE('noteCopyUrlToClipboard'),
+      click: () => {
+        const noteUrl = getUrlFromNoteId(note.settings.currentNoteId);
+        clipboard.writeText(noteUrl);
       },
     },
     {

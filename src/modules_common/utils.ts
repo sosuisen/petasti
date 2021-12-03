@@ -88,3 +88,7 @@ export const getSketchIdFromUrl = (url: string): string => {
   }
   return '';
 };
+
+export const getUrlFromNoteId = (noteId: string): string => {
+  return `${APP_SCHEME}://local/note/${noteId}`;
+};
