@@ -155,7 +155,7 @@ const renderContentsData = (): void => {
 const renderCardAndContentsRect = () => {
   // cardOffset is adjustment for box-shadow
   let cardOffset = 0;
-  if (cardStore.getState().workState.status === 'Blurred') {
+  if (!getConfig().isResident && cardStore.getState().workState.status === 'Blurred') {
     cardOffset = cardCssStyle.borderWidth;
   }
   const cardWidth =
@@ -295,7 +295,7 @@ const renderCardStyle = () => {
   if (cardStore.getState().workState.status === 'Focused') {
     document.getElementById('card')!.style.opacity = '1.0';
   }
-  else if (cardStore.getState().workState.status === 'Blurred') {
+  else if (!getConfig().isResident && cardStore.getState().workState.status === 'Blurred') {
     document.getElementById('card')!.style.opacity = '0.95';
   }
 
@@ -307,11 +307,10 @@ const renderCardStyle = () => {
     ) {
       boxShadow = '5px 5px 3px 0px rgba(128,128,128, .2)';
     }
+    if (cardStore.getState().workState.status === 'Focused') {
+      boxShadow = '5px 5px 3px 0px rgba(0,0,0, .2)';
+    }
   }
-  if (cardStore.getState().workState.status === 'Focused') {
-    boxShadow = '5px 5px 3px 0px rgba(0,0,0, .2)';
-  }
-
   document.getElementById('card')!.style.boxShadow = boxShadow;
 
   const scrollBarRgba = convertHexColorToRgba(
