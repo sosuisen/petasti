@@ -39,6 +39,8 @@ type MessagesMain = {
   saveSnapshot: string;
   snapshotName: string;
   redisplayCards: string;
+  transformToLabel: string;
+  transformFromLabel: string;
 };
 
 type MessagesNote = {
@@ -257,6 +259,8 @@ export const ENGLISH: Messages = {
   saveSnapshot: 'Save snapshot',
   snapshotName: 'Enter snapshot name',
   redisplayCards: 'Bring cards to front',
+  transformToLabel: 'Labelize',
+  transformFromLabel: 'Unlabel',
 };
 
 const NOTE_JAPANESE: MessagesNote = {
@@ -387,6 +391,8 @@ export const JAPANESE: Messages = {
   saveSnapshot: 'スナップショット保存',
   snapshotName: 'スナップショット名を入力してください',
   redisplayCards: 'カードを最前面表示',
+  transformToLabel: 'ラベルにする',
+  transformFromLabel: 'ラベルを解除',
 };
 
 export const availableLanguages = ['en', 'ja'];

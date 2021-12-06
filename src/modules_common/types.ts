@@ -39,6 +39,7 @@ export type CardStyle = {
  */
 export type CardCondition = {
   locked: boolean;
+  label?: string;
 };
 
 export type CardBody = {
