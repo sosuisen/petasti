@@ -114,12 +114,13 @@ const renderTitleBarStyle = () => {
 };
 
 const renderContentsData = (): void => {
-  const label = cardStore.getState().sketch.condition.label;
-  if (label === undefined) {
-    document.getElementById('contentsFrame')!.innerHTML = cardEditor.getHTML();
+  if (cardStore.getState().sketch.condition.label.labeled) {
+    document.getElementById(
+      'contentsFrame'
+    )!.innerHTML = cardStore.getState().sketch.condition.label.text;
   }
   else {
-    document.getElementById('contentsFrame')!.innerHTML = label;
+    document.getElementById('contentsFrame')!.innerHTML = cardEditor.getHTML();
   }
   /*
   return new Promise((resolve, reject) => {

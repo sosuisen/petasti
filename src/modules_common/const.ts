@@ -31,6 +31,12 @@ export const DEFAULT_CARD_GEOMETRY: Geometry = {
 };
 export const DEFAULT_CARD_CONDITION: CardCondition = {
   locked: false,
+  label: {
+    labeled: false,
+    text: '',
+    width: 300,
+    height: 300,
+  },
 };
 
 export const DEFAULT_CARD_STYLE: CardStyle = {

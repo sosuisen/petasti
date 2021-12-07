@@ -11,6 +11,7 @@ import {
   CardWorkState,
   CartaDate,
   Geometry,
+  LabelProp,
 } from '../modules_common/types';
 
 /**
@@ -85,7 +86,7 @@ export interface CardConditionLockedUpdateAction {
 
 export interface CardConditionLabelUpdateAction {
   type: 'card-condition-label-update';
-  payload: string | undefined;
+  payload: LabelProp;
 }
 
 export type CardConditionAction =

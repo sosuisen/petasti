@@ -343,12 +343,18 @@ const onTransformToLabel = async () => {
   const paragraphs = html.split('</p>');
   let labelText = '';
   if (paragraphs.length > 0) labelText = paragraphs[0];
-  cardStore.dispatch(cardConditionLabelUpdateCreator(labelText));
+  const label = cardStore.getState().sketch.condition.label;
+  label.labeled = true;
+  label.text = labelText;
+  cardStore.dispatch(cardConditionLabelUpdateCreator(label));
   render();
 };
 
 const onTransformFromLabel = () => {
-  cardStore.dispatch(cardConditionLabelUpdateCreator(undefined));
+  const label = cardStore.getState().sketch.condition.label;
+  label.labeled = false;
+  label.text = '';
+  cardStore.dispatch(cardConditionLabelUpdateCreator(label));
   render();
 };
 
@@ -566,7 +572,7 @@ const startEditor = (x?: number, y?: number) => {
   if (cardStore.getState().sketch.condition.locked) {
     return;
   }
-  if (cardStore.getState().sketch.condition.label !== undefined) {
+  if (cardStore.getState().sketch.condition.label.labeled) {
     return;
   }
 

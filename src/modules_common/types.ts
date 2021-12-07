@@ -37,9 +37,16 @@ export type CardStyle = {
  * CardCondition
  * Serializable condition of a card
  */
+export type LabelProp = {
+  labeled: boolean;
+  text: string;
+  width: number;
+  height: number;
+};
+
 export type CardCondition = {
   locked: boolean;
-  label?: string;
+  label: LabelProp;
 };
 
 export type CardBody = {

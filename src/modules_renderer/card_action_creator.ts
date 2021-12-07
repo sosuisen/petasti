@@ -9,7 +9,13 @@ import {
   DatabaseCardBodyUpdate,
   DatabaseCardSketchUpdate,
 } from '../modules_common/db.types';
-import { CardSketch, CardStatus, CardStyle, Geometry } from '../modules_common/types';
+import {
+  CardSketch,
+  CardStatus,
+  CardStyle,
+  Geometry,
+  LabelProp,
+} from '../modules_common/types';
 import { getCurrentDateAndTime } from '../modules_common/utils';
 import {
   CardBodyUpdateAction,
@@ -286,7 +292,7 @@ export const cardConditionLockedUpdateCreator = (
 };
 
 export const cardConditionLabelUpdateCreator = (
-  label: string | undefined,
+  label: LabelProp,
   changeFrom: ChangeFrom = 'local',
   enqueueTime: string | undefined = undefined
 ) => {

@@ -111,17 +111,15 @@ export const setContextMenu = (note: INote, card: ICard) => {
     prepend: (defaultActions, params, browserWindow) => {
       const menus: MenuItemConstructorOptions[] = [
         {
-          label:
-            card.sketch.condition.label === undefined
-              ? MESSAGE('transformToLabel')
-              : MESSAGE('transformFromLabel'),
+          label: card.sketch.condition.label.labeled
+            ? MESSAGE('transformFromLabel')
+            : MESSAGE('transformToLabel'),
           click: () => {
-            if (card.sketch.condition.label === undefined) {
-              card.window.webContents.send('transform-to-label');
+            if (card.sketch.condition.label.labeled) {
+              card.window.webContents.send('transform-from-label');
             }
             else {
-              delete card.sketch.condition.label;
-              card.window.webContents.send('transform-from-label');
+              card.window.webContents.send('transform-to-label');
             }
             resetContextMenu();
           },
