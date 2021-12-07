@@ -189,7 +189,6 @@ const initializeUIEvents = () => {
     // let newHeight = cardStore.getState().sketch.geometry.height + getRenderOffsetHeight();
     let newWidth = window.outerWidth;
     let newHeight = window.outerHeight;
-
     if (isHorizontalMoving) {
       newWidth += event.screenX - prevMouseX;
     }
@@ -199,6 +198,14 @@ const initializeUIEvents = () => {
     prevMouseX = event.screenX;
     prevMouseY = event.screenY;
 
+    if (newWidth < MINIMUM_WINDOW_WIDTH) {
+      newWidth = MINIMUM_WINDOW_WIDTH;
+    }
+
+    if (newHeight < MINIMUM_WINDOW_HEIGHT) {
+      newHeight = MINIMUM_WINDOW_HEIGHT;
+    }
+
     if (isHorizontalMoving || isVerticalMoving) {
       const newGeom = {
         ...cardStore.getState().sketch.geometry,
@@ -206,7 +213,13 @@ const initializeUIEvents = () => {
         height: newHeight,
       };
       console.log('# resize on renderer');
-      window.resizeTo(newWidth, newHeight); // set outerWidth and outerHeight
+      // window.resizeTo method cannot change width/height value to be less than 100.
+      if (newWidth < 100 || newHeight < 100) {
+        window.api.setWindowSize(cardStore.getState().workState.url, newWidth, newHeight);
+      }
+      else {
+        window.resizeTo(newWidth, newHeight); // set outerWidth and outerHeight
+      }
       onResizeByHand(newGeom);
     }
   };

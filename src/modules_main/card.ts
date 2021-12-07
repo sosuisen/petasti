@@ -385,14 +385,31 @@ export class Card implements ICard {
   };
 
   private _willResizeListener = (event: Electron.Event, rect: Electron.Rectangle) => {
+    let newWidth = rect.width;
+    let newHeight = rect.height;
+    let adjustSize = false;
+    if (newWidth < MINIMUM_WINDOW_WIDTH) {
+      newWidth = MINIMUM_WINDOW_WIDTH;
+      adjustSize = true;
+    }
+    if (newHeight < MINIMUM_WINDOW_HEIGHT) {
+      newHeight = MINIMUM_WINDOW_HEIGHT;
+      adjustSize = true;
+    }
     // Update x, y, width, height
     const geometry = {
       ...this.sketch.geometry,
       x: rect.x,
       y: rect.y,
-      width: rect.width,
-      height: rect.height,
+      width: newWidth,
+      height: newHeight,
     };
+
+    if (adjustSize) {
+      this.window.setSize(newWidth, newHeight);
+      event.preventDefault();
+    }
+
     this.window.webContents.send('resize-by-hand', geometry);
   };
 
