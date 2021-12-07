@@ -253,6 +253,15 @@ const initializeUIEvents = () => {
     prevMouseX = event.screenX;
     prevMouseY = event.screenY;
   });
+
+  document.getElementById('title')!.addEventListener('dblclick', event => {
+    if (cardStore.getState().sketch.label.enabled) {
+      onTransformFromLabel();
+    }
+    else {
+      onTransformToLabel();
+    }
+  });
 };
 
 const onload = async () => {
