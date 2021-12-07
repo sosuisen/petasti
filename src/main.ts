@@ -270,6 +270,13 @@ ipcMain.handle('set-window-size', (event, url: string, width: number, height: nu
   const card = cacheOfCard.get(url);
   // eslint-disable-next-line no-unused-expressions
   card?.window.setSize(width, height);
+  /*
+  console.log(
+    `set-window-size: ${JSON.stringify(card?.window.getNormalBounds())}, ${JSON.stringify(
+      card?.window.getContentBounds()
+    )}`
+  );
+  */
   return card?.window.getBounds();
 });
 

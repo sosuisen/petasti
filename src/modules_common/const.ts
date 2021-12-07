@@ -56,6 +56,14 @@ export const DRAG_IMAGE_MARGIN = 50;
 // export const MINIMUM_WINDOW_HEIGHT = 80;
 export const MINIMUM_WINDOW_WIDTH = 95; // 90 + shadowWidth
 export const MINIMUM_WINDOW_HEIGHT = 55;
+/**
+ * When using BrowserWindow.setSize(width, height),
+ * height must be equal or greater than
+ * MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET.
+ * Otherwise, the Electron.Rectangle got in will-resize event will be invalid.
+ * It may be bug.
+ */
+export const MINIMUM_WINDOW_HEIGHT_OFFSET = 9;
 
 export const SETTINGS_DB_NAME = 'local_settings';
 

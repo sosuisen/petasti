@@ -388,6 +388,15 @@ export class Card implements ICard {
   private _willResizeListener = (event: Electron.Event, rect: Electron.Rectangle) => {
     let newWidth = rect.width;
     let newHeight = rect.height;
+    /*
+    console.log(`willResize rect: ${JSON.stringify(rect)}`);
+    console.log(
+      `willResize bounds: ${JSON.stringify(
+        this.window.getNormalBounds()
+      )}, ${JSON.stringify(this.window.getContentBounds())}`
+    );
+    */
+
     let adjustSize = false;
     if (newWidth < MINIMUM_WINDOW_WIDTH) {
       newWidth = MINIMUM_WINDOW_WIDTH;

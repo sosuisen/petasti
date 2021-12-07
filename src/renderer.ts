@@ -22,6 +22,7 @@ import {
   DEFAULT_CARD_GEOMETRY,
   DRAG_IMAGE_MARGIN,
   MINIMUM_WINDOW_HEIGHT,
+  MINIMUM_WINDOW_HEIGHT_OFFSET,
   MINIMUM_WINDOW_WIDTH,
 } from './modules_common/const';
 import { CardEditorMarkdown } from './modules_renderer/editor_markdown';
@@ -351,7 +352,7 @@ window.addEventListener('message', event => {
       );
       break;
     case 'resize-by-hand':
-      console.log('# resize on main');
+      console.log('# resize on main: ' + JSON.stringify(event.data.geometry));
       onResizeByHand(event.data.geometry);
       break;
     case 'send-to-back':
@@ -397,19 +398,27 @@ const onTransformToLabel = async () => {
   if (label.width < MINIMUM_WINDOW_WIDTH) {
     label.width = cardStore.getState().sketch.geometry.width;
   }
-  if (label.height < MINIMUM_WINDOW_HEIGHT) {
-    label.height = MINIMUM_WINDOW_HEIGHT;
+  if (label.height < MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET) {
+    label.height = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
   }
-  cardStore.dispatch(cardLabelUpdateCreator(label));
+  await cardStore.dispatch(cardLabelUpdateCreator(label));
   render();
+
+  window.api.setWindowSize(cardStore.getState().workState.url, label.width, label.height);
 };
 
-const onTransformFromLabel = () => {
+const onTransformFromLabel = async () => {
   const label = cardStore.getState().sketch.label;
   label.enabled = false;
   label.text = '';
-  cardStore.dispatch(cardLabelUpdateCreator(label));
+  await cardStore.dispatch(cardLabelUpdateCreator(label));
   render();
+
+  window.api.setWindowSize(
+    cardStore.getState().workState.url,
+    cardStore.getState().sketch.geometry.width,
+    cardStore.getState().sketch.geometry.height
+  );
 };
 
 const onResizeByHand = async (geometry: Geometry) => {
@@ -421,7 +430,7 @@ const onResizeByHand = async (geometry: Geometry) => {
     height: Math.round(geometry.height - getRenderOffsetHeight()),
   };
   await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
-  console.log('# render: ' + JSON.stringify(newGeom));
+  console.log('# render: ' + JSON.stringify(cardStore.getState().sketch));
   render(['TitleBar', 'ContentsRect', 'EditorRect']);
 };
 
