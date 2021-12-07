@@ -97,6 +97,15 @@ contextBridge.exposeInMainWorld('api', {
   setTitle: (url: string, title: string) => {
     return ipcRenderer.invoke('set-title', url, title);
   },
+  windowMoved: (url: string) => {
+    ipcRenderer.invoke('window-moved', url);
+  },
+  windowMoving: (
+    url: string,
+    mouseOffset: { mouseOffsetX: number; mouseOffsetY: number }
+  ) => {
+    ipcRenderer.invoke('window-moving', url, mouseOffset);
+  },
 });
 
 /**

@@ -43,6 +43,11 @@ interface WindowWithAPI extends Window {
       x: number,
       y: number
     ) => Promise<{ x: number; y: number; width: number; height: number }>;
+    windowMoved: (url: string) => void;
+    windowMoving: (
+      url: string,
+      mouseOffset: { mouseOffsetX: number; mouseOffsetY: number }
+    ) => void;
   };
 }
 declare const window: WindowWithAPI;

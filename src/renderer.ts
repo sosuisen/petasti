@@ -254,6 +254,28 @@ const initializeUIEvents = () => {
     prevMouseY = event.screenY;
   });
 
+  let mouseOffsetX: number;
+  let mouseOffsetY: number;
+  let animationId: number;
+  const moveWindow = () => {
+    window.api.windowMoving(cardStore.getState().workState.url, {
+      mouseOffsetX,
+      mouseOffsetY,
+    });
+    animationId = requestAnimationFrame(moveWindow);
+  };
+  const onTitleBarMouseUp = () => {
+    window.api.windowMoved(cardStore.getState().workState.url);
+    document.getElementById('titleBar')!.removeEventListener('mouseup', onTitleBarMouseUp);
+    cancelAnimationFrame(animationId);
+  };
+  document.getElementById('titleBar')!.addEventListener('mousedown', event => {
+    mouseOffsetX = event.clientX;
+    mouseOffsetY = event.clientY;
+    document.getElementById('titleBar')!.addEventListener('mouseup', onTitleBarMouseUp);
+    requestAnimationFrame(moveWindow);
+  });
+
   document.getElementById('title')!.addEventListener('dblclick', event => {
     if (cardStore.getState().sketch.label.enabled) {
       onTransformFromLabel();

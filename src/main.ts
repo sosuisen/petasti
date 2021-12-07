@@ -3,7 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { app, ipcMain, MouseInputEvent, powerMonitor, shell } from 'electron';
+import { app, ipcMain, MouseInputEvent, powerMonitor, screen } from 'electron';
 import fs from 'fs-extra';
 import {
   Card,
@@ -319,6 +319,16 @@ ipcMain.handle('db', async (event, command: DatabaseCommand) => {
     default:
       break;
   }
+});
+
+ipcMain.handle('window-moving', (e, url, { mouseOffsetX, mouseOffsetY }) => {
+  const { x, y } = screen.getCursorScreenPoint();
+  const card = cacheOfCard.get(url);
+  card?.setPosition(x - mouseOffsetX, y - mouseOffsetY, false);
+});
+
+ipcMain.handle('window-moved', (e, url) => {
+  // Do something when dragging stop
 });
 
 powerMonitor.on('resume', () => {

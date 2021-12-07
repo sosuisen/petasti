@@ -46,7 +46,7 @@ body > .card > .title > .title-body{
     -webkit-app-region:drag prevents JavaScript mouse events.
     -webkit-user-select: none  is also needed.
   */
-  -webkit-app-region: drag;
+  /* -webkit-app-region: drag; */
   -webkit-user-select: none;
 
   position: absolute;
