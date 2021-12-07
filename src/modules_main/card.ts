@@ -308,6 +308,7 @@ export class Card implements ICard {
       minWidth: MINIMUM_WINDOW_WIDTH,
       minHeight: MINIMUM_WINDOW_HEIGHT,
 
+      acceptFirstMouse: true, // for MacOS
       transparent: true,
       frame: false,
       show: false,
