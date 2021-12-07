@@ -89,18 +89,20 @@ const renderTitleBar = () => {
   }
 
   const titleBarLeft =
-    document.getElementById('codeBtn')!.offsetLeft +
-    document.getElementById('codeBtn')!.offsetWidth;
+    document.getElementById('newBtn')!.offsetLeft +
+    document.getElementById('newBtn')!.offsetWidth;
   const barwidth = closeBtnLeft - titleBarLeft;
   document.getElementById('titleBar')!.style.left = titleBarLeft + 'px';
   document.getElementById('titleBar')!.style.width = barwidth + 'px';
 
+  /*
   if (cardEditor.isOpened && cardEditor.hasCodeMode) {
     document.getElementById('codeBtn')!.style.visibility = 'visible';
   }
   else {
     document.getElementById('codeBtn')!.style.visibility = 'hidden';
   }
+  */
   /**
    * TODO: Update title when cardPropStatus.data changes
    */
@@ -115,12 +117,14 @@ const renderTitleBarStyle = () => {
   document.getElementById('newBtn')!.style.color = darkerColor;
   document.getElementById('closeBtn')!.style.color = darkerColor;
 
+  /*
   if (cardEditor.isCodeMode) {
     document.getElementById('codeBtn')!.style.color = '#ff0000';
   }
   else {
     document.getElementById('codeBtn')!.style.color = darkerColor;
   }
+  */
 };
 
 const renderContentsData = (): void => {

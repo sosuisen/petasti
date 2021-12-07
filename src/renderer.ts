@@ -131,11 +131,12 @@ const initializeUIEvents = () => {
     await window.api.createCard(undefined, cardBody, cardSketch);
   });
 
+  /*
   // eslint-disable-next-line no-unused-expressions
   document.getElementById('codeBtn')?.addEventListener('click', () => {
     cardEditor.toggleCodeMode();
   });
-
+  */
   // eslint-disable-next-line no-unused-expressions
   document.getElementById('closeBtn')?.addEventListener('click', async event => {
     if (cardEditor.isOpened) {
