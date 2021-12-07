@@ -4,7 +4,7 @@
  */
 
 import { cardColors, darkenHexColor } from './color';
-import { CardCondition, CardStyle, Geometry } from './types';
+import { CardCondition, CardLabel, CardStyle, Geometry } from './types';
 
 export const DIALOG_BUTTON = {
   error: -1,
@@ -31,12 +31,12 @@ export const DEFAULT_CARD_GEOMETRY: Geometry = {
 };
 export const DEFAULT_CARD_CONDITION: CardCondition = {
   locked: false,
-  label: {
-    labeled: false,
-    text: '',
-    width: 300,
-    height: 300,
-  },
+};
+export const DEFAULT_CARD_LABEL: CardLabel = {
+  enabled: false,
+  text: '',
+  width: 0,
+  height: 0,
 };
 
 export const DEFAULT_CARD_STYLE: CardStyle = {

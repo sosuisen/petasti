@@ -14,13 +14,16 @@ import {
 } from './modules_common/types';
 import {
   CardCssStyle,
-  contentsFrameCommand,
-  ContentsFrameMessage,
   FileDropEvent,
   ICardEditor,
   InnerClickEvent,
 } from './modules_common/types_cardeditor';
-import { DEFAULT_CARD_GEOMETRY, DRAG_IMAGE_MARGIN } from './modules_common/const';
+import {
+  DEFAULT_CARD_GEOMETRY,
+  DRAG_IMAGE_MARGIN,
+  MINIMUM_WINDOW_HEIGHT,
+  MINIMUM_WINDOW_WIDTH,
+} from './modules_common/const';
 import { CardEditorMarkdown } from './modules_renderer/editor_markdown';
 import {
   getRenderOffsetHeight,
@@ -42,9 +45,9 @@ import {
 } from './modules_common/keys';
 import {
   cardBodyUpdateCreator,
-  cardConditionLabelUpdateCreator,
   cardConditionLockedUpdateCreator,
   cardGeometryUpdateCreator,
+  cardLabelUpdateCreator,
   cardSketchBringToFrontCreator,
   cardSketchSendToBackCreator,
   cardSketchUpdateCreator,
@@ -342,19 +345,25 @@ const onTransformToLabel = async () => {
   const html = cardEditor.getHTML();
   const paragraphs = html.split('</p>');
   let labelText = '';
-  if (paragraphs.length > 0) labelText = paragraphs[0];
-  const label = cardStore.getState().sketch.condition.label;
-  label.labeled = true;
+  if (paragraphs.length > 0) labelText = paragraphs[0] + '</p>';
+  const label = cardStore.getState().sketch.label;
+  label.enabled = true;
   label.text = labelText;
-  cardStore.dispatch(cardConditionLabelUpdateCreator(label));
+  if (label.width < MINIMUM_WINDOW_WIDTH) {
+    label.width = cardStore.getState().sketch.geometry.width;
+  }
+  if (label.height < MINIMUM_WINDOW_HEIGHT) {
+    label.height = MINIMUM_WINDOW_HEIGHT;
+  }
+  cardStore.dispatch(cardLabelUpdateCreator(label));
   render();
 };
 
 const onTransformFromLabel = () => {
-  const label = cardStore.getState().sketch.condition.label;
-  label.labeled = false;
+  const label = cardStore.getState().sketch.label;
+  label.enabled = false;
   label.text = '';
-  cardStore.dispatch(cardConditionLabelUpdateCreator(label));
+  cardStore.dispatch(cardLabelUpdateCreator(label));
   render();
 };
 
@@ -449,6 +458,10 @@ const onRenderCard = async (
   cardStore.dispatch({
     type: 'card-condition-init',
     payload: cardSketch.condition,
+  });
+  cardStore.dispatch({
+    type: 'card-label-init',
+    payload: cardSketch.label,
   });
   cardStore.dispatch({
     type: 'card-sketch-date-init',
@@ -572,7 +585,7 @@ const startEditor = (x?: number, y?: number) => {
   if (cardStore.getState().sketch.condition.locked) {
     return;
   }
-  if (cardStore.getState().sketch.condition.label.labeled) {
+  if (cardStore.getState().sketch.label.enabled) {
     return;
   }
 
@@ -680,6 +693,7 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
         geometry: newGeom,
         style: newStyle,
         condition: { ...cardStore.getState().sketch.condition },
+        label: { ...cardStore.getState().sketch.label },
         date: { ...cardStore.getState().sketch.date },
         _id: cardStore.getState().sketch._id,
       };

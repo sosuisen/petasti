@@ -4,11 +4,13 @@ import {
   CARD_VERSION,
   DEFAULT_CARD_CONDITION,
   DEFAULT_CARD_GEOMETRY,
+  DEFAULT_CARD_LABEL,
   DEFAULT_CARD_STYLE,
 } from '../modules_common/const';
 import {
   CardBody,
   CardCondition,
+  CardLabel,
   CardStyle,
   CardWorkState,
   CartaDate,
@@ -20,6 +22,7 @@ import {
   CardBodyAction,
   CardConditionAction,
   CardGeometryAction,
+  CardLabelAction,
   CardSketchDateAction,
   CardSketchIdInitAction,
   CardStyleAction,
@@ -121,9 +124,34 @@ const cardConditionReducer = (
       console.log('# cardConditionReducer: ' + JSON.stringify(newState));
       return newState;
     }
-    case 'card-condition-label-update': {
-      const newState = { ...state, label: action.payload };
-      console.log('# cardConditionReducer: ' + JSON.stringify(newState));
+    default:
+      return state;
+  }
+};
+
+const cardLabelReducer = (
+  // eslint-disable-next-line default-param-last
+  state: CardLabel = DEFAULT_CARD_LABEL,
+  action: CardLabelAction
+) => {
+  switch (action.type) {
+    case 'card-label-init': {
+      const newState = { ...action.payload };
+      console.log('# cardLabelReducer: ' + JSON.stringify(newState));
+      return newState;
+    }
+    case 'card-label-update': {
+      const newState = { ...state, ...action.payload };
+      console.log('# cardLabelReducer: ' + JSON.stringify(newState));
+      return newState;
+    }
+    case 'card-label-size-update': {
+      const newState = {
+        ...state,
+        width: action.payload.width,
+        height: action.payload.height,
+      };
+      console.log('# cardLabelReducer: ' + JSON.stringify(newState));
       return newState;
     }
     default:
@@ -173,6 +201,7 @@ export const cardSketchReducer = combineReducers({
   geometry: cardGeometryReducer,
   style: cardStyleReducer,
   condition: cardConditionReducer,
+  label: cardLabelReducer,
   date: cardSketchDateReducer,
   _id: cardSketchIdReducer,
 });

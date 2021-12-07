@@ -16,6 +16,7 @@ import { cacheOfCard } from './card_cache';
 import { MESSAGE } from './messages';
 import { INote } from './note_types';
 import { noteStore } from './note_store';
+import { MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_WIDTH } from '../modules_common/const';
 
 /**
  * Context Menu
@@ -111,14 +112,24 @@ export const setContextMenu = (note: INote, card: ICard) => {
     prepend: (defaultActions, params, browserWindow) => {
       const menus: MenuItemConstructorOptions[] = [
         {
-          label: card.sketch.condition.label.labeled
+          label: card.sketch.label.enabled
             ? MESSAGE('transformFromLabel')
             : MESSAGE('transformToLabel'),
           click: () => {
-            if (card.sketch.condition.label.labeled) {
+            if (card.sketch.label.enabled) {
+              card.window.setSize(card.sketch.geometry.width, card.sketch.geometry.height);
               card.window.webContents.send('transform-from-label');
             }
             else {
+              let width = card.sketch.label.width;
+              let height = card.sketch.label.height;
+              if (width < MINIMUM_WINDOW_WIDTH) {
+                width = card.sketch.geometry.width;
+              }
+              if (height < MINIMUM_WINDOW_HEIGHT) {
+                height = MINIMUM_WINDOW_HEIGHT;
+              }
+              card.window.setSize(width, height);
               card.window.webContents.send('transform-to-label');
             }
             resetContextMenu();

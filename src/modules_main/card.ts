@@ -22,6 +22,7 @@ import {
   CARD_VERSION,
   DEFAULT_CARD_CONDITION,
   DEFAULT_CARD_GEOMETRY,
+  DEFAULT_CARD_LABEL,
   DEFAULT_CARD_STYLE,
   MINIMUM_WINDOW_HEIGHT,
   MINIMUM_WINDOW_WIDTH,
@@ -206,6 +207,7 @@ export class Card implements ICard {
     geometry: DEFAULT_CARD_GEOMETRY,
     style: DEFAULT_CARD_STYLE,
     condition: DEFAULT_CARD_CONDITION,
+    label: DEFAULT_CARD_LABEL,
     date: {
       modifiedDate: '',
       createdDate: '',

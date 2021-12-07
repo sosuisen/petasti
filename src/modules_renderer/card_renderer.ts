@@ -65,8 +65,18 @@ const setWindowTitle = () => {
 };
 
 const renderTitleBar = () => {
-  const titleWidth =
-    cardStore.getState().sketch.geometry.width - cardCssStyle.borderWidth * 2 - shadowWidth;
+  let geomWidth;
+  let geomHeight;
+  if (cardStore.getState().sketch.label.enabled) {
+    geomWidth = cardStore.getState().sketch.label.width;
+    geomHeight = cardStore.getState().sketch.label.height;
+  }
+  else {
+    geomWidth = cardStore.getState().sketch.geometry.width;
+    geomHeight = cardStore.getState().sketch.geometry.height;
+  }
+
+  const titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
   document.getElementById('title')!.style.width = titleWidth + 'px';
   const closeBtnLeft = titleWidth - document.getElementById('closeBtn')!.offsetWidth;
   document.getElementById('closeBtn')!.style.left = closeBtnLeft + 'px';
@@ -114,10 +124,10 @@ const renderTitleBarStyle = () => {
 };
 
 const renderContentsData = (): void => {
-  if (cardStore.getState().sketch.condition.label.labeled) {
+  if (cardStore.getState().sketch.label.enabled) {
     document.getElementById(
       'contentsFrame'
-    )!.innerHTML = cardStore.getState().sketch.condition.label.text;
+    )!.innerHTML = cardStore.getState().sketch.label.text;
   }
   else {
     document.getElementById('contentsFrame')!.innerHTML = cardEditor.getHTML();
@@ -160,35 +170,35 @@ const renderContentsData = (): void => {
 };
 
 const renderCardAndContentsRect = () => {
+  let geomWidth;
+  let geomHeight;
+  if (cardStore.getState().sketch.label.enabled) {
+    geomWidth = cardStore.getState().sketch.label.width;
+    geomHeight = cardStore.getState().sketch.label.height;
+  }
+  else {
+    geomWidth = cardStore.getState().sketch.geometry.width;
+    geomHeight = cardStore.getState().sketch.geometry.height;
+  }
+
   // cardOffset is adjustment for box-shadow
   let cardOffset = 0;
   if (!getConfig().isResident && cardStore.getState().workState.status === 'Blurred') {
     cardOffset = cardCssStyle.borderWidth;
   }
-  const cardWidth =
-    cardStore.getState().sketch.geometry.width -
-    cardOffset -
-    shadowWidth +
-    getRenderOffsetWidth();
+  const cardWidth = geomWidth - cardOffset - shadowWidth + getRenderOffsetWidth();
 
-  const cardHeight =
-    cardStore.getState().sketch.geometry.height -
-    cardOffset -
-    shadowHeight +
-    getRenderOffsetHeight();
+  const cardHeight = geomHeight - cardOffset - shadowHeight + getRenderOffsetHeight();
 
   document.getElementById('card')!.style.width = cardWidth + 'px';
   document.getElementById('card')!.style.height = cardHeight + 'px';
 
   // width of BrowserWindow (namely cardPropStatus.geometry.width) equals border + padding + content.
   const contentsWidth =
-    cardStore.getState().sketch.geometry.width +
-    renderOffsetWidth -
-    cardCssStyle.borderWidth * 2 -
-    shadowWidth;
+    geomWidth + renderOffsetWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
 
   const contentsHeight =
-    cardStore.getState().sketch.geometry.height +
+    geomHeight +
     renderOffsetHeight -
     cardCssStyle.borderWidth * 2 -
     document.getElementById('title')!.offsetHeight -
@@ -199,12 +209,9 @@ const renderCardAndContentsRect = () => {
 
   const contentsFrame = document.getElementById('contentsFrame') as HTMLElement;
   if (contentsFrame) {
-    const width =
-      cardStore.getState().sketch.geometry.width -
-      cardCssStyle.borderWidth * 2 -
-      shadowWidth;
+    const width = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
     const height =
-      cardStore.getState().sketch.geometry.height -
+      geomHeight -
       cardCssStyle.borderWidth * 2 -
       shadowHeight -
       document.getElementById('title')!.offsetHeight;

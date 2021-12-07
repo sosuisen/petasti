@@ -6,12 +6,12 @@
 import {
   CardBody,
   CardCondition,
+  CardLabel,
   CardStatus,
   CardStyle,
   CardWorkState,
   CartaDate,
   Geometry,
-  LabelProp,
 } from '../modules_common/types';
 
 /**
@@ -84,16 +84,36 @@ export interface CardConditionLockedUpdateAction {
   payload: boolean;
 }
 
-export interface CardConditionLabelUpdateAction {
-  type: 'card-condition-label-update';
-  payload: LabelProp;
-}
-
 export type CardConditionAction =
   | CardConditionInitAction
   | CardConditionUpdateAction
-  | CardConditionLockedUpdateAction
-  | CardConditionLabelUpdateAction;
+  | CardConditionLockedUpdateAction;
+
+/**
+ * CardLabelAction
+ */
+export interface CardLabelInitAction {
+  type: 'card-label-init';
+  payload: CardLabel;
+}
+
+export interface CardLabelUpdateAction {
+  type: 'card-label-update';
+  payload: CardLabel;
+}
+
+export interface CardLabelSizeUpdateAction {
+  type: 'card-label-size-update';
+  payload: {
+    width: number;
+    height: number;
+  };
+}
+
+export type CardLabelAction =
+  | CardLabelInitAction
+  | CardLabelUpdateAction
+  | CardLabelSizeUpdateAction;
 
 /**
  * CardSketchDateAction

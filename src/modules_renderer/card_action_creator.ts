@@ -10,20 +10,21 @@ import {
   DatabaseCardSketchUpdate,
 } from '../modules_common/db.types';
 import {
+  CardLabel,
   CardSketch,
   CardStatus,
   CardStyle,
   Geometry,
-  LabelProp,
 } from '../modules_common/types';
 import { getCurrentDateAndTime } from '../modules_common/utils';
 import {
   CardBodyUpdateAction,
-  CardConditionLabelUpdateAction,
   CardConditionLockedUpdateAction,
   CardConditionUpdateAction,
   CardGeometryUpdateAction,
   CardGeometryZUpdateAction,
+  CardLabelSizeUpdateAction,
+  CardLabelUpdateAction,
   CardSketchModifiedDateUpdateAction,
   CardStyleUpdateAction,
   CardWorkStateStatusUpdateAction,
@@ -166,11 +167,33 @@ export const cardGeometryUpdateCreator = (
         }
       }
 
-      const cardAction: CardGeometryUpdateAction = {
-        type: 'card-geometry-update',
-        payload: geometry,
-      };
-      dispatch(cardAction);
+      if (getState().sketch.label.enabled) {
+        // Change label size
+        const cardLabelAction: CardLabelSizeUpdateAction = {
+          type: 'card-label-size-update',
+          payload: {
+            width: geometry.width,
+            height: geometry.height,
+          },
+        };
+        dispatch(cardLabelAction);
+
+        // Keep card size
+        geometry.width = getState().sketch.geometry.width;
+        geometry.height = getState().sketch.geometry.height;
+        const cardGeometryAction: CardGeometryUpdateAction = {
+          type: 'card-geometry-update',
+          payload: geometry,
+        };
+        dispatch(cardGeometryAction);
+      }
+      else {
+        const cardAction: CardGeometryUpdateAction = {
+          type: 'card-geometry-update',
+          payload: geometry,
+        };
+        dispatch(cardAction);
+      }
 
       const cardDateAction: CardSketchModifiedDateUpdateAction = {
         type: 'card-sketch-modified-date-update',
@@ -291,8 +314,8 @@ export const cardConditionLockedUpdateCreator = (
   };
 };
 
-export const cardConditionLabelUpdateCreator = (
-  label: LabelProp,
+export const cardLabelUpdateCreator = (
+  label: CardLabel,
   changeFrom: ChangeFrom = 'local',
   enqueueTime: string | undefined = undefined
 ) => {
@@ -307,8 +330,8 @@ export const cardConditionLabelUpdateCreator = (
         }
       }
 
-      const cardAction: CardConditionLabelUpdateAction = {
-        type: 'card-condition-label-update',
+      const cardAction: CardLabelUpdateAction = {
+        type: 'card-label-update',
         payload: label,
       };
       dispatch(cardAction);
