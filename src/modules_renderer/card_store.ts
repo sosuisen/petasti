@@ -113,11 +113,22 @@ const cardConditionReducer = (
     }
     case 'card-condition-update': {
       const newState = { ...state, ...action.payload };
+      if (action.payload.label === undefined) {
+        delete newState.label;
+      }
       console.log('# cardConditionReducer: ' + JSON.stringify(newState));
       return newState;
     }
     case 'card-condition-locked-update': {
       const newState = { ...state, locked: action.payload };
+      console.log('# cardConditionReducer: ' + JSON.stringify(newState));
+      return newState;
+    }
+    case 'card-condition-label-update': {
+      const newState = { ...state, label: action.payload };
+      if (action.payload === undefined) {
+        delete newState.label;
+      }
       console.log('# cardConditionReducer: ' + JSON.stringify(newState));
       return newState;
     }

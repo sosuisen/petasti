@@ -13,6 +13,7 @@ import { CardSketch, CardStatus, CardStyle, Geometry } from '../modules_common/t
 import { getCurrentDateAndTime } from '../modules_common/utils';
 import {
   CardBodyUpdateAction,
+  CardConditionLabelUpdateAction,
   CardConditionLockedUpdateAction,
   CardConditionUpdateAction,
   CardGeometryUpdateAction,
@@ -256,6 +257,53 @@ export const cardConditionLockedUpdateCreator = (
       const cardAction: CardConditionLockedUpdateAction = {
         type: 'card-condition-locked-update',
         payload: locked,
+      };
+      dispatch(cardAction);
+
+      const cardDateAction: CardSketchModifiedDateUpdateAction = {
+        type: 'card-sketch-modified-date-update',
+        payload: getCurrentDateAndTime(),
+      };
+      dispatch(cardDateAction);
+
+      if (changeFrom === 'local') {
+        const cmd: DatabaseCardSketchUpdate = {
+          command: 'db-card-sketch-update',
+          url: getState().workState.url,
+          data: {
+            ...getState().sketch,
+          },
+        };
+
+        const taskMetadata: TaskMetadata | false = await window.api.db(cmd);
+        if (taskMetadata !== false) {
+          // eslint-disable-next-line require-atomic-updates
+          bodyUpdatedTime = taskMetadata.enqueueTime!;
+        }
+      }
+    });
+  };
+};
+
+export const cardConditionLabelUpdateCreator = (
+  label: string | undefined,
+  changeFrom: ChangeFrom = 'local',
+  enqueueTime: string | undefined = undefined
+) => {
+  return async function (dispatch: Dispatch<any>, getState: () => CardState) {
+    if (getState().sketch._id === '') return;
+
+    await lock.acquire('sketch', async () => {
+      if (enqueueTime !== undefined) {
+        if (sketchUpdatedTime !== undefined && sketchUpdatedTime! > enqueueTime) {
+          console.log('Block expired remote update');
+          return;
+        }
+      }
+
+      const cardAction: CardConditionLabelUpdateAction = {
+        type: 'card-condition-label-update',
+        payload: label,
       };
       dispatch(cardAction);
 

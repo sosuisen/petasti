@@ -79,11 +79,6 @@ export const setContextMenu = (note: INote, card: ICard) => {
       return result;
     }, [] as MenuItemConstructorOptions[]);
 
-  const extractLabelFromBody = () => {
-    /* Get HTML from renderer */
-    /* split by <br /> or <br> */
-  };
-
   const dispose = contextMenu({
     window: card.window,
     showSaveImageAs: true,
@@ -122,11 +117,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
               : MESSAGE('transformFromLabel'),
           click: () => {
             if (card.sketch.condition.label === undefined) {
-              card.sketch.condition.label = extractLabelFromBody();
-              card.window.webContents.send(
-                'transform-to-label',
-                card.sketch.condition.label
-              );
+              card.window.webContents.send('transform-to-label');
             }
             else {
               delete card.sketch.condition.label;

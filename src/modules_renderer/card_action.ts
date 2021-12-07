@@ -83,10 +83,16 @@ export interface CardConditionLockedUpdateAction {
   payload: boolean;
 }
 
+export interface CardConditionLabelUpdateAction {
+  type: 'card-condition-label-update';
+  payload: string | undefined;
+}
+
 export type CardConditionAction =
   | CardConditionInitAction
   | CardConditionUpdateAction
-  | CardConditionLockedUpdateAction;
+  | CardConditionLockedUpdateAction
+  | CardConditionLabelUpdateAction;
 
 /**
  * CardSketchDateAction

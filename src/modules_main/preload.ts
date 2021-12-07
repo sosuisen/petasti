@@ -173,3 +173,11 @@ ipcRenderer.on(
   (event: Electron.IpcRendererEvent, changedFile: ChangedFile, enqueueTime: string) =>
     window.postMessage({ command: 'sync-card-body', changedFile, enqueueTime }, 'file://')
 );
+
+ipcRenderer.on('transform-to-label', (event: Electron.IpcRendererEvent) =>
+  window.postMessage({ command: 'transform-to-label' }, 'file://')
+);
+
+ipcRenderer.on('transform-from-label', (event: Electron.IpcRendererEvent) =>
+  window.postMessage({ command: 'transform-from-label' }, 'file://')
+);

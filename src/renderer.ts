@@ -42,6 +42,7 @@ import {
 } from './modules_common/keys';
 import {
   cardBodyUpdateCreator,
+  cardConditionLabelUpdateCreator,
   cardConditionLockedUpdateCreator,
   cardGeometryUpdateCreator,
   cardSketchBringToFrontCreator,
@@ -323,10 +324,33 @@ window.addEventListener('message', event => {
     case 'sync-card-body':
       onSyncCardBody(event.data.changedFile, event.data.enqueueTime);
       break;
+    case 'transform-to-label':
+      onTransformToLabel();
+      break;
+    case 'transform-from-label':
+      onTransformFromLabel();
+      break;
     default:
       break;
   }
 });
+
+const onTransformToLabel = async () => {
+  if (cardEditor.isOpened) {
+    await endEditor();
+  }
+  const html = cardEditor.getHTML();
+  const paragraphs = html.split('</p>');
+  let labelText = '';
+  if (paragraphs.length > 0) labelText = paragraphs[0];
+  cardStore.dispatch(cardConditionLabelUpdateCreator(labelText));
+  render();
+};
+
+const onTransformFromLabel = () => {
+  cardStore.dispatch(cardConditionLabelUpdateCreator(undefined));
+  render();
+};
 
 const onResizeByHand = async (geometry: Geometry) => {
   const newGeom: Geometry = {
@@ -539,6 +563,13 @@ const onSyncCardBody = async (changedFile: ChangedFile, enqueueTime: string) => 
 };
 
 const startEditor = (x?: number, y?: number) => {
+  if (cardStore.getState().sketch.condition.locked) {
+    return;
+  }
+  if (cardStore.getState().sketch.condition.label !== undefined) {
+    return;
+  }
+
   cardEditor.showEditor();
 
   const contents = document.getElementById('contents');
@@ -568,9 +599,6 @@ const endEditor = async () => {
 };
 
 const startEditorByClick = (clickEvent: InnerClickEvent) => {
-  if (cardStore.getState().sketch.condition.locked) {
-    return;
-  }
   startEditor(clickEvent.x, clickEvent.y);
 };
 
