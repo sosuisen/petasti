@@ -88,7 +88,10 @@ export type CardWorkState = {
 };
 
 export type CardPositionDebounceItem = {
-  geometry: Geometry;
+  cardX: number;
+  cardY: number;
+  labelX: number;
+  labelY: number;
   modifiedDate: string;
 };
 

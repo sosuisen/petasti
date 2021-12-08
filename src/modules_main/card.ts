@@ -368,9 +368,14 @@ export class Card implements ICard {
     });
 
     this._debouncedCardPositionUpdateActionQueue.subscribe((item: unknown) => {
-      note.updateCardGeometry(
+      const newSketch: CardSketch = JSON.parse(JSON.stringify(this.sketch));
+      newSketch.geometry.x = (item as CardPositionDebounceItem).cardX;
+      newSketch.geometry.y = (item as CardPositionDebounceItem).cardY;
+      newSketch.label.x = (item as CardPositionDebounceItem).labelX;
+      newSketch.label.y = (item as CardPositionDebounceItem).labelY;
+      note.updateCardSketch(
         this.url,
-        (item as CardPositionDebounceItem).geometry,
+        newSketch,
         (item as CardPositionDebounceItem).modifiedDate
       );
     });
@@ -735,7 +740,24 @@ export class Card implements ICard {
 
       this.window.setPosition(oldX, newY);
       const modifiedDate = getCurrentDateAndTime();
-      this._debouncedCardPositionUpdateActionQueue.next({ geometry, modifiedDate });
+      if (this.sketch.label.enabled) {
+        this._debouncedCardPositionUpdateActionQueue.next({
+          cardX: this.sketch.geometry.x,
+          cardY: this.sketch.geometry.y,
+          labelX: geometry.x,
+          labelY: geometry.y,
+          modifiedDate,
+        });
+      }
+      else {
+        this._debouncedCardPositionUpdateActionQueue.next({
+          cardX: geometry.x,
+          cardY: geometry.y,
+          labelX: this.sketch.label.x,
+          labelY: this.sketch.label.y,
+          modifiedDate,
+        });
+      }
       this.window.webContents.send('move-by-hand', geometry, modifiedDate);
     });
     globalShortcut.register('CommandOrControl+' + opt + '+Down', () => {
@@ -754,7 +776,25 @@ export class Card implements ICard {
 
       this.window.setPosition(oldX, newY);
       const modifiedDate = getCurrentDateAndTime();
-      this._debouncedCardPositionUpdateActionQueue.next({ geometry, modifiedDate });
+      if (this.sketch.label.enabled) {
+        this._debouncedCardPositionUpdateActionQueue.next({
+          cardX: this.sketch.geometry.x,
+          cardY: this.sketch.geometry.y,
+          labelX: geometry.x,
+          labelY: geometry.y,
+          modifiedDate,
+        });
+      }
+      else {
+        this._debouncedCardPositionUpdateActionQueue.next({
+          cardX: geometry.x,
+          cardY: geometry.y,
+          labelX: this.sketch.label.x,
+          labelY: this.sketch.label.y,
+          modifiedDate,
+        });
+      }
+
       this.window.webContents.send('move-by-hand', geometry, modifiedDate);
     });
     globalShortcut.register('CommandOrControl+' + opt + '+Left', () => {
@@ -771,7 +811,24 @@ export class Card implements ICard {
 
       this.window.setPosition(newX, oldY);
       const modifiedDate = getCurrentDateAndTime();
-      this._debouncedCardPositionUpdateActionQueue.next({ geometry, modifiedDate });
+      if (this.sketch.label.enabled) {
+        this._debouncedCardPositionUpdateActionQueue.next({
+          cardX: this.sketch.geometry.x,
+          cardY: this.sketch.geometry.y,
+          labelX: geometry.x,
+          labelY: geometry.y,
+          modifiedDate,
+        });
+      }
+      else {
+        this._debouncedCardPositionUpdateActionQueue.next({
+          cardX: geometry.x,
+          cardY: geometry.y,
+          labelX: this.sketch.label.x,
+          labelY: this.sketch.label.y,
+          modifiedDate,
+        });
+      }
       this.window.webContents.send('move-by-hand', geometry, modifiedDate);
     });
     globalShortcut.register('CommandOrControl+' + opt + '+Right', () => {
@@ -788,7 +845,24 @@ export class Card implements ICard {
 
       this.window.setPosition(newX, oldY);
       const modifiedDate = getCurrentDateAndTime();
-      this._debouncedCardPositionUpdateActionQueue.next({ geometry, modifiedDate });
+      if (this.sketch.label.enabled) {
+        this._debouncedCardPositionUpdateActionQueue.next({
+          cardX: this.sketch.geometry.x,
+          cardY: this.sketch.geometry.y,
+          labelX: geometry.x,
+          labelY: geometry.y,
+          modifiedDate,
+        });
+      }
+      else {
+        this._debouncedCardPositionUpdateActionQueue.next({
+          cardX: geometry.x,
+          cardY: geometry.y,
+          labelX: this.sketch.label.x,
+          labelY: this.sketch.label.y,
+          modifiedDate,
+        });
+      }
       this.window.webContents.send('move-by-hand', geometry, modifiedDate);
     });
 

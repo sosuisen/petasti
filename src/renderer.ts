@@ -513,14 +513,28 @@ const onChangeCardColor = (backgroundColor: string, opacity = 1.0) => {
 };
 
 const onMoveByHand = (geometry: Geometry, modifiedDate: string, changeFrom: ChangeFrom) => {
-  const current = cardStore.getState().sketch.geometry;
-  if (current.x !== geometry.x || current.y !== geometry.y) {
+  let currentX, currentY, currentZ, currentWidth, currentHeight: number;
+  if (cardStore.getState().sketch.label.enabled) {
+    currentX = cardStore.getState().sketch.label.x!;
+    currentY = cardStore.getState().sketch.label.y!;
+    currentZ = cardStore.getState().sketch.geometry.z;
+    currentWidth = cardStore.getState().sketch.label.width!;
+    currentHeight = cardStore.getState().sketch.label.height!;
+  }
+  else {
+    currentX = cardStore.getState().sketch.geometry.x;
+    currentY = cardStore.getState().sketch.geometry.y;
+    currentZ = cardStore.getState().sketch.geometry.z;
+    currentWidth = cardStore.getState().sketch.geometry.width;
+    currentHeight = cardStore.getState().sketch.geometry.height;
+  }
+  if (currentX !== geometry.x || currentY !== geometry.y) {
     const newGeom: Geometry = {
       x: Math.round(geometry.x),
       y: Math.round(geometry.y),
-      z: current.z,
-      width: current.width,
-      height: current.height,
+      z: currentZ,
+      width: currentWidth,
+      height: currentHeight,
     };
     cardStore.dispatch(cardGeometryUpdateCreator(newGeom, modifiedDate, changeFrom));
   }
