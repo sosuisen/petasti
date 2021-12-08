@@ -116,21 +116,9 @@ export const setContextMenu = (note: INote, card: ICard) => {
             : MESSAGE('transformToLabel'),
           click: () => {
             if (card.sketch.label.enabled) {
-              // card.window.setSize(card.sketch.geometry.width, card.sketch.geometry.height);
               card.window.webContents.send('transform-from-label');
             }
             else {
-              /*
-              let width = card.sketch.label.width;
-              let height = card.sketch.label.height;
-              if (width < MINIMUM_WINDOW_WIDTH) {
-                width = card.sketch.geometry.width;
-              }
-              if (height < MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET) {
-                height = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
-              }
-              card.window.setSize(width, height);
-              */
               card.window.webContents.send('transform-to-label');
             }
           },

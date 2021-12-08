@@ -68,8 +68,8 @@ const renderTitleBar = () => {
   let geomWidth;
   let geomHeight;
   if (cardStore.getState().sketch.label.enabled) {
-    geomWidth = cardStore.getState().sketch.label.width;
-    geomHeight = cardStore.getState().sketch.label.height;
+    geomWidth = cardStore.getState().sketch.label.width!;
+    geomHeight = cardStore.getState().sketch.label.height!;
   }
   else {
     geomWidth = cardStore.getState().sketch.geometry.width;
@@ -177,8 +177,8 @@ const renderCardAndContentsRect = () => {
   let geomWidth;
   let geomHeight;
   if (cardStore.getState().sketch.label.enabled) {
-    geomWidth = cardStore.getState().sketch.label.width;
-    geomHeight = cardStore.getState().sketch.label.height;
+    geomWidth = cardStore.getState().sketch.label.width!;
+    geomHeight = cardStore.getState().sketch.label.height!;
   }
   else {
     geomWidth = cardStore.getState().sketch.geometry.width;

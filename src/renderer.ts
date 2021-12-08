@@ -420,10 +420,16 @@ const onTransformToLabel = async () => {
   const label = cardStore.getState().sketch.label;
   label.enabled = true;
   label.text = labelText;
-  if (label.width < MINIMUM_WINDOW_WIDTH) {
+  if (label.x === undefined) {
+    label.x = cardStore.getState().sketch.geometry.x;
+  }
+  if (label.y === undefined) {
+    label.y = cardStore.getState().sketch.geometry.y;
+  }
+  if (label.width === undefined) {
     label.width = cardStore.getState().sketch.geometry.width;
   }
-  if (label.height < MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET) {
+  if (label.height === undefined) {
     label.height = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
   }
   await cardStore.dispatch(cardLabelUpdateCreator(label));

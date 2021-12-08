@@ -23,7 +23,7 @@ import {
   CardConditionUpdateAction,
   CardGeometryUpdateAction,
   CardGeometryZUpdateAction,
-  CardLabelSizeUpdateAction,
+  CardLabelRectUpdateAction,
   CardLabelUpdateAction,
   CardSketchModifiedDateUpdateAction,
   CardStyleUpdateAction,
@@ -176,16 +176,20 @@ export const cardGeometryUpdateCreator = (
 
       if (getState().sketch.label.enabled) {
         // Change label size
-        const cardLabelAction: CardLabelSizeUpdateAction = {
-          type: 'card-label-size-update',
+        const cardLabelAction: CardLabelRectUpdateAction = {
+          type: 'card-label-rect-update',
           payload: {
+            x: geometry.x,
+            y: geometry.y,
             width: geometry.width,
             height: geometry.height,
           },
         };
         dispatch(cardLabelAction);
 
-        // Keep card size
+        // Keep card position and size
+        geometry.x = getState().sketch.geometry.x;
+        geometry.y = getState().sketch.geometry.y;
         geometry.width = getState().sketch.geometry.width;
         geometry.height = getState().sketch.geometry.height;
         const cardGeometryAction: CardGeometryUpdateAction = {

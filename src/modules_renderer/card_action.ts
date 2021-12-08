@@ -102,9 +102,11 @@ export interface CardLabelUpdateAction {
   payload: CardLabel;
 }
 
-export interface CardLabelSizeUpdateAction {
-  type: 'card-label-size-update';
+export interface CardLabelRectUpdateAction {
+  type: 'card-label-rect-update';
   payload: {
+    x: number;
+    y: number;
     width: number;
     height: number;
   };
@@ -113,7 +115,7 @@ export interface CardLabelSizeUpdateAction {
 export type CardLabelAction =
   | CardLabelInitAction
   | CardLabelUpdateAction
-  | CardLabelSizeUpdateAction;
+  | CardLabelRectUpdateAction;
 
 /**
  * CardSketchDateAction

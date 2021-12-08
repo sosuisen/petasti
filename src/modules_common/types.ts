@@ -48,8 +48,10 @@ export type CardCondition = {
 export type CardLabel = {
   enabled: boolean;
   text: string;
-  width: number;
-  height: number;
+  x: number | undefined;
+  y: number | undefined;
+  width: number | undefined;
+  height: number | undefined;
 };
 
 export type CardBody = {

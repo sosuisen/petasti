@@ -145,9 +145,11 @@ const cardLabelReducer = (
       console.log('# cardLabelReducer: ' + JSON.stringify(newState));
       return newState;
     }
-    case 'card-label-size-update': {
+    case 'card-label-rect-update': {
       const newState = {
         ...state,
+        x: action.payload.x,
+        y: action.payload.y,
         width: action.payload.width,
         height: action.payload.height,
       };

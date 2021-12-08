@@ -35,8 +35,10 @@ export const DEFAULT_CARD_CONDITION: CardCondition = {
 export const DEFAULT_CARD_LABEL: CardLabel = {
   enabled: false,
   text: '',
-  width: 0,
-  height: 0,
+  x: undefined,
+  y: undefined,
+  width: undefined,
+  height: undefined,
 };
 
 export const DEFAULT_CARD_STYLE: CardStyle = {
