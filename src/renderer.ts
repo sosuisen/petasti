@@ -217,7 +217,13 @@ const initializeUIEvents = () => {
       console.log('# resize on renderer');
       // window.resizeTo method cannot change width/height value to be less than 100.
       if (newWidth < 100 || newHeight < 100) {
-        window.api.setWindowSize(cardStore.getState().workState.url, newWidth, newHeight);
+        window.api.setWindowRect(
+          cardStore.getState().workState.url,
+          cardStore.getState().sketch.geometry.x,
+          cardStore.getState().sketch.geometry.y,
+          newWidth,
+          newHeight
+        );
       }
       else {
         window.resizeTo(newWidth, newHeight); // set outerWidth and outerHeight
