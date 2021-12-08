@@ -273,9 +273,28 @@ const initializeUIEvents = () => {
     animationId = requestAnimationFrame(moveWindow);
   };
   const onTitleBarMouseUp = () => {
-    window.api.windowMoved(cardStore.getState().workState.url);
+    // window.api.windowMoved(cardStore.getState().workState.url);
     document.getElementById('titleBar')!.removeEventListener('mouseup', onTitleBarMouseUp);
     cancelAnimationFrame(animationId);
+
+    let newGeom: Geometry;
+    if (cardStore.getState().sketch.label.enabled) {
+      newGeom = {
+        ...cardStore.getState().sketch.geometry,
+        width: cardStore.getState().sketch.label.width!,
+        height: cardStore.getState().sketch.label.height!,
+        x: window.screenX,
+        y: window.screenY,
+      };
+    }
+    else {
+      newGeom = {
+        ...cardStore.getState().sketch.geometry,
+        x: window.screenX,
+        y: window.screenY,
+      };
+    }
+    cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
   };
   document.getElementById('titleBar')!.addEventListener('mousedown', event => {
     mouseOffsetX = event.clientX;
