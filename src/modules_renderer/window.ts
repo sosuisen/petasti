@@ -33,15 +33,12 @@ interface WindowWithAPI extends Window {
     sendLeftMouseDown: (url: string, x: number, y: number) => Promise<void>;
     sendLeftMouseClick: (url: string, x: number, y: number) => Promise<void>;
     setTitle: (url: string, title: string) => Promise<void>;
-    setWindowSize: (
-      url: string,
-      width: number,
-      height: number
-    ) => Promise<{ x: number; y: number; width: number; height: number }>;
-    setWindowPosition: (
+    setWindowRect: (
       url: string,
       x: number,
-      y: number
+      y: number,
+      width: number,
+      height: number
     ) => Promise<{ x: number; y: number; width: number; height: number }>;
     windowMoved: (url: string) => void;
     windowMoving: (

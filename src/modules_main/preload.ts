@@ -88,11 +88,8 @@ contextBridge.exposeInMainWorld('api', {
     };
     return ipcRenderer.invoke('send-mouse-input', url, [leftMouseDown, leftMouseUp]);
   },
-  setWindowSize: (url: string, width: number, height: number) => {
-    return ipcRenderer.invoke('set-window-size', url, width, height);
-  },
-  setWindowPosition: (url: string, x: number, y: number) => {
-    return ipcRenderer.invoke('set-window-position', url, x, y);
+  setWindowRect: (url: string, x: number, y: number, width: number, height: number) => {
+    return ipcRenderer.invoke('set-window-rect', url, x, y, width, height);
   },
   setTitle: (url: string, title: string) => {
     return ipcRenderer.invoke('set-title', url, title);

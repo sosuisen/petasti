@@ -102,14 +102,21 @@ export const cardSketchUpdateCreator = (
       dispatch(cardGeometryAction);
       if (changeFrom === 'remote') {
         const newGeom = cardSketch.geometry;
-        if (newGeom.x !== prevX || newGeom.y !== prevY) {
+        if (
+          newGeom.x !== prevX ||
+          newGeom.y !== prevY ||
+          newGeom.width !== prevWidth ||
+          newGeom.height !== prevHeight
+        ) {
           // Cannot move out of screen
           // window.moveTo(newGeom.x, newGeom.y);
-          window.api.setWindowPosition(getState().workState.url, newGeom.x, newGeom.y);
-        }
-        if (newGeom.width !== prevWidth || newGeom.height !== prevHeight) {
-          // window.resizeTo(newGeom.width, newGeom.height);
-          window.api.setWindowSize(getState().workState.url, newGeom.width, newGeom.height);
+          window.api.setWindowRect(
+            getState().workState.url,
+            newGeom.x,
+            newGeom.y,
+            newGeom.width,
+            newGeom.height
+          );
         }
       }
 

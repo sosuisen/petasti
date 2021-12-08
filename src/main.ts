@@ -266,27 +266,16 @@ ipcMain.handle('set-title', (event, url: string, title: string) => {
   }
 });
 
-ipcMain.handle('set-window-size', (event, url: string, width: number, height: number) => {
-  const card = cacheOfCard.get(url);
-  // eslint-disable-next-line no-unused-expressions
-  card?.window.setSize(width, height);
-  /*
-  console.log(
-    `set-window-size: ${JSON.stringify(card?.window.getNormalBounds())}, ${JSON.stringify(
-      card?.window.getContentBounds()
-    )}`
-  );
-  */
-  return card?.window.getBounds();
-});
-
-ipcMain.handle('set-window-position', (event, url: string, x: number, y: number) => {
-  const card = cacheOfCard.get(url);
-  // eslint-disable-next-line no-unused-expressions
-  // card?.window.setPosition(x, y);
-  card?.setPosition(x, y, true);
-  return card?.window.getBounds();
-});
+ipcMain.handle(
+  'set-window-rect',
+  (event, url: string, x: number, y: number, width: number, height: number) => {
+    const card = cacheOfCard.get(url);
+    // eslint-disable-next-line no-unused-expressions
+    card?.setPosition(x, y, true);
+    card?.window.setSize(width, height);
+    return card?.window.getBounds();
+  }
+);
 
 ipcMain.handle('get-uuid', () => {
   //  return uuidv4();
