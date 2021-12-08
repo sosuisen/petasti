@@ -271,8 +271,7 @@ ipcMain.handle(
   (event, url: string, x: number, y: number, width: number, height: number) => {
     const card = cacheOfCard.get(url);
     // eslint-disable-next-line no-unused-expressions
-    card?.setPosition(x, y, true);
-    card?.window.setSize(width, height);
+    card?.setRect(x, y, width, height, true);
     return card?.window.getBounds();
   }
 );
@@ -320,7 +319,7 @@ ipcMain.handle('db', async (event, command: DatabaseCommand) => {
 ipcMain.handle('window-moving', (e, url, { mouseOffsetX, mouseOffsetY }) => {
   const { x, y } = screen.getCursorScreenPoint();
   const card = cacheOfCard.get(url);
-  card?.setPosition(x - mouseOffsetX, y - mouseOffsetY, false);
+  card!.window.setPosition(x - mouseOffsetX, y - mouseOffsetY);
 });
 
 ipcMain.handle('window-moved', (e, url) => {
