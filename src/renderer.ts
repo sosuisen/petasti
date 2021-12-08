@@ -429,7 +429,13 @@ const onTransformToLabel = async () => {
   await cardStore.dispatch(cardLabelUpdateCreator(label));
   render();
 
-  window.api.setWindowSize(cardStore.getState().workState.url, label.width, label.height);
+  window.api.setWindowRect(
+    cardStore.getState().workState.url,
+    label.x,
+    label.y,
+    label.width,
+    label.height
+  );
 };
 
 const onTransformFromLabel = async () => {
@@ -439,8 +445,10 @@ const onTransformFromLabel = async () => {
   await cardStore.dispatch(cardLabelUpdateCreator(label));
   render();
 
-  window.api.setWindowSize(
+  window.api.setWindowRect(
     cardStore.getState().workState.url,
+    cardStore.getState().sketch.geometry.x,
+    cardStore.getState().sketch.geometry.y,
     cardStore.getState().sketch.geometry.width,
     cardStore.getState().sketch.geometry.height
   );
@@ -791,8 +799,10 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
       );
     }
 
-    await window.api.setWindowSize(
+    await window.api.setWindowRect(
       cardStore.getState().workState.url,
+      cardStore.getState().sketch.geometry.x,
+      cardStore.getState().sketch.geometry.y,
       cardStore.getState().sketch.geometry.width,
       cardStore.getState().sketch.geometry.height
     );
