@@ -605,18 +605,17 @@ class Note implements INote {
     return task;
   };
 
-  updateCardGeometry = async (
+  updateCardZ = async (
     sketchUrl: string,
-    geometry: Geometry,
+    z: number,
     modifiedTime: string
   ): Promise<TaskMetadata | false> => {
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
     let sketch: CardSketch;
     if (card) {
-      const newJSON = JSON.stringify({ ...card.sketch.geometry, ...geometry });
-      if (JSON.stringify(card.sketch.geometry) !== newJSON) {
-        card.sketch.geometry = JSON.parse(newJSON);
+      if (card.sketch.geometry.z !== z) {
+        card.sketch.geometry.z = z;
         card.sketch.date.modifiedDate = modifiedTime;
         sketch = card.sketch;
       }

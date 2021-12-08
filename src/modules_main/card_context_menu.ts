@@ -155,12 +155,12 @@ export const setContextMenu = (note: INote, card: ICard) => {
 
             const zIndex = getZIndexOfBottomCard() - 1;
             // console.debug(`new zIndex: ${zIndex}`);
-            const newGeom = JSON.parse(JSON.stringify(card.sketch.geometry)) as Geometry;
-            newGeom.z = zIndex;
+            // const newGeom = JSON.parse(JSON.stringify(card.sketch.geometry)) as Geometry;
+            // newGeom.z = zIndex;
 
             // Async
             const modifiedDate = getCurrentDateAndTime();
-            note.updateCardGeometry(card.url, newGeom, modifiedDate);
+            note.updateCardZ(card.url, zIndex, modifiedDate);
 
             // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 

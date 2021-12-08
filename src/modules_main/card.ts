@@ -475,11 +475,11 @@ export class Card implements ICard {
 
       this.window.webContents.send('card-focused', zIndex, modifiedTime);
 
-      const newGeom = { ...this.sketch.geometry, z: zIndex };
+      // const newGeom = { ...this.sketch.geometry, z: zIndex };
 
       // Async
-      this._note.updateCardGeometry(this.url, newGeom, modifiedTime);
-      // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
+      this._note.updateCardZ(this.url, zIndex, modifiedTime);
+      // console.log([...cacheOfCard.values()].map(myCard => myCard.sketch.geometry.z));
       // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
 
       sortCards();

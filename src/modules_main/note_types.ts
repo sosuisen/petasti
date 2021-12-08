@@ -62,9 +62,9 @@ export interface INote {
     cardBody: CardBody,
     modifiedDate: string
   ) => Promise<TaskMetadata>;
-  updateCardGeometry: (
+  updateCardZ: (
     sketchUrl: string,
-    geometry: Geometry,
+    z: number,
     modifiedTime: string
   ) => Promise<TaskMetadata | false>;
   createCardSketch: (
