@@ -525,7 +525,7 @@ export class Card implements ICard {
           const nextY = (this._moveToY - this._moveFromY) * rate + this._moveFromY;
           this.window.setPosition(Math.floor(nextX), Math.floor(nextY));
         }
-      }, 100);
+      }, 20);
     }
   };
 
