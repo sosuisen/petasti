@@ -282,6 +282,8 @@ export class Card implements ICard {
 
     this.sketch.condition = { ...this.sketch.condition, ...cardSketch?.condition };
 
+    this.sketch.label = { ...this.sketch.label, ...cardSketch?.label };
+
     this.sketch._id = sketchId;
 
     const time = getCurrentDateAndTime();
