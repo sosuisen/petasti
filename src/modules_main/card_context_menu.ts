@@ -133,7 +133,6 @@ export const setContextMenu = (note: INote, card: ICard) => {
               */
               card.window.webContents.send('transform-to-label');
             }
-            resetContextMenu();
           },
         },
         {

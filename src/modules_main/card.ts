@@ -854,6 +854,14 @@ export class Card implements ICard {
       const modifiedDate = getCurrentDateAndTime();
       this.window.webContents.send('resize-by-hand', geometry, modifiedDate);
     });
+    globalShortcut.register('CommandOrControl+' + opt + '+Space', () => {
+      if (this.sketch.label.enabled) {
+        this.window.webContents.send('transform-from-label');
+      }
+      else {
+        this.window.webContents.send('transform-to-label');
+      }
+    });
   };
 
   private _removeShortcuts = () => {
