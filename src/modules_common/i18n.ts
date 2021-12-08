@@ -260,7 +260,7 @@ export const ENGLISH: Messages = {
   snapshotName: 'Enter snapshot name',
   redisplayCards: 'Bring cards to front',
   transformToLabel: 'Labelize',
-  transformFromLabel: 'Unlabel',
+  transformFromLabel: 'Open label',
 };
 
 const NOTE_JAPANESE: MessagesNote = {
@@ -392,7 +392,7 @@ export const JAPANESE: Messages = {
   snapshotName: 'スナップショット名を入力してください',
   redisplayCards: 'カードを最前面表示',
   transformToLabel: 'ラベルにする',
-  transformFromLabel: 'ラベルを解除',
+  transformFromLabel: 'ラベルを開く',
 };
 
 export const availableLanguages = ['en', 'ja'];
