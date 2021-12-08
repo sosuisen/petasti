@@ -332,7 +332,7 @@ export class Card implements ICard {
     this.window.on('will-resize', this._willResizeListener);
 
     // Moved by hand
-    this.window.on('will-move', this._willMoveListener);
+    // this.window.on('will-move', this._willMoveListener);
 
     this.window.on('closed', this._closedListener);
 
@@ -377,15 +377,6 @@ export class Card implements ICard {
   }
 
   private _debouncedCardPositionUpdateActionQueue = new DebounceQueue(1000);
-
-  private _willMoveListener = (event: Electron.Event, rect: Electron.Rectangle) => {
-    // Update x and y
-    const geometry = { ...this.sketch.geometry, x: rect.x, y: rect.y };
-
-    const modifiedDate = getCurrentDateAndTime();
-    this._debouncedCardPositionUpdateActionQueue.next({ geometry, modifiedDate });
-    this.window.webContents.send('move-by-hand', geometry, modifiedDate);
-  };
 
   private _willResizeListener = (event: Electron.Event, rect: Electron.Rectangle) => {
     let newWidth = rect.width;
@@ -540,7 +531,6 @@ export class Card implements ICard {
 
   public removeWindowListenersExceptClosedEvent = () => {
     this.window.off('will-resize', this._willResizeListener);
-    this.window.off('will-move', this._willMoveListener);
     this.window.off('focus', this._focusListener);
     this.window.off('blur', this._blurListener);
   };
