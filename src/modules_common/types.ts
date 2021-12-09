@@ -47,6 +47,7 @@ export type CardCondition = {
  */
 export type CardLabel = {
   enabled: boolean;
+  pinned: boolean;
   text: string;
   x: number | undefined;
   y: number | undefined;

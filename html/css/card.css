@@ -103,6 +103,11 @@ body > .card > .title > .close-btn{
   left: 246px;
 }
 
+body > .card > .title > .pin-btn{
+  top: -4px;
+  left: 246px;
+}
+
   
 body > .card > .contents{
   padding: 0px;

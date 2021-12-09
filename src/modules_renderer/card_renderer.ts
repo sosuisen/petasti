@@ -90,20 +90,37 @@ const renderTitleBar = () => {
     document.getElementById('title')!.style.opacity = '0.01';
   }
 
+  let titleWidth;
+  let titleBarRight;
   if (cardStore.getState().sketch.label.enabled) {
     geomWidth = cardStore.getState().sketch.label.width!;
+    titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
     geomHeight = cardStore.getState().sketch.label.height!;
     document.getElementById('closeBtn')!.style.display = 'none';
+
+    if (cardStore.getState().sketch.label.pinned) {
+      document.getElementById('pinIcon')!.className = 'fas fa-bookmark';
+    }
+    else {
+      document.getElementById('pinIcon')!.className = 'far fa-bookmark';
+    }
+
+    document.getElementById('pinBtn')!.style.display = 'block';
+    const pinBtnLeft = titleWidth - document.getElementById('pinBtn')!.offsetWidth;
+    document.getElementById('pinBtn')!.style.left = pinBtnLeft + 'px';
+    titleBarRight = pinBtnLeft;
   }
   else {
     geomWidth = cardStore.getState().sketch.geometry.width;
+    titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
     geomHeight = cardStore.getState().sketch.geometry.height;
     document.getElementById('closeBtn')!.style.display = 'block';
+    document.getElementById('pinBtn')!.style.display = 'none';
+    const closeBtnLeft = titleWidth - document.getElementById('closeBtn')!.offsetWidth;
+    document.getElementById('closeBtn')!.style.left = closeBtnLeft + 'px';
+    titleBarRight = closeBtnLeft;
   }
-  const titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
   document.getElementById('title')!.style.width = titleWidth + 'px';
-  const closeBtnLeft = titleWidth - document.getElementById('closeBtn')!.offsetWidth;
-  document.getElementById('closeBtn')!.style.left = closeBtnLeft + 'px';
 
   if (getCtrlDown() || cardStore.getState().body._body === '') {
     document.getElementById('closeIcon')!.className = 'far fa-trash-alt title-btn-icon';
@@ -115,9 +132,9 @@ const renderTitleBar = () => {
   const titleBarLeft =
     document.getElementById('newBtn')!.offsetLeft +
     document.getElementById('newBtn')!.offsetWidth;
-  const barwidth = closeBtnLeft - titleBarLeft;
+  const barWidth = titleBarRight - titleBarLeft;
   document.getElementById('titleBar')!.style.left = titleBarLeft + 'px';
-  document.getElementById('titleBar')!.style.width = barwidth + 'px';
+  document.getElementById('titleBar')!.style.width = barWidth + 'px';
 
   /*
   if (cardEditor.isOpened && cardEditor.hasCodeMode) {
@@ -141,6 +158,7 @@ const renderTitleBarStyle = () => {
 
   document.getElementById('newBtn')!.style.color = darkerColor;
   document.getElementById('closeBtn')!.style.color = darkerColor;
+  document.getElementById('pinBtn')!.style.color = darkerColor;
 
   if (cardStore.getState().sketch.label.enabled) {
     const backgroundRgba = convertHexColorToRgba(

@@ -132,6 +132,18 @@ const initializeUIEvents = () => {
     await window.api.createCard(undefined, cardBody, cardSketch);
   });
 
+  document.getElementById('pinBtn')?.addEventListener('click', async event => {
+    const label = cardStore.getState().sketch.label;
+    if (cardStore.getState().sketch.label.pinned) {
+      label.pinned = false;
+    }
+    else {
+      label.pinned = true;
+    }
+    await cardStore.dispatch(cardLabelUpdateCreator(label));
+    render(['TitleBar']);
+  });
+
   /*
   // eslint-disable-next-line no-unused-expressions
   document.getElementById('codeBtn')?.addEventListener('click', () => {
