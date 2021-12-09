@@ -139,6 +139,7 @@ body > .resize-area{
   z-index: 10;
 }
 
+/* 
 body > .resize-area-ew{
   cursor: ew-resize;
 }
@@ -150,3 +151,4 @@ body > .resize-area-ns{
 body > .resize-area-nwse{
   cursor: nwse-resize;
 }
+*/

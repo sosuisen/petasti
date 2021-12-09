@@ -181,6 +181,7 @@ const initializeUIEvents = () => {
     }
   });
 
+  /*
   let prevMouseX: number;
   let prevMouseY: number;
   let isHorizontalMoving = false;
@@ -232,14 +233,15 @@ const initializeUIEvents = () => {
     }
   };
   window.addEventListener('mousemove', onmousemove);
-
   window.addEventListener('mouseup', event => {
     isHorizontalMoving = false;
     isVerticalMoving = false;
     document.getElementById('windowMask')!.style.display = 'none';
   });
+  */
   window.addEventListener('mouseleave', event => {});
 
+  /*
   document.getElementById('resizeAreaRight')!.addEventListener('mousedown', event => {
     isHorizontalMoving = true;
     document.getElementById('windowMask')!.style.display = 'block';
@@ -261,6 +263,7 @@ const initializeUIEvents = () => {
     prevMouseX = event.screenX;
     prevMouseY = event.screenY;
   });
+  */
 
   let mouseOffsetX: number;
   let mouseOffsetY: number;
