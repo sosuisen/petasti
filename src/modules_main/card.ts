@@ -117,7 +117,9 @@ export const sortCardWindows = (suppressFocus = false) => {
       }
     }
   });
-  backToFront[backToFront.length - 1].window.focus();
+  if (backToFront.length > 0) {
+    backToFront[backToFront.length - 1].window.focus();
+  }
   return backToFront;
 };
 
