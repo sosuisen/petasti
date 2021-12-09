@@ -499,75 +499,74 @@ export class Card implements ICard {
     }
   };
 
-  private _moveFromX = 0;
-  private _moveFromY = 0;
-  private _moveFromWidth = 0;
-  private _moveFromHeight = 0;
-  private _moveToX = 0;
-  private _moveToY = 0;
-  private _moveToWidth = 0;
-  private _moveToHeight = 0;
-  private _moveAnimeTimer: NodeJS.Timeout | undefined = undefined;
-  private _moveAnimeCurrentTime = 0;
   public setRect = (
     x: number,
     y: number,
     width: number,
     height: number,
     animation: boolean
-  ) => {
-    if (!animation) {
-      this.window.setPosition(x, y);
-      this.window.setSize(width, height);
-    }
-    else {
-      // [this._moveFromX, this._moveFromY] = this.window.getPosition();
-      const rect = this.window.getContentBounds();
-      this._moveFromX = rect.x;
-      this._moveFromY = rect.y;
-      this._moveFromWidth = rect.width;
-      this._moveFromHeight = rect.height;
-
-      this._moveToX = x;
-      this._moveToY = y;
-      this._moveToWidth = width;
-      this._moveToHeight = height;
-
-      this._moveAnimeCurrentTime = 0;
-      if (this._moveAnimeTimer !== undefined) {
-        clearInterval(this._moveAnimeTimer);
+  ): Promise<void> => {
+    return new Promise(resolve => {
+      if (!animation) {
+        this.window.setPosition(x, y);
+        this.window.setSize(width, height);
+        resolve();
       }
-      this._moveAnimeTimer = setInterval(() => {
-        this._moveAnimeCurrentTime += 0.1;
-        const rate = easing(this._moveAnimeCurrentTime);
-        if (this._moveAnimeCurrentTime >= 1) {
-          clearInterval(this._moveAnimeTimer!);
-          this._moveAnimeTimer = undefined;
-          // this.window.setPosition(this._moveToX, this._moveToY);
-          this.window.setBounds({
-            x: this._moveToX,
-            y: this._moveToY,
-            width: this._moveToWidth,
-            height: this._moveToHeight,
-          });
-        }
-        else {
-          const nextX = (this._moveToX - this._moveFromX) * rate + this._moveFromX;
-          const nextY = (this._moveToY - this._moveFromY) * rate + this._moveFromY;
-          const nextWidth =
-            (this._moveToWidth - this._moveFromWidth) * rate + this._moveFromWidth;
-          const nextHeight =
-            (this._moveToHeight - this._moveFromHeight) * rate + this._moveFromHeight;
-          // this.window.setPosition(Math.floor(nextX), Math.floor(nextY));
-          this.window.setBounds({
-            x: Math.floor(nextX),
-            y: Math.floor(nextY),
-            width: Math.floor(nextWidth),
-            height: Math.floor(nextHeight),
-          });
-        }
-      }, 20);
-    }
+      else {
+        let moveFromX = 0;
+        let moveFromY = 0;
+        let moveFromWidth = 0;
+        let moveFromHeight = 0;
+        let moveToX = 0;
+        let moveToY = 0;
+        let moveToWidth = 0;
+        let moveToHeight = 0;
+
+        let moveAnimeCurrentTime = 0;
+        // [this._moveFromX, this._moveFromY] = this.window.getPosition();
+        const rect = this.window.getContentBounds();
+        moveFromX = rect.x;
+        moveFromY = rect.y;
+        moveFromWidth = rect.width;
+        moveFromHeight = rect.height;
+        moveToX = x;
+
+        moveToY = y;
+        moveToWidth = width;
+        moveToHeight = height;
+
+        moveAnimeCurrentTime = 0;
+
+        const moveAnimeTimer = setInterval(() => {
+          moveAnimeCurrentTime += 0.1;
+          const rate = easing(moveAnimeCurrentTime);
+          if (moveAnimeCurrentTime >= 1) {
+            clearInterval(moveAnimeTimer!);
+            // this.window.setPosition(this._moveToX, this._moveToY);
+            this.window.setBounds({
+              x: moveToX,
+              y: moveToY,
+              width: moveToWidth,
+              height: moveToHeight,
+            });
+            resolve();
+          }
+          else {
+            const nextX = (moveToX - moveFromX) * rate + moveFromX;
+            const nextY = (moveToY - moveFromY) * rate + moveFromY;
+            const nextWidth = (moveToWidth - moveFromWidth) * rate + moveFromWidth;
+            const nextHeight = (moveToHeight - moveFromHeight) * rate + moveFromHeight;
+            // this.window.setPosition(Math.floor(nextX), Math.floor(nextY));
+            this.window.setBounds({
+              x: Math.floor(nextX),
+              y: Math.floor(nextY),
+              width: Math.floor(nextWidth),
+              height: Math.floor(nextHeight),
+            });
+          }
+        }, 20);
+      }
+    });
   };
 
   public removeWindowListenersExceptClosedEvent = () => {

@@ -433,15 +433,30 @@ const onTransformToLabel = async () => {
     label.height = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
   }
   await cardStore.dispatch(cardLabelUpdateCreator(label));
-  render();
 
-  window.api.setWindowRect(
-    cardStore.getState().workState.url,
-    label.x,
-    label.y,
-    label.width,
-    label.height
-  );
+  if (
+    cardStore.getState().sketch.label.height! < cardStore.getState().sketch.geometry.height
+  ) {
+    // Wait for the card to shrink.
+    await window.api.setWindowRect(
+      cardStore.getState().workState.url,
+      label.x,
+      label.y,
+      label.width,
+      label.height
+    );
+    render();
+  }
+  else {
+    render();
+    window.api.setWindowRect(
+      cardStore.getState().workState.url,
+      label.x,
+      label.y,
+      label.width,
+      label.height
+    );
+  }
 };
 
 const onTransformFromLabel = async () => {
@@ -449,15 +464,31 @@ const onTransformFromLabel = async () => {
   label.enabled = false;
   label.text = '';
   await cardStore.dispatch(cardLabelUpdateCreator(label));
-  render();
 
-  window.api.setWindowRect(
-    cardStore.getState().workState.url,
-    cardStore.getState().sketch.geometry.x,
-    cardStore.getState().sketch.geometry.y,
-    cardStore.getState().sketch.geometry.width,
-    cardStore.getState().sketch.geometry.height
-  );
+  if (
+    cardStore.getState().sketch.geometry.height < cardStore.getState().sketch.label.height!
+  ) {
+    // Label is larger than card. It is rare case.
+    // Wait for the card to shrink.
+    await window.api.setWindowRect(
+      cardStore.getState().workState.url,
+      cardStore.getState().sketch.geometry.x,
+      cardStore.getState().sketch.geometry.y,
+      cardStore.getState().sketch.geometry.width,
+      cardStore.getState().sketch.geometry.height
+    );
+    render();
+  }
+  else {
+    render();
+    window.api.setWindowRect(
+      cardStore.getState().workState.url,
+      cardStore.getState().sketch.geometry.x,
+      cardStore.getState().sketch.geometry.y,
+      cardStore.getState().sketch.geometry.width,
+      cardStore.getState().sketch.geometry.height
+    );
+  }
 };
 
 const onResizeByHand = async (geometry: Geometry) => {
