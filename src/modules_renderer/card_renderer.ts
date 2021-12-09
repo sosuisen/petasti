@@ -67,15 +67,39 @@ const setWindowTitle = () => {
 const renderTitleBar = () => {
   let geomWidth;
   let geomHeight;
+
+  /**
+   * The card cannot be moved by mouse when #title is hidden.
+   * When hidden, #title changes to visible at the first mouse down.
+   * It can be moved by mouse after the second mouse down.
+   * So, the user need to click twice when #title is hidden.
+   * Use opacity instead of visible/hidden.
+   * 
+   * But this may be old info because we do not use -webkit-app-region: drag to move window now.
+   * 
+  document.getElementById('title')!.style.visibility = 'visible';
+  if (cardPropStatus.style.opacity === 0 && cardPropStatus.status === 'Blurred') {
+    document.getElementById('title')!.style.visibility = 'hidden';
+  }
+   */
+  document.getElementById('title')!.style.opacity = '1.0';
+  if (
+    cardStore.getState().sketch.style.opacity === 0 &&
+    cardStore.getState().workState.status === 'Blurred'
+  ) {
+    document.getElementById('title')!.style.opacity = '0.01';
+  }
+
   if (cardStore.getState().sketch.label.enabled) {
     geomWidth = cardStore.getState().sketch.label.width!;
     geomHeight = cardStore.getState().sketch.label.height!;
+    document.getElementById('closeBtn')!.style.display = 'none';
   }
   else {
     geomWidth = cardStore.getState().sketch.geometry.width;
     geomHeight = cardStore.getState().sketch.geometry.height;
+    document.getElementById('closeBtn')!.style.display = 'block';
   }
-
   const titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
   document.getElementById('title')!.style.width = titleWidth + 'px';
   const closeBtnLeft = titleWidth - document.getElementById('closeBtn')!.offsetWidth;
@@ -114,8 +138,21 @@ const renderTitleBarStyle = () => {
     cardStore.getState().sketch.style.backgroundColor,
     0.6
   );
+
   document.getElementById('newBtn')!.style.color = darkerColor;
   document.getElementById('closeBtn')!.style.color = darkerColor;
+
+  if (cardStore.getState().sketch.label.enabled) {
+    const backgroundRgba = convertHexColorToRgba(
+      cardStore.getState().sketch.style.backgroundColor,
+      cardStore.getState().sketch.style.opacity
+    );
+    document.getElementById('title')!.style.backgroundColor = backgroundRgba;
+  }
+  else {
+    const uiRgba = convertHexColorToRgba(cardStore.getState().sketch.style.uiColor);
+    document.getElementById('title')!.style.backgroundColor = uiRgba;
+  }
 
   /*
   if (cardEditor.isCodeMode) {
@@ -265,39 +302,14 @@ const renderCardAndContentsRect = () => {
 
 // eslint-disable-next-line complexity
 const renderCardStyle = () => {
-  /**
-   * The card cannot be moved by mouse when #title is hidden.
-   * When hidden, #title changes to visible at the first mouse down.
-   * It can be moved by mouse after the second mouse down.
-   * So, the user need to click twice when #title is hidden.
-   * Use opacity instead of visible/hidden.
-  document.getElementById('title')!.style.visibility = 'visible';
-  if (cardPropStatus.style.opacity === 0 && cardPropStatus.status === 'Blurred') {
-    document.getElementById('title')!.style.visibility = 'hidden';
-  }
-   */
-  document.getElementById('title')!.style.opacity = '1.0';
-  if (
-    cardStore.getState().sketch.style.opacity === 0 &&
-    cardStore.getState().workState.status === 'Blurred'
-  ) {
-    document.getElementById('title')!.style.opacity = '0.01';
-  }
-
   // Set card properties
   const backgroundRgba = convertHexColorToRgba(
     cardStore.getState().sketch.style.backgroundColor,
     cardStore.getState().sketch.style.opacity
   );
   document.getElementById('contents')!.style.backgroundColor = backgroundRgba;
-  const darkerRgba = convertHexColorToRgba(
-    darkenHexColor(cardStore.getState().sketch.style.backgroundColor),
-    cardStore.getState().sketch.style.opacity
-  );
 
   const uiRgba = convertHexColorToRgba(cardStore.getState().sketch.style.uiColor);
-
-  document.getElementById('title')!.style.backgroundColor = uiRgba;
 
   if (cardStore.getState().sketch.style.opacity !== 0) {
     document.getElementById(

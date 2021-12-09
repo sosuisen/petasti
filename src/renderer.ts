@@ -517,7 +517,7 @@ const onCardFocused = (zIndex: number | undefined, modifiedDate: string | undefi
   }
   cardStore.dispatch(cardSketchBringToFrontCreator(zIndex, modifiedDate));
 
-  render(['CardStyle', 'ContentsRect']);
+  render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
 
   if (!cardEditor.isOpened) {
     startEditor();
@@ -527,7 +527,7 @@ const onCardFocused = (zIndex: number | undefined, modifiedDate: string | undefi
 const onCardBlurred = () => {
   cardStore.dispatch(cardWorkStateStatusUpdateCreator('Blurred'));
 
-  render(['CardStyle', 'ContentsRect']);
+  render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
 
   if (cardEditor.isOpened) {
     if (cardEditor.isCodeMode) {
