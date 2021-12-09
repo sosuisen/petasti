@@ -592,8 +592,14 @@ export class Card implements ICard {
 
   renderCard = (): Promise<void> => {
     return new Promise(resolve => {
-      this.window.setSize(this.sketch.geometry.width, this.sketch.geometry.height);
-      this.window.setPosition(this.sketch.geometry.x, this.sketch.geometry.y);
+      if (this.sketch.label.enabled) {
+        this.window.setSize(this.sketch.label.width!, this.sketch.label.height!);
+        this.window.setPosition(this.sketch.label.x!, this.sketch.label.y!);
+      }
+      else {
+        this.window.setSize(this.sketch.geometry.width, this.sketch.geometry.height);
+        this.window.setPosition(this.sketch.geometry.x, this.sketch.geometry.y);
+      }
       console.debug(`renderCard in main [${this.url}] ${this.body._body.substr(0, 40)}`);
       this.window.showInactive();
       let myOS: 'win32' | 'darwin' | 'linux' = 'win32';
