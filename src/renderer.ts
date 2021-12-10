@@ -73,6 +73,34 @@ const close = () => {
   window.close();
 };
 
+let animationId: number | undefined;
+const onBodyMouseUp = () => {
+  // window.api.windowMoved(cardStore.getState().workState.url);
+  document.body!.removeEventListener('mouseup', onBodyMouseUp);
+  if (animationId !== undefined) {
+    cancelAnimationFrame(animationId);
+    animationId = undefined;
+    let newGeom: Geometry;
+    if (cardStore.getState().sketch.label.enabled) {
+      newGeom = {
+        ...cardStore.getState().sketch.geometry,
+        width: cardStore.getState().sketch.label.width!,
+        height: cardStore.getState().sketch.label.height!,
+        x: window.screenX,
+        y: window.screenY,
+      };
+    }
+    else {
+      newGeom = {
+        ...cardStore.getState().sketch.geometry,
+        x: window.screenX,
+        y: window.screenY,
+      };
+    }
+    cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
+  }
+};
+
 /**
  * Initialize
  */
@@ -279,7 +307,6 @@ const initializeUIEvents = () => {
 
   let mouseOffsetX: number;
   let mouseOffsetY: number;
-  let animationId: number;
   const moveWindow = () => {
     window.api.windowMoving(cardStore.getState().workState.url, {
       mouseOffsetX,
@@ -287,43 +314,43 @@ const initializeUIEvents = () => {
     });
     animationId = requestAnimationFrame(moveWindow);
   };
-  const onTitleBarMouseUp = () => {
-    // window.api.windowMoved(cardStore.getState().workState.url);
-    document.getElementById('titleBar')!.removeEventListener('mouseup', onTitleBarMouseUp);
-    cancelAnimationFrame(animationId);
-
-    let newGeom: Geometry;
-    if (cardStore.getState().sketch.label.enabled) {
-      newGeom = {
-        ...cardStore.getState().sketch.geometry,
-        width: cardStore.getState().sketch.label.width!,
-        height: cardStore.getState().sketch.label.height!,
-        x: window.screenX,
-        y: window.screenY,
-      };
-    }
-    else {
-      newGeom = {
-        ...cardStore.getState().sketch.geometry,
-        x: window.screenX,
-        y: window.screenY,
-      };
-    }
-    cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
-  };
   document.getElementById('titleBar')!.addEventListener('mousedown', event => {
-    mouseOffsetX = event.clientX;
-    mouseOffsetY = event.clientY;
-    document.getElementById('titleBar')!.addEventListener('mouseup', onTitleBarMouseUp);
-    requestAnimationFrame(moveWindow);
+    if (!cardStore.getState().sketch.label.enabled) {
+      onBodyMouseUp();
+      mouseOffsetX = event.clientX;
+      mouseOffsetY = event.clientY;
+      document.body!.addEventListener('mouseup', onBodyMouseUp);
+      requestAnimationFrame(moveWindow);
+      event.preventDefault();
+    }
+  });
+
+  document.body!.addEventListener('mousedown', event => {
+    if (cardStore.getState().sketch.label.enabled) {
+      onBodyMouseUp();
+      mouseOffsetX = event.clientX;
+      mouseOffsetY = event.clientY;
+      document.body!.addEventListener('mouseup', onBodyMouseUp);
+      requestAnimationFrame(moveWindow);
+      event.preventDefault();
+    }
   });
 
   document.getElementById('title')!.addEventListener('dblclick', event => {
-    if (cardStore.getState().sketch.label.enabled) {
-      onTransformFromLabel();
-    }
-    else {
+    if (!cardStore.getState().sketch.label.enabled) {
+      onBodyMouseUp();
       onTransformToLabel();
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  });
+
+  document.body!.addEventListener('dblclick', event => {
+    if (cardStore.getState().sketch.label.enabled) {
+      onBodyMouseUp();
+      onTransformFromLabel();
+      event.preventDefault();
+      event.stopPropagation();
     }
   });
 };
@@ -558,6 +585,8 @@ const onCardFocused = (zIndex: number | undefined, modifiedDate: string | undefi
 };
 
 const onCardBlurred = () => {
+  onBodyMouseUp();
+
   cardStore.dispatch(cardWorkStateStatusUpdateCreator('Blurred'));
 
   render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
