@@ -100,12 +100,12 @@ ul
 	padding: 0 0 0 1em;
 }
 
-#contentsFrame > ul:hover, .editor > ul:hover, #contentsFrame > ol:hover, .editor > ol:hover  {
+#contentsFrame > ul:hover, #labelFrame > ul:hover, .editor > ul:hover, #contentsFrame > ol:hover, #labelFrame > ol:hover, .editor > ol:hover  {
   border-right: 2px solid rgba(76, 86, 106, 0.20); 
   transition: border-right 0.4s ease-in-out;
 }
 
-#contentsFrame > ul, .editor > ul, #contentsFrame > ol, .editor > ol {
+#contentsFrame > ul, #labelFrame > ul, .editor > ul, #contentsFrame > ol, #labelFrame > ol, .editor > ol {
   border-right: 2px solid transparent;
 }
 
