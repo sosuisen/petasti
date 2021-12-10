@@ -185,7 +185,7 @@ const renderTitleBarStyle = () => {
 const renderContentsData = (): void => {
   if (cardStore.getState().sketch.label.enabled) {
     document.getElementById(
-      'contentsFrame'
+      'labelFrame'
     )!.innerHTML = cardStore.getState().sketch.label.text;
   }
   else {
@@ -252,28 +252,38 @@ const renderCardAndContentsRect = () => {
   document.getElementById('card')!.style.width = cardWidth + 'px';
   document.getElementById('card')!.style.height = cardHeight + 'px';
 
+  let topOffset = 0;
+  let leftOffset = 0;
+  let contentsElement: HTMLElement;
+  let contentsFrame: HTMLElement;
+  if (cardStore.getState().sketch.label.enabled) {
+    leftOffset = document.getElementById('label')!.offsetLeft;
+    contentsElement = document.getElementById('label')!;
+    contentsFrame = document.getElementById('labelFrame')!;
+  }
+  else {
+    topOffset = document.getElementById('title')!.offsetHeight;
+    contentsElement = document.getElementById('contents')!;
+    contentsFrame = document.getElementById('contentsFrame')!;
+  }
+
   // width of BrowserWindow (namely cardPropStatus.geometry.width) equals border + padding + content.
   const contentsWidth =
-    geomWidth + renderOffsetWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
+    geomWidth + renderOffsetWidth - cardCssStyle.borderWidth * 2 - leftOffset - shadowWidth;
 
   const contentsHeight =
     geomHeight +
     renderOffsetHeight -
     cardCssStyle.borderWidth * 2 -
-    document.getElementById('title')!.offsetHeight -
+    topOffset -
     shadowHeight;
 
-  document.getElementById('contents')!.style.width = contentsWidth + 'px';
-  document.getElementById('contents')!.style.height = contentsHeight + 'px';
+  contentsElement.style.width = contentsWidth + 'px';
+  contentsElement.style.height = contentsHeight + 'px';
 
-  const contentsFrame = document.getElementById('contentsFrame') as HTMLElement;
   if (contentsFrame) {
-    const width = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
-    const height =
-      geomHeight -
-      cardCssStyle.borderWidth * 2 -
-      shadowHeight -
-      document.getElementById('title')!.offsetHeight;
+    const width = geomWidth - cardCssStyle.borderWidth * 2 - leftOffset - shadowWidth;
+    const height = geomHeight - cardCssStyle.borderWidth * 2 - shadowHeight - topOffset;
 
     const innerWidth =
       width / cardStore.getState().sketch.style.zoom -
@@ -320,12 +330,23 @@ const renderCardAndContentsRect = () => {
 
 // eslint-disable-next-line complexity
 const renderCardStyle = () => {
+  let contentsElement: HTMLElement;
+  let contentsFrame: HTMLElement;
+  if (cardStore.getState().sketch.label.enabled) {
+    contentsElement = document.getElementById('label')!;
+    contentsFrame = document.getElementById('labelFrame')!;
+  }
+  else {
+    contentsElement = document.getElementById('contents')!;
+    contentsFrame = document.getElementById('contentsFrame')!;
+  }
+
   // Set card properties
   const backgroundRgba = convertHexColorToRgba(
     cardStore.getState().sketch.style.backgroundColor,
     cardStore.getState().sketch.style.opacity
   );
-  document.getElementById('contents')!.style.backgroundColor = backgroundRgba;
+  contentsElement.style.backgroundColor = backgroundRgba;
 
   const uiRgba = convertHexColorToRgba(cardStore.getState().sketch.style.uiColor);
 
@@ -387,7 +408,7 @@ const renderCardStyle = () => {
   } catch (e) {
     console.error(e);
   }] */
-  const contentsFrame = document.getElementById('contentsFrame') as HTMLElement;
+
   // @ts-ignore
   contentsFrame.style.zoom = `${cardStore.getState().sketch.style.zoom}`;
 

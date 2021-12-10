@@ -505,6 +505,8 @@ const onTransformToLabel = async () => {
       label.height
     );
   }
+  document.getElementById('contentsFrame')!.style.visibility = 'hidden';
+  document.getElementById('label')!.style.visibility = 'visible';
 };
 
 const onTransformFromLabel = async () => {
@@ -525,6 +527,8 @@ const onTransformFromLabel = async () => {
 
   // TODO: pinned
 
+  document.getElementById('contentsFrame')!.style.visibility = 'visible';
+  document.getElementById('label')!.style.visibility = 'hidden';
   if (
     cardStore.getState().sketch.geometry.height < cardStore.getState().sketch.label.height!
   ) {
