@@ -38,7 +38,7 @@ body > .card > .title{
   height: 18px;
   padding: 0px;
   margin: 0px;
-  z-index: 10;
+  z-index: 15;
 }
 
 body > .card > .title > .title-body{
@@ -104,8 +104,13 @@ body > .card > .title > .close-btn{
 }
 
 body > .card > .title > .pin-btn{
-  top: -4px;
-  left: 246px;
+  top: 18px;
+  left: 0px;
+}
+
+#pinIconOn, #pinIconOff{
+  position: absolute;
+  left: 3px;
 }
 
 body > .card > .contents{
@@ -183,17 +188,33 @@ body > .resize-area-nwse{
 }
 */
 
-.hide{
+body > .card > .hide{
+  opacity: 0;
+  visibility: hidden;
+  top: 0px;
+  left: 18px;
+  transition: 0.3s ease-in;
+}
+
+body > .card > .show{
+  opacity: 1;
+  visibility: visible;
+  top: 18px;
+  left: 0px;
+}
+
+.hideWithAnime{
   opacity: 0;
   visibility: hidden;
   transition: 0.3s ease-in;
 }
 
-.show{
+.showWithAnime{
   opacity: 1;
   visibility: visible;
+  transition: 0.3s ease-in;
 }
 
 #title, #card, #editor, #label {
-  transition: background-color 0.3s ease-in;
+  transition: background-color,opacity 0.3s ease-in;
 }

@@ -487,8 +487,8 @@ const onTransformToLabel = async () => {
 
   await cardStore.dispatch(cardLabelUpdateCreator(label));
 
-  document.getElementById('label')!.classList.toggle('show');
-  document.getElementById('label')!.classList.toggle('hide');
+  document.getElementById('label')!.classList.toggle('showWithAnime');
+  document.getElementById('label')!.classList.toggle('hideWithAnime');
   document.getElementById('contents')!.classList.toggle('show');
   document.getElementById('contents')!.classList.toggle('hide');
 
@@ -507,8 +507,8 @@ const onTransformFromLabel = async () => {
   if (!label.enabled) return;
   label.enabled = false;
 
-  document.getElementById('label')!.classList.toggle('show');
-  document.getElementById('label')!.classList.toggle('hide');
+  document.getElementById('label')!.classList.toggle('showWithAnime');
+  document.getElementById('label')!.classList.toggle('hideWithAnime');
   document.getElementById('contents')!.classList.toggle('show');
   document.getElementById('contents')!.classList.toggle('hide');
 
@@ -690,10 +690,10 @@ const onRenderCard = async (
   await cardEditor.setData(cardStore.getState().body._body);
 
   if (cardStore.getState().sketch.label.enabled) {
-    document.getElementById('label')!.classList.toggle('show');
-    document.getElementById('label')!.classList.toggle('hide');
     document.getElementById('contents')!.classList.toggle('show');
     document.getElementById('contents')!.classList.toggle('hide');
+    document.getElementById('label')!.classList.toggle('showWithAnime');
+    document.getElementById('label')!.classList.toggle('hideWithAnime');
     // document.getElementById('label')!.style.visibility = 'visible';
     // document.getElementById('contents')!.style.visibility = 'hidden';
   }

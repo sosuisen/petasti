@@ -64,6 +64,7 @@ const setWindowTitle = () => {
   );
 };
 
+// eslint-disable-next-line complexity
 const renderTitleBar = () => {
   let geomWidth;
   let geomHeight;
@@ -92,6 +93,9 @@ const renderTitleBar = () => {
 
   let titleWidth;
   let titleBarRight;
+  const pinBtn = document.getElementById('pinBtn')!;
+  const pinIconOn = document.getElementById('pinIconOn')!;
+  const pinIconOff = document.getElementById('pinIconOff')!;
   if (cardStore.getState().sketch.label.enabled) {
     geomWidth = cardStore.getState().sketch.label.width!;
     titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
@@ -99,23 +103,65 @@ const renderTitleBar = () => {
     document.getElementById('closeBtn')!.style.display = 'none';
 
     if (cardStore.getState().sketch.label.pinned) {
-      document.getElementById('pinIcon')!.className = 'fas fa-bookmark';
+      if (pinIconOn.classList.contains('hideWithAnime')) {
+        pinIconOn.classList.remove('hideWithAnime');
+      }
+      if (!pinIconOn.classList.contains('showWithAnime')) {
+        pinIconOn.classList.add('showWithAnime');
+      }
+      if (pinIconOff.classList.contains('showWithAnime')) {
+        pinIconOff.classList.remove('showWithAnime');
+      }
+      if (!pinIconOff.classList.contains('hideWithAnime')) {
+        pinIconOff.classList.add('hideWithAnime');
+      }
     }
     else {
-      document.getElementById('pinIcon')!.className = 'far fa-bookmark';
+      if (pinIconOff.classList.contains('hideWithAnime')) {
+        pinIconOff.classList.remove('hideWithAnime');
+      }
+      if (!pinIconOff.classList.contains('showWithAnime')) {
+        pinIconOff.classList.add('showWithAnime');
+      }
+      if (pinIconOn.classList.contains('showWithAnime')) {
+        pinIconOn.classList.remove('showWithAnime');
+      }
+      if (!pinIconOn.classList.contains('hideWithAnime')) {
+        pinIconOn.classList.add('hideWithAnime');
+      }
     }
 
-    document.getElementById('pinBtn')!.style.display = 'block';
-    const pinBtnLeft = titleWidth - document.getElementById('pinBtn')!.offsetWidth;
-    document.getElementById('pinBtn')!.style.left = pinBtnLeft + 'px';
-    titleBarRight = pinBtnLeft;
+    pinBtn.style.visibility = 'visible';
+
+    document.getElementById('pinBtn')!.style.top =
+      document.getElementById('newBtn')!.offsetTop +
+      document.getElementById('newBtn')!.offsetHeight +
+      'px';
+    document.getElementById('pinBtn')!.style.left =
+      document.getElementById('newBtn')!.offsetLeft + 'px';
+    titleBarRight = titleWidth;
   }
   else {
     geomWidth = cardStore.getState().sketch.geometry.width;
     titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
     geomHeight = cardStore.getState().sketch.geometry.height;
     document.getElementById('closeBtn')!.style.display = 'block';
-    document.getElementById('pinBtn')!.style.display = 'none';
+
+    pinBtn.style.visibility = 'hidden';
+    if (pinIconOn.classList.contains('showWithAnime')) {
+      pinIconOn.classList.remove('showWithAnime');
+    }
+    if (!pinIconOn.classList.contains('hideWithAnime')) {
+      pinIconOn.classList.add('hideWithAnime');
+    }
+    if (pinIconOff.classList.contains('showWithAnime')) {
+      pinIconOff.classList.remove('showWithAnime');
+    }
+    if (!pinIconOff.classList.contains('hideWithAnime')) {
+      pinIconOff.classList.add('hideWithAnime');
+    }
+
+
     const closeBtnLeft = titleWidth - document.getElementById('closeBtn')!.offsetWidth;
     document.getElementById('closeBtn')!.style.left = closeBtnLeft + 'px';
     titleBarRight = closeBtnLeft;
