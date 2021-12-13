@@ -127,6 +127,7 @@ const initializeUIEvents = () => {
   });
 
   document.getElementById('contents')!.addEventListener('mousedown', event => {
+    console.log('## contents mousedown');
     startEditorByClick({ x: event.clientX, y: event.clientY } as InnerClickEvent);
   });
 
@@ -505,7 +506,7 @@ const onTransformToLabel = async () => {
       label.height
     );
   }
-  document.getElementById('contentsFrame')!.style.visibility = 'hidden';
+  document.getElementById('contents')!.style.visibility = 'hidden';
   document.getElementById('label')!.style.visibility = 'visible';
 };
 
@@ -527,7 +528,7 @@ const onTransformFromLabel = async () => {
 
   // TODO: pinned
 
-  document.getElementById('contentsFrame')!.style.visibility = 'visible';
+  document.getElementById('contents')!.style.visibility = 'visible';
   document.getElementById('label')!.style.visibility = 'hidden';
   if (
     cardStore.getState().sketch.geometry.height < cardStore.getState().sketch.label.height!
@@ -688,7 +689,14 @@ const onRenderCard = async (
   await cardEditor.createEditor();
   await cardEditor.setData(cardStore.getState().body._body);
 
-  document.getElementById('card')!.style.visibility = 'visible';
+  if (cardStore.getState().sketch.label.enabled) {
+    document.getElementById('label')!.style.visibility = 'visible';
+    document.getElementById('card')!.style.visibility = 'hidden';
+  }
+  else {
+    document.getElementById('label')!.style.visibility = 'hidden';
+    document.getElementById('card')!.style.visibility = 'visible';
+  }
 
   render();
   /*  
@@ -803,9 +811,11 @@ const startEditor = (x?: number, y?: number) => {
 
   cardEditor.startEdit();
   if (x !== undefined && y !== undefined) {
-    // setInterval(() => {
-    //  window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y);
-    // }, 0);
+    /*
+    setInterval(() => {
+      window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y);
+    }, 0);
+    */
     // window.api.sendLeftMouseClick(cardStore.getState().workState.url, x, y);
   }
 };
