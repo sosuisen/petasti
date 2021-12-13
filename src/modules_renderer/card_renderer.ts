@@ -346,7 +346,8 @@ const renderCardStyle = () => {
     cardStore.getState().sketch.style.backgroundColor,
     cardStore.getState().sketch.style.opacity
   );
-  contentsElement.style.backgroundColor = backgroundRgba;
+  // contentsElement.style.backgroundColor = backgroundRgba;
+  document.getElementById('card')!.style.backgroundColor = backgroundRgba;
 
   const uiRgba = convertHexColorToRgba(cardStore.getState().sketch.style.uiColor);
 
