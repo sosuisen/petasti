@@ -67,10 +67,10 @@ body > #card > #editor > .milkdown > .editor > * {
 }
 
 /**
- * contents
+ * contents and label
  */
 
-body > #card > #contents > #contentsFrame {
+ body > #card > #contents > #contentsFrame, body > #card > #label > #labelFrame {
   position: absolute;
   top: 0px;
   left: 0px;
@@ -97,15 +97,15 @@ body > #card > #contents > #contentsFrame {
 }
 
 /* Custom scroll bar */
-body > #card > #contents::-webkit-scrollbar-thumb{
+body > #card > #contents::-webkit-scrollbar-thumb, body > #card > #label::-webkit-scrollbar-thumb{
   border-radius: 7px;
 }
 
-body > #card > #contents::-webkit-scrollbar{
+body > #card > #contents::-webkit-scrollbar, body > #card > #label::-webkit-scrollbar{
   width: 7px;
 }
 
-body > #card > #contents > #contentsFrame > * {
+body > #card > #contents > #contentsFrame > *, body > #card > #label > #labelFrame > *{
   margin-block-start: 0.3em;
   margin-block-end: 0.3em;
 }

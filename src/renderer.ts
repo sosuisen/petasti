@@ -73,6 +73,34 @@ const close = () => {
   window.close();
 };
 
+let animationId: number | undefined;
+const onBodyMouseUp = () => {
+  // window.api.windowMoved(cardStore.getState().workState.url);
+  document.body!.removeEventListener('mouseup', onBodyMouseUp);
+  if (animationId !== undefined) {
+    cancelAnimationFrame(animationId);
+    animationId = undefined;
+    let newGeom: Geometry;
+    if (cardStore.getState().sketch.label.enabled) {
+      newGeom = {
+        ...cardStore.getState().sketch.geometry,
+        width: cardStore.getState().sketch.label.width!,
+        height: cardStore.getState().sketch.label.height!,
+        x: window.screenX,
+        y: window.screenY,
+      };
+    }
+    else {
+      newGeom = {
+        ...cardStore.getState().sketch.geometry,
+        x: window.screenX,
+        y: window.screenY,
+      };
+    }
+    cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
+  }
+};
+
 /**
  * Initialize
  */
@@ -99,6 +127,7 @@ const initializeUIEvents = () => {
   });
 
   document.getElementById('contents')!.addEventListener('mousedown', event => {
+    console.log('## contents mousedown');
     startEditorByClick({ x: event.clientX, y: event.clientY } as InnerClickEvent);
   });
 
@@ -130,6 +159,18 @@ const initializeUIEvents = () => {
       },
     };
     await window.api.createCard(undefined, cardBody, cardSketch);
+  });
+
+  document.getElementById('pinBtn')?.addEventListener('click', async event => {
+    const label = cardStore.getState().sketch.label;
+    if (cardStore.getState().sketch.label.pinned) {
+      label.pinned = false;
+    }
+    else {
+      label.pinned = true;
+    }
+    await cardStore.dispatch(cardLabelUpdateCreator(label));
+    render(['TitleBar']);
   });
 
   /*
@@ -181,6 +222,7 @@ const initializeUIEvents = () => {
     }
   });
 
+  /*
   let prevMouseX: number;
   let prevMouseY: number;
   let isHorizontalMoving = false;
@@ -232,14 +274,15 @@ const initializeUIEvents = () => {
     }
   };
   window.addEventListener('mousemove', onmousemove);
-
   window.addEventListener('mouseup', event => {
     isHorizontalMoving = false;
     isVerticalMoving = false;
     document.getElementById('windowMask')!.style.display = 'none';
   });
+  */
   window.addEventListener('mouseleave', event => {});
 
+  /*
   document.getElementById('resizeAreaRight')!.addEventListener('mousedown', event => {
     isHorizontalMoving = true;
     document.getElementById('windowMask')!.style.display = 'block';
@@ -261,10 +304,10 @@ const initializeUIEvents = () => {
     prevMouseX = event.screenX;
     prevMouseY = event.screenY;
   });
+  */
 
   let mouseOffsetX: number;
   let mouseOffsetY: number;
-  let animationId: number;
   const moveWindow = () => {
     window.api.windowMoving(cardStore.getState().workState.url, {
       mouseOffsetX,
@@ -272,43 +315,43 @@ const initializeUIEvents = () => {
     });
     animationId = requestAnimationFrame(moveWindow);
   };
-  const onTitleBarMouseUp = () => {
-    // window.api.windowMoved(cardStore.getState().workState.url);
-    document.getElementById('titleBar')!.removeEventListener('mouseup', onTitleBarMouseUp);
-    cancelAnimationFrame(animationId);
-
-    let newGeom: Geometry;
-    if (cardStore.getState().sketch.label.enabled) {
-      newGeom = {
-        ...cardStore.getState().sketch.geometry,
-        width: cardStore.getState().sketch.label.width!,
-        height: cardStore.getState().sketch.label.height!,
-        x: window.screenX,
-        y: window.screenY,
-      };
-    }
-    else {
-      newGeom = {
-        ...cardStore.getState().sketch.geometry,
-        x: window.screenX,
-        y: window.screenY,
-      };
-    }
-    cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
-  };
   document.getElementById('titleBar')!.addEventListener('mousedown', event => {
-    mouseOffsetX = event.clientX;
-    mouseOffsetY = event.clientY;
-    document.getElementById('titleBar')!.addEventListener('mouseup', onTitleBarMouseUp);
-    requestAnimationFrame(moveWindow);
+    if (!cardStore.getState().sketch.label.enabled) {
+      onBodyMouseUp();
+      mouseOffsetX = event.clientX;
+      mouseOffsetY = event.clientY;
+      document.body!.addEventListener('mouseup', onBodyMouseUp);
+      requestAnimationFrame(moveWindow);
+      event.preventDefault();
+    }
+  });
+
+  document.body!.addEventListener('mousedown', event => {
+    if (cardStore.getState().sketch.label.enabled) {
+      onBodyMouseUp();
+      mouseOffsetX = event.clientX;
+      mouseOffsetY = event.clientY;
+      document.body!.addEventListener('mouseup', onBodyMouseUp);
+      requestAnimationFrame(moveWindow);
+      event.preventDefault();
+    }
   });
 
   document.getElementById('title')!.addEventListener('dblclick', event => {
-    if (cardStore.getState().sketch.label.enabled) {
-      onTransformFromLabel();
-    }
-    else {
+    if (!cardStore.getState().sketch.label.enabled) {
+      onBodyMouseUp();
       onTransformToLabel();
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  });
+
+  document.body!.addEventListener('dblclick', event => {
+    if (cardStore.getState().sketch.label.enabled) {
+      onBodyMouseUp();
+      onTransformFromLabel();
+      event.preventDefault();
+      event.stopPropagation();
     }
   });
 };
@@ -432,16 +475,39 @@ const onTransformToLabel = async () => {
   if (label.height === undefined) {
     label.height = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
   }
-  await cardStore.dispatch(cardLabelUpdateCreator(label));
-  render();
+  // Not pinned
+  label.x = cardStore.getState().sketch.geometry.x;
+  label.y = cardStore.getState().sketch.geometry.y;
 
-  window.api.setWindowRect(
-    cardStore.getState().workState.url,
-    label.x,
-    label.y,
-    label.width,
-    label.height
-  );
+  // TODO: pinned
+
+  await cardStore.dispatch(cardLabelUpdateCreator(label));
+
+  if (
+    cardStore.getState().sketch.label.height! < cardStore.getState().sketch.geometry.height
+  ) {
+    // Wait for the card to shrink.
+    await window.api.setWindowRect(
+      cardStore.getState().workState.url,
+      label.x,
+      label.y,
+      label.width,
+      label.height
+    );
+    render();
+  }
+  else {
+    render();
+    window.api.setWindowRect(
+      cardStore.getState().workState.url,
+      label.x,
+      label.y,
+      label.width,
+      label.height
+    );
+  }
+  document.getElementById('contents')!.style.visibility = 'hidden';
+  document.getElementById('label')!.style.visibility = 'visible';
 };
 
 const onTransformFromLabel = async () => {
@@ -449,15 +515,48 @@ const onTransformFromLabel = async () => {
   label.enabled = false;
   label.text = '';
   await cardStore.dispatch(cardLabelUpdateCreator(label));
-  render();
 
-  window.api.setWindowRect(
-    cardStore.getState().workState.url,
-    cardStore.getState().sketch.geometry.x,
-    cardStore.getState().sketch.geometry.y,
-    cardStore.getState().sketch.geometry.width,
-    cardStore.getState().sketch.geometry.height
-  );
+  // Not pinned
+  const newGeom: Geometry = {
+    x: Math.round(label.x!),
+    y: Math.round(label.y!),
+    z: cardStore.getState().sketch.geometry.z,
+    width: cardStore.getState().sketch.geometry.width,
+    height: cardStore.getState().sketch.geometry.height,
+  };
+  await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
+
+  // TODO: pinned
+
+  document.getElementById('contents')!.style.visibility = 'visible';
+  document.getElementById('label')!.style.visibility = 'hidden';
+  if (
+    cardStore.getState().sketch.geometry.height < cardStore.getState().sketch.label.height!
+  ) {
+    // Label is larger than card. It is rare case.
+    // Wait for the card to shrink.
+    await window.api.setWindowRect(
+      cardStore.getState().workState.url,
+      cardStore.getState().sketch.geometry.x,
+      cardStore.getState().sketch.geometry.y,
+      cardStore.getState().sketch.geometry.width,
+      cardStore.getState().sketch.geometry.height
+    );
+    render();
+  }
+  else {
+    render();
+    window.api.setWindowRect(
+      cardStore.getState().workState.url,
+      cardStore.getState().sketch.geometry.x,
+      cardStore.getState().sketch.geometry.y,
+      cardStore.getState().sketch.geometry.width,
+      cardStore.getState().sketch.geometry.height
+    );
+  }
+  if (!cardEditor.isOpened) {
+    startEditor();
+  }
 };
 
 const onResizeByHand = async (geometry: Geometry) => {
@@ -486,7 +585,7 @@ const onCardFocused = (zIndex: number | undefined, modifiedDate: string | undefi
   }
   cardStore.dispatch(cardSketchBringToFrontCreator(zIndex, modifiedDate));
 
-  render(['CardStyle', 'ContentsRect']);
+  render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
 
   if (!cardEditor.isOpened) {
     startEditor();
@@ -494,9 +593,11 @@ const onCardFocused = (zIndex: number | undefined, modifiedDate: string | undefi
 };
 
 const onCardBlurred = () => {
+  onBodyMouseUp();
+
   cardStore.dispatch(cardWorkStateStatusUpdateCreator('Blurred'));
 
-  render(['CardStyle', 'ContentsRect']);
+  render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
 
   if (cardEditor.isOpened) {
     if (cardEditor.isCodeMode) {
@@ -591,7 +692,14 @@ const onRenderCard = async (
   await cardEditor.createEditor();
   await cardEditor.setData(cardStore.getState().body._body);
 
-  document.getElementById('card')!.style.visibility = 'visible';
+  if (cardStore.getState().sketch.label.enabled) {
+    document.getElementById('label')!.style.visibility = 'visible';
+    document.getElementById('card')!.style.visibility = 'hidden';
+  }
+  else {
+    document.getElementById('label')!.style.visibility = 'hidden';
+    document.getElementById('card')!.style.visibility = 'visible';
+  }
 
   render();
   /*  
@@ -706,9 +814,11 @@ const startEditor = (x?: number, y?: number) => {
 
   cardEditor.startEdit();
   if (x !== undefined && y !== undefined) {
-    // setInterval(() => {
-    //  window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y);
-    // }, 0);
+    /*
+    setInterval(() => {
+      window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y);
+    }, 0);
+    */
     // window.api.sendLeftMouseClick(cardStore.getState().workState.url, x, y);
   }
 };

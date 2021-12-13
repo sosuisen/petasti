@@ -268,10 +268,10 @@ ipcMain.handle('set-title', (event, url: string, title: string) => {
 
 ipcMain.handle(
   'set-window-rect',
-  (event, url: string, x: number, y: number, width: number, height: number) => {
+  async (event, url: string, x: number, y: number, width: number, height: number) => {
     const card = cacheOfCard.get(url);
     // eslint-disable-next-line no-unused-expressions
-    card?.setRect(x, y, width, height, true);
+    await card?.setRect(x, y, width, height, true);
     return card?.window.getBounds();
   }
 );

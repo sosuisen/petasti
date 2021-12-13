@@ -67,19 +67,60 @@ const setWindowTitle = () => {
 const renderTitleBar = () => {
   let geomWidth;
   let geomHeight;
+
+  /**
+   * The card cannot be moved by mouse when #title is hidden.
+   * When hidden, #title changes to visible at the first mouse down.
+   * It can be moved by mouse after the second mouse down.
+   * So, the user need to click twice when #title is hidden.
+   * Use opacity instead of visible/hidden.
+   * 
+   * But this may be old info because we do not use -webkit-app-region: drag to move window now.
+   * 
+  document.getElementById('title')!.style.visibility = 'visible';
+  if (cardPropStatus.style.opacity === 0 && cardPropStatus.status === 'Blurred') {
+    document.getElementById('title')!.style.visibility = 'hidden';
+  }
+   */
+  document.getElementById('title')!.style.opacity = '1.0';
+  if (
+    cardStore.getState().sketch.style.opacity === 0 &&
+    cardStore.getState().workState.status === 'Blurred'
+  ) {
+    document.getElementById('title')!.style.opacity = '0.01';
+  }
+
+  let titleWidth;
+  let titleBarRight;
   if (cardStore.getState().sketch.label.enabled) {
     geomWidth = cardStore.getState().sketch.label.width!;
+    titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
     geomHeight = cardStore.getState().sketch.label.height!;
+    document.getElementById('closeBtn')!.style.display = 'none';
+
+    if (cardStore.getState().sketch.label.pinned) {
+      document.getElementById('pinIcon')!.className = 'fas fa-bookmark';
+    }
+    else {
+      document.getElementById('pinIcon')!.className = 'far fa-bookmark';
+    }
+
+    document.getElementById('pinBtn')!.style.display = 'block';
+    const pinBtnLeft = titleWidth - document.getElementById('pinBtn')!.offsetWidth;
+    document.getElementById('pinBtn')!.style.left = pinBtnLeft + 'px';
+    titleBarRight = pinBtnLeft;
   }
   else {
     geomWidth = cardStore.getState().sketch.geometry.width;
+    titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
     geomHeight = cardStore.getState().sketch.geometry.height;
+    document.getElementById('closeBtn')!.style.display = 'block';
+    document.getElementById('pinBtn')!.style.display = 'none';
+    const closeBtnLeft = titleWidth - document.getElementById('closeBtn')!.offsetWidth;
+    document.getElementById('closeBtn')!.style.left = closeBtnLeft + 'px';
+    titleBarRight = closeBtnLeft;
   }
-
-  const titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
   document.getElementById('title')!.style.width = titleWidth + 'px';
-  const closeBtnLeft = titleWidth - document.getElementById('closeBtn')!.offsetWidth;
-  document.getElementById('closeBtn')!.style.left = closeBtnLeft + 'px';
 
   if (getCtrlDown() || cardStore.getState().body._body === '') {
     document.getElementById('closeIcon')!.className = 'far fa-trash-alt title-btn-icon';
@@ -91,9 +132,9 @@ const renderTitleBar = () => {
   const titleBarLeft =
     document.getElementById('newBtn')!.offsetLeft +
     document.getElementById('newBtn')!.offsetWidth;
-  const barwidth = closeBtnLeft - titleBarLeft;
+  const barWidth = titleBarRight - titleBarLeft;
   document.getElementById('titleBar')!.style.left = titleBarLeft + 'px';
-  document.getElementById('titleBar')!.style.width = barwidth + 'px';
+  document.getElementById('titleBar')!.style.width = barWidth + 'px';
 
   /*
   if (cardEditor.isOpened && cardEditor.hasCodeMode) {
@@ -114,8 +155,22 @@ const renderTitleBarStyle = () => {
     cardStore.getState().sketch.style.backgroundColor,
     0.6
   );
+
   document.getElementById('newBtn')!.style.color = darkerColor;
   document.getElementById('closeBtn')!.style.color = darkerColor;
+  document.getElementById('pinBtn')!.style.color = darkerColor;
+
+  if (cardStore.getState().sketch.label.enabled) {
+    const backgroundRgba = convertHexColorToRgba(
+      cardStore.getState().sketch.style.backgroundColor,
+      cardStore.getState().sketch.style.opacity
+    );
+    document.getElementById('title')!.style.backgroundColor = backgroundRgba;
+  }
+  else {
+    const uiRgba = convertHexColorToRgba(cardStore.getState().sketch.style.uiColor);
+    document.getElementById('title')!.style.backgroundColor = uiRgba;
+  }
 
   /*
   if (cardEditor.isCodeMode) {
@@ -130,7 +185,7 @@ const renderTitleBarStyle = () => {
 const renderContentsData = (): void => {
   if (cardStore.getState().sketch.label.enabled) {
     document.getElementById(
-      'contentsFrame'
+      'labelFrame'
     )!.innerHTML = cardStore.getState().sketch.label.text;
   }
   else {
@@ -197,28 +252,38 @@ const renderCardAndContentsRect = () => {
   document.getElementById('card')!.style.width = cardWidth + 'px';
   document.getElementById('card')!.style.height = cardHeight + 'px';
 
+  let topOffset = 0;
+  let leftOffset = 0;
+  let contentsElement: HTMLElement;
+  let contentsFrame: HTMLElement;
+  if (cardStore.getState().sketch.label.enabled) {
+    leftOffset = document.getElementById('label')!.offsetLeft;
+    contentsElement = document.getElementById('label')!;
+    contentsFrame = document.getElementById('labelFrame')!;
+  }
+  else {
+    topOffset = document.getElementById('title')!.offsetHeight;
+    contentsElement = document.getElementById('contents')!;
+    contentsFrame = document.getElementById('contentsFrame')!;
+  }
+
   // width of BrowserWindow (namely cardPropStatus.geometry.width) equals border + padding + content.
   const contentsWidth =
-    geomWidth + renderOffsetWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
+    geomWidth + renderOffsetWidth - cardCssStyle.borderWidth * 2 - leftOffset - shadowWidth;
 
   const contentsHeight =
     geomHeight +
     renderOffsetHeight -
     cardCssStyle.borderWidth * 2 -
-    document.getElementById('title')!.offsetHeight -
+    topOffset -
     shadowHeight;
 
-  document.getElementById('contents')!.style.width = contentsWidth + 'px';
-  document.getElementById('contents')!.style.height = contentsHeight + 'px';
+  contentsElement.style.width = contentsWidth + 'px';
+  contentsElement.style.height = contentsHeight + 'px';
 
-  const contentsFrame = document.getElementById('contentsFrame') as HTMLElement;
   if (contentsFrame) {
-    const width = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
-    const height =
-      geomHeight -
-      cardCssStyle.borderWidth * 2 -
-      shadowHeight -
-      document.getElementById('title')!.offsetHeight;
+    const width = geomWidth - cardCssStyle.borderWidth * 2 - leftOffset - shadowWidth;
+    const height = geomHeight - cardCssStyle.borderWidth * 2 - shadowHeight - topOffset;
 
     const innerWidth =
       width / cardStore.getState().sketch.style.zoom -
@@ -265,23 +330,15 @@ const renderCardAndContentsRect = () => {
 
 // eslint-disable-next-line complexity
 const renderCardStyle = () => {
-  /**
-   * The card cannot be moved by mouse when #title is hidden.
-   * When hidden, #title changes to visible at the first mouse down.
-   * It can be moved by mouse after the second mouse down.
-   * So, the user need to click twice when #title is hidden.
-   * Use opacity instead of visible/hidden.
-  document.getElementById('title')!.style.visibility = 'visible';
-  if (cardPropStatus.style.opacity === 0 && cardPropStatus.status === 'Blurred') {
-    document.getElementById('title')!.style.visibility = 'hidden';
+  let contentsElement: HTMLElement;
+  let contentsFrame: HTMLElement;
+  if (cardStore.getState().sketch.label.enabled) {
+    contentsElement = document.getElementById('label')!;
+    contentsFrame = document.getElementById('labelFrame')!;
   }
-   */
-  document.getElementById('title')!.style.opacity = '1.0';
-  if (
-    cardStore.getState().sketch.style.opacity === 0 &&
-    cardStore.getState().workState.status === 'Blurred'
-  ) {
-    document.getElementById('title')!.style.opacity = '0.01';
+  else {
+    contentsElement = document.getElementById('contents')!;
+    contentsFrame = document.getElementById('contentsFrame')!;
   }
 
   // Set card properties
@@ -289,15 +346,10 @@ const renderCardStyle = () => {
     cardStore.getState().sketch.style.backgroundColor,
     cardStore.getState().sketch.style.opacity
   );
-  document.getElementById('contents')!.style.backgroundColor = backgroundRgba;
-  const darkerRgba = convertHexColorToRgba(
-    darkenHexColor(cardStore.getState().sketch.style.backgroundColor),
-    cardStore.getState().sketch.style.opacity
-  );
+  // contentsElement.style.backgroundColor = backgroundRgba;
+  document.getElementById('card')!.style.backgroundColor = backgroundRgba;
 
   const uiRgba = convertHexColorToRgba(cardStore.getState().sketch.style.uiColor);
-
-  document.getElementById('title')!.style.backgroundColor = uiRgba;
 
   if (cardStore.getState().sketch.style.opacity !== 0) {
     document.getElementById(
@@ -357,7 +409,7 @@ const renderCardStyle = () => {
   } catch (e) {
     console.error(e);
   }] */
-  const contentsFrame = document.getElementById('contentsFrame') as HTMLElement;
+
   // @ts-ignore
   contentsFrame.style.zoom = `${cardStore.getState().sketch.style.zoom}`;
 

@@ -47,6 +47,7 @@ export type CardCondition = {
  */
 export type CardLabel = {
   enabled: boolean;
+  pinned: boolean;
   text: string;
   x: number | undefined;
   y: number | undefined;
@@ -124,7 +125,7 @@ export interface ICard {
     width: number,
     height: number,
     animation: boolean
-  ) => void;
+  ) => Promise<void>;
   removeWindowListenersExceptClosedEvent: () => void;
   removeWindowListeners: () => void;
   window: BrowserWindow;

@@ -103,7 +103,11 @@ body > .card > .title > .close-btn{
   left: 246px;
 }
 
-  
+body > .card > .title > .pin-btn{
+  top: -4px;
+  left: 246px;
+}
+
 body > .card > .contents{
   padding: 0px;
   margin: 0px;
@@ -120,6 +124,33 @@ body > .card > .contents{
 
   overflow-x: hidden;
   overflow-y: scroll;
+}
+
+body > .card > .label{
+  -webkit-user-select: none;
+  
+  padding: 0px;
+  margin: 0px;
+  border: 0px;
+  top: 0px;
+  left: 18px;
+  position: absolute;
+  z-index: 20;
+
+	/* Remove the background color to make it transparent. */
+	background-color: transparent;
+  width: 100%;
+  height: 100%;
+
+  overflow-x: hidden;
+  overflow-y: scroll;
+
+  cursor: grab;
+  visibility: hidden;
+}
+
+body > .card > .label:active{
+  cursor: grabbing;
 }
 
 body > .window-mask{
@@ -139,6 +170,7 @@ body > .resize-area{
   z-index: 10;
 }
 
+/* 
 body > .resize-area-ew{
   cursor: ew-resize;
 }
@@ -150,3 +182,4 @@ body > .resize-area-ns{
 body > .resize-area-nwse{
   cursor: nwse-resize;
 }
+*/
