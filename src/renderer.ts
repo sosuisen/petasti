@@ -694,12 +694,14 @@ const onRenderCard = async (
 
   if (cardStore.getState().sketch.label.enabled) {
     document.getElementById('label')!.style.visibility = 'visible';
-    document.getElementById('card')!.style.visibility = 'hidden';
+    document.getElementById('contents')!.style.visibility = 'hidden';
   }
   else {
     document.getElementById('label')!.style.visibility = 'hidden';
-    document.getElementById('card')!.style.visibility = 'visible';
+    document.getElementById('contents')!.style.visibility = 'visible';
   }
+
+  document.getElementById('card')!.style.visibility = 'visible';
 
   render();
   /*  
