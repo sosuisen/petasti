@@ -76,11 +76,6 @@ body > .card > .title > .title-btn > .title-btn-icon{
 
 body > .card > .title > .title-bar{
   text-align: right;
-  cursor: grab;
-}
-
-body > .card > .title > .title-bar:active {
-  cursor: grabbing;
 }
 
 body > .card > .title > .title-bar > .title-message{
@@ -147,6 +142,13 @@ body > .card > .label{
 
   overflow-x: hidden;
   overflow-y: scroll;
+
+  cursor: grab;
+  visibility: hidden;
+}
+
+body > .card > .label:active{
+  cursor: grabbing;
 }
 
 body > .window-mask{
