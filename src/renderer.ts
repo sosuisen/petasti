@@ -554,6 +554,9 @@ const onTransformFromLabel = async () => {
       cardStore.getState().sketch.geometry.height
     );
   }
+  if (!cardEditor.isOpened) {
+    startEditor();
+  }
 };
 
 const onResizeByHand = async (geometry: Geometry) => {
