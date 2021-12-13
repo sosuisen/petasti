@@ -453,16 +453,20 @@ window.addEventListener('message', event => {
 });
 
 const onTransformToLabel = async () => {
+  const label = cardStore.getState().sketch.label;
+  if (label.enabled) return;
+  label.enabled = true;
+
   if (cardEditor.isOpened) {
-    await endEditor();
+    // await endEditor();
+    endEditor(); // Need not to wait saving.
   }
   const html = cardEditor.getHTML();
   const paragraphs = html.split('</p>');
   let labelText = '';
   if (paragraphs.length > 0) labelText = paragraphs[0] + '</p>';
-  const label = cardStore.getState().sketch.label;
-  label.enabled = true;
   label.text = labelText;
+
   if (label.x === undefined) {
     label.x = cardStore.getState().sketch.geometry.x;
   }
@@ -483,37 +487,32 @@ const onTransformToLabel = async () => {
 
   await cardStore.dispatch(cardLabelUpdateCreator(label));
 
-  if (
-    cardStore.getState().sketch.label.height! < cardStore.getState().sketch.geometry.height
-  ) {
-    // Wait for the card to shrink.
-    await window.api.setWindowRect(
-      cardStore.getState().workState.url,
-      label.x,
-      label.y,
-      label.width,
-      label.height
-    );
-    render();
-  }
-  else {
-    render();
-    window.api.setWindowRect(
-      cardStore.getState().workState.url,
-      label.x,
-      label.y,
-      label.width,
-      label.height
-    );
-  }
-  document.getElementById('contents')!.style.visibility = 'hidden';
-  document.getElementById('label')!.style.visibility = 'visible';
+  document.getElementById('label')!.classList.toggle('show');
+  document.getElementById('label')!.classList.toggle('hide');
+  document.getElementById('contents')!.classList.toggle('show');
+  document.getElementById('contents')!.classList.toggle('hide');
+
+  render();
+  window.api.setWindowRect(
+    cardStore.getState().workState.url,
+    label.x,
+    label.y,
+    label.width,
+    label.height
+  );
 };
 
 const onTransformFromLabel = async () => {
   const label = cardStore.getState().sketch.label;
+  if (!label.enabled) return;
   label.enabled = false;
-  label.text = '';
+
+  document.getElementById('label')!.classList.toggle('show');
+  document.getElementById('label')!.classList.toggle('hide');
+  document.getElementById('contents')!.classList.toggle('show');
+  document.getElementById('contents')!.classList.toggle('hide');
+
+  // label.text = '';
   await cardStore.dispatch(cardLabelUpdateCreator(label));
 
   // Not pinned
@@ -528,8 +527,6 @@ const onTransformFromLabel = async () => {
 
   // TODO: pinned
 
-  document.getElementById('contents')!.style.visibility = 'visible';
-  document.getElementById('label')!.style.visibility = 'hidden';
   if (
     cardStore.getState().sketch.geometry.height < cardStore.getState().sketch.label.height!
   ) {
@@ -693,12 +690,16 @@ const onRenderCard = async (
   await cardEditor.setData(cardStore.getState().body._body);
 
   if (cardStore.getState().sketch.label.enabled) {
-    document.getElementById('label')!.style.visibility = 'visible';
-    document.getElementById('contents')!.style.visibility = 'hidden';
+    document.getElementById('label')!.classList.toggle('show');
+    document.getElementById('label')!.classList.toggle('hide');
+    document.getElementById('contents')!.classList.toggle('show');
+    document.getElementById('contents')!.classList.toggle('hide');
+    // document.getElementById('label')!.style.visibility = 'visible';
+    // document.getElementById('contents')!.style.visibility = 'hidden';
   }
   else {
-    document.getElementById('label')!.style.visibility = 'hidden';
-    document.getElementById('contents')!.style.visibility = 'visible';
+    // document.getElementById('label')!.style.visibility = 'hidden';
+    // document.getElementById('contents')!.style.visibility = 'visible';
   }
 
   document.getElementById('card')!.style.visibility = 'visible';

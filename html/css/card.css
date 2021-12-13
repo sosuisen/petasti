@@ -146,7 +146,6 @@ body > .card > .label{
   overflow-y: scroll;
 
   cursor: grab;
-  visibility: hidden;
 }
 
 body > .card > .label:active{
@@ -183,3 +182,18 @@ body > .resize-area-nwse{
   cursor: nwse-resize;
 }
 */
+
+.hide{
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s ease-in;
+}
+
+.show{
+  opacity: 1;
+  visibility: visible;
+}
+
+#title, #card, #editor, #label {
+  transition: background-color 0.3s ease-in;
+}
