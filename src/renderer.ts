@@ -23,16 +23,9 @@ import {
   DRAG_IMAGE_MARGIN,
   MINIMUM_WINDOW_HEIGHT,
   MINIMUM_WINDOW_HEIGHT_OFFSET,
-  MINIMUM_WINDOW_WIDTH,
 } from './modules_common/const';
 import { CardEditorMarkdown } from './modules_renderer/editor_markdown';
-import {
-  initCardRenderer,
-  render,
-  shadowHeight,
-  shadowWidth,
-} from './modules_renderer/card_renderer';
-import { darkenHexColor, strengthenHexColor } from './modules_common/color';
+import { initCardRenderer, render, shadowHeight } from './modules_renderer/card_renderer';
 import { saveCardColor } from './modules_renderer/save';
 import window from './modules_renderer/window';
 import {
@@ -53,7 +46,6 @@ import {
   cardStyleUpdateCreator,
   cardWorkStateStatusUpdateCreator,
 } from './modules_renderer/card_action_creator';
-import { ChangeFrom } from './modules_renderer/card_types';
 import { setMessages } from './modules_renderer/messages_renderer';
 import { setConfig } from './modules_renderer/config';
 import { isLabelOpened } from './modules_common/utils';
@@ -73,12 +65,18 @@ const close = () => {
 };
 
 let animationId: number | undefined;
+let moveStartX: number;
+let moveStartY: number;
+
 const onBodyMouseUp = () => {
   // window.api.windowMoved(cardStore.getState().workState.url);
   document.body!.removeEventListener('mouseup', onBodyMouseUp);
   if (animationId !== undefined) {
     cancelAnimationFrame(animationId);
     animationId = undefined;
+
+    if (moveStartX === window.screenX && moveStartY === window.screenY) return;
+
     let newGeom: Geometry;
     if (isLabelOpened(cardStore.getState().sketch.label.status)) {
       newGeom = {
@@ -96,6 +94,7 @@ const onBodyMouseUp = () => {
         y: window.screenY,
       };
     }
+    console.log('## onBodyMouseUp');
     cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
   }
 };
@@ -319,6 +318,9 @@ const initializeUIEvents = () => {
       onBodyMouseUp();
       mouseOffsetX = event.clientX;
       mouseOffsetY = event.clientY;
+      moveStartX = window.screenX;
+      moveStartY = window.screenY;
+
       document.body!.addEventListener('mouseup', onBodyMouseUp);
       requestAnimationFrame(moveWindow);
       event.preventDefault();
@@ -330,6 +332,9 @@ const initializeUIEvents = () => {
       onBodyMouseUp();
       mouseOffsetX = event.clientX;
       mouseOffsetY = event.clientY;
+      moveStartX = window.screenX;
+      moveStartY = window.screenY;
+
       document.body!.addEventListener('mouseup', onBodyMouseUp);
       requestAnimationFrame(moveWindow);
       event.preventDefault();
@@ -504,6 +509,7 @@ const onTransformToLabel = async () => {
   );
 };
 
+// eslint-disable-next-line complexity
 const onTransformFromLabel = async () => {
   const label = cardStore.getState().sketch.label;
   if (!isLabelOpened(label.status)) return;
@@ -526,9 +532,41 @@ const onTransformFromLabel = async () => {
     };
     label.status = 'closedLabel';
   }
-  await cardStore.dispatch(cardLabelUpdateCreator(label));
 
+  const displayRect = await window.api.getCurrentDisplayRect(newGeom.x, newGeom.y);
+  // console.log(displayRect);
+  let stashed = false;
+  if (
+    cardStore.getState().sketch.label.status === 'closedLabel' ||
+    (cardStore.getState().sketch.label.status === 'closedSticker' &&
+      cardStore.getState().sketch.label.x === cardStore.getState().sketch.geometry.x &&
+      cardStore.getState().sketch.label.y === cardStore.getState().sketch.geometry.y)
+  ) {
+    if (newGeom.x + newGeom.width > displayRect.x + displayRect.width) {
+      newGeom.x = displayRect.x + displayRect.width - newGeom.width;
+      if (label.status === 'closedLabel') stashed = true;
+    }
+    if (newGeom.x < displayRect.x) {
+      newGeom.x = displayRect.x;
+      if (label.status === 'closedLabel') stashed = true;
+    }
+    if (newGeom.y + newGeom.height > displayRect.y + displayRect.height) {
+      newGeom.y = displayRect.y + displayRect.height - newGeom.height;
+      if (label.status === 'closedLabel') stashed = true;
+    }
+    if (newGeom.y < displayRect.y) {
+      newGeom.y = displayRect.y;
+      if (label.status === 'closedLabel') stashed = true;
+    }
+  }
+  await cardStore.dispatch(cardLabelUpdateCreator(label));
   await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
+
+  // Update label again
+  if (stashed) {
+    label.status = 'stashedLabel';
+    await cardStore.dispatch(cardLabelUpdateCreator(label));
+  }
 
   if (
     cardStore.getState().sketch.geometry.height < cardStore.getState().sketch.label.height!

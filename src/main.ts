@@ -3,7 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { app, ipcMain, MouseInputEvent, powerMonitor, screen } from 'electron';
+import { app, Display, ipcMain, MouseInputEvent, powerMonitor, screen } from 'electron';
 import fs from 'fs-extra';
 import {
   Card,
@@ -19,9 +19,7 @@ import { addSettingsHandler } from './modules_main/settings_eventhandler';
 import { cacheOfCard } from './modules_main/card_cache';
 import { DatabaseCommand } from './modules_common/db.types';
 import { defaultLogDir } from './modules_common/store.types';
-import { getNoteIdFromUrl, sleep } from './modules_common/utils';
-import { APP_SCHEME } from './modules_common/const';
-import { closeSettings } from './modules_main/settings';
+import { sleep } from './modules_common/utils';
 import { initializeUrlSchema, openURL } from './modules_main/url_schema';
 
 const gotTheLock = app.requestSingleInstanceLock();
@@ -324,6 +322,16 @@ ipcMain.handle('window-moving', (e, url, { mouseOffsetX, mouseOffsetY }) => {
 
 ipcMain.handle('window-moved', (e, url) => {
   // Do something when dragging stop
+});
+
+ipcMain.handle('get-current-display-rect', (e, x: number, y: number) => {
+  const display: Display = screen.getDisplayNearestPoint({ x, y });
+  return {
+    x: display.bounds.x,
+    y: display.bounds.y,
+    width: display.bounds.width,
+    height: display.bounds.height,
+  };
 });
 
 powerMonitor.on('resume', () => {

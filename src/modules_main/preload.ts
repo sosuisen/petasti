@@ -49,6 +49,9 @@ contextBridge.exposeInMainWorld('api', {
   focus: (url: string) => {
     return ipcRenderer.invoke('focus', url);
   },
+  getCurrentDisplayRect: (x: number, y: number) => {
+    return ipcRenderer.invoke('get-current-display-rect', x, y);
+  },
   getUuid: () => {
     return ipcRenderer.invoke('get-uuid');
   },

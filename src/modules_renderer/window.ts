@@ -28,6 +28,10 @@ interface WindowWithAPI extends Window {
     finishLoad: (url: string) => Promise<void>;
     finishRenderCard: (url: string) => Promise<void>;
     focus: (url: string) => Promise<void>;
+    getCurrentDisplayRect: (
+      x: number,
+      y: number
+    ) => { x: number; y: number; width: number; height: number };
     getUuid: () => Promise<string>;
     openURL: (url: string) => Promise<void>;
     sendLeftMouseDown: (url: string, x: number, y: number) => Promise<void>;
