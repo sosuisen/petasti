@@ -59,6 +59,7 @@ export type CardLabel = {
   y: number | undefined;
   width: number | undefined;
   height: number | undefined;
+  zoom: number | undefined;
 };
 
 export type CardBody = {

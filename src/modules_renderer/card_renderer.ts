@@ -303,15 +303,18 @@ const renderCardAndContentsRect = () => {
   let leftOffset = 0;
   let contentsElement: HTMLElement;
   let contentsFrame: HTMLElement;
+  let zoom: number;
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     leftOffset = document.getElementById('label')!.offsetLeft;
     contentsElement = document.getElementById('label')!;
     contentsFrame = document.getElementById('labelFrame')!;
+    zoom = cardStore.getState().sketch.label.zoom!;
   }
   else {
     topOffset = document.getElementById('title')!.offsetHeight;
     contentsElement = document.getElementById('contents')!;
     contentsFrame = document.getElementById('contentsFrame')!;
+    zoom = cardStore.getState().sketch.style.zoom;
   }
 
   // width of BrowserWindow (namely cardPropStatus.geometry.width) equals border + padding + content.
@@ -327,15 +330,9 @@ const renderCardAndContentsRect = () => {
     const width = geomWidth - cardCssStyle.borderWidth * 2 - leftOffset - shadowWidth;
     const height = geomHeight - cardCssStyle.borderWidth * 2 - shadowHeight - topOffset;
 
-    const innerWidth =
-      width / cardStore.getState().sketch.style.zoom -
-      CARD_MARGIN_LEFT * 2 -
-      CARD_PADDING * 2;
+    const innerWidth = width / zoom - CARD_MARGIN_LEFT * 2 - CARD_PADDING * 2;
     //        - CARD_SCROLLBAR_WIDTH * cardStore.getState().sketch.style.zoom;
-    const innerHeight =
-      height / cardStore.getState().sketch.style.zoom -
-      CARD_MARGIN_TOP * 2 -
-      CARD_PADDING * 2;
+    const innerHeight = height / zoom - CARD_MARGIN_TOP * 2 - CARD_PADDING * 2;
 
     contentsFrame.style.width = innerWidth + 'px';
     contentsFrame.style.height = innerHeight + 'px';
@@ -374,13 +371,16 @@ const renderCardAndContentsRect = () => {
 const renderCardStyle = () => {
   let contentsElement: HTMLElement;
   let contentsFrame: HTMLElement;
+  let zoom: number;
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     contentsElement = document.getElementById('label')!;
     contentsFrame = document.getElementById('labelFrame')!;
+    zoom = cardStore.getState().sketch.label.zoom!;
   }
   else {
     contentsElement = document.getElementById('contents')!;
     contentsFrame = document.getElementById('contentsFrame')!;
+    zoom = cardStore.getState().sketch.style.zoom;
   }
 
   // Set card properties
@@ -457,7 +457,7 @@ const renderCardStyle = () => {
   }] */
 
   // @ts-ignore
-  contentsFrame.style.zoom = `${cardStore.getState().sketch.style.zoom}`;
+  contentsFrame.style.zoom = `${zoom}`;
 
   const style = window.document.createElement('style');
   style.innerHTML =

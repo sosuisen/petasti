@@ -39,6 +39,7 @@ export const DEFAULT_CARD_LABEL: CardLabel = {
   y: undefined,
   width: undefined,
   height: undefined,
+  zoom: undefined,
 };
 
 export const DEFAULT_CARD_STYLE: CardStyle = {

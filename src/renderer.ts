@@ -7,6 +7,7 @@ import { ChangedFile } from 'git-documentdb';
 import { cardStore } from './modules_renderer/card_store';
 import {
   CardBody,
+  CardLabel,
   CardSketch,
   CardStyle,
   Geometry,
@@ -480,6 +481,9 @@ const onTransformToLabel = async () => {
   if (label.height === undefined) {
     label.height = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
   }
+  if (label.zoom === undefined) {
+    label.zoom = cardStore.getState().sketch.style.zoom;
+  }
 
   if (label.status === 'closedLabel') {
     label.status = 'openedLabel';
@@ -776,32 +780,66 @@ const onSetLock = (locked: boolean) => {
 };
 
 const onZoomIn = async () => {
-  const newStyle: CardStyle = { ...cardStore.getState().sketch.style };
-  if (newStyle.zoom < 1.0) {
-    newStyle.zoom += 0.15;
+  let zoom: number;
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
+    zoom = cardStore.getState().sketch.label.zoom!;
   }
   else {
-    newStyle.zoom += 0.3;
+    zoom = cardStore.getState().sketch.style.zoom;
   }
-  if (newStyle.zoom > 3) {
-    newStyle.zoom = 3;
+
+  if (zoom < 1.0) {
+    zoom += 0.15;
   }
-  await cardStore.dispatch(cardStyleUpdateCreator(newStyle));
+  else {
+    zoom += 0.3;
+  }
+  if (zoom > 3) {
+    zoom = 3;
+  }
+
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
+    const newLabel: CardLabel = { ...cardStore.getState().sketch.label };
+    newLabel.zoom = zoom;
+    await cardStore.dispatch(cardLabelUpdateCreator(newLabel));
+  }
+  else {
+    const newStyle: CardStyle = { ...cardStore.getState().sketch.style };
+    newStyle.zoom = zoom;
+    await cardStore.dispatch(cardStyleUpdateCreator(newStyle));
+  }
   render(['CardStyle', 'EditorStyle']);
 };
 
 const onZoomOut = async () => {
-  const newStyle: CardStyle = { ...cardStore.getState().sketch.style };
-  if (newStyle.zoom <= 1.0) {
-    newStyle.zoom -= 0.15;
+  let zoom: number;
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
+    zoom = cardStore.getState().sketch.label.zoom!;
   }
   else {
-    newStyle.zoom -= 0.3;
+    zoom = cardStore.getState().sketch.style.zoom;
   }
-  if (newStyle.zoom <= 0.55) {
-    newStyle.zoom = 0.55;
+
+  if (zoom <= 1.0) {
+    zoom -= 0.15;
   }
-  await cardStore.dispatch(cardStyleUpdateCreator(newStyle));
+  else {
+    zoom -= 0.3;
+  }
+  if (zoom <= 0.55) {
+    zoom = 0.55;
+  }
+
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
+    const newLabel: CardLabel = { ...cardStore.getState().sketch.label };
+    newLabel.zoom = zoom;
+    await cardStore.dispatch(cardLabelUpdateCreator(newLabel));
+  }
+  else {
+    const newStyle: CardStyle = { ...cardStore.getState().sketch.style };
+    newStyle.zoom = zoom;
+    await cardStore.dispatch(cardStyleUpdateCreator(newStyle));
+  }
   render(['CardStyle', 'EditorStyle']);
 };
 
