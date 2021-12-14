@@ -34,7 +34,7 @@ export const DEFAULT_CARD_CONDITION: CardCondition = {
 };
 export const DEFAULT_CARD_LABEL: CardLabel = {
   enabled: false,
-  pinned: false,
+  sticker: false,
   text: '',
   x: undefined,
   y: undefined,

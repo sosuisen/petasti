@@ -93,51 +93,51 @@ const renderTitleBar = () => {
 
   let titleWidth;
   let titleBarRight;
-  const pinBtn = document.getElementById('pinBtn')!;
-  const pinIconOn = document.getElementById('pinIconOn')!;
-  const pinIconOff = document.getElementById('pinIconOff')!;
+  const stickerBtn = document.getElementById('stickerBtn')!;
+  const stickerIconOn = document.getElementById('stickerIconOn')!;
+  const stickerIconOff = document.getElementById('stickerIconOff')!;
   if (cardStore.getState().sketch.label.enabled) {
     geomWidth = cardStore.getState().sketch.label.width!;
     titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
     geomHeight = cardStore.getState().sketch.label.height!;
     document.getElementById('closeBtn')!.style.display = 'none';
 
-    if (cardStore.getState().sketch.label.pinned) {
-      if (pinIconOn.classList.contains('hideWithAnime')) {
-        pinIconOn.classList.remove('hideWithAnime');
+    if (cardStore.getState().sketch.label.sticker) {
+      if (stickerIconOn.classList.contains('hideWithAnime')) {
+        stickerIconOn.classList.remove('hideWithAnime');
       }
-      if (!pinIconOn.classList.contains('showWithAnime')) {
-        pinIconOn.classList.add('showWithAnime');
+      if (!stickerIconOn.classList.contains('showWithAnime')) {
+        stickerIconOn.classList.add('showWithAnime');
       }
-      if (pinIconOff.classList.contains('showWithAnime')) {
-        pinIconOff.classList.remove('showWithAnime');
+      if (stickerIconOff.classList.contains('showWithAnime')) {
+        stickerIconOff.classList.remove('showWithAnime');
       }
-      if (!pinIconOff.classList.contains('hideWithAnime')) {
-        pinIconOff.classList.add('hideWithAnime');
+      if (!stickerIconOff.classList.contains('hideWithAnime')) {
+        stickerIconOff.classList.add('hideWithAnime');
       }
     }
     else {
-      if (pinIconOff.classList.contains('hideWithAnime')) {
-        pinIconOff.classList.remove('hideWithAnime');
+      if (stickerIconOff.classList.contains('hideWithAnime')) {
+        stickerIconOff.classList.remove('hideWithAnime');
       }
-      if (!pinIconOff.classList.contains('showWithAnime')) {
-        pinIconOff.classList.add('showWithAnime');
+      if (!stickerIconOff.classList.contains('showWithAnime')) {
+        stickerIconOff.classList.add('showWithAnime');
       }
-      if (pinIconOn.classList.contains('showWithAnime')) {
-        pinIconOn.classList.remove('showWithAnime');
+      if (stickerIconOn.classList.contains('showWithAnime')) {
+        stickerIconOn.classList.remove('showWithAnime');
       }
-      if (!pinIconOn.classList.contains('hideWithAnime')) {
-        pinIconOn.classList.add('hideWithAnime');
+      if (!stickerIconOn.classList.contains('hideWithAnime')) {
+        stickerIconOn.classList.add('hideWithAnime');
       }
     }
 
-    pinBtn.style.visibility = 'visible';
+    stickerBtn.style.visibility = 'visible';
 
-    document.getElementById('pinBtn')!.style.top =
+    document.getElementById('stickerBtn')!.style.top =
       document.getElementById('newBtn')!.offsetTop +
       document.getElementById('newBtn')!.offsetHeight +
       'px';
-    document.getElementById('pinBtn')!.style.left =
+    document.getElementById('stickerBtn')!.style.left =
       document.getElementById('newBtn')!.offsetLeft + 'px';
     titleBarRight = titleWidth;
   }
@@ -147,20 +147,19 @@ const renderTitleBar = () => {
     geomHeight = cardStore.getState().sketch.geometry.height;
     document.getElementById('closeBtn')!.style.display = 'block';
 
-    pinBtn.style.visibility = 'hidden';
-    if (pinIconOn.classList.contains('showWithAnime')) {
-      pinIconOn.classList.remove('showWithAnime');
+    stickerBtn.style.visibility = 'hidden';
+    if (stickerIconOn.classList.contains('showWithAnime')) {
+      stickerIconOn.classList.remove('showWithAnime');
     }
-    if (!pinIconOn.classList.contains('hideWithAnime')) {
-      pinIconOn.classList.add('hideWithAnime');
+    if (!stickerIconOn.classList.contains('hideWithAnime')) {
+      stickerIconOn.classList.add('hideWithAnime');
     }
-    if (pinIconOff.classList.contains('showWithAnime')) {
-      pinIconOff.classList.remove('showWithAnime');
+    if (stickerIconOff.classList.contains('showWithAnime')) {
+      stickerIconOff.classList.remove('showWithAnime');
     }
-    if (!pinIconOff.classList.contains('hideWithAnime')) {
-      pinIconOff.classList.add('hideWithAnime');
+    if (!stickerIconOff.classList.contains('hideWithAnime')) {
+      stickerIconOff.classList.add('hideWithAnime');
     }
-
 
     const closeBtnLeft = titleWidth - document.getElementById('closeBtn')!.offsetWidth;
     document.getElementById('closeBtn')!.style.left = closeBtnLeft + 'px';
@@ -204,7 +203,7 @@ const renderTitleBarStyle = () => {
 
   document.getElementById('newBtn')!.style.color = darkerColor;
   document.getElementById('closeBtn')!.style.color = darkerColor;
-  document.getElementById('pinBtn')!.style.color = darkerColor;
+  document.getElementById('stickerBtn')!.style.color = darkerColor;
 
   if (cardStore.getState().sketch.label.enabled) {
     const backgroundRgba = convertHexColorToRgba(

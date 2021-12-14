@@ -103,12 +103,12 @@ body > .card > .title > .close-btn{
   left: 246px;
 }
 
-body > .card > .title > .pin-btn{
+body > .card > .title > .sticker-btn{
   top: 18px;
   left: 0px;
 }
 
-#pinIconOn, #pinIconOff{
+#stickerIconOn, #stickerIconOff{
   position: absolute;
   left: 3px;
 }

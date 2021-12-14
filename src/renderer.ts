@@ -161,13 +161,13 @@ const initializeUIEvents = () => {
     await window.api.createCard(undefined, cardBody, cardSketch);
   });
 
-  document.getElementById('pinBtn')?.addEventListener('click', async event => {
+  document.getElementById('stickerBtn')?.addEventListener('click', async event => {
     const label = cardStore.getState().sketch.label;
-    if (cardStore.getState().sketch.label.pinned) {
-      label.pinned = false;
+    if (cardStore.getState().sketch.label.sticker) {
+      label.sticker = false;
     }
     else {
-      label.pinned = true;
+      label.sticker = true;
     }
     await cardStore.dispatch(cardLabelUpdateCreator(label));
     render(['TitleBar']);
@@ -479,11 +479,11 @@ const onTransformToLabel = async () => {
   if (label.height === undefined) {
     label.height = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
   }
-  // Not pinned
+  // Not sticker
   label.x = cardStore.getState().sketch.geometry.x;
   label.y = cardStore.getState().sketch.geometry.y;
 
-  // TODO: pinned
+  // TODO: sticker
 
   await cardStore.dispatch(cardLabelUpdateCreator(label));
 
@@ -515,7 +515,7 @@ const onTransformFromLabel = async () => {
   // label.text = '';
   await cardStore.dispatch(cardLabelUpdateCreator(label));
 
-  // Not pinned
+  // Not sticker
   const newGeom: Geometry = {
     x: Math.round(label.x!),
     y: Math.round(label.y!),
@@ -525,7 +525,7 @@ const onTransformFromLabel = async () => {
   };
   await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
 
-  // TODO: pinned
+  // TODO: sticker
 
   if (
     cardStore.getState().sketch.geometry.height < cardStore.getState().sketch.label.height!
