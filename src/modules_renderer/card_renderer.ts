@@ -90,6 +90,7 @@ const renderTitleBar = () => {
     geomWidth = cardStore.getState().sketch.label.width!;
     titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
     geomHeight = cardStore.getState().sketch.label.height!;
+    document.getElementById('newBtn')!.style.display = 'none';
     document.getElementById('closeBtn')!.style.display = 'none';
 
     if (cardStore.getState().sketch.label.status === 'openedSticker') {
@@ -124,9 +125,7 @@ const renderTitleBar = () => {
     stickerBtn.style.visibility = 'visible';
 
     document.getElementById('stickerBtn')!.style.top =
-      document.getElementById('newBtn')!.offsetTop +
-      document.getElementById('newBtn')!.offsetHeight +
-      'px';
+      document.getElementById('newBtn')!.offsetTop + 'px';
     document.getElementById('stickerBtn')!.style.left =
       document.getElementById('newBtn')!.offsetLeft + 'px';
     titleBarRight = titleWidth;
@@ -135,6 +134,7 @@ const renderTitleBar = () => {
     geomWidth = cardStore.getState().sketch.geometry.width;
     titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
     geomHeight = cardStore.getState().sketch.geometry.height;
+    document.getElementById('newBtn')!.style.display = 'block';
     document.getElementById('closeBtn')!.style.display = 'block';
 
     stickerBtn.style.visibility = 'hidden';
