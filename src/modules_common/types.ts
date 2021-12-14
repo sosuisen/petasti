@@ -45,9 +45,15 @@ export type CardCondition = {
  * CardLabel
  * Properties for labelized card
  */
+export type LabelStatus =
+  | 'closedLabel'
+  | 'stashedLabel'
+  | 'closedSticker'
+  | 'openedLabel'
+  | 'openedSticker';
+
 export type CardLabel = {
-  enabled: boolean;
-  sticker: boolean;
+  status: LabelStatus;
   text: string;
   x: number | undefined;
   y: number | undefined;

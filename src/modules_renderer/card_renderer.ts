@@ -14,6 +14,7 @@ import { getCtrlDown } from '../modules_common/keys';
 import { cardStore } from './card_store';
 import { CARD_MARGIN_LEFT, CARD_MARGIN_TOP, CARD_PADDING } from '../modules_common/const';
 import { getConfig } from './config';
+import { isLabelOpened } from '../modules_common/utils';
 
 let cardCssStyle: CardCssStyle;
 let cardEditor: ICardEditor;
@@ -100,13 +101,13 @@ const renderTitleBar = () => {
   const stickerBtn = document.getElementById('stickerBtn')!;
   const stickerIconOn = document.getElementById('stickerIconOn')!;
   const stickerIconOff = document.getElementById('stickerIconOff')!;
-  if (cardStore.getState().sketch.label.enabled) {
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     geomWidth = cardStore.getState().sketch.label.width!;
     titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
     geomHeight = cardStore.getState().sketch.label.height!;
     document.getElementById('closeBtn')!.style.display = 'none';
 
-    if (cardStore.getState().sketch.label.sticker) {
+    if (cardStore.getState().sketch.label.status === 'openedSticker') {
       if (stickerIconOn.classList.contains('hideWithAnime')) {
         stickerIconOn.classList.remove('hideWithAnime');
       }
@@ -206,7 +207,7 @@ const renderTitleBarStyle = () => {
   document.getElementById('closeBtn')!.style.color = darkerColor;
   document.getElementById('stickerBtn')!.style.color = darkerColor;
 
-  if (cardStore.getState().sketch.label.enabled) {
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     const backgroundRgba = convertHexColorToRgba(
       cardStore.getState().sketch.style.backgroundColor,
       cardStore.getState().sketch.style.opacity
@@ -232,7 +233,7 @@ const renderTitleBarStyle = () => {
 };
 
 const renderContentsData = (): void => {
-  if (cardStore.getState().sketch.label.enabled) {
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     document.getElementById(
       'labelFrame'
     )!.innerHTML = cardStore.getState().sketch.label.text;
@@ -280,7 +281,7 @@ const renderContentsData = (): void => {
 const renderCardAndContentsRect = () => {
   let geomWidth;
   let geomHeight;
-  if (cardStore.getState().sketch.label.enabled) {
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     geomWidth = cardStore.getState().sketch.label.width!;
     geomHeight = cardStore.getState().sketch.label.height!;
   }
@@ -305,7 +306,7 @@ const renderCardAndContentsRect = () => {
   let leftOffset = 0;
   let contentsElement: HTMLElement;
   let contentsFrame: HTMLElement;
-  if (cardStore.getState().sketch.label.enabled) {
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     leftOffset = document.getElementById('label')!.offsetLeft;
     contentsElement = document.getElementById('label')!;
     contentsFrame = document.getElementById('labelFrame')!;
@@ -381,7 +382,7 @@ const renderCardAndContentsRect = () => {
 const renderCardStyle = () => {
   let contentsElement: HTMLElement;
   let contentsFrame: HTMLElement;
-  if (cardStore.getState().sketch.label.enabled) {
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     contentsElement = document.getElementById('label')!;
     contentsFrame = document.getElementById('labelFrame')!;
   }

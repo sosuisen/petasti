@@ -15,6 +15,7 @@ import {
   getNoteIdFromUrl,
   getRandomInt,
   getSketchIdFromUrl,
+  isLabelOpened,
 } from '../modules_common/utils';
 import {
   APP_ICON_NAME,
@@ -598,7 +599,7 @@ export class Card implements ICard {
 
   renderCard = (): Promise<void> => {
     return new Promise(resolve => {
-      if (this.sketch.label.enabled) {
+      if (isLabelOpened(this.sketch.label.status)) {
         this.window.setSize(this.sketch.label.width!, this.sketch.label.height!);
         this.window.setPosition(this.sketch.label.x!, this.sketch.label.y!);
       }
@@ -788,7 +789,7 @@ export class Card implements ICard {
 
       this.window.setPosition(oldX, newY);
       const modifiedDate = getCurrentDateAndTime();
-      if (this.sketch.label.enabled) {
+      if (isLabelOpened(this.sketch.label.status)) {
         this._debouncedCardPositionUpdateActionQueue.next({
           cardX: this.sketch.geometry.x,
           cardY: this.sketch.geometry.y,
@@ -824,7 +825,7 @@ export class Card implements ICard {
 
       this.window.setPosition(oldX, newY);
       const modifiedDate = getCurrentDateAndTime();
-      if (this.sketch.label.enabled) {
+      if (isLabelOpened(this.sketch.label.status)) {
         this._debouncedCardPositionUpdateActionQueue.next({
           cardX: this.sketch.geometry.x,
           cardY: this.sketch.geometry.y,
@@ -859,7 +860,7 @@ export class Card implements ICard {
 
       this.window.setPosition(newX, oldY);
       const modifiedDate = getCurrentDateAndTime();
-      if (this.sketch.label.enabled) {
+      if (isLabelOpened(this.sketch.label.status)) {
         this._debouncedCardPositionUpdateActionQueue.next({
           cardX: this.sketch.geometry.x,
           cardY: this.sketch.geometry.y,
@@ -893,7 +894,7 @@ export class Card implements ICard {
 
       this.window.setPosition(newX, oldY);
       const modifiedDate = getCurrentDateAndTime();
-      if (this.sketch.label.enabled) {
+      if (isLabelOpened(this.sketch.label.status)) {
         this._debouncedCardPositionUpdateActionQueue.next({
           cardX: this.sketch.geometry.x,
           cardY: this.sketch.geometry.y,
@@ -969,7 +970,7 @@ export class Card implements ICard {
       this.window.webContents.send('resize-by-hand', geometry, modifiedDate);
     });
     globalShortcut.register('CommandOrControl+' + opt + '+Space', () => {
-      if (this.sketch.label.enabled) {
+      if (isLabelOpened(this.sketch.label.status)) {
         this.window.webContents.send('transform-from-label');
       }
       else {

@@ -33,8 +33,7 @@ export const DEFAULT_CARD_CONDITION: CardCondition = {
   locked: false,
 };
 export const DEFAULT_CARD_LABEL: CardLabel = {
-  enabled: false,
-  sticker: false,
+  status: 'closedLabel',
   text: '',
   x: undefined,
   y: undefined,

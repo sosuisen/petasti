@@ -16,7 +16,7 @@ import {
   CardStyle,
   Geometry,
 } from '../modules_common/types';
-import { getCurrentDateAndTime } from '../modules_common/utils';
+import { getCurrentDateAndTime, isLabelOpened } from '../modules_common/utils';
 import {
   CardBodyUpdateAction,
   CardConditionLockedUpdateAction,
@@ -166,6 +166,7 @@ export const cardGeometryUpdateCreator = (
   return async function (dispatch: Dispatch<any>, getState: () => CardState) {
     if (getState().sketch._id === '') return;
 
+    // eslint-disable-next-line complexity
     await lock.acquire('sketch', async () => {
       if (enqueueTime !== undefined) {
         if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
@@ -174,7 +175,7 @@ export const cardGeometryUpdateCreator = (
         }
       }
 
-      if (getState().sketch.label.enabled) {
+      if (isLabelOpened(getState().sketch.label.status)) {
         // Change label size
         const cardLabelAction: CardLabelRectUpdateAction = {
           type: 'card-label-rect-update',
@@ -182,7 +183,7 @@ export const cardGeometryUpdateCreator = (
         };
         dispatch(cardLabelAction);
 
-        if (getState().sketch.label.sticker) {
+        if (getState().sketch.label.status === 'openedSticker') {
           // Keep card position and size
           geometry.x = getState().sketch.geometry.x;
           geometry.y = getState().sketch.geometry.y;
@@ -202,18 +203,32 @@ export const cardGeometryUpdateCreator = (
         };
         dispatch(cardAction);
 
-        if (getState().sketch.label.sticker) {
-          // Keep card position and size
-          geometry.x = getState().sketch.label.x!;
-          geometry.y = getState().sketch.label.y!;
+        if (getState().sketch.label.status === 'stashedLabel') {
+          // Change stashedLabel to closedLabel when moved.
+          const label = getState().sketch.label;
+          label.status = 'closedLabel';
+          label.x = geometry.x;
+          label.y = geometry.y;
+          const cardLabelAction: CardLabelUpdateAction = {
+            type: 'card-label-update',
+            payload: label,
+          };
+          dispatch(cardLabelAction);
         }
-        geometry.width = getState().sketch.label.width!;
-        geometry.height = getState().sketch.label.height!;
-        const cardLabelAction: CardLabelRectUpdateAction = {
-          type: 'card-label-rect-update',
-          payload: geometry,
-        };
-        dispatch(cardLabelAction);
+        else {
+          if (getState().sketch.label.status === 'closedSticker') {
+            // Keep label position and size
+            geometry.x = getState().sketch.label.x!;
+            geometry.y = getState().sketch.label.y!;
+          }
+          geometry.width = getState().sketch.label.width!;
+          geometry.height = getState().sketch.label.height!;
+          const cardLabelAction: CardLabelRectUpdateAction = {
+            type: 'card-label-rect-update',
+            payload: geometry,
+          };
+          dispatch(cardLabelAction);
+        }
       }
 
       const cardDateAction: CardSketchModifiedDateUpdateAction = {

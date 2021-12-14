@@ -5,6 +5,7 @@
 import { ulid } from 'ulid';
 import { monotonicFactory as monotonicFactoryHmtid } from 'hmtid';
 import { APP_SCHEME } from './const';
+import { LabelStatus } from './types';
 
 const hmtid = monotonicFactoryHmtid(undefined, '-', true);
 
@@ -91,4 +92,9 @@ export const getSketchIdFromUrl = (url: string): string => {
 
 export const getUrlFromNoteId = (noteId: string): string => {
   return `${APP_SCHEME}://local/note/${noteId}`;
+};
+
+export const isLabelOpened = (status: LabelStatus): boolean => {
+  if (status === 'openedLabel' || status === 'openedSticker') return true;
+  return false;
 };

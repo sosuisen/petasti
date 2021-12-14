@@ -5,8 +5,8 @@
 import { BrowserWindow, MenuItemConstructorOptions } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { cardColors, ColorName } from '../modules_common/color';
-import { Geometry, ICard } from '../modules_common/types';
-import { getCurrentDateAndTime } from '../modules_common/utils';
+import { ICard } from '../modules_common/types';
+import { getCurrentDateAndTime, isLabelOpened } from '../modules_common/utils';
 import {
   getZIndexOfBottomCard,
   setZIndexOfBottomCard,
@@ -111,11 +111,11 @@ export const setContextMenu = (note: INote, card: ICard) => {
     prepend: (defaultActions, params, browserWindow) => {
       const menus: MenuItemConstructorOptions[] = [
         {
-          label: card.sketch.label.enabled
+          label: isLabelOpened(card.sketch.label.status)
             ? MESSAGE('transformFromLabel')
             : MESSAGE('transformToLabel'),
           click: () => {
-            if (card.sketch.label.enabled) {
+            if (isLabelOpened(card.sketch.label.status)) {
               card.window.webContents.send('transform-from-label');
             }
             else {

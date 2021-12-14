@@ -58,6 +58,7 @@ import {
 import { ChangeFrom } from './modules_renderer/card_types';
 import { setMessages } from './modules_renderer/messages_renderer';
 import { setConfig } from './modules_renderer/config';
+import { isLabelOpened } from './modules_common/utils';
 
 let sketchUrlEncoded: string;
 
@@ -81,7 +82,7 @@ const onBodyMouseUp = () => {
     cancelAnimationFrame(animationId);
     animationId = undefined;
     let newGeom: Geometry;
-    if (cardStore.getState().sketch.label.enabled) {
+    if (isLabelOpened(cardStore.getState().sketch.label.status)) {
       newGeom = {
         ...cardStore.getState().sketch.geometry,
         width: cardStore.getState().sketch.label.width!,
@@ -163,11 +164,11 @@ const initializeUIEvents = () => {
 
   document.getElementById('stickerBtn')?.addEventListener('click', async event => {
     const label = cardStore.getState().sketch.label;
-    if (cardStore.getState().sketch.label.sticker) {
-      label.sticker = false;
+    if (cardStore.getState().sketch.label.status === 'openedSticker') {
+      label.status = 'openedLabel';
     }
     else {
-      label.sticker = true;
+      label.status = 'openedSticker';
     }
     await cardStore.dispatch(cardLabelUpdateCreator(label));
     render(['TitleBar']);
@@ -316,7 +317,7 @@ const initializeUIEvents = () => {
     animationId = requestAnimationFrame(moveWindow);
   };
   document.getElementById('titleBar')!.addEventListener('mousedown', event => {
-    if (!cardStore.getState().sketch.label.enabled) {
+    if (!isLabelOpened(cardStore.getState().sketch.label.status)) {
       onBodyMouseUp();
       mouseOffsetX = event.clientX;
       mouseOffsetY = event.clientY;
@@ -327,7 +328,7 @@ const initializeUIEvents = () => {
   });
 
   document.body!.addEventListener('mousedown', event => {
-    if (cardStore.getState().sketch.label.enabled) {
+    if (isLabelOpened(cardStore.getState().sketch.label.status)) {
       onBodyMouseUp();
       mouseOffsetX = event.clientX;
       mouseOffsetY = event.clientY;
@@ -338,7 +339,7 @@ const initializeUIEvents = () => {
   });
 
   document.getElementById('title')!.addEventListener('dblclick', event => {
-    if (!cardStore.getState().sketch.label.enabled) {
+    if (!isLabelOpened(cardStore.getState().sketch.label.status)) {
       onBodyMouseUp();
       onTransformToLabel();
       event.preventDefault();
@@ -347,7 +348,7 @@ const initializeUIEvents = () => {
   });
 
   document.body!.addEventListener('dblclick', event => {
-    if (cardStore.getState().sketch.label.enabled) {
+    if (isLabelOpened(cardStore.getState().sketch.label.status)) {
       onBodyMouseUp();
       onTransformFromLabel();
       event.preventDefault();
@@ -452,10 +453,10 @@ window.addEventListener('message', event => {
   }
 });
 
+// eslint-disable-next-line complexity
 const onTransformToLabel = async () => {
   const label = cardStore.getState().sketch.label;
-  if (label.enabled) return;
-  label.enabled = true;
+  if (isLabelOpened(label.status)) return;
 
   if (cardEditor.isOpened) {
     // await endEditor();
@@ -479,9 +480,17 @@ const onTransformToLabel = async () => {
   if (label.height === undefined) {
     label.height = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
   }
-  if (!cardStore.getState().sketch.label.sticker) {
+
+  if (label.status === 'closedLabel') {
+    label.status = 'openedLabel';
     label.x = cardStore.getState().sketch.geometry.x;
     label.y = cardStore.getState().sketch.geometry.y;
+  }
+  if (label.status === 'stashedLabel') {
+    label.status = 'openedLabel';
+  }
+  if (label.status === 'closedSticker') {
+    label.status = 'openedSticker';
   }
   await cardStore.dispatch(cardLabelUpdateCreator(label));
 
@@ -502,20 +511,17 @@ const onTransformToLabel = async () => {
 
 const onTransformFromLabel = async () => {
   const label = cardStore.getState().sketch.label;
-  if (!label.enabled) return;
-  label.enabled = false;
+  if (!isLabelOpened(label.status)) return;
 
   document.getElementById('label')!.classList.toggle('showWithAnime');
   document.getElementById('label')!.classList.toggle('hideWithAnime');
   document.getElementById('contents')!.classList.toggle('show');
   document.getElementById('contents')!.classList.toggle('hide');
 
-  // label.text = '';
-  await cardStore.dispatch(cardLabelUpdateCreator(label));
-
   let newGeom: Geometry;
-  if (cardStore.getState().sketch.label.sticker) {
+  if (cardStore.getState().sketch.label.status === 'openedSticker') {
     newGeom = cardStore.getState().sketch.geometry;
+    label.status = 'closedSticker';
   }
   else {
     newGeom = {
@@ -523,7 +529,11 @@ const onTransformFromLabel = async () => {
       x: Math.round(label.x!),
       y: Math.round(label.y!),
     };
+    label.status = 'closedLabel';
   }
+  label.text = '';
+  await cardStore.dispatch(cardLabelUpdateCreator(label));
+
   await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
 
   if (
@@ -613,7 +623,7 @@ const onChangeCardColor = (backgroundColor: string, opacity = 1.0) => {
 
 const onMoveByHand = (geometry: Geometry, modifiedDate: string, changeFrom: ChangeFrom) => {
   let currentX, currentY, currentZ, currentWidth, currentHeight: number;
-  if (cardStore.getState().sketch.label.enabled) {
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     currentX = cardStore.getState().sketch.label.x!;
     currentY = cardStore.getState().sketch.label.y!;
     currentZ = cardStore.getState().sketch.geometry.z;
@@ -690,7 +700,7 @@ const onRenderCard = async (
   await cardEditor.createEditor();
   await cardEditor.setData(cardStore.getState().body._body);
 
-  if (cardStore.getState().sketch.label.enabled) {
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     document.getElementById('contents')!.classList.toggle('show');
     document.getElementById('contents')!.classList.toggle('hide');
     document.getElementById('label')!.classList.toggle('showWithAnime');
@@ -804,7 +814,7 @@ const startEditor = (x?: number, y?: number) => {
   if (cardStore.getState().sketch.condition.locked) {
     return;
   }
-  if (cardStore.getState().sketch.label.enabled) {
+  if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     return;
   }
 
