@@ -3,7 +3,7 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { cardColors, darkenHexColor } from './color';
+import { cardColors, darkenHexColor, strengthenHexColor } from './color';
 import { CardCondition, CardLabel, CardStyle, Geometry } from './types';
 
 export const DIALOG_BUTTON = {
@@ -43,7 +43,7 @@ export const DEFAULT_CARD_LABEL: CardLabel = {
 };
 
 export const DEFAULT_CARD_STYLE: CardStyle = {
-  uiColor: darkenHexColor(cardColors.yellow),
+  uiColor: cardColors.yellow,
   backgroundColor: cardColors.yellow,
   opacity: 1.0,
   zoom: 1.0,

@@ -45,7 +45,12 @@ import {
   setZIndexOfTopCard,
 } from './card_zindex';
 import { messagesRenderer } from './messages';
-import { cardColors, ColorName, darkenHexColor } from '../modules_common/color';
+import {
+  cardColors,
+  ColorName,
+  darkenHexColor,
+  strengthenHexColor,
+} from '../modules_common/color';
 import { noteStore } from './note_store';
 import { openURL } from './url_schema';
 
@@ -154,7 +159,7 @@ export const createRandomColorCard = async (note: INote) => {
   const cardSketch: Partial<CardSketch> = {
     geometry,
     style: {
-      uiColor: darkenHexColor(bgColor),
+      uiColor: bgColor,
       backgroundColor: bgColor,
       opacity: 1.0,
       zoom: 1.0,

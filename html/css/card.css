@@ -216,5 +216,5 @@ body > .card > .show{
 }
 
 #title, #card, #editor, #label {
-  transition: background-color,opacity 0.3s ease-in;
+  transition: background-color 0.3s ease-in;
 }

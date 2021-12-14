@@ -49,7 +49,11 @@ import { EditorState, Plugin as ProsePlugin, TextSelection } from 'prosemirror-s
 import { EditorView } from 'prosemirror-view';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
 import { render, shadowHeight, shadowWidth } from './card_renderer';
-import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
+import {
+  convertHexColorToRgba,
+  darkenHexColor,
+  strengthenHexColor,
+} from '../modules_common/color';
 import { cardStore } from './card_store';
 import { cardBodyUpdateCreator } from './card_action_creator';
 import { getConfig } from './config';
@@ -867,15 +871,10 @@ export class CardEditorMarkdown implements ICardEditor {
       cardStore.getState().sketch.style.backgroundColor,
       cardStore.getState().sketch.style.opacity
     );
-    let darkerRgba = convertHexColorToRgba(
-      darkenHexColor(cardStore.getState().sketch.style.backgroundColor, 0.96),
-      cardStore.getState().sketch.style.opacity
-    );
     let uiRgba = convertHexColorToRgba(cardStore.getState().sketch.style.uiColor);
 
     if (cardStore.getState().sketch.style.opacity === 0 && this._isEditing) {
       backgroundRgba = 'rgba(255, 255, 255, 1.0)';
-      darkerRgba = 'rgba(250, 250, 250, 1.0)';
       uiRgba = 'rgba(204, 204, 204, 1.0)';
     }
 
@@ -885,9 +884,9 @@ export class CardEditorMarkdown implements ICardEditor {
       editor.style.backgroundColor = backgroundRgba;
     }
 
-    const scrollBarRgba = darkenHexColor(
-      cardStore.getState().sketch.style.backgroundColor,
-      0.85
+    const scrollBarRgba = convertHexColorToRgba(
+      strengthenHexColor(cardStore.getState().sketch.style.backgroundColor, 0.9),
+      0.4
     );
     const style = window.document.createElement('style');
     style.innerHTML =

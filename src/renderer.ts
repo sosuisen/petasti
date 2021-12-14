@@ -34,7 +34,7 @@ import {
   shadowHeight,
   shadowWidth,
 } from './modules_renderer/card_renderer';
-import { darkenHexColor } from './modules_common/color';
+import { darkenHexColor, strengthenHexColor } from './modules_common/color';
 import { saveCardColor } from './modules_renderer/save';
 import window from './modules_renderer/window';
 import {
@@ -605,7 +605,9 @@ const onCardBlurred = () => {
 };
 
 const onChangeCardColor = (backgroundColor: string, opacity = 1.0) => {
-  const uiColor = darkenHexColor(backgroundColor);
+  // const uiColor = darkenHexColor(backgroundColor);
+  // const uiColor = strengthenHexColor(backgroundColor);
+  const uiColor = backgroundColor;
   saveCardColor(backgroundColor, uiColor, opacity);
   render(['CardStyle', 'TitleBarStyle', 'EditorStyle']);
 };

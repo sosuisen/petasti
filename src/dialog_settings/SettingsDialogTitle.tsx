@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import { MessageLabel } from '../modules_common/i18n';
 import { localContext, LocalProvider } from './store_local';
 import { MenuItemProps } from './MenuItem';
-import { darkenHexColor, uiColors } from '../modules_common/color';
+import { darkenHexColor, strengthenHexColor, uiColors } from '../modules_common/color';
 import { selectorMessages } from './selector';
 
 export interface SettingsDialogTitleProps {
@@ -27,7 +27,7 @@ export function SettingsDialogTitle (props: SettingsDialogTitleProps) {
   let style;
   if (activeItem !== undefined) {
     style = {
-      backgroundColor: darkenHexColor(uiColors[activeItem.color], 0.9),
+      backgroundColor: strengthenHexColor(uiColors[activeItem.color], 0.9),
     };
   }
   else {

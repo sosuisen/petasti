@@ -4,7 +4,11 @@
  */
 
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
-import { convertHexColorToRgba, darkenHexColor } from '../modules_common/color';
+import {
+  convertHexColorToRgba,
+  darkenHexColor,
+  strengthenHexColor,
+} from '../modules_common/color';
 import window from './window';
 import { getCtrlDown } from '../modules_common/keys';
 import { cardStore } from './card_store';
@@ -196,10 +200,7 @@ const renderTitleBar = () => {
 };
 
 const renderTitleBarStyle = () => {
-  const darkerColor = darkenHexColor(
-    cardStore.getState().sketch.style.backgroundColor,
-    0.6
-  );
+  const darkerColor = strengthenHexColor(cardStore.getState().sketch.style.uiColor, 0.7);
 
   document.getElementById('newBtn')!.style.color = darkerColor;
   document.getElementById('closeBtn')!.style.color = darkerColor;
@@ -213,8 +214,11 @@ const renderTitleBarStyle = () => {
     document.getElementById('title')!.style.backgroundColor = backgroundRgba;
   }
   else {
-    const uiRgba = convertHexColorToRgba(cardStore.getState().sketch.style.uiColor);
-    document.getElementById('title')!.style.backgroundColor = uiRgba;
+    const titleRgba = convertHexColorToRgba(
+      strengthenHexColor(cardStore.getState().sketch.style.uiColor),
+      0.6
+    );
+    document.getElementById('title')!.style.backgroundColor = titleRgba;
   }
 
   /*
@@ -394,12 +398,15 @@ const renderCardStyle = () => {
   // contentsElement.style.backgroundColor = backgroundRgba;
   document.getElementById('card')!.style.backgroundColor = backgroundRgba;
 
-  const uiRgba = convertHexColorToRgba(cardStore.getState().sketch.style.uiColor);
+  const borderRgba = convertHexColorToRgba(
+    strengthenHexColor(cardStore.getState().sketch.style.uiColor),
+    0.6
+  );
 
   if (cardStore.getState().sketch.style.opacity !== 0) {
     document.getElementById(
       'card'
-    )!.style.border = `${cardCssStyle.borderWidth}px solid ${uiRgba}`;
+    )!.style.border = `${cardCssStyle.borderWidth}px solid ${borderRgba}`;
   }
   else {
     document.getElementById(
@@ -429,7 +436,8 @@ const renderCardStyle = () => {
   document.getElementById('card')!.style.boxShadow = boxShadow;
 
   const scrollBarRgba = convertHexColorToRgba(
-    darkenHexColor(cardStore.getState().sketch.style.backgroundColor, 0.85)
+    strengthenHexColor(cardStore.getState().sketch.style.backgroundColor, 0.9),
+    0.4
   );
 
   // eslint-disable-next-line no-useless-catch

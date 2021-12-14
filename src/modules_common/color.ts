@@ -46,6 +46,59 @@ export const uiColors: CardColors = {
   transparent: '#ffffff',
 };
 
+// eslint-disable-next-line complexity
+export const strengthenHexColor = (
+  colorHEX: string,
+  darkRate = UI_COLOR_DARKENING_RATE
+): string => {
+  if (darkRate > 1 || darkRate < 0) {
+    console.error(`Invalid darkRate: ${darkRate}`);
+    return '#000000';
+  }
+  const res = colorHEX.match(/#(\w\w)(\w\w)(\w\w)/);
+  let red = parseInt(RegExp.$1, 16);
+  let green = parseInt(RegExp.$2, 16);
+  let blue = parseInt(RegExp.$3, 16);
+  if (res === null || isNaN(red) || isNaN(blue) || isNaN(blue)) {
+    console.error(`Invalid HEX color format: ${colorHEX}`);
+    return '#000000';
+  }
+  const sorted = [red, green, blue].sort();
+  const max = sorted[2];
+  const middle = sorted[1];
+  const min = sorted[0];
+
+  red =
+    red === max
+      ? Math.round(red * darkRate)
+      : red === middle
+        ? Math.round(red * darkRate * darkRate)
+        : Math.round(red * darkRate * darkRate * darkRate);
+  green =
+    green === max
+      ? Math.round(green * darkRate)
+      : green === middle
+        ? Math.round(green * darkRate * darkRate)
+        : Math.round(green * darkRate * darkRate * darkRate);
+  blue =
+    blue === max
+      ? Math.round(blue * darkRate)
+      : blue === middle
+        ? Math.round(blue * darkRate * darkRate)
+        : Math.round(blue * darkRate * darkRate * darkRate);
+  if (red > 255 || green > 255 || red > 255) {
+    console.error(`Invalid HEX value: ${colorHEX}`);
+    return '#000000';
+  }
+
+  return (
+    '#' +
+    red.toString(16).padStart(2, '0') +
+    green.toString(16).padStart(2, '0') +
+    blue.toString(16).padStart(2, '0')
+  );
+};
+
 export const darkenHexColor = (
   colorHEX: string,
   darkRate = UI_COLOR_DARKENING_RATE
