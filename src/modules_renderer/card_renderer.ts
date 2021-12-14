@@ -86,11 +86,18 @@ const renderTitleBar = () => {
   const stickerBtn = document.getElementById('stickerBtn')!;
   const stickerIconOn = document.getElementById('stickerIconOn')!;
   const stickerIconOff = document.getElementById('stickerIconOff')!;
+  const newBtn = document.getElementById('newBtn')!;
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     geomWidth = cardStore.getState().sketch.label.width!;
     titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
     geomHeight = cardStore.getState().sketch.label.height!;
-    document.getElementById('newBtn')!.style.display = 'none';
+    if (newBtn.classList.contains('showWithAnime')) {
+      newBtn.classList.remove('showWithAnime');
+    }
+    if (!newBtn.classList.contains('hideWithAnime')) {
+      newBtn.classList.add('hideWithAnime');
+    }
+
     document.getElementById('closeBtn')!.style.display = 'none';
 
     if (cardStore.getState().sketch.label.status === 'openedSticker') {
@@ -134,7 +141,13 @@ const renderTitleBar = () => {
     geomWidth = cardStore.getState().sketch.geometry.width;
     titleWidth = geomWidth - cardCssStyle.borderWidth * 2 - shadowWidth;
     geomHeight = cardStore.getState().sketch.geometry.height;
-    document.getElementById('newBtn')!.style.display = 'block';
+    if (newBtn.classList.contains('hideWithAnime')) {
+      newBtn.classList.remove('hideWithAnime');
+    }
+    if (!newBtn.classList.contains('showWithAnime')) {
+      newBtn.classList.add('showWithAnime');
+    }
+
     document.getElementById('closeBtn')!.style.display = 'block';
 
     stickerBtn.style.visibility = 'hidden';
