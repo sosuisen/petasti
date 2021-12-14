@@ -34,7 +34,7 @@ export const DEFAULT_CARD_CONDITION: CardCondition = {
 };
 export const DEFAULT_CARD_LABEL: CardLabel = {
   status: 'closedLabel',
-  text: '',
+  text: undefined,
   x: undefined,
   y: undefined,
   width: undefined,

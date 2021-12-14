@@ -375,6 +375,7 @@ export class Card implements ICard {
       //      }
     });
 
+    /*
     this._debouncedCardPositionUpdateActionQueue.subscribe((item: unknown) => {
       const newSketch: CardSketch = JSON.parse(JSON.stringify(this.sketch));
       newSketch.geometry.x = (item as CardPositionDebounceItem).cardX;
@@ -387,9 +388,10 @@ export class Card implements ICard {
         (item as CardPositionDebounceItem).modifiedDate
       );
     });
+    */
   }
 
-  private _debouncedCardPositionUpdateActionQueue = new DebounceQueue(1000);
+  // private _debouncedCardPositionUpdateActionQueue = new DebounceQueue(1000);
 
   private _willResizeListener = (event: Electron.Event, rect: Electron.Rectangle) => {
     let newWidth = rect.width;
@@ -777,108 +779,77 @@ export class Card implements ICard {
     globalShortcut.registerAll(['CommandOrControl+-', 'CommandOrControl+numsub'], () => {
       this.window.webContents.send('zoom-out');
     });
+
+    const moveByKey = (x: number, y: number) => {
+      this.window.setPosition(x, y);
+
+      let width, height: number;
+      if (isLabelOpened(this.sketch.label.status)) {
+        width = this.sketch.label.width!;
+        height = this.sketch.label.height!;
+      }
+      else {
+        width = this.sketch.geometry.width;
+        height = this.sketch.geometry.height;
+      }
+      const geometry = {
+        x,
+        y,
+        z: this.sketch.geometry.z,
+        width,
+        height,
+      };
+
+      /*
+      const modifiedDate = getCurrentDateAndTime();      
+      const geom = {
+        cardX: geometry.x,
+        cardY: geometry.y,
+        labelX: geometry.x,
+        labelY: geometry.y,
+        modifiedDate,
+      };
+
+      if (isLabelOpened(this.sketch.label.status)) {
+        if (this.sketch.label.status === 'openedSticker') {
+          // Keep card position
+          geom.cardX = this.sketch.geometry.x;
+          geom.cardY = this.sketch.geometry.y;
+        }
+        this._debouncedCardPositionUpdateActionQueue.next(geom);
+      }
+      else {
+        if (this.sketch.label.status === 'closedSticker') {
+          // Keep label position
+          geom.labelX = this.sketch.label.x;
+          geom.labelY = this.sketch.label.y;
+        }
+        this._debouncedCardPositionUpdateActionQueue.next(geom);
+      }
+      */
+      this.window.webContents.send('move-by-hand', geometry);
+    };
+
     globalShortcut.register('CommandOrControl+' + opt + '+Up', () => {
       const [oldX, oldY] = this.window.getPosition();
       let newY = oldY - positionChangeUnit;
       if (newY < 0) newY = 0;
-      const geometry = {
-        ...this.sketch.geometry,
-        x: oldX,
-        y: newY,
-      };
-
-      this.window.setPosition(oldX, newY);
-      const modifiedDate = getCurrentDateAndTime();
-      if (isLabelOpened(this.sketch.label.status)) {
-        this._debouncedCardPositionUpdateActionQueue.next({
-          cardX: this.sketch.geometry.x,
-          cardY: this.sketch.geometry.y,
-          labelX: geometry.x,
-          labelY: geometry.y,
-          modifiedDate,
-        });
-      }
-      else {
-        this._debouncedCardPositionUpdateActionQueue.next({
-          cardX: geometry.x,
-          cardY: geometry.y,
-          labelX: this.sketch.label.x,
-          labelY: this.sketch.label.y,
-          modifiedDate,
-        });
-      }
-      this.window.webContents.send('move-by-hand', geometry, modifiedDate);
+      moveByKey(oldX, newY);
     });
     globalShortcut.register('CommandOrControl+' + opt + '+Down', () => {
       const [oldX, oldY] = this.window.getPosition();
-      // const [width, height] = this.window.getSize();
       const primaryDisplay = screen.getPrimaryDisplay();
       const { width, height } = primaryDisplay.workAreaSize;
 
       let newY = oldY + positionChangeUnit;
       if (newY + 50 > height) newY = height - 50;
-      const geometry = {
-        ...this.sketch.geometry,
-        x: oldX,
-        y: newY,
-      };
-
-      this.window.setPosition(oldX, newY);
-      const modifiedDate = getCurrentDateAndTime();
-      if (isLabelOpened(this.sketch.label.status)) {
-        this._debouncedCardPositionUpdateActionQueue.next({
-          cardX: this.sketch.geometry.x,
-          cardY: this.sketch.geometry.y,
-          labelX: geometry.x,
-          labelY: geometry.y,
-          modifiedDate,
-        });
-      }
-      else {
-        this._debouncedCardPositionUpdateActionQueue.next({
-          cardX: geometry.x,
-          cardY: geometry.y,
-          labelX: this.sketch.label.x,
-          labelY: this.sketch.label.y,
-          modifiedDate,
-        });
-      }
-
-      this.window.webContents.send('move-by-hand', geometry, modifiedDate);
+      moveByKey(oldX, newY);
     });
     globalShortcut.register('CommandOrControl+' + opt + '+Left', () => {
       const [oldX, oldY] = this.window.getPosition();
-      const primaryDisplay = screen.getPrimaryDisplay();
-      const { width, height } = primaryDisplay.workAreaSize;
       let newX = oldX - positionChangeUnit;
       if (newX < 0) newX = 0;
-      const geometry = {
-        ...this.sketch.geometry,
-        x: newX,
-        y: oldY,
-      };
-
-      this.window.setPosition(newX, oldY);
-      const modifiedDate = getCurrentDateAndTime();
-      if (isLabelOpened(this.sketch.label.status)) {
-        this._debouncedCardPositionUpdateActionQueue.next({
-          cardX: this.sketch.geometry.x,
-          cardY: this.sketch.geometry.y,
-          labelX: geometry.x,
-          labelY: geometry.y,
-          modifiedDate,
-        });
-      }
-      else {
-        this._debouncedCardPositionUpdateActionQueue.next({
-          cardX: geometry.x,
-          cardY: geometry.y,
-          labelX: this.sketch.label.x,
-          labelY: this.sketch.label.y,
-          modifiedDate,
-        });
-      }
-      this.window.webContents.send('move-by-hand', geometry, modifiedDate);
+      moveByKey(newX, oldY);
     });
     globalShortcut.register('CommandOrControl+' + opt + '+Right', () => {
       const [oldX, oldY] = this.window.getPosition();
@@ -886,89 +857,56 @@ export class Card implements ICard {
       const { width, height } = primaryDisplay.workAreaSize;
       let newX = oldX + positionChangeUnit;
       if (newX + 50 > width) newX = width - 50;
-      const geometry = {
-        ...this.sketch.geometry,
-        x: newX,
-        y: oldY,
-      };
+      moveByKey(newX, oldY);
+    });
 
-      this.window.setPosition(newX, oldY);
-      const modifiedDate = getCurrentDateAndTime();
+    const resizeByKey = (width: number, height: number) => {
+      this.window.setSize(width, height);
+
+      let x, y: number;
       if (isLabelOpened(this.sketch.label.status)) {
-        this._debouncedCardPositionUpdateActionQueue.next({
-          cardX: this.sketch.geometry.x,
-          cardY: this.sketch.geometry.y,
-          labelX: geometry.x,
-          labelY: geometry.y,
-          modifiedDate,
-        });
+        x = this.sketch.label.x!;
+        y = this.sketch.label.y!;
       }
       else {
-        this._debouncedCardPositionUpdateActionQueue.next({
-          cardX: geometry.x,
-          cardY: geometry.y,
-          labelX: this.sketch.label.x,
-          labelY: this.sketch.label.y,
-          modifiedDate,
-        });
+        x = this.sketch.geometry.x;
+        y = this.sketch.geometry.y;
       }
-      this.window.webContents.send('move-by-hand', geometry, modifiedDate);
-    });
+      const geometry = {
+        x,
+        y,
+        z: this.sketch.geometry.z,
+        width,
+        height,
+      };
+
+      const modifiedDate = getCurrentDateAndTime();
+      this.window.webContents.send('resize-by-hand', geometry, modifiedDate);
+    };
 
     globalShortcut.register('CommandOrControl+' + opt + '+Shift+Left', () => {
       const [oldWidth, oldHeight] = this.window.getSize();
       let newWidth = oldWidth - sizeChangeUnit;
       if (newWidth < MINIMUM_WINDOW_WIDTH) newWidth = MINIMUM_WINDOW_WIDTH;
-      const geometry = {
-        ...this.sketch.geometry,
-        width: newWidth,
-        height: oldHeight,
-      };
-
-      this.window.setSize(newWidth, oldHeight);
-      const modifiedDate = getCurrentDateAndTime();
-      this.window.webContents.send('resize-by-hand', geometry, modifiedDate);
+      resizeByKey(newWidth, oldHeight);
     });
     globalShortcut.register('CommandOrControl+' + opt + '+Shift+Right', () => {
       const [oldWidth, oldHeight] = this.window.getSize();
       const newWidth = oldWidth + sizeChangeUnit;
-      const geometry = {
-        ...this.sketch.geometry,
-        width: newWidth,
-        height: oldHeight,
-      };
-
-      this.window.setSize(newWidth, oldHeight);
-      const modifiedDate = getCurrentDateAndTime();
-      this.window.webContents.send('resize-by-hand', geometry, modifiedDate);
+      resizeByKey(newWidth, oldHeight);
     });
     globalShortcut.register('CommandOrControl+' + opt + '+Shift+Up', () => {
       const [oldWidth, oldHeight] = this.window.getSize();
       let newHeight = oldHeight - sizeChangeUnit;
       if (newHeight < MINIMUM_WINDOW_HEIGHT) newHeight = MINIMUM_WINDOW_HEIGHT;
-      const geometry = {
-        ...this.sketch.geometry,
-        width: oldWidth,
-        height: newHeight,
-      };
-
-      this.window.setSize(oldWidth, newHeight);
-      const modifiedDate = getCurrentDateAndTime();
-      this.window.webContents.send('resize-by-hand', geometry, modifiedDate);
+      resizeByKey(oldWidth, newHeight);
     });
     globalShortcut.register('CommandOrControl+' + opt + '+Shift+Down', () => {
       const [oldWidth, oldHeight] = this.window.getSize();
       const newHeight = oldHeight + sizeChangeUnit;
-      const geometry = {
-        ...this.sketch.geometry,
-        width: oldWidth,
-        height: newHeight,
-      };
-
-      this.window.setSize(oldWidth, newHeight);
-      const modifiedDate = getCurrentDateAndTime();
-      this.window.webContents.send('resize-by-hand', geometry, modifiedDate);
+      resizeByKey(oldWidth, newHeight);
     });
+
     globalShortcut.register('CommandOrControl+' + opt + '+Space', () => {
       if (isLabelOpened(this.sketch.label.status)) {
         this.window.webContents.send('transform-from-label');

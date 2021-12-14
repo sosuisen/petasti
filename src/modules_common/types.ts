@@ -54,7 +54,7 @@ export type LabelStatus =
 
 export type CardLabel = {
   status: LabelStatus;
-  text: string;
+  text: string | undefined;
   x: number | undefined;
   y: number | undefined;
   width: number | undefined;

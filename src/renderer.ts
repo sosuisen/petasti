@@ -27,8 +27,6 @@ import {
 } from './modules_common/const';
 import { CardEditorMarkdown } from './modules_renderer/editor_markdown';
 import {
-  getRenderOffsetHeight,
-  getRenderOffsetWidth,
   initCardRenderer,
   render,
   shadowHeight,
@@ -230,8 +228,8 @@ const initializeUIEvents = () => {
   let isVerticalMoving = false;
 
   const onmousemove = (event: MouseEvent) => {
-    // let newWidth = cardStore.getState().sketch.geometry.width + getRenderOffsetWidth();
-    // let newHeight = cardStore.getState().sketch.geometry.height + getRenderOffsetHeight();
+    // let newWidth = cardStore.getState().sketch.geometry.width;
+    // let newHeight = cardStore.getState().sketch.geometry.height;
     let newWidth = window.outerWidth;
     let newHeight = window.outerHeight;
     if (isHorizontalMoving) {
@@ -410,7 +408,7 @@ window.addEventListener('message', event => {
       onChangeCardColor(event.data.backgroundColor, event.data.opacity);
       break;
     case 'move-by-hand':
-      onMoveByHand(event.data.geometry, event.data.modifiedDate, 'remote');
+      onChangeRectByHand(event.data.geometry, false);
       break;
     case 'render-card':
       onRenderCard(
@@ -421,8 +419,8 @@ window.addEventListener('message', event => {
       );
       break;
     case 'resize-by-hand':
-      console.log('# resize on main: ' + JSON.stringify(event.data.geometry));
-      onResizeByHand(event.data.geometry);
+      // console.log('# resize on main: ' + JSON.stringify(event.data.geometry));
+      onChangeRectByHand(event.data.geometry, true);
       break;
     case 'send-to-back':
       onSendToBack(event.data.zIndex, event.data.modifiedDate);
@@ -531,7 +529,7 @@ const onTransformFromLabel = async () => {
     };
     label.status = 'closedLabel';
   }
-  label.text = '';
+  label.text = undefined;
   await cardStore.dispatch(cardLabelUpdateCreator(label));
 
   await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
@@ -565,17 +563,12 @@ const onTransformFromLabel = async () => {
   }
 };
 
-const onResizeByHand = async (geometry: Geometry) => {
-  const newGeom: Geometry = {
-    x: Math.round(geometry.x),
-    y: Math.round(geometry.y),
-    z: cardStore.getState().sketch.geometry.z,
-    width: Math.round(geometry.width - getRenderOffsetWidth()),
-    height: Math.round(geometry.height - getRenderOffsetHeight()),
-  };
-  await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
-  console.log('# render: ' + JSON.stringify(cardStore.getState().sketch));
-  render(['TitleBar', 'ContentsRect', 'EditorRect']);
+const onChangeRectByHand = async (geometry: Geometry, redraw: boolean) => {
+  await cardStore.dispatch(cardGeometryUpdateCreator(geometry));
+  // console.log('# render: ' + JSON.stringify(cardStore.getState().sketch));
+  if (redraw) {
+    render(['TitleBar', 'ContentsRect', 'EditorRect']);
+  }
 };
 
 const onCardClose = async () => {
@@ -621,7 +614,8 @@ const onChangeCardColor = (backgroundColor: string, opacity = 1.0) => {
   render(['CardStyle', 'TitleBarStyle', 'EditorStyle']);
 };
 
-const onMoveByHand = (geometry: Geometry, modifiedDate: string, changeFrom: ChangeFrom) => {
+/*
+const onMoveByHand = (geometry: Geometry, modifiedDate: string) => {
   let currentX, currentY, currentZ, currentWidth, currentHeight: number;
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     currentX = cardStore.getState().sketch.label.x!;
@@ -647,8 +641,9 @@ const onMoveByHand = (geometry: Geometry, modifiedDate: string, changeFrom: Chan
     };
     cardStore.dispatch(cardGeometryUpdateCreator(newGeom, modifiedDate, changeFrom));
   }
+  cardStore.dispatch(cardGeometryUpdateCreator(geometry, modifiedDate));
 };
-
+  */
 // Render card data
 const onRenderCard = async (
   url: string,
@@ -897,16 +892,13 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
       fileDropEvent.name
     );
 
-    const windowWidth =
-      newImageWidth + DRAG_IMAGE_MARGIN + cardCssStyle.borderWidth * 2 + shadowWidth;
-    const geometryWidth = windowWidth - getRenderOffsetWidth();
     const windowHeight =
       newImageHeight +
       DRAG_IMAGE_MARGIN +
       document.getElementById('title')!.offsetHeight +
       cardCssStyle.borderWidth * 2 +
       shadowHeight;
-    const geometryHeight = windowHeight - getRenderOffsetHeight();
+    const geometryHeight = windowHeight;
 
     if (imageOnly) {
       const newGeom = {

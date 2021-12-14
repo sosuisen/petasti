@@ -21,21 +21,6 @@ let cardEditor: ICardEditor;
 
 export const shadowHeight = 5;
 export const shadowWidth = 5;
-let renderOffsetHeight = 0; // Offset of card height from actual window height;
-let renderOffsetWidth = 0; // Offset of card height from actual window width;
-
-export const getRenderOffsetWidth = () => {
-  return renderOffsetWidth;
-};
-export const setRenderOffsetWidth = (w: number) => {
-  renderOffsetWidth = w;
-};
-export const getRenderOffsetHeight = () => {
-  return renderOffsetHeight;
-};
-export const setRenderOffsetHeight = (h: number) => {
-  renderOffsetHeight = h;
-};
 
 export const initCardRenderer = (style: CardCssStyle, editor: ICardEditor) => {
   cardCssStyle = style;
@@ -234,9 +219,8 @@ const renderTitleBarStyle = () => {
 
 const renderContentsData = (): void => {
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
-    document.getElementById(
-      'labelFrame'
-    )!.innerHTML = cardStore.getState().sketch.label.text;
+    const text = cardStore.getState().sketch.label.text ?? '';
+    document.getElementById('labelFrame')!.innerHTML = text;
   }
   else {
     document.getElementById('contentsFrame')!.innerHTML = cardEditor.getHTML();
@@ -295,9 +279,9 @@ const renderCardAndContentsRect = () => {
   if (!getConfig().isResident && cardStore.getState().workState.status === 'Blurred') {
     cardOffset = cardCssStyle.borderWidth;
   }
-  const cardWidth = geomWidth - cardOffset - shadowWidth + getRenderOffsetWidth();
+  const cardWidth = geomWidth - cardOffset - shadowWidth;
 
-  const cardHeight = geomHeight - cardOffset - shadowHeight + getRenderOffsetHeight();
+  const cardHeight = geomHeight - cardOffset - shadowHeight;
 
   document.getElementById('card')!.style.width = cardWidth + 'px';
   document.getElementById('card')!.style.height = cardHeight + 'px';
@@ -318,15 +302,10 @@ const renderCardAndContentsRect = () => {
   }
 
   // width of BrowserWindow (namely cardPropStatus.geometry.width) equals border + padding + content.
-  const contentsWidth =
-    geomWidth + renderOffsetWidth - cardCssStyle.borderWidth * 2 - leftOffset - shadowWidth;
+  const contentsWidth = geomWidth - cardCssStyle.borderWidth * 2 - leftOffset - shadowWidth;
 
   const contentsHeight =
-    geomHeight +
-    renderOffsetHeight -
-    cardCssStyle.borderWidth * 2 -
-    topOffset -
-    shadowHeight;
+    geomHeight - cardCssStyle.borderWidth * 2 - topOffset - shadowHeight;
 
   contentsElement.style.width = contentsWidth + 'px';
   contentsElement.style.height = contentsHeight + 'px';
