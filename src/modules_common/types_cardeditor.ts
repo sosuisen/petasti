@@ -31,6 +31,7 @@ export interface ICardEditor {
   createEditor(): Promise<void>;
   setData(data: string): void;
   getHTML(): string;
+  getLabelText(): string;
 }
 
 export type CardCssStyle = {

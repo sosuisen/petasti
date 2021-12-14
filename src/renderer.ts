@@ -460,11 +460,8 @@ const onTransformToLabel = async () => {
     // await endEditor();
     endEditor(); // Need not to wait saving.
   }
-  const html = cardEditor.getHTML();
-  const paragraphs = html.split('</p>');
-  let labelText = '';
-  if (paragraphs.length > 0) labelText = paragraphs[0] + '</p>';
-  label.text = labelText;
+
+  label.text = cardEditor.getLabelText();
 
   if (label.x === undefined) {
     label.x = cardStore.getState().sketch.geometry.x;
@@ -529,7 +526,6 @@ const onTransformFromLabel = async () => {
     };
     label.status = 'closedLabel';
   }
-  label.text = undefined;
   await cardStore.dispatch(cardLabelUpdateCreator(label));
 
   await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));

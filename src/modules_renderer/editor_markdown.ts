@@ -55,7 +55,7 @@ import {
   strengthenHexColor,
 } from '../modules_common/color';
 import { cardStore } from './card_store';
-import { cardBodyUpdateCreator } from './card_action_creator';
+import { cardBodyUpdateCreator, cardLabelUpdateCreator } from './card_action_creator';
 import { getConfig } from './config';
 import window from './window';
 import { getCtrlDown, getMetaDown } from '../modules_common/keys';
@@ -756,6 +756,13 @@ export class CardEditorMarkdown implements ICardEditor {
 
     // Reset editor color to card color
     render(['TitleBar', 'EditorStyle']);
+
+    // Update label
+    const newLabel = {
+      ...cardStore.getState().sketch.label,
+      text: this.getLabelText(),
+    };
+    await cardStore.dispatch(cardLabelUpdateCreator(newLabel));
   };
 
   getHTML = (): string => {
@@ -765,7 +772,22 @@ export class CardEditorMarkdown implements ICardEditor {
       return editorView.dom;
     });
     console.log('# innerHTML: ' + dom.innerHTML);
+
     return dom.innerHTML;
+  };
+
+  getLabelText = (): string => {
+    const dom = this._editor.action(ctx => {
+      const editorView = ctx.get(editorViewCtx);
+      // const dom = editorView.nodeDOM(0);
+      return editorView.dom;
+    });
+    const html = dom.innerHTML;
+    const paragraphs = html.split('</p>');
+    let labelText = '';
+    if (paragraphs.length > 0) labelText = paragraphs[0] + '</p>';
+
+    return labelText;
   };
 
   toggleCodeMode = () => {
