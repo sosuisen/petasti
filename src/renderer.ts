@@ -479,12 +479,10 @@ const onTransformToLabel = async () => {
   if (label.height === undefined) {
     label.height = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
   }
-  // Not sticker
-  label.x = cardStore.getState().sketch.geometry.x;
-  label.y = cardStore.getState().sketch.geometry.y;
-
-  // TODO: sticker
-
+  if (!cardStore.getState().sketch.label.sticker) {
+    label.x = cardStore.getState().sketch.geometry.x;
+    label.y = cardStore.getState().sketch.geometry.y;
+  }
   await cardStore.dispatch(cardLabelUpdateCreator(label));
 
   document.getElementById('label')!.classList.toggle('showWithAnime');
@@ -515,17 +513,18 @@ const onTransformFromLabel = async () => {
   // label.text = '';
   await cardStore.dispatch(cardLabelUpdateCreator(label));
 
-  // Not sticker
-  const newGeom: Geometry = {
-    x: Math.round(label.x!),
-    y: Math.round(label.y!),
-    z: cardStore.getState().sketch.geometry.z,
-    width: cardStore.getState().sketch.geometry.width,
-    height: cardStore.getState().sketch.geometry.height,
-  };
+  let newGeom: Geometry;
+  if (cardStore.getState().sketch.label.sticker) {
+    newGeom = cardStore.getState().sketch.geometry;
+  }
+  else {
+    newGeom = {
+      ...cardStore.getState().sketch.geometry,
+      x: Math.round(label.x!),
+      y: Math.round(label.y!),
+    };
+  }
   await cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
-
-  // TODO: sticker
 
   if (
     cardStore.getState().sketch.geometry.height < cardStore.getState().sketch.label.height!

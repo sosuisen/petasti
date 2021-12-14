@@ -178,18 +178,15 @@ export const cardGeometryUpdateCreator = (
         // Change label size
         const cardLabelAction: CardLabelRectUpdateAction = {
           type: 'card-label-rect-update',
-          payload: {
-            x: geometry.x,
-            y: geometry.y,
-            width: geometry.width,
-            height: geometry.height,
-          },
+          payload: geometry,
         };
         dispatch(cardLabelAction);
 
-        // Keep card position and size
-        geometry.x = getState().sketch.geometry.x;
-        geometry.y = getState().sketch.geometry.y;
+        if (getState().sketch.label.sticker) {
+          // Keep card position and size
+          geometry.x = getState().sketch.geometry.x;
+          geometry.y = getState().sketch.geometry.y;
+        }
         geometry.width = getState().sketch.geometry.width;
         geometry.height = getState().sketch.geometry.height;
         const cardGeometryAction: CardGeometryUpdateAction = {
@@ -204,6 +201,19 @@ export const cardGeometryUpdateCreator = (
           payload: geometry,
         };
         dispatch(cardAction);
+
+        if (getState().sketch.label.sticker) {
+          // Keep card position and size
+          geometry.x = getState().sketch.label.x!;
+          geometry.y = getState().sketch.label.y!;
+        }
+        geometry.width = getState().sketch.label.width!;
+        geometry.height = getState().sketch.label.height!;
+        const cardLabelAction: CardLabelRectUpdateAction = {
+          type: 'card-label-rect-update',
+          payload: geometry,
+        };
+        dispatch(cardLabelAction);
       }
 
       const cardDateAction: CardSketchModifiedDateUpdateAction = {
