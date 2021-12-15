@@ -431,6 +431,7 @@ export class CardEditorMarkdown implements ICardEditor {
      * update is invoked when view is changed by key and mouse
      */
     const viewEventPlugin = new ProsePlugin({
+      // @ts-ignore
       view (editorView) {
         return {
           update: (view: EditorView, prevState: EditorState) => {
