@@ -808,9 +808,10 @@ const startEditor = (x?: number, y?: number) => {
   const scrollTop = contents!.scrollTop;
   const scrollLeft = contents!.scrollLeft;
 
+  cardEditor.startEdit();
+
   cardEditor.setScrollPosition(scrollLeft, scrollTop);
 
-  cardEditor.startEdit();
   if (x !== undefined && y !== undefined) {
     /*
     setInterval(() => {

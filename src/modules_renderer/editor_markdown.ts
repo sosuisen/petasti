@@ -827,6 +827,7 @@ export class CardEditorMarkdown implements ICardEditor {
   };
 
   setScrollPosition = (left: number, top: number) => {
+    console.log('# setScrollPosition top: ' + top);
     const editor = document.getElementById('editor') as HTMLElement;
     editor.scrollLeft = left;
     editor.scrollTop = top;
