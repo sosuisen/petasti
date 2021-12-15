@@ -190,16 +190,11 @@ body > .resize-area-nwse{
 body > .card > .hide{
   opacity: 0;
   visibility: hidden;
-  top: 0px;
-  left: 18px;
-  transition: 0.3s ease-in;
 }
 
 body > .card > .show{
   opacity: 1;
   visibility: visible;
-  top: 18px;
-  left: 0px;
 }
 
 .hideWithAnime{
