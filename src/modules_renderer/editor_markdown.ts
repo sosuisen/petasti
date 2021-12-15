@@ -831,20 +831,13 @@ export class CardEditorMarkdown implements ICardEditor {
   };
 
   setZoom = () => {
-    const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
-    if (milkdownEditor) {
-      // @ts-ignore
-      milkdownEditor.style.zoom = `${cardStore.getState().sketch.style.zoom}`;
+    const innerEditor = document.querySelector('#editor .milkdown .editor') as HTMLElement;
+    if (innerEditor) {
+      innerEditor.style.transformOrigin = 'top left';
+      innerEditor.style.transform = `scale(${cardStore.getState().sketch.style.zoom})`;
+
       this.setSize();
     }
-    /*
-    if (CKEDITOR.instances.editor.document && CKEDITOR.instances.editor.document.$.body) {
-      // @ts-ignore
-      CKEDITOR.instances.editor.document.$.body.style.zoom = `${
-        cardStore.getState().sketch.style.zoom
-      }`;
-    }
-    */
   };
 
   setSize = (
@@ -857,7 +850,6 @@ export class CardEditorMarkdown implements ICardEditor {
       document.getElementById('title')!.offsetHeight
   ): void => {
     // width of BrowserWindow (namely avatarProp.geometry.width) equals border + padding + content.
-
     const editor = document.getElementById('editor');
     if (editor) {
       editor.style.width = width + 'px';
@@ -870,18 +862,17 @@ export class CardEditorMarkdown implements ICardEditor {
     const milkdownEditor = document.querySelector('#editor .milkdown') as HTMLElement;
     const innerEditor = document.querySelector('#editor .milkdown .editor') as HTMLElement;
     if (milkdownEditor && innerEditor) {
+      milkdownEditor.style.width = width - CARD_MARGIN_LEFT * 2 - CARD_PADDING * 2 + 'px';
+      milkdownEditor.style.height = height - CARD_MARGIN_TOP * 2 - CARD_PADDING * 2 + 'px';
+
       const innerWidth =
         width / cardStore.getState().sketch.style.zoom -
         CARD_MARGIN_LEFT * 2 -
         CARD_PADDING * 2;
-      //        - CARD_SCROLLBAR_WIDTH * cardStore.getState().sketch.style.zoom;
       const innerHeight =
         height / cardStore.getState().sketch.style.zoom -
         CARD_MARGIN_TOP * 2 -
         CARD_PADDING * 2;
-
-      milkdownEditor.style.width = innerWidth + 'px';
-      milkdownEditor.style.height = innerHeight + 'px';
 
       innerEditor.style.width = innerWidth + 'px';
       innerEditor.style.height = innerHeight + 'px';

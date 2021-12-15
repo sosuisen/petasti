@@ -433,31 +433,8 @@ const renderCardStyle = () => {
     0.4
   );
 
-  // eslint-disable-next-line no-useless-catch
-  /*
-  try {
-    const iframeDoc = (document.getElementById('contentsFrame') as HTMLIFrameElement)
-      .contentDocument;
-    if (iframeDoc) {
-      const style = iframeDoc.createElement('style');
-      style.innerHTML =
-        'body::-webkit-scrollbar { width: 7px; background-color: ' +
-        backgroundRgba +
-        '}\n' +
-        'body::-webkit-scrollbar-thumb { background-color: ' +
-        scrollBarRgba +
-        '}';
-      iframeDoc.head.appendChild(style);
-
-      // @ts-ignore
-      iframeDoc.body.style.zoom = `${cardStore.getState().sketch.style.zoom}`;
-    }
-  } catch (e) {
-    console.error(e);
-  }] */
-
-  // @ts-ignore
-  contentsFrame.style.zoom = `${zoom}`;
+  contentsFrame.style.transformOrigin = 'top left';
+  contentsFrame.style.transform = `scale(${zoom})`;
 
   const style = window.document.createElement('style');
   style.innerHTML =
