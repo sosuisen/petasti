@@ -292,9 +292,9 @@ ipcMain.handle(
 );
 
 ipcMain.handle('db', async (event, command: DatabaseCommand) => {
+  // note.logger.debug(command.command + ' ' + command.url);
   switch (command.command) {
     case 'db-card-body-update': {
-      note.logger.debug(command.command + ' ' + command.url);
       return await note.updateCardBody(
         command.url,
         command.data,
@@ -302,7 +302,6 @@ ipcMain.handle('db', async (event, command: DatabaseCommand) => {
       );
     }
     case 'db-card-sketch-update': {
-      note.logger.debug(command.command + ' ' + command.url);
       return await note.updateCardSketch(
         command.url,
         command.data,
@@ -335,9 +334,9 @@ ipcMain.handle('get-current-display-rect', (e, x: number, y: number) => {
 });
 
 powerMonitor.on('resume', () => {
-  note.logger.debug('App resumed');
+  // note.logger.debug('App resumed');
   if (note.sync) {
-    note.logger.debug('Sync resumed');
+    // note.logger.debug('Sync resumed');
     note.sync.pause();
     note.sync.resume();
   }
