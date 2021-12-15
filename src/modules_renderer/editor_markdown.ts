@@ -434,6 +434,7 @@ export class CardEditorMarkdown implements ICardEditor {
       view (editorView) {
         return {
           update: (view: EditorView, prevState: EditorState) => {
+            /*
             const editor = document.getElementById('editor');
             if (editor !== null) {
               editor.scrollLeft = 0;
@@ -448,6 +449,7 @@ export class CardEditorMarkdown implements ICardEditor {
                 contents.scrollTop = 0;
               }
             }
+            */
             /*
             const marks = view.state.selection.$head.marks();
             const markNames = marks.map(mark => mark.type.name);
