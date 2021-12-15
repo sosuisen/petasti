@@ -323,14 +323,16 @@ ipcMain.handle('window-moved', (e, url) => {
   // Do something when dragging stop
 });
 
-ipcMain.handle('get-current-display-rect', (e, x: number, y: number) => {
-  const display: Display = screen.getDisplayNearestPoint({ x, y });
-  return {
-    x: display.bounds.x,
-    y: display.bounds.y,
-    width: display.bounds.width,
-    height: display.bounds.height,
-  };
+ipcMain.handle('get-current-display-rect', (e, points: { x: number; y: number }[]) => {
+  return points.map(point => {
+    const display: Display = screen.getDisplayNearestPoint(point);
+    return {
+      x: display.bounds.x,
+      y: display.bounds.y,
+      width: display.bounds.width,
+      height: display.bounds.height,
+    };
+  });
 });
 
 powerMonitor.on('resume', () => {

@@ -24,6 +24,7 @@ import {
   DRAG_IMAGE_MARGIN,
   MINIMUM_WINDOW_HEIGHT,
   MINIMUM_WINDOW_HEIGHT_OFFSET,
+  WINDOW_POSITION_EDGE_MARGIN,
 } from './modules_common/const';
 import { CardEditorMarkdown } from './modules_renderer/editor_markdown';
 import { initCardRenderer, render, shadowHeight } from './modules_renderer/card_renderer';
@@ -69,7 +70,7 @@ let animationId: number | undefined;
 let moveStartX: number;
 let moveStartY: number;
 
-const onBodyMouseUp = () => {
+const onBodyMouseUp = async () => {
   // window.api.windowMoved(cardStore.getState().workState.url);
   document.body!.removeEventListener('mouseup', onBodyMouseUp);
   if (animationId !== undefined) {
@@ -95,7 +96,17 @@ const onBodyMouseUp = () => {
         y: window.screenY,
       };
     }
-    console.log('## onBodyMouseUp');
+    const displayRect = await window.api.getCurrentDisplayRect([
+      { x: newGeom.x, y: newGeom.y },
+    ]);
+    /*
+    if (newGeom.x < displayRect.x) newGeom.x = displayRect.x;
+    if (newGeom.x > displayRect.x + displayRect.width - WINDOW_POSITION_EDGE_MARGIN)
+      newGeom.x = displayRect.x + displayRect.width - WINDOW_POSITION_EDGE_MARGIN;
+    if (newGeom.y < displayRect.y) newGeom.y = displayRect.y;
+    if (newGeom.x > displayRect.x + displayRect.width - WINDOW_POSITION_EDGE_MARGIN)
+      newGeom.x = displayRect.x + displayRect.width - WINDOW_POSITION_EDGE_MARGIN;
+*/
     cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
   }
 };
@@ -454,7 +465,9 @@ const onTransformFromLabel = async () => {
     label.status = 'closedLabel';
   }
 
-  const displayRect = await window.api.getCurrentDisplayRect(newGeom.x, newGeom.y);
+  const [displayRect] = await window.api.getCurrentDisplayRect([
+    { x: newGeom.x, y: newGeom.y },
+  ]);
   // console.log(displayRect);
   let stashed = false;
   if (

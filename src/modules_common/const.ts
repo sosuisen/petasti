@@ -75,3 +75,5 @@ export const SCHEMA_VERSION = 0.4;
 export const CARD_MARGIN_TOP = 3;
 export const CARD_MARGIN_LEFT = 7;
 export const CARD_PADDING = 2;
+
+export const WINDOW_POSITION_EDGE_MARGIN = 50;

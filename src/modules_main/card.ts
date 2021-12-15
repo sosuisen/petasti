@@ -27,6 +27,7 @@ import {
   DEFAULT_CARD_STYLE,
   MINIMUM_WINDOW_HEIGHT,
   MINIMUM_WINDOW_WIDTH,
+  WINDOW_POSITION_EDGE_MARGIN,
 } from '../modules_common/const';
 import { handlers } from './event';
 import {
@@ -824,7 +825,8 @@ export class Card implements ICard {
         const { width, height } = primaryDisplay.workAreaSize;
 
         let newY = oldY + positionChangeUnit;
-        if (newY + 50 > height) newY = height - 50;
+        if (newY + WINDOW_POSITION_EDGE_MARGIN > height)
+          newY = height - WINDOW_POSITION_EDGE_MARGIN;
         moveByKey(oldX, newY);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Left', () => {
@@ -840,7 +842,8 @@ export class Card implements ICard {
         const primaryDisplay = screen.getPrimaryDisplay();
         const { width, height } = primaryDisplay.workAreaSize;
         let newX = oldX + positionChangeUnit;
-        if (newX + 50 > width) newX = width - 50;
+        if (newX + WINDOW_POSITION_EDGE_MARGIN > width)
+          newX = width - WINDOW_POSITION_EDGE_MARGIN;
         moveByKey(newX, oldY);
       });
 
