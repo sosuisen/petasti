@@ -44,7 +44,8 @@ interface WindowWithAPI extends Window {
       x: number,
       y: number,
       width: number,
-      height: number
+      height: number,
+      animation?: boolean
     ) => Promise<{ x: number; y: number; width: number; height: number }>;
     windowMoved: (url: string) => void;
     windowMoving: (

@@ -4,7 +4,7 @@
  */
 import url from 'url';
 import path from 'path';
-import { app, BrowserWindow, globalShortcut, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, Display, globalShortcut, ipcMain, screen } from 'electron';
 import { TaskMetadata } from 'git-documentdb';
 import bezier from 'bezier-easing';
 import AsyncLock from 'async-lock';
@@ -815,35 +815,72 @@ export class Card implements ICard {
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         const [oldX, oldY] = this.window.getPosition();
         let newY = oldY - positionChangeUnit;
-        if (newY < 0) newY = 0;
+
+        const displayRect: Display = screen.getDisplayNearestPoint({ x: oldX, y: newY });
+        if (newY < displayRect.bounds.y) newY = displayRect.bounds.y;
+
         moveByKey(oldX, newY);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Down', () => {
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        const [oldX, oldY] = this.window.getPosition();
-        const primaryDisplay = screen.getPrimaryDisplay();
-        const { width, height } = primaryDisplay.workAreaSize;
+        const rect = this.window.getBounds();
+        const oldX = rect.x;
+        const oldY = rect.y;
+        const oldHeight = rect.height;
 
         let newY = oldY + positionChangeUnit;
-        if (newY + WINDOW_POSITION_EDGE_MARGIN > height)
-          newY = height - WINDOW_POSITION_EDGE_MARGIN;
+
+        const displayRect: Display = screen.getDisplayNearestPoint({
+          x: oldX,
+          y: newY + oldHeight,
+        });
+        if (
+          newY >
+          displayRect.bounds.y + displayRect.bounds.height - WINDOW_POSITION_EDGE_MARGIN
+        ) {
+          newY =
+            displayRect.bounds.y + displayRect.bounds.height - WINDOW_POSITION_EDGE_MARGIN;
+        }
+
         moveByKey(oldX, newY);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Left', () => {
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        const [oldX, oldY] = this.window.getPosition();
+        const rect = this.window.getBounds();
+        const oldX = rect.x;
+        const oldY = rect.y;
+        const oldWidth = rect.width;
+
         let newX = oldX - positionChangeUnit;
-        if (newX < 0) newX = 0;
+
+        const displayRect: Display = screen.getDisplayNearestPoint({ x: newX, y: oldY });
+        if (newX < displayRect.bounds.x - oldWidth + WINDOW_POSITION_EDGE_MARGIN) {
+          newX = displayRect.bounds.x - oldWidth + WINDOW_POSITION_EDGE_MARGIN;
+        }
+
         moveByKey(newX, oldY);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Right', () => {
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        const [oldX, oldY] = this.window.getPosition();
-        const primaryDisplay = screen.getPrimaryDisplay();
-        const { width, height } = primaryDisplay.workAreaSize;
+        const rect = this.window.getBounds();
+        const oldX = rect.x;
+        const oldY = rect.y;
+        const oldWidth = rect.width;
+
         let newX = oldX + positionChangeUnit;
-        if (newX + WINDOW_POSITION_EDGE_MARGIN > width)
-          newX = width - WINDOW_POSITION_EDGE_MARGIN;
+
+        const displayRect: Display = screen.getDisplayNearestPoint({
+          x: newX + oldWidth,
+          y: oldY,
+        });
+        if (
+          newX >
+          displayRect.bounds.x + displayRect.bounds.width - WINDOW_POSITION_EDGE_MARGIN
+        ) {
+          newX =
+            displayRect.bounds.x + displayRect.bounds.width - WINDOW_POSITION_EDGE_MARGIN;
+        }
+
         moveByKey(newX, oldY);
       });
 

@@ -71,8 +71,7 @@ let moveStartX: number;
 let moveStartY: number;
 
 const onBodyMouseUp = async () => {
-  // window.api.windowMoved(cardStore.getState().workState.url);
-  document.body!.removeEventListener('mouseup', onBodyMouseUp);
+  // document.body!.removeEventListener('mouseup', onBodyMouseUp);
   if (animationId !== undefined) {
     cancelAnimationFrame(animationId);
     animationId = undefined;
@@ -98,15 +97,34 @@ const onBodyMouseUp = async () => {
     }
     const displayRect = await window.api.getCurrentDisplayRect([
       { x: newGeom.x, y: newGeom.y },
+      { x: newGeom.x + newGeom.width, y: newGeom.y },
+      { x: newGeom.x, y: newGeom.y + newGeom.height },
+      { x: newGeom.x + newGeom.width, y: newGeom.y + newGeom.height },
     ]);
-    /*
-    if (newGeom.x < displayRect.x) newGeom.x = displayRect.x;
-    if (newGeom.x > displayRect.x + displayRect.width - WINDOW_POSITION_EDGE_MARGIN)
-      newGeom.x = displayRect.x + displayRect.width - WINDOW_POSITION_EDGE_MARGIN;
-    if (newGeom.y < displayRect.y) newGeom.y = displayRect.y;
-    if (newGeom.x > displayRect.x + displayRect.width - WINDOW_POSITION_EDGE_MARGIN)
-      newGeom.x = displayRect.x + displayRect.width - WINDOW_POSITION_EDGE_MARGIN;
-*/
+
+    if (newGeom.x < displayRect[0].x - newGeom.width + WINDOW_POSITION_EDGE_MARGIN) {
+      newGeom.x = displayRect[0].x - newGeom.width + WINDOW_POSITION_EDGE_MARGIN;
+    }
+    if (newGeom.x > displayRect[1].x + displayRect[1].width - WINDOW_POSITION_EDGE_MARGIN) {
+      newGeom.x = displayRect[1].x + displayRect[1].width - WINDOW_POSITION_EDGE_MARGIN;
+    }
+    if (newGeom.y < displayRect[0].y) {
+      newGeom.y = displayRect[0].y;
+    }
+    if (
+      newGeom.y >
+      displayRect[2].y + displayRect[2].height - WINDOW_POSITION_EDGE_MARGIN
+    ) {
+      newGeom.y = displayRect[2].y + displayRect[2].height - WINDOW_POSITION_EDGE_MARGIN;
+    }
+    window.api.setWindowRect(
+      cardStore.getState().workState.url,
+      newGeom.x,
+      newGeom.y,
+      newGeom.width,
+      newGeom.height
+    );
+
     cardStore.dispatch(cardGeometryUpdateCreator(newGeom));
   }
 };
@@ -437,7 +455,8 @@ const onTransformToLabel = async () => {
     label.x,
     label.y,
     label.width,
-    label.height
+    label.height,
+    true
   );
 };
 
@@ -512,7 +531,8 @@ const onTransformFromLabel = async () => {
       cardStore.getState().sketch.geometry.x,
       cardStore.getState().sketch.geometry.y,
       cardStore.getState().sketch.geometry.width,
-      cardStore.getState().sketch.geometry.height
+      cardStore.getState().sketch.geometry.height,
+      true
     );
     render();
   }
@@ -523,7 +543,8 @@ const onTransformFromLabel = async () => {
       cardStore.getState().sketch.geometry.x,
       cardStore.getState().sketch.geometry.y,
       cardStore.getState().sketch.geometry.width,
-      cardStore.getState().sketch.geometry.height
+      cardStore.getState().sketch.geometry.height,
+      true
     );
   }
   if (!cardEditor.isOpened) {
@@ -943,7 +964,8 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
       cardStore.getState().sketch.geometry.x,
       cardStore.getState().sketch.geometry.y,
       cardStore.getState().sketch.geometry.width,
-      cardStore.getState().sketch.geometry.height
+      cardStore.getState().sketch.geometry.height,
+      true
     );
 
     render(['TitleBar', 'CardStyle', 'ContentsData', 'ContentsRect']);
