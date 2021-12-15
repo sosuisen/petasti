@@ -319,11 +319,15 @@ export class Card implements ICard {
       minHeight: MINIMUM_WINDOW_HEIGHT,
 
       acceptFirstMouse: true, // for MacOS
+
+      // NOTE: Window snap on windows is disable
+      //   if transparent is true or frame is false or maximizable is false.
       transparent: true,
       frame: false,
+      maximizable: false,
+
       show: false,
 
-      maximizable: false,
       fullscreenable: false,
 
       icon: path.join(__dirname, `../assets/${APP_ICON_NAME}`),

@@ -221,89 +221,7 @@ const initializeUIEvents = () => {
     }
   });
 
-  /*
-  let prevMouseX: number;
-  let prevMouseY: number;
-  let isHorizontalMoving = false;
-  let isVerticalMoving = false;
-
-  const onmousemove = (event: MouseEvent) => {
-    // let newWidth = cardStore.getState().sketch.geometry.width;
-    // let newHeight = cardStore.getState().sketch.geometry.height;
-    let newWidth = window.outerWidth;
-    let newHeight = window.outerHeight;
-    if (isHorizontalMoving) {
-      newWidth += event.screenX - prevMouseX;
-    }
-    if (isVerticalMoving) {
-      newHeight += event.screenY - prevMouseY;
-    }
-    prevMouseX = event.screenX;
-    prevMouseY = event.screenY;
-
-    if (newWidth < MINIMUM_WINDOW_WIDTH) {
-      newWidth = MINIMUM_WINDOW_WIDTH;
-    }
-
-    if (newHeight < MINIMUM_WINDOW_HEIGHT) {
-      newHeight = MINIMUM_WINDOW_HEIGHT;
-    }
-
-    if (isHorizontalMoving || isVerticalMoving) {
-      const newGeom = {
-        ...cardStore.getState().sketch.geometry,
-        width: newWidth,
-        height: newHeight,
-      };
-      console.log('# resize on renderer');
-      // window.resizeTo method cannot change width/height value to be less than 100.
-      if (newWidth < 100 || newHeight < 100) {
-        window.api.setWindowRect(
-          cardStore.getState().workState.url,
-          cardStore.getState().sketch.geometry.x,
-          cardStore.getState().sketch.geometry.y,
-          newWidth,
-          newHeight
-        );
-      }
-      else {
-        window.resizeTo(newWidth, newHeight); // set outerWidth and outerHeight
-      }
-      onResizeByHand(newGeom);
-    }
-  };
-  window.addEventListener('mousemove', onmousemove);
-  window.addEventListener('mouseup', event => {
-    isHorizontalMoving = false;
-    isVerticalMoving = false;
-    document.getElementById('windowMask')!.style.display = 'none';
-  });
-  */
   window.addEventListener('mouseleave', event => {});
-
-  /*
-  document.getElementById('resizeAreaRight')!.addEventListener('mousedown', event => {
-    isHorizontalMoving = true;
-    document.getElementById('windowMask')!.style.display = 'block';
-    prevMouseX = event.screenX;
-    prevMouseY = event.screenY;
-  });
-
-  document.getElementById('resizeAreaBottom')!.addEventListener('mousedown', event => {
-    isVerticalMoving = true;
-    document.getElementById('windowMask')!.style.display = 'block';
-    prevMouseX = event.screenX;
-    prevMouseY = event.screenY;
-  });
-
-  document.getElementById('resizeAreaRightBottom')!.addEventListener('mousedown', event => {
-    isVerticalMoving = true;
-    isHorizontalMoving = true;
-    document.getElementById('windowMask')!.style.display = 'block';
-    prevMouseX = event.screenX;
-    prevMouseY = event.screenY;
-  });
-  */
 
   let mouseOffsetX: number;
   let mouseOffsetY: number;
@@ -425,7 +343,6 @@ window.addEventListener('message', event => {
       );
       break;
     case 'resize-by-hand':
-      // console.log('# resize on main: ' + JSON.stringify(event.data.geometry));
       onChangeRectByHand(event.data.geometry, true);
       break;
     case 'send-to-back':
