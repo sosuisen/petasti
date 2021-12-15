@@ -804,33 +804,6 @@ export class Card implements ICard {
         height,
       };
 
-      /*
-      const modifiedDate = getCurrentDateAndTime();      
-      const geom = {
-        cardX: geometry.x,
-        cardY: geometry.y,
-        labelX: geometry.x,
-        labelY: geometry.y,
-        modifiedDate,
-      };
-
-      if (isLabelOpened(this.sketch.label.status)) {
-        if (this.sketch.label.status === 'openedSticker') {
-          // Keep card position
-          geom.cardX = this.sketch.geometry.x;
-          geom.cardY = this.sketch.geometry.y;
-        }
-        this._debouncedCardPositionUpdateActionQueue.next(geom);
-      }
-      else {
-        if (this.sketch.label.status === 'closedSticker') {
-          // Keep label position
-          geom.labelX = this.sketch.label.x;
-          geom.labelY = this.sketch.label.y;
-        }
-        this._debouncedCardPositionUpdateActionQueue.next(geom);
-      }
-      */
       this.window.webContents.send('move-by-hand', geometry);
     };
 
