@@ -4,10 +4,10 @@
  */
 import url from 'url';
 import path from 'path';
-import { app, BrowserWindow, globalShortcut, ipcMain, screen, shell } from 'electron';
-import { DebounceQueue } from 'rx-queue';
+import { app, BrowserWindow, globalShortcut, ipcMain, screen } from 'electron';
 import { TaskMetadata } from 'git-documentdb';
 import bezier from 'bezier-easing';
+import AsyncLock from 'async-lock';
 import {
   generateNewCardId,
   getCardIdFromUrl,
@@ -31,7 +31,6 @@ import {
 import { handlers } from './event';
 import {
   CardBody,
-  CardPositionDebounceItem,
   CardSketch,
   CardStatus,
   ICard,
@@ -46,14 +45,11 @@ import {
   setZIndexOfTopCard,
 } from './card_zindex';
 import { messagesRenderer } from './messages';
-import {
-  cardColors,
-  ColorName,
-  darkenHexColor,
-  strengthenHexColor,
-} from '../modules_common/color';
+import { cardColors, ColorName } from '../modules_common/color';
 import { noteStore } from './note_store';
 import { openURL } from './url_schema';
+
+const lock = new AsyncLock();
 
 /**
  * Change unit
@@ -719,189 +715,208 @@ export class Card implements ICard {
   };
 
   private _addShortcuts = () => {
-    // Available shortcuts
-    // https://github.com/electron/electron/blob/main/docs/api/accelerator.md
-    let opt = 'Alt';
-    if (process.platform === 'darwin') {
-      opt = 'Option';
-    }
+    lock.acquire('registerShortcut', () => {
+      // Available shortcuts
+      // https://github.com/electron/electron/blob/main/docs/api/accelerator.md
+      let opt = 'Alt';
+      if (process.platform === 'darwin') {
+        opt = 'Option';
+      }
 
-    globalShortcut.register('CommandOrControl+R', () => {
-      // Disable reload
-      // nop
-    });
-    globalShortcut.register('CommandOrControl+W', () => {
-      // Disable close
-      // nop
-    });
-    globalShortcut.register(opt + '+C', () => {
-      // Context menu
-      this.window.webContents.sendInputEvent({
-        button: 'right',
-        type: 'mouseUp',
-        x: 30,
-        y: 30,
+      globalShortcut.register('CommandOrControl+R', () => {
+        // Disable reload
+        // nop
       });
-    });
-    globalShortcut.register(opt + '+T', () => {
-      this._note.tray.popUpContextMenu();
-    });
-    globalShortcut.registerAll(['CommandOrControl+N', opt + '+N'], () => {
-      createRandomColorCard(this._note);
-    });
-    globalShortcut.registerAll(['CommandOrControl+Shift+N', opt + '+Shift+N'], () => {
-      const cardId = generateNewCardId();
-      const newUrl = `${APP_SCHEME}://local/${this._note.settings.currentNoteId}/${cardId}`;
+      globalShortcut.register('CommandOrControl+W', () => {
+        // Disable close
+        // nop
+      });
+      globalShortcut.register(opt + '+C', () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        // Context menu
+        this.window.webContents.sendInputEvent({
+          button: 'right',
+          type: 'mouseUp',
+          x: 30,
+          y: 30,
+        });
+      });
+      globalShortcut.register(opt + '+T', () => {
+        this._note.tray.popUpContextMenu();
+      });
+      globalShortcut.registerAll(['CommandOrControl+N', opt + '+N'], () => {
+        createRandomColorCard(this._note);
+      });
+      globalShortcut.registerAll(['CommandOrControl+Shift+N', opt + '+Shift+N'], () => {
+        const cardId = generateNewCardId();
+        const newUrl = `${APP_SCHEME}://local/${this._note.settings.currentNoteId}/${cardId}`;
 
-      const geometry = { ...DEFAULT_CARD_GEOMETRY };
-      geometry.x = this.sketch.geometry.x + 30;
-      geometry.y = this.sketch.geometry.y + 30;
-      geometry.width = this.sketch.geometry.width;
-      geometry.height = this.sketch.geometry.height;
+        const geometry = { ...DEFAULT_CARD_GEOMETRY };
+        geometry.x = this.sketch.geometry.x + 30;
+        geometry.y = this.sketch.geometry.y + 30;
+        geometry.width = this.sketch.geometry.width;
+        geometry.height = this.sketch.geometry.height;
 
-      const newBody: Partial<CardBody> = {};
-      const newSketch: Partial<CardSketch> = {
-        geometry: {
-          x: geometry.x,
-          y: geometry.y,
-          z: geometry.z, // z will be overwritten in createCard()
-          width: geometry.width,
-          height: geometry.height,
-        },
-        style: {
-          uiColor: this.sketch.style.uiColor,
-          backgroundColor: this.sketch.style.backgroundColor,
-          opacity: this.sketch.style.opacity,
-          zoom: this.sketch.style.zoom,
-        },
-      };
-      createCardWindow(this._note, newUrl, newBody, newSketch);
-    });
-    globalShortcut.registerAll(['CommandOrControl+Plus', 'CommandOrControl+numadd'], () => {
-      this.window.webContents.send('zoom-in');
-    });
-    globalShortcut.registerAll(['CommandOrControl+-', 'CommandOrControl+numsub'], () => {
-      this.window.webContents.send('zoom-out');
-    });
+        const newBody: Partial<CardBody> = {};
+        const newSketch: Partial<CardSketch> = {
+          geometry: {
+            x: geometry.x,
+            y: geometry.y,
+            z: geometry.z, // z will be overwritten in createCard()
+            width: geometry.width,
+            height: geometry.height,
+          },
+          style: {
+            uiColor: this.sketch.style.uiColor,
+            backgroundColor: this.sketch.style.backgroundColor,
+            opacity: this.sketch.style.opacity,
+            zoom: this.sketch.style.zoom,
+          },
+        };
+        createCardWindow(this._note, newUrl, newBody, newSketch);
+      });
+      globalShortcut.registerAll(
+        ['CommandOrControl+Plus', 'CommandOrControl+numadd'],
+        () => {
+          if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+          this.window.webContents.send('zoom-in');
+        }
+      );
+      globalShortcut.registerAll(['CommandOrControl+-', 'CommandOrControl+numsub'], () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        this.window.webContents.send('zoom-out');
+      });
 
-    const moveByKey = (x: number, y: number) => {
-      this.window.setPosition(x, y);
+      const moveByKey = (x: number, y: number) => {
+        this.window.setPosition(x, y);
 
-      let width, height: number;
-      if (isLabelOpened(this.sketch.label.status)) {
-        width = this.sketch.label.width!;
-        height = this.sketch.label.height!;
-      }
-      else {
-        width = this.sketch.geometry.width;
-        height = this.sketch.geometry.height;
-      }
-      const geometry = {
-        x,
-        y,
-        z: this.sketch.geometry.z,
-        width,
-        height,
-      };
+        let width, height: number;
+        if (isLabelOpened(this.sketch.label.status)) {
+          width = this.sketch.label.width!;
+          height = this.sketch.label.height!;
+        }
+        else {
+          width = this.sketch.geometry.width;
+          height = this.sketch.geometry.height;
+        }
+        const geometry = {
+          x,
+          y,
+          z: this.sketch.geometry.z,
+          width,
+          height,
+        };
 
-      this.window.webContents.send('move-by-hand', geometry);
-    };
-
-    globalShortcut.register('CommandOrControl+' + opt + '+Up', () => {
-      const [oldX, oldY] = this.window.getPosition();
-      let newY = oldY - positionChangeUnit;
-      if (newY < 0) newY = 0;
-      moveByKey(oldX, newY);
-    });
-    globalShortcut.register('CommandOrControl+' + opt + '+Down', () => {
-      const [oldX, oldY] = this.window.getPosition();
-      const primaryDisplay = screen.getPrimaryDisplay();
-      const { width, height } = primaryDisplay.workAreaSize;
-
-      let newY = oldY + positionChangeUnit;
-      if (newY + 50 > height) newY = height - 50;
-      moveByKey(oldX, newY);
-    });
-    globalShortcut.register('CommandOrControl+' + opt + '+Left', () => {
-      const [oldX, oldY] = this.window.getPosition();
-      let newX = oldX - positionChangeUnit;
-      if (newX < 0) newX = 0;
-      moveByKey(newX, oldY);
-    });
-    globalShortcut.register('CommandOrControl+' + opt + '+Right', () => {
-      const [oldX, oldY] = this.window.getPosition();
-      const primaryDisplay = screen.getPrimaryDisplay();
-      const { width, height } = primaryDisplay.workAreaSize;
-      let newX = oldX + positionChangeUnit;
-      if (newX + 50 > width) newX = width - 50;
-      moveByKey(newX, oldY);
-    });
-
-    const resizeByKey = (width: number, height: number) => {
-      this.window.setSize(width, height);
-
-      let x, y: number;
-      if (isLabelOpened(this.sketch.label.status)) {
-        x = this.sketch.label.x!;
-        y = this.sketch.label.y!;
-      }
-      else {
-        x = this.sketch.geometry.x;
-        y = this.sketch.geometry.y;
-      }
-      const geometry = {
-        x,
-        y,
-        z: this.sketch.geometry.z,
-        width,
-        height,
+        this.window.webContents.send('move-by-hand', geometry);
       };
 
-      const modifiedDate = getCurrentDateAndTime();
-      this.window.webContents.send('resize-by-hand', geometry, modifiedDate);
-    };
+      globalShortcut.register('CommandOrControl+' + opt + '+Up', () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const [oldX, oldY] = this.window.getPosition();
+        let newY = oldY - positionChangeUnit;
+        if (newY < 0) newY = 0;
+        moveByKey(oldX, newY);
+      });
+      globalShortcut.register('CommandOrControl+' + opt + '+Down', () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const [oldX, oldY] = this.window.getPosition();
+        const primaryDisplay = screen.getPrimaryDisplay();
+        const { width, height } = primaryDisplay.workAreaSize;
 
-    globalShortcut.register('CommandOrControl+' + opt + '+Shift+Left', () => {
-      const [oldWidth, oldHeight] = this.window.getSize();
-      let newWidth = oldWidth - sizeChangeUnit;
-      if (newWidth < MINIMUM_WINDOW_WIDTH) newWidth = MINIMUM_WINDOW_WIDTH;
-      resizeByKey(newWidth, oldHeight);
-    });
-    globalShortcut.register('CommandOrControl+' + opt + '+Shift+Right', () => {
-      const [oldWidth, oldHeight] = this.window.getSize();
-      const newWidth = oldWidth + sizeChangeUnit;
-      resizeByKey(newWidth, oldHeight);
-    });
-    globalShortcut.register('CommandOrControl+' + opt + '+Shift+Up', () => {
-      const [oldWidth, oldHeight] = this.window.getSize();
-      let newHeight = oldHeight - sizeChangeUnit;
-      if (newHeight < MINIMUM_WINDOW_HEIGHT) newHeight = MINIMUM_WINDOW_HEIGHT;
-      resizeByKey(oldWidth, newHeight);
-    });
-    globalShortcut.register('CommandOrControl+' + opt + '+Shift+Down', () => {
-      const [oldWidth, oldHeight] = this.window.getSize();
-      const newHeight = oldHeight + sizeChangeUnit;
-      resizeByKey(oldWidth, newHeight);
-    });
+        let newY = oldY + positionChangeUnit;
+        if (newY + 50 > height) newY = height - 50;
+        moveByKey(oldX, newY);
+      });
+      globalShortcut.register('CommandOrControl+' + opt + '+Left', () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const [oldX, oldY] = this.window.getPosition();
+        let newX = oldX - positionChangeUnit;
+        if (newX < 0) newX = 0;
+        moveByKey(newX, oldY);
+      });
+      globalShortcut.register('CommandOrControl+' + opt + '+Right', () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const [oldX, oldY] = this.window.getPosition();
+        const primaryDisplay = screen.getPrimaryDisplay();
+        const { width, height } = primaryDisplay.workAreaSize;
+        let newX = oldX + positionChangeUnit;
+        if (newX + 50 > width) newX = width - 50;
+        moveByKey(newX, oldY);
+      });
 
-    globalShortcut.register('CommandOrControl+' + opt + '+Space', () => {
-      if (isLabelOpened(this.sketch.label.status)) {
-        this.window.webContents.send('transform-from-label');
-      }
-      else {
-        this.window.webContents.send('transform-to-label');
-      }
+      const resizeByKey = (width: number, height: number) => {
+        this.window.setSize(width, height);
+
+        let x, y: number;
+        if (isLabelOpened(this.sketch.label.status)) {
+          x = this.sketch.label.x!;
+          y = this.sketch.label.y!;
+        }
+        else {
+          x = this.sketch.geometry.x;
+          y = this.sketch.geometry.y;
+        }
+        const geometry = {
+          x,
+          y,
+          z: this.sketch.geometry.z,
+          width,
+          height,
+        };
+
+        const modifiedDate = getCurrentDateAndTime();
+        this.window.webContents.send('resize-by-hand', geometry, modifiedDate);
+      };
+
+      globalShortcut.register('CommandOrControl+' + opt + '+Shift+Left', () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const [oldWidth, oldHeight] = this.window.getSize();
+        let newWidth = oldWidth - sizeChangeUnit;
+        if (newWidth < MINIMUM_WINDOW_WIDTH) newWidth = MINIMUM_WINDOW_WIDTH;
+        resizeByKey(newWidth, oldHeight);
+      });
+      globalShortcut.register('CommandOrControl+' + opt + '+Shift+Right', () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const [oldWidth, oldHeight] = this.window.getSize();
+        const newWidth = oldWidth + sizeChangeUnit;
+        resizeByKey(newWidth, oldHeight);
+      });
+      globalShortcut.register('CommandOrControl+' + opt + '+Shift+Up', () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const [oldWidth, oldHeight] = this.window.getSize();
+        let newHeight = oldHeight - sizeChangeUnit;
+        if (newHeight < MINIMUM_WINDOW_HEIGHT) newHeight = MINIMUM_WINDOW_HEIGHT;
+        resizeByKey(oldWidth, newHeight);
+      });
+      globalShortcut.register('CommandOrControl+' + opt + '+Shift+Down', () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const [oldWidth, oldHeight] = this.window.getSize();
+        const newHeight = oldHeight + sizeChangeUnit;
+        resizeByKey(oldWidth, newHeight);
+      });
+
+      globalShortcut.register('CommandOrControl+' + opt + '+Space', () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        if (isLabelOpened(this.sketch.label.status)) {
+          this.window.webContents.send('transform-from-label');
+        }
+        else {
+          this.window.webContents.send('transform-to-label');
+        }
+      });
     });
   };
 
   private _removeShortcuts = () => {
-    globalShortcut.unregisterAll();
-    let opt = 'Alt';
-    if (process.platform === 'darwin') {
-      opt = 'Option';
-    }
-    globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
-      this._note.tray.popUpContextMenu();
+    lock.acquire('registerShortcut', () => {
+      globalShortcut.unregisterAll();
+      let opt = 'Alt';
+      if (process.platform === 'darwin') {
+        opt = 'Option';
+      }
+      globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
+        this._note.tray.popUpContextMenu();
+      });
     });
   };
 }
