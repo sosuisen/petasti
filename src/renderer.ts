@@ -599,10 +599,7 @@ const onCardFocused = (zIndex: number | undefined, modifiedDate: string | undefi
   render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
 
   if (!cardEditor.isOpened) {
-    setTimeout(()=> {
-      startEditor();
-    },1000);
-    
+    startEditor();
   }
 };
 
