@@ -614,7 +614,7 @@ const onCardBlurred = () => {
     }
     endEditor();
   }
-  render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
+  render(['TitleBar', 'TitleBarStyle', 'ContentsData', 'CardStyle', 'ContentsRect']);
 };
 
 const onChangeCardColor = (backgroundColor: string, opacity = 1.0) => {
