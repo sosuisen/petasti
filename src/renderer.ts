@@ -444,31 +444,46 @@ const onTransformToLabel = async () => {
   }
   await cardStore.dispatch(cardLabelUpdateCreator(label));
 
-  document.getElementById('label')!.classList.toggle('showWithAnime');
-  document.getElementById('label')!.classList.toggle('hideWithAnime');
-  document.getElementById('contents')!.classList.toggle('show');
-  document.getElementById('contents')!.classList.toggle('hide');
-
-  render();
-  window.api.setWindowRect(
-    cardStore.getState().workState.url,
-    label.x,
-    label.y,
-    label.width,
-    label.height,
-    true
-  );
+  if (
+    cardStore.getState().sketch.geometry.height < cardStore.getState().sketch.label.height!
+  ) {
+    // Label is larger than card. It is rare case.
+    // Wait for the card to shrink.
+    document.getElementById('label')!.classList.toggle('showWithAnime');
+    document.getElementById('label')!.classList.toggle('hideWithAnime');
+    document.getElementById('contents')!.classList.toggle('show');
+    document.getElementById('contents')!.classList.toggle('hide');
+    render();
+    window.api.setWindowRect(
+      cardStore.getState().workState.url,
+      label.x,
+      label.y,
+      label.width,
+      label.height,
+      true
+    );
+  }
+  else {
+    await window.api.setWindowRect(
+      cardStore.getState().workState.url,
+      label.x,
+      label.y,
+      label.width,
+      label.height,
+      true
+    );
+    document.getElementById('label')!.classList.toggle('showWithAnime');
+    document.getElementById('label')!.classList.toggle('hideWithAnime');
+    document.getElementById('contents')!.classList.toggle('show');
+    document.getElementById('contents')!.classList.toggle('hide');
+    render();
+  }
 };
 
 // eslint-disable-next-line complexity
 const onTransformFromLabel = async () => {
   const label = cardStore.getState().sketch.label;
   if (!isLabelOpened(label.status)) return;
-
-  document.getElementById('label')!.classList.toggle('showWithAnime');
-  document.getElementById('label')!.classList.toggle('hideWithAnime');
-  document.getElementById('contents')!.classList.toggle('show');
-  document.getElementById('contents')!.classList.toggle('hide');
 
   let newGeom: Geometry;
   if (cardStore.getState().sketch.label.status === 'openedSticker') {
@@ -534,9 +549,17 @@ const onTransformFromLabel = async () => {
       cardStore.getState().sketch.geometry.height,
       true
     );
+    document.getElementById('label')!.classList.toggle('showWithAnime');
+    document.getElementById('label')!.classList.toggle('hideWithAnime');
+    document.getElementById('contents')!.classList.toggle('show');
+    document.getElementById('contents')!.classList.toggle('hide');
     render();
   }
   else {
+    document.getElementById('label')!.classList.toggle('showWithAnime');
+    document.getElementById('label')!.classList.toggle('hideWithAnime');
+    document.getElementById('contents')!.classList.toggle('show');
+    document.getElementById('contents')!.classList.toggle('hide');
     render();
     window.api.setWindowRect(
       cardStore.getState().workState.url,
@@ -585,14 +608,13 @@ const onCardBlurred = () => {
 
   cardStore.dispatch(cardWorkStateStatusUpdateCreator('Blurred'));
 
-  render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
-
   if (cardEditor.isOpened) {
     if (cardEditor.isCodeMode) {
       return;
     }
     endEditor();
   }
+  render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
 };
 
 const onChangeCardColor = (backgroundColor: string, opacity = 1.0) => {
@@ -727,6 +749,7 @@ const onSetLock = (locked: boolean) => {
   cardStore.dispatch(cardConditionLockedUpdateCreator(locked));
   if (cardEditor.isOpened) {
     endEditor();
+    render();
   }
 };
 
@@ -858,7 +881,6 @@ const startEditor = (x?: number, y?: number) => {
 
 const endEditor = async () => {
   await cardEditor.endEdit(); // body will be saved in endEdit()
-  render();
 
   const { left, top } = cardEditor.getScrollPosition();
   const contents = document.getElementById('contents');
