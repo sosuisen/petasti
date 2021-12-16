@@ -870,12 +870,12 @@ const startEditor = (x?: number, y?: number) => {
   cardEditor.setScrollPosition(scrollLeft, scrollTop);
 
   if (x !== undefined && y !== undefined) {
-    /*
-    setInterval(() => {
+    /*    setInterval(() => {
       window.api.sendLeftMouseDown(cardStore.getState().workState.url, x, y);
     }, 0);
     */
-    // window.api.sendLeftMouseClick(cardStore.getState().workState.url, x, y);
+    // Need not to use MouseDown but MouseClick
+    window.api.sendLeftMouseClick(cardStore.getState().workState.url, x, y);
   }
 };
 
