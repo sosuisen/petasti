@@ -143,8 +143,9 @@ body > .card > .label{
 
 	/* Remove the background color to make it transparent. */
 	background-color: transparent;
-  width: 100%;
-  height: 100%;
+
+  width: 1px; /* Don't set width to 100%. It causes serious scroll error when pressing page up/down key. */
+  height: 1px; /* Don't set width to 100%. It causes serious scroll error when pressing page up/down key. */
 
   overflow-x: hidden;
   overflow-y: scroll;

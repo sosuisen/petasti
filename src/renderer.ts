@@ -449,8 +449,7 @@ const onTransformToLabel = async () => {
   ) {
     // Label is larger than card. It is rare case.
     // Wait for the card to shrink.
-    document.getElementById('label')!.classList.toggle('showWithAnime');
-    document.getElementById('label')!.classList.toggle('hideWithAnime');
+    document.getElementById('label')!.style.display = 'block';
     document.getElementById('contents')!.classList.toggle('show');
     document.getElementById('contents')!.classList.toggle('hide');
     render();
@@ -472,8 +471,7 @@ const onTransformToLabel = async () => {
       label.height,
       true
     );
-    document.getElementById('label')!.classList.toggle('showWithAnime');
-    document.getElementById('label')!.classList.toggle('hideWithAnime');
+    document.getElementById('label')!.style.display = 'block';
     document.getElementById('contents')!.classList.toggle('show');
     document.getElementById('contents')!.classList.toggle('hide');
     render();
@@ -549,15 +547,13 @@ const onTransformFromLabel = async () => {
       cardStore.getState().sketch.geometry.height,
       true
     );
-    document.getElementById('label')!.classList.toggle('showWithAnime');
-    document.getElementById('label')!.classList.toggle('hideWithAnime');
+    document.getElementById('label')!.style.display = 'none';
     document.getElementById('contents')!.classList.toggle('show');
     document.getElementById('contents')!.classList.toggle('hide');
     render();
   }
   else {
-    document.getElementById('label')!.classList.toggle('showWithAnime');
-    document.getElementById('label')!.classList.toggle('hideWithAnime');
+    document.getElementById('label')!.style.display = 'none';
     document.getElementById('contents')!.classList.toggle('show');
     document.getElementById('contents')!.classList.toggle('hide');
     render();
@@ -656,6 +652,7 @@ const onMoveByHand = (geometry: Geometry, modifiedDate: string) => {
 };
   */
 // Render card data
+// eslint-disable-next-line complexity
 const onRenderCard = async (
   url: string,
   cardBody: CardBody,
@@ -709,14 +706,10 @@ const onRenderCard = async (
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     document.getElementById('contents')!.classList.toggle('show');
     document.getElementById('contents')!.classList.toggle('hide');
-    document.getElementById('label')!.classList.toggle('showWithAnime');
-    document.getElementById('label')!.classList.toggle('hideWithAnime');
-    // document.getElementById('label')!.style.visibility = 'visible';
-    // document.getElementById('contents')!.style.visibility = 'hidden';
+    document.getElementById('label')!.style.display = 'block';
   }
   else {
-    // document.getElementById('label')!.style.visibility = 'hidden';
-    // document.getElementById('contents')!.style.visibility = 'visible';
+    document.getElementById('label')!.style.display = 'none';
   }
 
   document.getElementById('card')!.style.visibility = 'visible';
