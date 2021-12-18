@@ -63,6 +63,9 @@ import { noteCreateCreator, noteInitCreator } from './note_action_creator';
 import { Card } from './card';
 import { closeSettings } from './settings';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+GitDocumentDB.plugin(require('git-documentdb-plugin-remote-nodegit'));
+
 const logLevel = 'debug';
 
 export const generateNewNoteId = () => {
@@ -240,8 +243,11 @@ class Note implements INote {
         await this._settingsDB.put(this._settings);
       }
       else {
-        if (loadedSettings.sync.syncAfterChanges === undefined)
-          loadedSettings.sync.syncAfterChanges = true;
+        if (loadedSettings.version === undefined) {
+          loadedSettings.version = '0.1';
+          loadedSettings.sync.connection.engine = 'nodegit';
+          await this._settingsDB.put(loadedSettings);
+        }
         this._settings = loadedSettings;
       }
 

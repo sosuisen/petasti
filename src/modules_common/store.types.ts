@@ -21,10 +21,12 @@ export const dataDirName = 'tree_stickies_data';
  *
  * TODO: Default path for Mac / Linux is needed.
  */
+/*
 export const defaultDataDir = app.isPackaged
   ? path.join(__dirname, `../../../../../../${dataDirName}`)
   : path.join(__dirname, `../../${dataDirName}`);
-// export const defaultDataDir = 'C:\\Users\\hidek\\AppData\\Local\\tree_stickies_data';
+*/
+export const defaultDataDir = 'C:\\Users\\kubota\\AppData\\Local\\tree_stickies_data';
 
 export const defaultLogDir = defaultDataDir + '/logs/';
 
@@ -48,6 +50,7 @@ export type AppInfo = {
 
 export type SettingsState = {
   _id: string;
+  version: string;
   language: string;
   dataStorePath: string;
   currentNoteId: string;
@@ -59,6 +62,7 @@ export type SettingsState = {
       type: 'github';
       personalAccessToken: string;
       private: boolean;
+      engine: string;
     };
     interval: number;
     syncAfterChanges: boolean;
@@ -72,6 +76,7 @@ export type SettingsDialogState = {
 
 export const initialSettingsState: SettingsState = {
   _id: 'settings',
+  version: '0.1',
   language: '',
   dataStorePath: defaultDataDir,
   currentNoteId: '',
@@ -83,6 +88,7 @@ export const initialSettingsState: SettingsState = {
       type: 'github',
       personalAccessToken: '',
       private: true,
+      engine: 'nodegit',
     },
     interval: 30000,
     syncAfterChanges: true,
