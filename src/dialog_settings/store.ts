@@ -48,10 +48,12 @@ const settingsReducer = (
         type: 'github',
         personalAccessToken: '',
         private: true,
+        engine: 'nodegit',
       },
       interval: 30000,
       syncAfterChanges: true,
     },
+    version: '0.1',
   },
   action: SettingsAction
 ) => {
