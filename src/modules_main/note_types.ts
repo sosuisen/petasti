@@ -50,7 +50,12 @@ export interface INote {
   updateNoteDoc: (noteProp: NoteProp) => Promise<TaskMetadata>;
   deleteNoteDoc: (noteId: string) => Promise<TaskMetadata>;
 
-  createCard: (sketchUrl: string, card: ICard, waitCreation?: boolean) => Promise<void>;
+  createCard: (
+    sketchUrl: string,
+    card: ICard,
+    waitCreation?: boolean,
+    updateDB?: boolean
+  ) => Promise<void>;
   updateCard: (
     sketchUrl: string,
     cardBody: CardBody,

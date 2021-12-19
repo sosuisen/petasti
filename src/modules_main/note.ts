@@ -533,14 +533,16 @@ class Note implements INote {
   createCard = async (
     sketchUrl: string,
     card: ICard,
-    waitCreation = false
+    waitCreation = false,
+    updateDB = true
   ): Promise<void> => {
     if (getNoteIdFromUrl(sketchUrl) === note.settings.currentNoteId) {
       cacheOfCard.set(sketchUrl, card);
     }
-
-    await this._createCardBodyDoc(card.body, waitCreation);
-    await this._createCardSketchDoc(card.sketch, waitCreation);
+    if (updateDB) {
+      await this._createCardBodyDoc(card.body, waitCreation);
+      await this._createCardSketchDoc(card.sketch, waitCreation);
+    }
 
     // Update note store & DB
     /*
