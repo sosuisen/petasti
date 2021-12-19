@@ -171,15 +171,19 @@ export const createCardWindow = async (
   note: INote,
   noteIdOrUrl: string,
   partialCardBody: Partial<CardBody>,
-  partialCardSketch: Partial<CardSketch>
+  partialCardSketch: Partial<CardSketch>,
+  serialize = true
 ): Promise<void> => {
   // Overwrite z
   if (partialCardSketch.geometry !== undefined) {
     partialCardSketch.geometry.z = getZIndexOfTopCard() + 1;
   }
   const card = new Card(note, noteIdOrUrl, partialCardBody, partialCardSketch);
-  // Async
-  note.createCard(card.url, card);
+
+  if (serialize) {
+    // Async
+    note.createCard(card.url, card);
+  }
 
   await card.render();
   console.debug(`focus in createCardWindow: ${card.url}`);

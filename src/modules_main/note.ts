@@ -541,6 +541,7 @@ class Note implements INote {
 
     await this._createCardBodyDoc(card.body, waitCreation);
     await this._createCardSketchDoc(card.sketch, waitCreation);
+
     // Update note store & DB
     /*
     const noteId = getNoteIdFromUrl(sketchUrl);
