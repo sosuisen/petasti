@@ -815,10 +815,22 @@ const onSyncCardSketch = async (changedFile: ChangedFile, enqueueTime: string) =
     // It is not invoked.
   }
   else if (changedFile.operation === 'update') {
+    const oldCardSketch = changedFile.old.doc as CardSketch;
     const cardSketch = changedFile.new.doc as CardSketch;
+
+    const oldLabelOpened = isLabelOpened(oldCardSketch.label.status);
+    const newLabelOpened = isLabelOpened(cardSketch.label.status);
     await cardStore.dispatch(cardSketchUpdateCreator(cardSketch, 'remote', enqueueTime));
 
-    render(['TitleBar', 'ContentsRect', 'CardStyle', 'EditorStyle', 'EditorRect']);
+    if (oldLabelOpened && !newLabelOpened) {
+      onTransformFromLabel();
+    }
+    else if (!oldLabelOpened && newLabelOpened) {
+      onTransformToLabel();
+    }
+    else {
+      render(['TitleBar', 'ContentsRect', 'CardStyle', 'EditorStyle', 'EditorRect']);
+    }
   }
   else if (changedFile.operation === 'delete') {
     // It is not invoked.
