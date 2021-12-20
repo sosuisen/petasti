@@ -359,6 +359,14 @@ window.addEventListener('message', event => {
     case 'change-card-color':
       onChangeCardColor(event.data.backgroundColor, event.data.opacity);
       break;
+    case 'get-selected-markdown': {
+      const markdown = cardEditor.getSelectedMarkdown();
+      window.api.responseOfGetSelectedMarkdown(
+        cardStore.getState().workState.url,
+        markdown
+      );
+      break;
+    }
     case 'move-by-hand':
       onChangeRectByHand(event.data.geometry, false);
       break;

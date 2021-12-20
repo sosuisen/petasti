@@ -148,6 +148,8 @@ export interface ICard {
 
   moveToNote: (noteID: string) => Promise<void>;
   copyToNote: (noteID: string) => Promise<void>;
+
+  hasSelection: boolean;
 }
 
 export type CardMap = Map<string, ICard>;

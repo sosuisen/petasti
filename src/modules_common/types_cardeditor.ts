@@ -9,6 +9,9 @@ export interface ICardEditor {
   isCodeMode: boolean;
   isOpened: boolean;
 
+  hasSelection(): boolean;
+  getSelectedMarkdown(): string;
+
   getImageTag(id: string, src: string, width: number, height: number, alt: string): string;
 
   loadUI(cardCssStyle: CardCssStyle): Promise<void>; // A Promise resolves when required initialization is finished.

@@ -6,6 +6,7 @@ type MessagesMain = {
   bringToFront: string;
   sendToBack: string;
   newCard: string;
+  newCardFromSelection: string;
   confirmClosing: string;
   confirmWaitMore: string;
   pleaseRestartErrorInOpeningEditor: string;
@@ -221,6 +222,7 @@ export const ENGLISH: Messages = {
   bringToFront: 'Bring to Front',
   sendToBack: 'Send to Back',
   newCard: 'New card',
+  newCardFromSelection: 'New card from selection',
   confirmClosing:
     'Close OK?\n\nThe closed card is not deleted, and can be opened again in the near future update.\n(If you want to delete the card, let it empty before closing it.)',
   confirmWaitMore:
@@ -352,6 +354,7 @@ export const JAPANESE: Messages = {
   bringToFront: '最前面へ',
   sendToBack: '最背面へ',
   newCard: '新規カード',
+  newCardFromSelection: '選択範囲から新規カード',
   confirmClosing:
     'カードを閉じても良いですか？\n\n閉じたカードは削除されず、近い将来のアップデートで再表示できるようになります。\n（カードを削除したい場合は、カードの内容を全て消してから閉じてください）',
   confirmWaitMore:

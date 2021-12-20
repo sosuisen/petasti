@@ -435,6 +435,15 @@ export class CardEditorMarkdown implements ICardEditor {
       view (editorView) {
         return {
           update: (view: EditorView, prevState: EditorState) => {
+            const selection = view.state.selection;
+            let hasSelection: boolean;
+            if (selection.$from.pos === selection.$to.pos) hasSelection = false;
+            else hasSelection = true;
+            window.api.responseOfHasSelection(
+              cardStore.getState().workState.url,
+              hasSelection
+            );
+
             /*
             const editor = document.getElementById('editor');
             if (editor !== null) {
@@ -506,6 +515,31 @@ export class CardEditorMarkdown implements ICardEditor {
       .use(tooltip)
       //      .use(slash)
       .create();
+  };
+
+  public hasSelection = () => {
+    return this._editor.action(ctx => {
+      const editorView = ctx.get(editorViewCtx);
+      const selection = editorView.state.selection;
+      if (selection.$from.pos === selection.$to.pos) return false;
+      return true;
+    });
+  };
+
+  public getSelectedMarkdown = () => {
+    return this._editor.action(ctx => {
+      const serializer = ctx.get(serializerCtx);
+      const editorView = ctx.get(editorViewCtx);
+      const selection = editorView.state.selection;
+      const schema = ctx.get(schemaCtx);
+      const selectionDoc = schema.topNodeType.createAndFill(
+        undefined,
+        selection.content().content
+      );
+      if (!selectionDoc) return '';
+      const markdown = serializer(selectionDoc);
+      return markdown;
+    });
   };
 
   public setData = (body: string): void => {

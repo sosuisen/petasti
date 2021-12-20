@@ -126,7 +126,7 @@ emitter.on('restart', async () => {
 });
 
 /**
- * Change not
+ * Change note
  */
 emitter.on('change-note', async (nextNoteId: string) => {
   handlers.forEach(channel => ipcMain.removeHandler(channel));
@@ -168,6 +168,16 @@ app.on('window-all-closed', () => {
   }
   note.changingToNoteId = 'none';
 });
+
+/**
+ * Create card by event emitter
+ */
+emitter.on(
+  'create-card',
+  async (cardBody: Partial<CardBody>, cardSketch: Partial<CardSketch>) => {
+    await createCardWindow(note, note.settings.currentNoteId, cardBody, cardSketch);
+  }
+);
 
 /**
  * ipcMain handles
@@ -289,12 +299,12 @@ ipcMain.handle('get-uuid', () => {
 ipcMain.handle(
   'send-mouse-input',
   (event, url: string, mouseInputEvent: MouseInputEvent[]) => {
-    const cardWindow = cacheOfCard.get(url);
-    if (!cardWindow) {
+    const card = cacheOfCard.get(url);
+    if (!card) {
       return;
     }
     mouseInputEvent.forEach(e => {
-      cardWindow.window.webContents.sendInputEvent(e);
+      card.window.webContents.sendInputEvent(e);
     });
   }
 );
@@ -341,6 +351,13 @@ ipcMain.handle('get-current-display-rect', (e, points: { x: number; y: number }[
       height: display.bounds.height,
     };
   });
+});
+
+ipcMain.handle('response-of-has-selection', (event, url: string, hasSelection: boolean) => {
+  const card = cacheOfCard.get(url);
+  if (card) {
+    card.hasSelection = hasSelection;
+  }
 });
 
 powerMonitor.on('resume', () => {

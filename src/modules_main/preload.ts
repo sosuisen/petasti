@@ -58,6 +58,15 @@ contextBridge.exposeInMainWorld('api', {
   openURL: (url: string) => {
     return ipcRenderer.invoke('openURL', url);
   },
+  responseOfHasSelection: (url: string, hasSelection: boolean) => {
+    ipcRenderer.invoke('response-of-has-selection', url, hasSelection);
+  },
+  responseOfGetSelectedMarkdown: (url: string, markdown: string) => {
+    ipcRenderer.invoke(
+      'response-of-get-selected-markdown-' + encodeURIComponent(url),
+      markdown
+    );
+  },
   sendLeftMouseDown: (url: string, x: number, y: number) => {
     const leftMouseDown: MouseInputEvent = {
       button: 'left',
@@ -143,6 +152,14 @@ ipcRenderer.on(
       },
       'file://'
     )
+);
+
+ipcRenderer.on('get-selected-markdown', () =>
+  window.postMessage({ command: 'get-selected-markdown' }, 'file://')
+);
+
+ipcRenderer.on('has-selection', () =>
+  window.postMessage({ command: 'has-selection' }, 'file://')
 );
 
 ipcRenderer.on(

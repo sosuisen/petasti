@@ -2,10 +2,10 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-import { BrowserWindow, MenuItemConstructorOptions } from 'electron';
+import { BrowserWindow, ipcMain, MenuItemConstructorOptions } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { cardColors, ColorName } from '../modules_common/color';
-import { ICard } from '../modules_common/types';
+import { CardBody, CardSketch, ICard } from '../modules_common/types';
 import { getCurrentDateAndTime, isLabelOpened } from '../modules_common/utils';
 import {
   getZIndexOfBottomCard,
@@ -16,6 +16,8 @@ import { cacheOfCard } from './card_cache';
 import { MESSAGE } from './messages';
 import { INote } from './note_types';
 import { noteStore } from './note_store';
+import { DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
+import { emitter } from './event';
 
 /**
  * Context Menu
@@ -79,6 +81,32 @@ export const setContextMenu = (note: INote, card: ICard) => {
       return result;
     }, [] as MenuItemConstructorOptions[]);
 
+  const createCardFromMarkdown = (markdown: string) => {
+    const geometry = { ...DEFAULT_CARD_GEOMETRY };
+    geometry.x = card.sketch.geometry.x + 30;
+    geometry.y = card.sketch.geometry.y + 30;
+
+    const cardBody: Partial<CardBody> = {
+      _body: markdown,
+    };
+    const cardSketch: Partial<CardSketch> = {
+      geometry: {
+        x: geometry.x,
+        y: geometry.y,
+        z: geometry.z, // z will be overwritten in createCard()
+        width: geometry.width,
+        height: geometry.height,
+      },
+      style: {
+        uiColor: card.sketch.style.uiColor,
+        backgroundColor: card.sketch.style.backgroundColor,
+        opacity: card.sketch.style.opacity,
+        zoom: card.sketch.style.zoom,
+      },
+    };
+    emitter.emit('create-card', cardBody, cardSketch);
+  };
+
   const dispose = contextMenu({
     window: card.window,
     showSaveImageAs: true,
@@ -110,6 +138,23 @@ export const setContextMenu = (note: INote, card: ICard) => {
     ],
     prepend: (defaultActions, params, browserWindow) => {
       const menus: MenuItemConstructorOptions[] = [
+        {
+          label: card.hasSelection ? MESSAGE('newCardFromSelection') : MESSAGE('newCard'),
+          click: () => {
+            if (card.hasSelection) {
+              card.window.webContents.send('get-selected-markdown');
+              ipcMain.handleOnce(
+                'response-of-get-selected-markdown-' + encodeURIComponent(card.url),
+                (event, markdown) => {
+                  createCardFromMarkdown(markdown);
+                }
+              );
+            }
+            else {
+              createCardFromMarkdown('');
+            }
+          },
+        },
         {
           label: isLabelOpened(card.sketch.label.status)
             ? MESSAGE('transformFromLabel')

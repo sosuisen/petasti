@@ -243,6 +243,11 @@ export class Card implements ICard {
   public recaptureGlobalFocusEventAfterLocalFocusEvent = false;
 
   /**
+   * Selection
+   */
+  public hasSelection = false;
+
+  /**
    * Context menu
    */
   public resetContextMenu: () => void;

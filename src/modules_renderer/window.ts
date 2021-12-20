@@ -36,6 +36,8 @@ interface WindowWithAPI extends Window {
     ) => { x: number; y: number; width: number; height: number }[];
     getUuid: () => Promise<string>;
     openURL: (url: string) => Promise<void>;
+    responseOfHasSelection: (url: string, hasSelection: boolean) => Promise<void>;
+    responseOfGetSelectedMarkdown: (url: string, markdown: string) => Promise<void>;
     sendLeftMouseDown: (url: string, x: number, y: number) => Promise<void>;
     sendLeftMouseClick: (url: string, x: number, y: number) => Promise<void>;
     setTitle: (url: string, title: string) => Promise<void>;
