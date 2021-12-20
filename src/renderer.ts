@@ -39,7 +39,6 @@ import {
 } from './modules_common/keys';
 import {
   cardBodyUpdateCreator,
-  cardConditionLockedUpdateCreator,
   cardGeometryUpdateCreator,
   cardLabelUpdateCreator,
   cardSketchBringToFrontCreator,
@@ -377,9 +376,11 @@ window.addEventListener('message', event => {
     case 'send-to-back':
       onSendToBack(event.data.zIndex, event.data.modifiedDate);
       break;
+    /*
     case 'set-lock':
       onSetLock(event.data.locked);
       break;
+    */
     case 'zoom-in':
       onZoomIn();
       break;
@@ -737,7 +738,7 @@ const onRenderCard = async (
 const onSendToBack = (zIndex: number, modifiedDate: string) => {
   cardStore.dispatch(cardSketchSendToBackCreator(zIndex, modifiedDate));
 };
-
+/*
 const onSetLock = (locked: boolean) => {
   cardStore.dispatch(cardConditionLockedUpdateCreator(locked));
   if (cardEditor.isOpened) {
@@ -745,7 +746,7 @@ const onSetLock = (locked: boolean) => {
     render();
   }
 };
-
+*/
 const onZoomIn = async () => {
   let zoom: number;
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
@@ -857,9 +858,11 @@ const onSyncCardBody = async (changedFile: ChangedFile, enqueueTime: string) => 
 };
 
 const startEditor = (x?: number, y?: number) => {
+  /*
   if (cardStore.getState().sketch.condition.locked) {
     return;
   }
+  */
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     return;
   }

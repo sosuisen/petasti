@@ -30,7 +30,7 @@ export const DEFAULT_CARD_GEOMETRY: Geometry = {
   height: 300,
 };
 export const DEFAULT_CARD_CONDITION: CardCondition = {
-  locked: false,
+  // locked: false,
 };
 export const DEFAULT_CARD_LABEL: CardLabel = {
   status: 'closedLabel',

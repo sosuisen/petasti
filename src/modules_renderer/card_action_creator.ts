@@ -303,6 +303,7 @@ export const cardStyleUpdateCreator = (
   };
 };
 
+/*
 export const cardConditionLockedUpdateCreator = (
   locked: boolean,
   changeFrom: ChangeFrom = 'local',
@@ -349,6 +350,7 @@ export const cardConditionLockedUpdateCreator = (
     });
   };
 };
+*/
 
 export const cardLabelUpdateCreator = (
   label: CardLabel,

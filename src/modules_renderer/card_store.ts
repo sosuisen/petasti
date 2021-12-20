@@ -119,11 +119,13 @@ const cardConditionReducer = (
       console.log('# cardConditionReducer: ' + JSON.stringify(newState));
       return newState;
     }
+    /*
     case 'card-condition-locked-update': {
       const newState = { ...state, locked: action.payload };
       console.log('# cardConditionReducer: ' + JSON.stringify(newState));
       return newState;
     }
+    */
     default:
       return state;
   }

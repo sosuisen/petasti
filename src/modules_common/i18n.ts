@@ -19,8 +19,8 @@ type MessagesMain = {
   btnRemove: string;
   settings: string;
   syncNow: string;
-  lockCard: string;
-  unlockCard: string;
+  // lockCard: string;
+  // unlockCard: string;
   cut: string;
   copy: string;
   paste: string;
@@ -239,8 +239,8 @@ export const ENGLISH: Messages = {
   btnRemove: 'Remove',
   settings: 'Settings...',
   syncNow: 'Sync now',
-  lockCard: 'Lock card',
-  unlockCard: 'Unlock card',
+  // lockCard: 'Lock card',
+  // unlockCard: 'Unlock card',
   cut: 'Cut',
   copy: 'Copy',
   paste: 'Paste',
@@ -371,8 +371,8 @@ export const JAPANESE: Messages = {
   btnRemove: '削除する',
   settings: '設定...',
   syncNow: '今すぐ同期',
-  lockCard: 'ロックする',
-  unlockCard: 'ロック解除する',
+  // lockCard: 'ロックする',
+  // unlockCard: 'ロック解除する',
   cut: '切り取り',
   copy: 'コピー',
   paste: '貼り付け',

@@ -172,9 +172,11 @@ ipcRenderer.on(
   (event: Electron.IpcRendererEvent, zIndex: number, modifiedDate: string) =>
     window.postMessage({ command: 'send-to-back', zIndex, modifiedDate }, 'file://')
 );
+/*
 ipcRenderer.on('set-lock', (event: Electron.IpcRendererEvent, locked: boolean) => {
   window.postMessage({ command: 'set-lock', locked }, 'file://');
 });
+*/
 ipcRenderer.on('zoom-in', () => window.postMessage({ command: 'zoom-in' }, 'file://'));
 ipcRenderer.on('zoom-out', () => window.postMessage({ command: 'zoom-out' }, 'file://'));
 

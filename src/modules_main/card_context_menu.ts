@@ -181,6 +181,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
             card.window.webContents.send('send-to-back', zIndex, modifiedDate);
           },
         },
+        /*
         {
           label: card.sketch.condition.locked ? MESSAGE('unlockCard') : MESSAGE('lockCard'),
           click: () => {
@@ -189,6 +190,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
             resetContextMenu();
           },
         },
+        */
       ];
 
       if (params.dictionarySuggestions.length > 0) {

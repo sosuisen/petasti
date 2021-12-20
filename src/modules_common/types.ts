@@ -38,7 +38,7 @@ export type CardStyle = {
  * Serializable condition of a card
  */
 export type CardCondition = {
-  locked: boolean;
+  locked?: boolean;
 };
 
 /**
