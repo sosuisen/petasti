@@ -139,7 +139,10 @@ export const setContextMenu = (note: INote, card: ICard) => {
     prepend: (defaultActions, params, browserWindow) => {
       const menus: MenuItemConstructorOptions[] = [
         {
-          label: card.hasSelection ? MESSAGE('newCardFromSelection') : MESSAGE('newCard'),
+          label:
+            card.hasSelection && !isLabelOpened(card.sketch.label.status)
+              ? MESSAGE('newCardFromSelection')
+              : MESSAGE('newCard'),
           click: () => {
             if (card.hasSelection) {
               card.window.webContents.send('get-selected-markdown');
