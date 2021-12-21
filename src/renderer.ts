@@ -303,7 +303,7 @@ const initializeUIEvents = () => {
   document.body!.addEventListener('dblclick', event => {
     if (isLabelOpened(cardStore.getState().sketch.label.status)) {
       onBodyMouseUp();
-      onTransformFromLabel();
+      onTransformToCard();
       event.preventDefault();
       event.stopPropagation();
     }
@@ -408,7 +408,7 @@ window.addEventListener('message', event => {
       onTransformToLabel();
       break;
     case 'transform-from-label':
-      onTransformFromLabel();
+      onTransformToCard();
       break;
     default:
       break;
@@ -456,6 +456,11 @@ const onTransformToLabel = async () => {
   }
   await cardStore.dispatch(cardLabelUpdateCreator(label));
 
+  setRectToLabel();
+};
+
+const setRectToLabel = async () => {
+  const label = cardStore.getState().sketch.label;
   if (
     cardStore.getState().sketch.geometry.height < cardStore.getState().sketch.label.height!
   ) {
@@ -467,20 +472,20 @@ const onTransformToLabel = async () => {
     render();
     window.api.setWindowRect(
       cardStore.getState().workState.url,
-      label.x,
-      label.y,
-      label.width,
-      label.height,
+      label.x!,
+      label.y!,
+      label.width!,
+      label.height!,
       true
     );
   }
   else {
     await window.api.setWindowRect(
       cardStore.getState().workState.url,
-      label.x,
-      label.y,
-      label.width,
-      label.height,
+      label.x!,
+      label.y!,
+      label.width!,
+      label.height!,
       true
     );
     document.getElementById('label')!.style.display = 'block';
@@ -491,7 +496,7 @@ const onTransformToLabel = async () => {
 };
 
 // eslint-disable-next-line complexity
-const onTransformFromLabel = async () => {
+const onTransformToCard = async () => {
   const label = cardStore.getState().sketch.label;
   if (!isLabelOpened(label.status)) return;
 
@@ -546,17 +551,24 @@ const onTransformFromLabel = async () => {
     await cardStore.dispatch(cardLabelUpdateCreator(label));
   }
 
-  if (
-    cardStore.getState().sketch.geometry.height < cardStore.getState().sketch.label.height!
-  ) {
+  await setRectToCard();
+
+  if (!cardEditor.isOpened) {
+    startEditor();
+  }
+};
+
+const setRectToCard = async () => {
+  const sketch = cardStore.getState().sketch;
+  if (sketch.geometry.height < sketch.label.height!) {
     // Label is larger than card. It is rare case.
     // Wait for the card to shrink.
     await window.api.setWindowRect(
       cardStore.getState().workState.url,
-      cardStore.getState().sketch.geometry.x,
-      cardStore.getState().sketch.geometry.y,
-      cardStore.getState().sketch.geometry.width,
-      cardStore.getState().sketch.geometry.height,
+      sketch.geometry.x,
+      sketch.geometry.y,
+      sketch.geometry.width,
+      sketch.geometry.height,
       true
     );
     document.getElementById('label')!.style.display = 'none';
@@ -571,15 +583,12 @@ const onTransformFromLabel = async () => {
     render();
     window.api.setWindowRect(
       cardStore.getState().workState.url,
-      cardStore.getState().sketch.geometry.x,
-      cardStore.getState().sketch.geometry.y,
-      cardStore.getState().sketch.geometry.width,
-      cardStore.getState().sketch.geometry.height,
+      sketch.geometry.x,
+      sketch.geometry.y,
+      sketch.geometry.width,
+      sketch.geometry.height,
       true
     );
-  }
-  if (!cardEditor.isOpened) {
-    startEditor();
   }
 };
 
@@ -825,26 +834,78 @@ const onZoomOut = async () => {
   render(['CardStyle', 'EditorStyle']);
 };
 
+// eslint-disable-next-line complexity
 const onSyncCardSketch = async (changedFile: ChangedFile, enqueueTime: string) => {
   if (changedFile.operation === 'insert') {
     // It is not invoked.
   }
   else if (changedFile.operation === 'update') {
     const oldCardSketch = changedFile.old.doc as CardSketch;
-    const cardSketch = changedFile.new.doc as CardSketch;
+    const newCardSketch = changedFile.new.doc as CardSketch;
 
     const oldLabelOpened = isLabelOpened(oldCardSketch.label.status);
-    const newLabelOpened = isLabelOpened(cardSketch.label.status);
-    await cardStore.dispatch(cardSketchUpdateCreator(cardSketch, 'remote', enqueueTime));
+    const newLabelOpened = isLabelOpened(newCardSketch.label.status);
+    await cardStore.dispatch(cardSketchUpdateCreator(newCardSketch, 'remote', enqueueTime));
 
-    if (oldLabelOpened && !newLabelOpened) {
-      onTransformFromLabel();
+    if (!oldLabelOpened && !newLabelOpened) {
+      // move card
+      const oldGeom = oldCardSketch.geometry;
+      const newGeom = newCardSketch.geometry;
+      if (
+        newGeom.x !== oldGeom.x ||
+        newGeom.y !== oldGeom.y ||
+        newGeom.width !== oldGeom.width ||
+        newGeom.height !== oldGeom.height
+      ) {
+        window.api.setWindowRect(
+          cardStore.getState().workState.url,
+          newGeom.x,
+          newGeom.y,
+          newGeom.width,
+          newGeom.height
+        );
+      }
+      render(['TitleBar', 'ContentsRect', 'CardStyle', 'EditorStyle', 'EditorRect']);
+    }
+    else if (oldLabelOpened && newLabelOpened) {
+      // move label
+      const oldX = oldCardSketch.label.x!;
+      const newX = newCardSketch.label.x!;
+      const oldY = oldCardSketch.label.y!;
+      const newY = newCardSketch.label.y!;
+      const oldWidth = oldCardSketch.label.width!;
+      const newWidth = newCardSketch.label.width!;
+      const oldHeight = oldCardSketch.label.height!;
+      const newHeight = newCardSketch.label.height!;
+
+      if (
+        newX !== oldX ||
+        newY !== oldY ||
+        newWidth !== oldWidth ||
+        newHeight !== oldHeight
+      ) {
+        window.api.setWindowRect(
+          cardStore.getState().workState.url,
+          newX,
+          newY,
+          newWidth,
+          newHeight
+        );
+      }
+      render(['TitleBar', 'ContentsRect', 'CardStyle', 'EditorStyle', 'EditorRect']);
+    }
+    else if (oldLabelOpened && !newLabelOpened) {
+      setRectToCard();
+      if (cardStore.getState().workState.status === 'Focused') {
+        startEditor();
+      }
     }
     else if (!oldLabelOpened && newLabelOpened) {
-      onTransformToLabel();
-    }
-    else {
-      render(['TitleBar', 'ContentsRect', 'CardStyle', 'EditorStyle', 'EditorRect']);
+      if (cardEditor.isOpened) {
+        // await endEditor();
+        endEditor(); // Need not to wait saving.
+      }
+      setRectToLabel();
     }
   }
   else if (changedFile.operation === 'delete') {

@@ -100,25 +100,6 @@ export const cardSketchUpdateCreator = (
         payload: cardSketch.geometry,
       };
       dispatch(cardGeometryAction);
-      if (changeFrom === 'remote') {
-        const newGeom = cardSketch.geometry;
-        if (
-          newGeom.x !== prevX ||
-          newGeom.y !== prevY ||
-          newGeom.width !== prevWidth ||
-          newGeom.height !== prevHeight
-        ) {
-          // Cannot move out of screen
-          // window.moveTo(newGeom.x, newGeom.y);
-          window.api.setWindowRect(
-            getState().workState.url,
-            newGeom.x,
-            newGeom.y,
-            newGeom.width,
-            newGeom.height
-          );
-        }
-      }
 
       const cardStyleAction: CardStyleUpdateAction = {
         type: 'card-style-update',
@@ -137,6 +118,12 @@ export const cardSketchUpdateCreator = (
         payload: getCurrentDateAndTime(),
       };
       dispatch(cardDateAction);
+
+      const cardLabelAction: CardLabelUpdateAction = {
+        type: 'card-label-update',
+        payload: cardSketch.label,
+      };
+      dispatch(cardLabelAction);
 
       if (changeFrom === 'local') {
         const cmd: DatabaseCardSketchUpdate = {
