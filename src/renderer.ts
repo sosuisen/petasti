@@ -61,6 +61,8 @@ let suppressFocusEvent = false;
 
 const cardEditor: ICardEditor = new CardEditorMarkdown();
 
+let closing = false;
+
 const close = () => {
   window.close();
 };
@@ -214,6 +216,7 @@ const initializeUIEvents = () => {
       render(['TitleBar', 'ContentsData', 'ContentsRect']);
     }
 
+    closing = true;
     if (cardStore.getState().body._body === '' || event.ctrlKey) {
       window.api.deleteCard(cardStore.getState().workState.url);
     }
@@ -596,9 +599,10 @@ const onCardClose = async () => {
 };
 
 const onCardFocused = (zIndex: number | undefined, modifiedDate: string | undefined) => {
-  if (suppressFocusEvent) {
-    return;
-  }
+  if (closing) return;
+
+  if (suppressFocusEvent) return;
+
   cardStore.dispatch(cardSketchBringToFrontCreator(zIndex, modifiedDate));
 
   render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
@@ -609,6 +613,8 @@ const onCardFocused = (zIndex: number | undefined, modifiedDate: string | undefi
 };
 
 const onCardBlurred = () => {
+  if (closing) return;
+
   onBodyMouseUp();
 
   cardStore.dispatch(cardWorkStateStatusUpdateCreator('Blurred'));
