@@ -34,6 +34,7 @@ import {
   CardBody,
   CardSketch,
   CardStatus,
+  Geometry,
   ICard,
   RendererConfig,
 } from '../modules_common/types';
@@ -133,10 +134,20 @@ let color = { ...cardColors };
 // @ts-ignore
 delete color.transparent;
 
-export const createRandomColorCard = async (note: INote) => {
-  const geometry = { ...DEFAULT_CARD_GEOMETRY };
-  geometry.x += getRandomInt(30, 100);
-  geometry.y += getRandomInt(30, 100);
+export const createRandomColorCard = async (
+  note: INote,
+  body: Partial<CardBody> = {},
+  sketch: Partial<CardSketch> = {}
+) => {
+  let geometry: Geometry;
+  if (sketch.geometry) {
+    geometry = sketch.geometry;
+  }
+  else {
+    geometry = { ...DEFAULT_CARD_GEOMETRY };
+    geometry.x += getRandomInt(30, 100);
+    geometry.y += getRandomInt(30, 100);
+  }
 
   let colorList = Object.entries(color);
   if (colorList.length === 0) {
@@ -155,6 +166,7 @@ export const createRandomColorCard = async (note: INote) => {
   const newUrl = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
 
   const cardSketch: Partial<CardSketch> = {
+    ...sketch,
     geometry,
     style: {
       uiColor: bgColor,
@@ -164,7 +176,7 @@ export const createRandomColorCard = async (note: INote) => {
     },
   };
 
-  await createCardWindow(note, newUrl, {}, cardSketch);
+  await createCardWindow(note, newUrl, body, cardSketch);
 };
 
 export const createCardWindow = async (

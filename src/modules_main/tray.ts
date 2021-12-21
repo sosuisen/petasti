@@ -19,9 +19,17 @@ import {
   getCurrentDateAndTime,
   getCurrentLocalDate,
   getNoteIdFromUrl,
+  getRandomInt,
   getUrlFromNoteId,
 } from '../modules_common/utils';
-import { APP_ICON_NAME, APP_ICON_NAME_MONO } from '../modules_common/const';
+import {
+  APP_ICON_NAME,
+  APP_ICON_NAME_MONO,
+  DEFAULT_CARD_GEOMETRY,
+  DEFAULT_CARD_LABEL,
+  MINIMUM_WINDOW_HEIGHT,
+  MINIMUM_WINDOW_HEIGHT_OFFSET,
+} from '../modules_common/const';
 import { CardBody, CardSketch, Snapshot } from '../modules_common/types';
 import { MESSAGE } from './messages';
 import { cacheOfCard } from './card_cache';
@@ -29,7 +37,6 @@ import { INote } from './note_types';
 import { regExpResidentNote, showDialog } from './utils_main';
 import { noteStore } from './note_store';
 import { noteDeleteCreator, noteUpdateCreator } from './note_action_creator';
-import { cardColors } from '../modules_common/color';
 
 /**
  * Task tray
@@ -52,6 +59,60 @@ export const setTrayContextMenu = () => {
     return;
   }
   const currentNote = noteStore.getState().get(note.settings.currentNoteId);
+
+  const createLinkOfNote: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
+    .sort((a, b) => {
+      if (a.name > b.name) return 1;
+      else if (a.name < b.name) return -1;
+      return 0;
+    })
+    .reduce((result, noteProp) => {
+      result.push({
+        label: `${noteProp.name}`,
+        click: () => {
+          const url = getUrlFromNoteId(noteProp._id);
+          const markdown = `[${noteProp.name}](${url})`;
+          const cardBody: Partial<CardBody> = {
+            _body: markdown,
+          };
+          const geometry = { ...DEFAULT_CARD_GEOMETRY };
+          geometry.x += getRandomInt(30, 100);
+          geometry.y += getRandomInt(30, 100);
+          const label = { ...DEFAULT_CARD_LABEL };
+          label.x = geometry.x;
+          label.y = geometry.y;
+          label.width = Math.floor(geometry.width * 0.7);
+          label.height = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
+          label.zoom = 1.0;
+          label.text = `<p class="paragraph"><a href="${url}" class="link" target="_blank">${noteProp.name}</a></p>`;
+          label.status = 'openedLabel';
+          const cardSketch: Partial<CardSketch> = {
+            geometry,
+            label,
+          };
+
+          createRandomColorCard(note, cardBody, cardSketch);
+        },
+      });
+      return result;
+    }, [] as MenuItemConstructorOptions[]);
+
+  const copyUrlOfNote: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
+    .sort((a, b) => {
+      if (a.name > b.name) return 1;
+      else if (a.name < b.name) return -1;
+      return 0;
+    })
+    .reduce((result, noteProp) => {
+      result.push({
+        label: `${noteProp.name}`,
+        click: () => {
+          const noteUrl = getUrlFromNoteId(noteProp._id);
+          clipboard.writeText(noteUrl);
+        },
+      });
+      return result;
+    }, [] as MenuItemConstructorOptions[]);
 
   let changeNotes: MenuItemConstructorOptions[] = [];
   if (currentNote !== null) {
@@ -196,11 +257,12 @@ export const setTrayContextMenu = () => {
       },
     },
     {
+      label: MESSAGE('noteCreateLink'),
+      submenu: [...createLinkOfNote],
+    },
+    {
       label: MESSAGE('noteCopyUrlToClipboard'),
-      click: () => {
-        const noteUrl = getUrlFromNoteId(note.settings.currentNoteId);
-        clipboard.writeText(noteUrl);
-      },
+      submenu: [...copyUrlOfNote],
     },
     {
       label: MESSAGE('noteDelete'),

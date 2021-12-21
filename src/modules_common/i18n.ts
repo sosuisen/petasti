@@ -58,6 +58,7 @@ type MessagesNote = {
   noteNewName: string;
   residentNoteName: string;
   noteCopyUrlToClipboard: string;
+  noteCreateLink: string;
 };
 
 type MessagesSettings = {
@@ -145,6 +146,7 @@ const NOTE_ENGLISH: MessagesNote = {
   noteNewName: 'Enter new note name',
   residentNoteName: 'Resident note',
   noteCopyUrlToClipboard: 'Copy note URL',
+  noteCreateLink: 'Create link to note',
 };
 
 const SETTINGS_ENGLISH: MessagesSettings = {
@@ -279,7 +281,8 @@ const NOTE_JAPANESE: MessagesNote = {
     'ノートを削除するには、このノートのカードを全て削除するか他のノートへ移動してください。',
   noteNewName: '新しいノート名を入力してください',
   residentNoteName: '常駐ノート',
-  noteCopyUrlToClipboard: 'ノートURLをコピー',
+  noteCopyUrlToClipboard: 'ノートのURLをコピー',
+  noteCreateLink: 'ノートへのリンクを作成',
 };
 
 const SETTINGS_JAPANESE: MessagesSettings = {
