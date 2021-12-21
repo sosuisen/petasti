@@ -445,6 +445,8 @@ export class Card implements ICard {
     // when you should delete the corresponding element.
     this.removeWindowListeners();
 
+    this._removeShortcuts();
+
     cacheOfCard.delete(this.url);
 
     console.log('# closed: ' + this.url);
@@ -462,6 +464,7 @@ export class Card implements ICard {
    * Listen focus event in Main Process.
    */
   private _focusListener = () => {
+    this.status = 'Focused';
     if (this.recaptureGlobalFocusEventAfterLocalFocusEvent) {
       this.recaptureGlobalFocusEventAfterLocalFocusEvent = false;
       setGlobalFocusEventListenerPermission(true);
@@ -505,6 +508,7 @@ export class Card implements ICard {
   };
 
   private _blurListener = () => {
+    this.status = 'Blurred';
     this._removeShortcuts();
 
     if (this.suppressBlurEventOnce) {
@@ -740,6 +744,7 @@ export class Card implements ICard {
         // nop
       });
       globalShortcut.register(opt + '+C', () => {
+        if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         // Context menu
         this.window.webContents.sendInputEvent({
@@ -750,12 +755,15 @@ export class Card implements ICard {
         });
       });
       globalShortcut.register(opt + '+T', () => {
+        if (this.status === 'Blurred') return;
         this._note.tray.popUpContextMenu();
       });
       globalShortcut.registerAll(['CommandOrControl+N', opt + '+N'], () => {
+        if (this.status === 'Blurred') return;
         createRandomColorCard(this._note);
       });
       globalShortcut.registerAll(['CommandOrControl+Shift+N', opt + '+Shift+N'], () => {
+        if (this.status === 'Blurred') return;
         const cardId = generateNewCardId();
         const newUrl = `${APP_SCHEME}://local/${this._note.settings.currentNoteId}/${cardId}`;
 
@@ -786,11 +794,13 @@ export class Card implements ICard {
       globalShortcut.registerAll(
         ['CommandOrControl+Plus', 'CommandOrControl+numadd'],
         () => {
+          if (this.status === 'Blurred') return;
           if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
           this.window.webContents.send('zoom-in');
         }
       );
       globalShortcut.registerAll(['CommandOrControl+-', 'CommandOrControl+numsub'], () => {
+        if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         this.window.webContents.send('zoom-out');
       });
@@ -819,6 +829,7 @@ export class Card implements ICard {
       };
 
       globalShortcut.register('CommandOrControl+' + opt + '+Up', () => {
+        if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         const [oldX, oldY] = this.window.getPosition();
         let newY = oldY - positionChangeUnit;
@@ -829,6 +840,7 @@ export class Card implements ICard {
         moveByKey(oldX, newY);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Down', () => {
+        if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         const rect = this.window.getBounds();
         const oldX = rect.x;
@@ -852,6 +864,7 @@ export class Card implements ICard {
         moveByKey(oldX, newY);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Left', () => {
+        if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         const rect = this.window.getBounds();
         const oldX = rect.x;
@@ -868,6 +881,7 @@ export class Card implements ICard {
         moveByKey(newX, oldY);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Right', () => {
+        if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         const rect = this.window.getBounds();
         const oldX = rect.x;
@@ -916,6 +930,7 @@ export class Card implements ICard {
       };
 
       globalShortcut.register('CommandOrControl+' + opt + '+Shift+Left', () => {
+        if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         const [oldWidth, oldHeight] = this.window.getSize();
         let newWidth = oldWidth - sizeChangeUnit;
@@ -923,12 +938,14 @@ export class Card implements ICard {
         resizeByKey(newWidth, oldHeight);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Shift+Right', () => {
+        if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         const [oldWidth, oldHeight] = this.window.getSize();
         const newWidth = oldWidth + sizeChangeUnit;
         resizeByKey(newWidth, oldHeight);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Shift+Up', () => {
+        if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         const [oldWidth, oldHeight] = this.window.getSize();
         let newHeight = oldHeight - sizeChangeUnit;
@@ -936,6 +953,7 @@ export class Card implements ICard {
         resizeByKey(oldWidth, newHeight);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Shift+Down', () => {
+        if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         const [oldWidth, oldHeight] = this.window.getSize();
         const newHeight = oldHeight + sizeChangeUnit;
@@ -943,6 +961,7 @@ export class Card implements ICard {
       });
 
       globalShortcut.register('CommandOrControl+' + opt + '+Space', () => {
+        if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         if (isLabelOpened(this.sketch.label.status)) {
           this.window.webContents.send('transform-from-label');

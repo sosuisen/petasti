@@ -977,7 +977,7 @@ class Note implements INote {
   };
 
   private _deleteCardSketchDoc = async (url: string): Promise<TaskMetadata> => {
-    console.debug(`# Deleting card doc: ${url}`);
+    console.debug(`# Deleting card sketch doc: ${url}`);
     const task = await new Promise((resolve, reject) => {
       this._noteCollection
         .delete(getNoteIdFromUrl(url) + '/' + getCardIdFromUrl(url), {
