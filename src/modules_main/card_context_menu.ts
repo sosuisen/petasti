@@ -150,6 +150,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
                 'response-of-get-selected-markdown-' + encodeURIComponent(card.url),
                 (event, markdown) => {
                   createCardFromMarkdown(markdown);
+                  card.window.webContents.send('delete-selection');
                 }
               );
             }

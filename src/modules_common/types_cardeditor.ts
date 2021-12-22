@@ -9,6 +9,7 @@ export interface ICardEditor {
   isCodeMode: boolean;
   isOpened: boolean;
 
+  deleteSelection(): void;
   hasSelection(): boolean;
   getSelectedMarkdown(): string;
 

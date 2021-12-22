@@ -5,17 +5,13 @@
 
 import {
   commandsCtx,
-  defaultValueCtx,
   Editor,
   editorViewCtx,
-  editorViewOptionsCtx,
   parserCtx,
-  ParserReady,
   prosePluginFactory,
   rootCtx,
   schemaCtx,
   serializerCtx,
-  SerializerReady,
 } from '@sosuisen/milkdown-core';
 import { prism } from '@sosuisen/milkdown-plugin-prism';
 import { listener, listenerCtx } from '@sosuisen/milkdown-plugin-listener';
@@ -523,6 +519,15 @@ export class CardEditorMarkdown implements ICardEditor {
       const selection = editorView.state.selection;
       if (selection.$from.pos === selection.$to.pos) return false;
       return true;
+    });
+  };
+
+  public deleteSelection = () => {
+    this._editor.action(ctx => {
+      const editorView = ctx.get(editorViewCtx);
+      const tr = editorView.state.tr;
+      const newState = editorView.state.apply(tr.deleteSelection());
+      editorView.updateState(newState);
     });
   };
 

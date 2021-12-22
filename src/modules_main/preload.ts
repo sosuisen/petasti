@@ -154,6 +154,10 @@ ipcRenderer.on(
     )
 );
 
+ipcRenderer.on('delete-selection', () =>
+  window.postMessage({ command: 'delete-selection' }, 'file://')
+);
+
 ipcRenderer.on('get-selected-markdown', () =>
   window.postMessage({ command: 'get-selected-markdown' }, 'file://')
 );

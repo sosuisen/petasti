@@ -362,6 +362,9 @@ window.addEventListener('message', event => {
     case 'change-card-color':
       onChangeCardColor(event.data.backgroundColor, event.data.opacity);
       break;
+    case 'delete-selection':
+      cardEditor.deleteSelection();
+      break;
     case 'get-selected-markdown': {
       const markdown = cardEditor.getSelectedMarkdown();
       window.api.responseOfGetSelectedMarkdown(
