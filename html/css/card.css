@@ -21,14 +21,16 @@ body > .card{
   /* border: 3px solid transparent; */
   border: 1px solid transparent;
   box-sizing: border-box;
-  visibility: hidden;
+  /* visibility: hidden; */
   z-index: 0;
   box-shadow: 5px 5px 3px 0px rgba(0,0,0, .2);  
 
   overflow: hidden;
   border-radius: 7px;
 
-  opacity: 0.95;
+  /* opacity: 0.95; */
+  opacity: 0.5;
+  background-color: #f0f0f0;
 }
 
 body > .card > .title{

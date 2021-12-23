@@ -738,7 +738,7 @@ const onRenderCard = (
   else {
     document.getElementById('label')!.style.display = 'none';
   }
-  document.getElementById('card')!.style.visibility = 'visible';
+  // document.getElementById('card')!.style.visibility = 'visible';
   render();
 
   /*  
