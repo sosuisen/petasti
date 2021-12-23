@@ -138,17 +138,19 @@ emitter.on('change-note', async (nextNoteId: string) => {
   setTrayContextMenu();
 
   const cardProps = await note.loadCurrentNote();
-
+  console.time('new Card');
   const renderers: Promise<void>[] = [];
   cardProps.forEach(cardProp => {
     const card = new Card(note, cardProp.url, cardProp.body, cardProp.sketch);
     cacheOfCard.set(cardProp.url, card);
     renderers.push(card.render());
   });
+  console.timeEnd('new Card');
+  console.time('card.render()');
   await Promise.all(renderers).catch(e => {
     console.error(`Error while rendering cards in ready event: ${e.message}`);
   });
-
+  console.timeEnd('card.render()');
   const backToFront = sortCardWindows();
 
   const size = backToFront.length;

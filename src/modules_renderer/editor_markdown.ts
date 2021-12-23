@@ -81,6 +81,8 @@ export class CardEditorMarkdown implements ICardEditor {
     [key: string]: any;
   } = {};
 
+  private _created = false;
+
   getImageTag = (
     id: string,
     src: string,
@@ -397,6 +399,7 @@ export class CardEditorMarkdown implements ICardEditor {
   };
 
   public createEditor = async (): Promise<void> => {
+    this._created = true;
     /**
      * i18n
      */
@@ -652,7 +655,11 @@ export class CardEditorMarkdown implements ICardEditor {
 
   private _addDragAndDropEvent = () => {};
 
-  showEditor = (): void => {
+  showEditor = async (): Promise<void> => {
+    if (!this._created) {
+      await this.createEditor();
+      await this.setData(cardStore.getState().body._body);
+    }
     if (this.isOpened) {
       return;
     }
@@ -807,7 +814,12 @@ export class CardEditorMarkdown implements ICardEditor {
     await cardStore.dispatch(cardLabelUpdateCreator(newLabel));
   };
 
-  getHTML = (): string => {
+  getHTML = async (): Promise<string> => {
+    if (!this._created) {
+      await this.createEditor();
+      await this.setData(cardStore.getState().body._body);
+    }
+
     const dom = this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
       // const dom = editorView.nodeDOM(0);

@@ -615,12 +615,16 @@ export class Card implements ICard {
   };
 
   public render = async () => {
+    console.time('loadHTML');
     await this._loadHTML().catch(e => {
       throw new Error(`Error in render(): ${e.message}`);
     });
+    console.timeEnd('loadHTML');    
+    console.time('renderCard');        
     await this.renderCard().catch(e => {
       throw new Error(`Error in _renderCard(): ${e.message}`);
     });
+    console.timeEnd('renderCard');        
   };
 
   renderCard = (): Promise<void> => {
@@ -663,7 +667,7 @@ export class Card implements ICard {
   private _loadHTML: () => Promise<void> = () => {
     return new Promise((resolve, reject) => {
       const finishLoadListener = (event: Electron.IpcMainInvokeEvent) => {
-        console.debug('loadHTML  ' + this.url);
+        // console.debug('loadHTML  ' + this.url);
         const finishReloadListener = () => {
           console.debug('Reloaded: ' + this.url);
           this.window.webContents.send('render-card', this.url, this.body, this.sketch);

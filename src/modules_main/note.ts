@@ -437,6 +437,7 @@ class Note implements INote {
 
     const cards: CardProperty[] = [];
     const props = noteStore.getState().values();
+    console.time('loadCards');
     for (const noteProp of props) {
       if (noteProp.isResident && noteProp._id !== this._settings.currentNoteId) {
         // eslint-disable-next-line no-await-in-loop
@@ -444,6 +445,7 @@ class Note implements INote {
       }
     }
     cards.push(...(await this.loadCards(this._settings.currentNoteId)));
+    console.timeEnd('loadCards');
     return cards;
   };
 
@@ -509,7 +511,7 @@ class Note implements INote {
         cardBodyDoc = {
           _body: '',
           date: {
-            createDate: current,
+            createdDate: current,
             modifiedDate: current,
           },
         };

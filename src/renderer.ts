@@ -472,7 +472,7 @@ const setRectToLabel = async () => {
     document.getElementById('label')!.style.display = 'block';
     document.getElementById('contents')!.classList.toggle('show');
     document.getElementById('contents')!.classList.toggle('hide');
-    render();
+    await render();
     window.api.setWindowRect(
       cardStore.getState().workState.url,
       label.x!,
@@ -494,7 +494,7 @@ const setRectToLabel = async () => {
     document.getElementById('label')!.style.display = 'block';
     document.getElementById('contents')!.classList.toggle('show');
     document.getElementById('contents')!.classList.toggle('hide');
-    render();
+    await render();
   }
 };
 
@@ -577,13 +577,13 @@ const setRectToCard = async () => {
     document.getElementById('label')!.style.display = 'none';
     document.getElementById('contents')!.classList.toggle('show');
     document.getElementById('contents')!.classList.toggle('hide');
-    render();
+    await render();
   }
   else {
     document.getElementById('label')!.style.display = 'none';
     document.getElementById('contents')!.classList.toggle('show');
     document.getElementById('contents')!.classList.toggle('hide');
-    render();
+    await render();
     window.api.setWindowRect(
       cardStore.getState().workState.url,
       sketch.geometry.x,
@@ -680,7 +680,7 @@ const onMoveByHand = (geometry: Geometry, modifiedDate: string) => {
   */
 // Render card data
 // eslint-disable-next-line complexity
-const onRenderCard = async (
+const onRenderCard = (
   url: string,
   cardBody: CardBody,
   cardSketch: CardSketch,
@@ -727,9 +727,6 @@ const onRenderCard = async (
 
   initCardRenderer(cardCssStyle, cardEditor);
 
-  await cardEditor.createEditor();
-  await cardEditor.setData(cardStore.getState().body._body);
-
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     document.getElementById('contents')!.classList.toggle('show');
     document.getElementById('contents')!.classList.toggle('hide');
@@ -738,10 +735,9 @@ const onRenderCard = async (
   else {
     document.getElementById('label')!.style.display = 'none';
   }
-
   document.getElementById('card')!.style.visibility = 'visible';
-
   render();
+
   /*  
     .then(() => {
       const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
@@ -935,7 +931,7 @@ const onSyncCardBody = async (changedFile: ChangedFile, enqueueTime: string) => 
   render(['ContentsData', 'CardStyle']);
 };
 
-const startEditor = (x?: number, y?: number) => {
+const startEditor = async (x?: number, y?: number) => {
   /*
   if (cardStore.getState().sketch.condition.locked) {
     return;
@@ -945,7 +941,7 @@ const startEditor = (x?: number, y?: number) => {
     return;
   }
 
-  cardEditor.showEditor();
+  await cardEditor.showEditor();
 
   const contents = document.getElementById('contents');
   const scrollTop = contents!.scrollTop;
@@ -1079,7 +1075,7 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
     render(['TitleBar', 'CardStyle', 'ContentsData', 'ContentsRect']);
 
     window.api.focus(cardStore.getState().workState.url);
-    cardEditor.showEditor();
+    await cardEditor.showEditor();
     cardEditor.startEdit();
   });
 

@@ -230,49 +230,14 @@ const renderTitleBarStyle = () => {
   */
 };
 
-const renderContentsData = (): void => {
+const renderContentsData = async (): Promise<void> => {
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     const text = cardStore.getState().sketch.label.text ?? '';
     document.getElementById('labelFrame')!.innerHTML = text;
   }
   else {
-    document.getElementById('contentsFrame')!.innerHTML = cardEditor.getHTML();
+    document.getElementById('contentsFrame')!.innerHTML = await cardEditor.getHTML();
   }
-  /*
-  return new Promise((resolve, reject) => {
-    //    console.debug('renderContentsData');
-    // ${cardStore.getState().body._body}
-   
-
-    // Script and CSS loaded from contents_frame.html are remained after document.write().
-    const html = `<!DOCTYPE html>
-  <html>
-    <head>
-      <link href='./fontawesome/css/all.min.css' type='text/css' rel='stylesheet'>
-      <link href='./css/prism-material-light.css?20210924' type='text/css' rel='stylesheet'>      
-      <link href='./css/markdown-contents.css' type='text/css' rel='stylesheet' />
-      <link href='./css/markdown-nodes.css' type='text/css' rel='stylesheet' />
-      <script> var exports = {}; </script>
-      <script type='text/javascript' src='./iframe/contents_frame.js'></script>
-    </head>
-    <body>
-      ${body}
-    </body>
-  </html>`;
-    try {
-      const iframe = document.getElementById('contentsFrame') as HTMLIFrameElement;
-      iframe.contentWindow!.document.write(html);
-      iframe.contentWindow!.document.close();
-      const checkLoading = () => {
-        iframe.removeEventListener('load', checkLoading);
-        resolve();
-      };
-      iframe.addEventListener('load', checkLoading);
-    } catch (e) {
-      reject(e);
-    }
-  });
-  */
 };
 
 const renderCardAndContentsRect = () => {
@@ -463,7 +428,7 @@ export const setTitleMessage = (msg: string) => {
 };
 
 // eslint-disable-next-line complexity
-export const render = (
+export const render = async (
   options: CardRenderOptions[] = [
     'TitleBar',
     'TitleBarStyle',
@@ -481,7 +446,7 @@ export const render = (
     options = options.filter(opt => opt !== 'ContentsData');
 
     if (cardStore.getState().body._id !== '') {
-      renderContentsData();
+      await renderContentsData();
       /*
       await renderContentsData().catch(e =>
         console.error('Error in renderContentsData: ' + e)
