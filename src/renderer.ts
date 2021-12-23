@@ -726,6 +726,9 @@ const onRenderCard = (
   });
 
   initCardRenderer(cardCssStyle, cardEditor);
+  document.getElementById('newBtn')!.style.display = 'block';
+  document.getElementById('closeBtn')!.style.display = 'block';
+  document.getElementById('stickerBtn')!.style.display = 'block';
 
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     document.getElementById('contents')!.classList.toggle('show');

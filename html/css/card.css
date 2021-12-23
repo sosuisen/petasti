@@ -88,23 +88,22 @@ body > .card > .title > .title-bar > .title-message{
 
 body > .card > .title > .new-btn{
   left:0px;
+  display: none;
 } 
 
 body > .card > .title > .title-separator01{
   left: 16px;
   width: 7px;
 }
-
-body > .card > .title > .code-btn{
-  left: 23px;
-}
     
 body > .card > .title > .close-btn{
   left: 246px;
+  display: none;  
 }
 
 body > .card > .title > .sticker-btn{
   left: 0px;
+  display: none;    
 }
 
 #stickerIconOn, #stickerIconOff{
