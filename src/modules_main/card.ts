@@ -342,13 +342,22 @@ export class Card implements ICard {
       frame: false,
       maximizable: false,
 
-      show: false,
+      // show: false,
 
       fullscreenable: false,
 
       icon: path.join(__dirname, `../assets/${APP_ICON_NAME}`),
     });
     this.window.setMaxListeners(20);
+
+    if (isLabelOpened(this.sketch.label.status)) {
+      this.window.setSize(this.sketch.label.width!, this.sketch.label.height!);
+      this.window.setPosition(this.sketch.label.x!, this.sketch.label.y!);
+    }
+    else {
+      this.window.setSize(this.sketch.geometry.width, this.sketch.geometry.height);
+      this.window.setPosition(this.sketch.geometry.x, this.sketch.geometry.y);
+    }
 
     if (!app.isPackaged && process.env.NODE_ENV === 'development') {
       this.window.webContents.openDevTools();
@@ -363,9 +372,6 @@ export class Card implements ICard {
     // this.window.on('will-move', this._willMoveListener);
 
     this.window.on('closed', this._closedListener);
-
-    this.window.on('focus', this._focusListener);
-    this.window.on('blur', this._blurListener);
 
     this.resetContextMenu = setContextMenu(note, this);
 
@@ -619,26 +625,22 @@ export class Card implements ICard {
     await this._loadHTML().catch(e => {
       throw new Error(`Error in render(): ${e.message}`);
     });
-    console.timeEnd('loadHTML');    
-    console.time('renderCard');        
+    console.timeEnd('loadHTML');
+    console.time('renderCard');
     await this.renderCard().catch(e => {
       throw new Error(`Error in _renderCard(): ${e.message}`);
     });
-    console.timeEnd('renderCard');        
+    console.timeEnd('renderCard');
   };
 
   renderCard = (): Promise<void> => {
     return new Promise(resolve => {
-      if (isLabelOpened(this.sketch.label.status)) {
-        this.window.setSize(this.sketch.label.width!, this.sketch.label.height!);
-        this.window.setPosition(this.sketch.label.x!, this.sketch.label.y!);
-      }
-      else {
-        this.window.setSize(this.sketch.geometry.width, this.sketch.geometry.height);
-        this.window.setPosition(this.sketch.geometry.x, this.sketch.geometry.y);
-      }
       console.debug(`renderCard in main [${this.url}] ${this.body._body.substr(0, 40)}`);
-      this.window.showInactive();
+
+      // this.window.showInactive();
+      this.window.on('focus', this._focusListener);
+      this.window.on('blur', this._blurListener);
+
       let myOS: 'win32' | 'darwin' | 'linux' = 'win32';
       if (process.platform === 'win32') {
         myOS = 'win32';
