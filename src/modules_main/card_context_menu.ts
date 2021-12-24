@@ -223,7 +223,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
             backToFront.forEach(myCard => {
               if (myCard.window && !myCard.window.isDestroyed()) {
                 myCard!.suppressFocusEventOnce = true;
-                myCard!.window.focus();
+                myCard!.focus();
               }
             });
 

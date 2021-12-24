@@ -230,7 +230,7 @@ ipcMain.handle('blur-and-focus-with-suppress-events', (event, url: string) => {
     card.window.blur();
     card.suppressFocusEventOnce = true;
     card.recaptureGlobalFocusEventAfterLocalFocusEvent = true;
-    card.window.focus();
+    card.focus();
   }
 });
 
@@ -245,7 +245,7 @@ ipcMain.handle('blur-and-focus-with-suppress-focus-event', (event, url: string) 
     setGlobalFocusEventListenerPermission(false);
     card.window.blur();
     card.recaptureGlobalFocusEventAfterLocalFocusEvent = true;
-    card.window.focus();
+    card.focus();
   }
 });
 
@@ -261,7 +261,7 @@ ipcMain.handle('focus', (event, url: string) => {
   const card = cacheOfCard.get(url);
   if (card) {
     console.debug(`focus: ${url}`);
-    card.window.focus();
+    card.focus();
   }
 });
 

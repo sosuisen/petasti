@@ -126,6 +126,8 @@ export interface ICard {
 
   status: CardStatus;
 
+  focus: () => void;
+
   setRect: (
     x: number,
     y: number,

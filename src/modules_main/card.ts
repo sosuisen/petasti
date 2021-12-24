@@ -4,7 +4,15 @@
  */
 import url from 'url';
 import path from 'path';
-import { app, BrowserWindow, Display, globalShortcut, ipcMain, screen } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  Display,
+  globalShortcut,
+  ipcMain,
+  Rectangle,
+  screen,
+} from 'electron';
 import { TaskMetadata } from 'git-documentdb';
 import bezier from 'bezier-easing';
 import AsyncLock from 'async-lock';
@@ -122,7 +130,7 @@ export const sortCardWindows = (suppressFocus = false) => {
     }
   });
   if (backToFront.length > 0) {
-    backToFront[backToFront.length - 1].window.focus();
+    backToFront[backToFront.length - 1].focus();
   }
   return backToFront;
 };
@@ -197,7 +205,7 @@ export const createCardWindow = async (
 
   await card.render();
   console.debug(`focus in createCardWindow: ${card.url}`);
-  card.window.focus();
+  card.focus();
 };
 
 /**
@@ -325,6 +333,25 @@ export class Card implements ICard {
       },
     });
 
+    let bounds: Rectangle;
+    if (isLabelOpened(this.sketch.label.status)) {
+      bounds = {
+        x: this.sketch.label.x!,
+        y: this.sketch.label.y!,
+        width: this.sketch.label.width!,
+        height: this.sketch.label.height!,
+      };
+    }
+    else {
+      bounds = {
+        x: this.sketch.geometry.x!,
+        y: this.sketch.geometry.y!,
+        width: this.sketch.geometry.width!,
+        height: this.sketch.geometry.height!,
+      };
+    }
+    // this.window.setBounds(bounds);
+
     this.window = new BrowserWindow({
       webPreferences: {
         preload: path.join(__dirname, './preload.js'),
@@ -333,6 +360,11 @@ export class Card implements ICard {
       },
       minWidth: MINIMUM_WINDOW_WIDTH,
       minHeight: MINIMUM_WINDOW_HEIGHT,
+
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height,
 
       acceptFirstMouse: true, // for MacOS
 
@@ -349,15 +381,6 @@ export class Card implements ICard {
       icon: path.join(__dirname, `../assets/${APP_ICON_NAME}`),
     });
     this.window.setMaxListeners(20);
-
-    if (isLabelOpened(this.sketch.label.status)) {
-      this.window.setSize(this.sketch.label.width!, this.sketch.label.height!);
-      this.window.setPosition(this.sketch.label.x!, this.sketch.label.y!);
-    }
-    else {
-      this.window.setSize(this.sketch.geometry.width, this.sketch.geometry.height);
-      this.window.setPosition(this.sketch.geometry.x, this.sketch.geometry.y);
-    }
 
     if (!app.isPackaged && process.env.NODE_ENV === 'development') {
       this.window.webContents.openDevTools();
@@ -476,12 +499,19 @@ export class Card implements ICard {
     }
   };
 
+  public focus = () => {
+    this.window.focus();
+    // this.status = 'Focused'; // Set the focus status just in case
+    this._focusListener(); // Call the listener just in case
+  };
+
   /**
    * _focusListener in Main Process
    * After startup, the first window.onfocus event is not invoked in Renderer Process.
    * Listen focus event in Main Process.
    */
   private _focusListener = () => {
+    if (this.status === 'Focused') return;
     this.status = 'Focused';
     if (this.recaptureGlobalFocusEventAfterLocalFocusEvent) {
       this.recaptureGlobalFocusEventAfterLocalFocusEvent = false;
@@ -638,6 +668,7 @@ export class Card implements ICard {
       console.debug(`renderCard in main [${this.url}] ${this.body._body.substr(0, 40)}`);
 
       // this.window.showInactive();
+      console.log('# Added focusListener');
       this.window.on('focus', this._focusListener);
       this.window.on('blur', this._blurListener);
 
