@@ -383,7 +383,7 @@ export class Card implements ICard {
     this.window.setMaxListeners(20);
 
     if (!app.isPackaged && process.env.NODE_ENV === 'development') {
-      this.window.webContents.openDevTools();
+      // this.window.webContents.openDevTools();
     }
 
     // Resized by hand
@@ -1038,6 +1038,11 @@ export class Card implements ICard {
         else {
           this.window.webContents.send('transform-to-label');
         }
+      });
+
+      // For debugging
+      globalShortcut.register('CommandOrControl+' + opt + '+D', () => {
+        this.window.webContents.openDevTools();
       });
     });
   };
