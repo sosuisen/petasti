@@ -569,6 +569,11 @@ export class Card implements ICard {
     }
   };
 
+  private _currentMoveToX = 0;
+  private _currentMoveToY = 0;
+  private _currentMoveToWidth = 0;
+  private _currentMoveToHeight = 0;
+
   public setRect = (
     x: number,
     y: number,
@@ -599,27 +604,42 @@ export class Card implements ICard {
         moveFromY = rect.y;
         moveFromWidth = rect.width;
         moveFromHeight = rect.height;
-        moveToX = x;
+        this._currentMoveToX = moveToX = x;
 
-        moveToY = y;
-        moveToWidth = width;
-        moveToHeight = height;
+        this._currentMoveToY = moveToY = y;
+        this._currentMoveToWidth = moveToWidth = width;
+        this._currentMoveToHeight = moveToHeight = height;
 
         moveAnimeCurrentTime = 0;
 
-        const moveAnimeTimer = setInterval(() => {
+        let moveAnimeTimer: NodeJS.Timeout | undefined = setInterval(() => {
           moveAnimeCurrentTime += 0.1;
           const rate = easing(moveAnimeCurrentTime);
-          if (moveAnimeCurrentTime >= 1) {
-            clearInterval(moveAnimeTimer!);
-            // this.window.setPosition(this._moveToX, this._moveToY);
-            this.window.setBounds({
-              x: moveToX,
-              y: moveToY,
-              width: moveToWidth,
-              height: moveToHeight,
-            });
-            resolve();
+          if (
+            moveToX !== this._currentMoveToX ||
+            moveToY !== this._currentMoveToY ||
+            moveToWidth !== this._currentMoveToWidth ||
+            moveToHeight !== this._currentMoveToHeight
+          ) {
+            // Another animation has started.
+            if (moveAnimeTimer) {
+              clearInterval(moveAnimeTimer!);
+              moveAnimeTimer = undefined;
+              resolve();
+            }
+          }
+          else if (moveAnimeCurrentTime >= 1) {
+            if (moveAnimeTimer) {
+              clearInterval(moveAnimeTimer!);
+              moveAnimeTimer = undefined;
+              this.window.setBounds({
+                x: moveToX,
+                y: moveToY,
+                width: moveToWidth,
+                height: moveToHeight,
+              });
+              resolve();
+            }
           }
           else {
             const nextX = (moveToX - moveFromX) * rate + moveFromX;
