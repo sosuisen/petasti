@@ -1043,7 +1043,9 @@ export class Card implements ICard {
 
       // For debugging
       globalShortcut.register('CommandOrControl+' + opt + '+D', () => {
-        this.window.webContents.openDevTools();
+        if (!app.isPackaged && process.env.NODE_ENV === 'development') {
+          this.window.webContents.openDevTools();
+        }
       });
     });
   };
