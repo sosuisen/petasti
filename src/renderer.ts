@@ -686,6 +686,17 @@ const onRenderCard = (
   cardSketch: CardSketch,
   config: RendererConfig
 ) => {
+  console.log('# Browser zoom level: ' + window.api.getZoomLevel());
+  if (window.api.getZoomLevel() !== 0) {
+    /**
+     * In rare cases, the application may not register the Ctrl +/- shortcut in time,
+     * and the chromium Ctrl +/- shortcut may work,
+     * causing the browser zoom level to be changed and recorded,
+     * so reset it.
+     */
+    window.api.setZoomLevel(0);
+    console.log('# Reset browser zoom level to 0');
+  }
   setConfig(config);
   setMessages(config.messages);
 
@@ -773,6 +784,13 @@ const onSetLock = (locked: boolean) => {
 };
 */
 const onZoomIn = async () => {
+  if (window.api.getZoomLevel() !== 0) {
+    // Reset browser side zoom level
+    window.api.setZoomLevel(0);
+    console.log('# reset zoom level to 0');
+    render();
+  }
+
   let zoom: number;
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     zoom = cardStore.getState().sketch.label.zoom!;
@@ -805,6 +823,13 @@ const onZoomIn = async () => {
 };
 
 const onZoomOut = async () => {
+  if (window.api.getZoomLevel() !== 0) {
+    // Reset browser side zoom level
+    window.api.setZoomLevel(0);
+    console.log('# reset zoom level to 0');
+    render();
+  }
+
   let zoom: number;
   if (isLabelOpened(cardStore.getState().sketch.label.status)) {
     zoom = cardStore.getState().sketch.label.zoom!;

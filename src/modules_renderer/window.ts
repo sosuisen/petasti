@@ -35,6 +35,7 @@ interface WindowWithAPI extends Window {
       }[]
     ) => { x: number; y: number; width: number; height: number }[];
     getUuid: () => Promise<string>;
+    getZoomLevel: () => number;
     openURL: (url: string) => Promise<void>;
     responseOfHasSelection: (url: string, hasSelection: boolean) => Promise<void>;
     responseOfGetSelectedMarkdown: (url: string, markdown: string) => Promise<void>;
@@ -49,6 +50,7 @@ interface WindowWithAPI extends Window {
       height: number,
       animation?: boolean
     ) => Promise<{ x: number; y: number; width: number; height: number }>;
+    setZoomLevel: (level: number) => void;
     windowMoved: (url: string) => void;
     windowMoving: (
       url: string,

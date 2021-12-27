@@ -12,6 +12,7 @@ import {
   ipcMain,
   Rectangle,
   screen,
+  webFrame,
 } from 'electron';
 import { TaskMetadata } from 'git-documentdb';
 import bezier from 'bezier-easing';
@@ -632,6 +633,7 @@ export class Card implements ICard {
             if (moveAnimeTimer) {
               clearInterval(moveAnimeTimer!);
               moveAnimeTimer = undefined;
+
               this.window.setBounds({
                 x: moveToX,
                 y: moveToY,
@@ -671,16 +673,16 @@ export class Card implements ICard {
   };
 
   public render = async () => {
-    console.time('loadHTML');
+    // console.time('loadHTML');
     await this._loadHTML().catch(e => {
       throw new Error(`Error in render(): ${e.message}`);
     });
-    console.timeEnd('loadHTML');
-    console.time('renderCard');
+    // console.timeEnd('loadHTML');
+    // console.time('renderCard');
     await this.renderCard().catch(e => {
       throw new Error(`Error in _renderCard(): ${e.message}`);
     });
-    console.timeEnd('renderCard');
+    // console.timeEnd('renderCard');
   };
 
   renderCard = (): Promise<void> => {
@@ -976,7 +978,6 @@ export class Card implements ICard {
 
       const resizeByKey = (width: number, height: number) => {
         this.window.setSize(width, height);
-
         let x, y: number;
         if (isLabelOpened(this.sketch.label.status)) {
           x = this.sketch.label.x!;

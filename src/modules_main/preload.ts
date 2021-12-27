@@ -2,7 +2,7 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-import { contextBridge, ipcRenderer, MouseInputEvent } from 'electron';
+import { contextBridge, ipcRenderer, MouseInputEvent, webFrame } from 'electron';
 import { ChangedFile } from 'git-documentdb';
 import { DatabaseCommand } from '../modules_common/db.types';
 import { CardBody, CardSketch, Geometry, RendererConfig } from '../modules_common/types';
@@ -54,6 +54,9 @@ contextBridge.exposeInMainWorld('api', {
   },
   getUuid: () => {
     return ipcRenderer.invoke('get-uuid');
+  },
+  getZoomLevel: () => {
+    return webFrame.getZoomLevel();
   },
   openURL: (url: string) => {
     return ipcRenderer.invoke('openURL', url);
@@ -112,6 +115,9 @@ contextBridge.exposeInMainWorld('api', {
   },
   setTitle: (url: string, title: string) => {
     return ipcRenderer.invoke('set-title', url, title);
+  },
+  setZoomLevel: (level: number) => {
+    webFrame.setZoomLevel(level);
   },
   windowMoved: (url: string) => {
     ipcRenderer.invoke('window-moved', url);
