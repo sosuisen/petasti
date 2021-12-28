@@ -68,24 +68,31 @@ export const strengthenHexColor = (
   const middle = sorted[1];
   const min = sorted[0];
 
-  red =
-    red === max
-      ? Math.round(red * darkRate)
-      : red === middle
-        ? Math.round(red * darkRate * darkRate)
-        : Math.round(red * darkRate * darkRate * darkRate);
-  green =
-    green === max
-      ? Math.round(green * darkRate)
-      : green === middle
-        ? Math.round(green * darkRate * darkRate)
-        : Math.round(green * darkRate * darkRate * darkRate);
-  blue =
-    blue === max
-      ? Math.round(blue * darkRate)
-      : blue === middle
-        ? Math.round(blue * darkRate * darkRate)
-        : Math.round(blue * darkRate * darkRate * darkRate);
+  if (max === middle && middle === min) {
+    red = Math.round(red * darkRate * darkRate);
+    green = Math.round(green * darkRate * darkRate);
+    blue = Math.round(blue * darkRate * darkRate);
+  }
+  else {
+    red =
+      red === max
+        ? Math.round(red * darkRate)
+        : red === middle
+          ? Math.round(red * darkRate * darkRate)
+          : Math.round(red * darkRate * darkRate * darkRate);
+    green =
+      green === max
+        ? Math.round(green * darkRate)
+        : green === middle
+          ? Math.round(green * darkRate * darkRate)
+          : Math.round(green * darkRate * darkRate * darkRate);
+    blue =
+      blue === max
+        ? Math.round(blue * darkRate)
+        : blue === middle
+          ? Math.round(blue * darkRate * darkRate)
+          : Math.round(blue * darkRate * darkRate * darkRate);
+  }
   if (red > 255 || green > 255 || red > 255) {
     console.error(`Invalid HEX value: ${colorHEX}`);
     return '#000000';
