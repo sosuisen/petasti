@@ -60,13 +60,27 @@ import { cardColors, ColorName } from '../modules_common/color';
 import { noteStore } from './note_store';
 import { openURL } from './url_schema';
 
+type AccelCheck = {
+  prevTime: number;
+  count: number;
+};
+
 const lock = new AsyncLock();
 
 /**
  * Change unit
  */
-const positionChangeUnit = 50;
-const sizeChangeUnit = 50;
+const positionChangeUnitSmall = 10;
+const positionChangeUnitMiddle = 20;
+const positionChangeUnitHigh = 60;
+const sizeChangeUnitSmall = 10;
+const sizeChangeUnitMiddle = 20;
+const sizeChangeUnitHigh = 60;
+
+const arrowKeyAccelCancelMsec = 100;
+const arrowKeyMiddleAccelCount = 3;
+const arrowKeyHighAccelCount = 10;
+
 /**
  * Easing
  */
@@ -797,6 +811,114 @@ export class Card implements ICard {
       .catch(e => console.log(e));
   };
 
+  private _moveByKey = (x: number, y: number) => {
+    this.window.setPosition(x, y);
+
+    let width, height: number;
+    if (isLabelOpened(this.sketch.label.status)) {
+      width = this.sketch.label.width!;
+      height = this.sketch.label.height!;
+    }
+    else {
+      width = this.sketch.geometry.width;
+      height = this.sketch.geometry.height;
+    }
+    const geometry = {
+      x,
+      y,
+      z: this.sketch.geometry.z,
+      width,
+      height,
+    };
+
+    this.window.webContents.send('move-by-hand', geometry);
+  };
+
+  private _resizeByKey = (width: number, height: number) => {
+    this.window.setSize(width, height);
+    let x, y: number;
+    if (isLabelOpened(this.sketch.label.status)) {
+      x = this.sketch.label.x!;
+      y = this.sketch.label.y!;
+    }
+    else {
+      x = this.sketch.geometry.x;
+      y = this.sketch.geometry.y;
+    }
+    const geometry = {
+      x,
+      y,
+      z: this.sketch.geometry.z,
+      width,
+      height,
+    };
+
+    const modifiedDate = getCurrentDateAndTime();
+    this.window.webContents.send('resize-by-hand', geometry, modifiedDate);
+  };
+
+  private _accelCheck: {
+    up: AccelCheck;
+    down: AccelCheck;
+    left: AccelCheck;
+    right: AccelCheck;
+  } = {
+    up: {
+      prevTime: 0,
+      count: 0,
+    },
+    down: {
+      prevTime: 0,
+      count: 0,
+    },
+    left: {
+      prevTime: 0,
+      count: 0,
+    },
+    right: {
+      prevTime: 0,
+      count: 0,
+    },
+  };
+
+  // eslint-disable-next-line complexity
+  private _getChangeUnit = (
+    arrow: 'up' | 'down' | 'left' | 'right',
+    type: 'position' | 'size'
+  ) => {
+    if (arrow !== 'up') {
+      this._accelCheck.up.prevTime = 0;
+      this._accelCheck.up.count = 0;
+    }
+    if (arrow !== 'down') {
+      this._accelCheck.down.prevTime = 0;
+      this._accelCheck.down.count = 0;
+    }
+    if (arrow !== 'left') {
+      this._accelCheck.left.prevTime = 0;
+      this._accelCheck.left.count = 0;
+    }
+    if (arrow !== 'right') {
+      this._accelCheck.right.prevTime = 0;
+      this._accelCheck.right.count = 0;
+    }
+    const now = Date.now();
+    if (now - this._accelCheck[arrow].prevTime < arrowKeyAccelCancelMsec) {
+      this._accelCheck[arrow].count++;
+    }
+    else {
+      this._accelCheck[arrow].count = 0;
+    }
+    this._accelCheck[arrow].prevTime = now;
+    if (this._accelCheck[arrow].count > arrowKeyHighAccelCount) {
+      return type === 'position' ? positionChangeUnitHigh : sizeChangeUnitHigh;
+    }
+    if (this._accelCheck[arrow].count > arrowKeyMiddleAccelCount) {
+      return type === 'position' ? positionChangeUnitMiddle : sizeChangeUnitMiddle;
+    }
+    return type === 'position' ? positionChangeUnitSmall : sizeChangeUnitSmall;
+  };
+
   private _addShortcuts = () => {
     lock.acquire('registerShortcut', () => {
       // Available shortcuts
@@ -876,49 +998,28 @@ export class Card implements ICard {
         this.window.webContents.send('zoom-out');
       });
 
-      const moveByKey = (x: number, y: number) => {
-        this.window.setPosition(x, y);
-
-        let width, height: number;
-        if (isLabelOpened(this.sketch.label.status)) {
-          width = this.sketch.label.width!;
-          height = this.sketch.label.height!;
-        }
-        else {
-          width = this.sketch.geometry.width;
-          height = this.sketch.geometry.height;
-        }
-        const geometry = {
-          x,
-          y,
-          z: this.sketch.geometry.z,
-          width,
-          height,
-        };
-
-        this.window.webContents.send('move-by-hand', geometry);
-      };
-
       globalShortcut.register('CommandOrControl+' + opt + '+Up', () => {
         if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const changeUnit = this._getChangeUnit('up', 'position');
         const [oldX, oldY] = this.window.getPosition();
-        let newY = oldY - positionChangeUnit;
+        let newY = oldY - changeUnit;
 
         const displayRect: Display = screen.getDisplayNearestPoint({ x: oldX, y: newY });
         if (newY < displayRect.bounds.y) newY = displayRect.bounds.y;
 
-        moveByKey(oldX, newY);
+        this._moveByKey(oldX, newY);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Down', () => {
         if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const changeUnit = this._getChangeUnit('down', 'position');
         const rect = this.window.getBounds();
         const oldX = rect.x;
         const oldY = rect.y;
         const oldHeight = rect.height;
 
-        let newY = oldY + positionChangeUnit;
+        let newY = oldY + changeUnit;
 
         const displayRect: Display = screen.getDisplayNearestPoint({
           x: oldX,
@@ -932,34 +1033,36 @@ export class Card implements ICard {
             displayRect.bounds.y + displayRect.bounds.height - WINDOW_POSITION_EDGE_MARGIN;
         }
 
-        moveByKey(oldX, newY);
+        this._moveByKey(oldX, newY);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Left', () => {
         if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const changeUnit = this._getChangeUnit('left', 'position');
         const rect = this.window.getBounds();
         const oldX = rect.x;
         const oldY = rect.y;
         const oldWidth = rect.width;
 
-        let newX = oldX - positionChangeUnit;
+        let newX = oldX - changeUnit;
 
         const displayRect: Display = screen.getDisplayNearestPoint({ x: newX, y: oldY });
         if (newX < displayRect.bounds.x - oldWidth + WINDOW_POSITION_EDGE_MARGIN) {
           newX = displayRect.bounds.x - oldWidth + WINDOW_POSITION_EDGE_MARGIN;
         }
 
-        moveByKey(newX, oldY);
+        this._moveByKey(newX, oldY);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Right', () => {
         if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const changeUnit = this._getChangeUnit('right', 'position');
         const rect = this.window.getBounds();
         const oldX = rect.x;
         const oldY = rect.y;
         const oldWidth = rect.width;
 
-        let newX = oldX + positionChangeUnit;
+        let newX = oldX + changeUnit;
 
         const displayRect: Display = screen.getDisplayNearestPoint({
           x: newX + oldWidth,
@@ -973,61 +1076,42 @@ export class Card implements ICard {
             displayRect.bounds.x + displayRect.bounds.width - WINDOW_POSITION_EDGE_MARGIN;
         }
 
-        moveByKey(newX, oldY);
+        this._moveByKey(newX, oldY);
       });
-
-      const resizeByKey = (width: number, height: number) => {
-        this.window.setSize(width, height);
-        let x, y: number;
-        if (isLabelOpened(this.sketch.label.status)) {
-          x = this.sketch.label.x!;
-          y = this.sketch.label.y!;
-        }
-        else {
-          x = this.sketch.geometry.x;
-          y = this.sketch.geometry.y;
-        }
-        const geometry = {
-          x,
-          y,
-          z: this.sketch.geometry.z,
-          width,
-          height,
-        };
-
-        const modifiedDate = getCurrentDateAndTime();
-        this.window.webContents.send('resize-by-hand', geometry, modifiedDate);
-      };
 
       globalShortcut.register('CommandOrControl+' + opt + '+Shift+Left', () => {
         if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const changeUnit = this._getChangeUnit('left', 'size');
         const [oldWidth, oldHeight] = this.window.getSize();
-        let newWidth = oldWidth - sizeChangeUnit;
+        let newWidth = oldWidth - changeUnit;
         if (newWidth < MINIMUM_WINDOW_WIDTH) newWidth = MINIMUM_WINDOW_WIDTH;
-        resizeByKey(newWidth, oldHeight);
+        this._resizeByKey(newWidth, oldHeight);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Shift+Right', () => {
         if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const changeUnit = this._getChangeUnit('right', 'size');
         const [oldWidth, oldHeight] = this.window.getSize();
-        const newWidth = oldWidth + sizeChangeUnit;
-        resizeByKey(newWidth, oldHeight);
+        const newWidth = oldWidth + changeUnit;
+        this._resizeByKey(newWidth, oldHeight);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Shift+Up', () => {
         if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const changeUnit = this._getChangeUnit('up', 'size');
         const [oldWidth, oldHeight] = this.window.getSize();
-        let newHeight = oldHeight - sizeChangeUnit;
+        let newHeight = oldHeight - changeUnit;
         if (newHeight < MINIMUM_WINDOW_HEIGHT) newHeight = MINIMUM_WINDOW_HEIGHT;
-        resizeByKey(oldWidth, newHeight);
+        this._resizeByKey(oldWidth, newHeight);
       });
       globalShortcut.register('CommandOrControl+' + opt + '+Shift+Down', () => {
         if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        const changeUnit = this._getChangeUnit('down', 'size');
         const [oldWidth, oldHeight] = this.window.getSize();
-        const newHeight = oldHeight + sizeChangeUnit;
-        resizeByKey(oldWidth, newHeight);
+        const newHeight = oldHeight + changeUnit;
+        this._resizeByKey(oldWidth, newHeight);
       });
 
       globalShortcut.register('CommandOrControl+' + opt + '+Space', () => {
