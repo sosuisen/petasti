@@ -72,14 +72,14 @@ const lock = new AsyncLock();
  */
 const positionChangeUnitSmall = 10;
 const positionChangeUnitMiddle = 20;
-const positionChangeUnitHigh = 60;
+const positionChangeUnitHigh = 40;
 const sizeChangeUnitSmall = 10;
 const sizeChangeUnitMiddle = 20;
-const sizeChangeUnitHigh = 60;
+const sizeChangeUnitHigh = 40;
 
 const arrowKeyAccelCancelMsec = 100;
 const arrowKeyMiddleAccelCount = 3;
-const arrowKeyHighAccelCount = 10;
+const arrowKeyHighAccelCount = 15;
 
 /**
  * Easing
