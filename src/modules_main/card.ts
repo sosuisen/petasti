@@ -770,6 +770,8 @@ export class Card implements ICard {
     // Overwrite z
     newCardSketch.geometry.z = (await this._note.getZIndexOfTopCard(noteId)) + 1;
     newCardSketch._id = newSketchId;
+    const notCurrentNoteMsg =
+      'The destination is not the current note. (This is not an error.)';
     this._note
       .createCardSketch(newUrl, newCardSketch, true)
       .then((task: TaskMetadata) => {
@@ -777,13 +779,16 @@ export class Card implements ICard {
         if (task.shortId!.startsWith(this._note.settings.currentNoteId)) {
           return this._note.cardCollection.get(getCardIdFromUrl(newUrl));
         }
-        return Promise.reject(new Error('The destination is not the current note.'));
+        return Promise.reject(new Error(notCurrentNoteMsg));
       })
       .then(cardBody => {
-        console.log('Save has been completed: ' + newUrl);
+        console.log('Moved to the current note: ' + newUrl);
         createCardWindow(this._note, newUrl, cardBody!, newCardSketch);
       })
-      .catch(e => console.log(e));
+      // createCardSketch throws error when the same sketch exists.
+      .catch((e: Error) => {
+        if (!e.message.endsWith(notCurrentNoteMsg)) console.log(e);
+      });
 
     await this._note.deleteCardSketch(this.url);
   };
@@ -795,6 +800,8 @@ export class Card implements ICard {
     // Overwrite z
     newCardSketch.geometry.z = (await this._note.getZIndexOfTopCard(noteId)) + 1;
     newCardSketch._id = newSketchId;
+    const notCurrentNoteMsg =
+      'The destination is not the current note. (This is not an error.)';
     this._note
       .createCardSketch(newUrl, newCardSketch, true)
       .then((task: TaskMetadata) => {
@@ -802,13 +809,16 @@ export class Card implements ICard {
         if (task.shortId!.startsWith(this._note.settings.currentNoteId)) {
           return this._note.cardCollection.get(getCardIdFromUrl(newUrl));
         }
-        return Promise.reject(new Error('The destination is not the current note.'));
+        return Promise.reject(new Error(notCurrentNoteMsg));
       })
       .then(cardBody => {
         console.log('Save has been completed: ' + newUrl);
         createCardWindow(this._note, newUrl, cardBody!, newCardSketch);
       })
-      .catch(e => console.log(e));
+      // createCardSketch throws error when the same sketch exists.
+      .catch((e: Error) => {
+        if (!e.message.endsWith(notCurrentNoteMsg)) console.log(e);
+      });
   };
 
   private _moveByKey = (x: number, y: number) => {
