@@ -124,7 +124,7 @@ export interface ICard {
   body: CardBody;
   sketch: CardSketch;
 
-  status: CardStatus;
+  // status: CardStatus;
 
   focus: () => void;
 
