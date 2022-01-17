@@ -15,6 +15,7 @@ import {
 } from '@sosuisen/milkdown-core';
 import { prism } from '@sosuisen/milkdown-plugin-prism';
 import { listener, listenerCtx } from '@sosuisen/milkdown-plugin-listener';
+import { clipboard } from '@sosuisen/milkdown-plugin-clipboard';
 import { nord } from '@sosuisen/milkdown-theme-nord';
 import {
   blockquote,
@@ -503,6 +504,7 @@ export class CardEditorMarkdown implements ICardEditor {
         // ctx.set(defaultValueCtx, body);
         ctx.set(i18nCtx, messages);
       })
+      .use(clipboard)
       .use(prosePlugin)
       .use(i18n)
       .use(nord)
@@ -792,6 +794,15 @@ export class CardEditorMarkdown implements ICardEditor {
      */
 
     data = data.replace(/\r/g, '\n');
+
+    /**
+     * Heading spaces must be replaced by &nbsp; because 4 spaces are misinterpreted as code fence.
+     */
+    /*
+    data = data.replace(/^( +)[^ ]/gm, (match, p1, p2) => {
+      return match.replace(/ /g, '&nbsp;');
+    });
+    */
 
     await cardStore.dispatch(cardBodyUpdateCreator(data));
   };
