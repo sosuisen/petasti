@@ -367,12 +367,14 @@ export class CardEditorMarkdown implements ICardEditor {
       })
       .configure(codeFence, { headless: true })
       .configure(doc, { headless: true })
+      /*
       .configure(hardbreak, {
         headless: true,
         keymap: {
           [SupportedKeys.HardBreak]: ['Shift-Enter'],
         },
       })
+      */
       .configure(heading, { headless: true })
       .configure(hr, { headless: true })
       .configure(image, { headless: true })
