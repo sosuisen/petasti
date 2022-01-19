@@ -125,15 +125,11 @@ export const cardSketchUpdateCreator = (
     // eslint-disable-next-line complexity
     await lock.acquire('sketch', async () => {
       if (enqueueTime !== undefined) {
-        if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
+        if (sketchUpdatedTime !== undefined && sketchUpdatedTime! > enqueueTime) {
           console.log('Block expired remote update');
           return;
         }
       }
-      const prevX = getState().sketch.geometry.x;
-      const prevY = getState().sketch.geometry.y;
-      const prevWidth = getState().sketch.geometry.width;
-      const prevHeight = getState().sketch.geometry.height;
       const cardGeometryAction: CardGeometryUpdateAction = {
         type: 'card-geometry-update',
         payload: cardSketch.geometry,
@@ -176,7 +172,7 @@ export const cardSketchUpdateCreator = (
         const taskMetadata: TaskMetadata | false = await window.api.db(cmd);
         if (taskMetadata !== false) {
           // eslint-disable-next-line require-atomic-updates
-          bodyUpdatedTime = taskMetadata.enqueueTime!;
+          sketchUpdatedTime = taskMetadata.enqueueTime!;
         }
       }
     });
@@ -195,7 +191,7 @@ export const cardGeometryUpdateCreator = (
     // eslint-disable-next-line complexity
     await lock.acquire('sketch', async () => {
       if (enqueueTime !== undefined) {
-        if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
+        if (sketchUpdatedTime !== undefined && sketchUpdatedTime! > enqueueTime) {
           console.log('Block expired remote update');
           return;
         }
@@ -275,7 +271,7 @@ export const cardGeometryUpdateCreator = (
         const taskMetadata: TaskMetadata | false = await window.api.db(cmd);
         if (taskMetadata !== false) {
           // eslint-disable-next-line require-atomic-updates
-          bodyUpdatedTime = taskMetadata.enqueueTime!;
+          sketchUpdatedTime = taskMetadata.enqueueTime!;
         }
       }
     });
@@ -292,7 +288,7 @@ export const cardStyleUpdateCreator = (
 
     await lock.acquire('sketch', async () => {
       if (enqueueTime !== undefined) {
-        if (bodyUpdatedTime !== undefined && bodyUpdatedTime! > enqueueTime) {
+        if (sketchUpdatedTime !== undefined && sketchUpdatedTime! > enqueueTime) {
           console.log('Block expired remote update');
           return;
         }
@@ -322,7 +318,7 @@ export const cardStyleUpdateCreator = (
         const taskMetadata: TaskMetadata | false = await window.api.db(cmd);
         if (taskMetadata !== false) {
           // eslint-disable-next-line require-atomic-updates
-          bodyUpdatedTime = taskMetadata.enqueueTime!;
+          sketchUpdatedTime = taskMetadata.enqueueTime!;
         }
       }
     });
@@ -370,7 +366,7 @@ export const cardConditionLockedUpdateCreator = (
         const taskMetadata: TaskMetadata | false = await window.api.db(cmd);
         if (taskMetadata !== false) {
           // eslint-disable-next-line require-atomic-updates
-          bodyUpdatedTime = taskMetadata.enqueueTime!;
+          sketchUpdatedTime = taskMetadata.enqueueTime!;
         }
       }
     });
@@ -418,7 +414,7 @@ export const cardLabelUpdateCreator = (
         const taskMetadata: TaskMetadata | false = await window.api.db(cmd);
         if (taskMetadata !== false) {
           // eslint-disable-next-line require-atomic-updates
-          bodyUpdatedTime = taskMetadata.enqueueTime!;
+          sketchUpdatedTime = taskMetadata.enqueueTime!;
         }
       }
     });
