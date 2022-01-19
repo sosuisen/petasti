@@ -250,6 +250,7 @@ export class Card implements ICard {
     style: DEFAULT_CARD_STYLE,
     condition: DEFAULT_CARD_CONDITION,
     label: DEFAULT_CARD_LABEL,
+    collapsedList: [],
     date: {
       modifiedDate: '',
       createdDate: '',
@@ -330,6 +331,10 @@ export class Card implements ICard {
     this.sketch.condition = { ...this.sketch.condition, ...cardSketch?.condition };
 
     this.sketch.label = { ...this.sketch.label, ...cardSketch?.label };
+
+    this.sketch.collapsedList = cardSketch?.collapsedList
+      ? [...cardSketch?.collapsedList]
+      : [];
 
     this.sketch._id = sketchId;
 

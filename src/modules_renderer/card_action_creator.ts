@@ -19,7 +19,7 @@ import {
 import { getCurrentDateAndTime, isLabelOpened } from '../modules_common/utils';
 import {
   CardBodyUpdateAction,
-  CardConditionLockedUpdateAction,
+  CardCollapsedListUpdateAction,
   CardConditionUpdateAction,
   CardGeometryUpdateAction,
   CardGeometryZUpdateAction,
@@ -70,6 +70,45 @@ export const cardBodyUpdateCreator = (
         const taskMetadata: TaskMetadata = await window.api.db(cmd);
         // eslint-disable-next-line require-atomic-updates
         bodyUpdatedTime = taskMetadata.enqueueTime!;
+      }
+    });
+  };
+};
+
+export const cardCollapsedListUpdateCreator = (
+  collapsedList: number[],
+  changeFrom: ChangeFrom = 'local',
+  enqueueTime: string | undefined = undefined
+) => {
+  return async function (dispatch: Dispatch<any>, getState: () => CardState) {
+    await lock.acquire('sketch', async () => {
+      if (enqueueTime !== undefined) {
+        if (sketchUpdatedTime !== undefined && sketchUpdatedTime! > enqueueTime) {
+          console.log('Block expired remote update');
+          return;
+        }
+      }
+
+      const cardAction: CardCollapsedListUpdateAction = {
+        type: 'card-collapsed-list-update',
+        payload: collapsedList,
+      };
+      dispatch(cardAction);
+
+      if (changeFrom === 'local') {
+        const cmd: DatabaseCardSketchUpdate = {
+          command: 'db-card-sketch-update',
+          url: getState().workState.url,
+          data: {
+            ...getState().sketch,
+          },
+        };
+
+        const taskMetadata: TaskMetadata | false = await window.api.db(cmd);
+        if (taskMetadata !== false) {
+          // eslint-disable-next-line require-atomic-updates
+          sketchUpdatedTime = taskMetadata.enqueueTime!;
+        }
       }
     });
   };

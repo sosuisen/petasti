@@ -46,13 +46,13 @@ import { EditorState, Plugin as ProsePlugin, TextSelection } from 'prosemirror-s
 import { EditorView } from 'prosemirror-view';
 import { CardCssStyle, ICardEditor } from '../modules_common/types_cardeditor';
 import { render, shadowHeight, shadowWidth } from './card_renderer';
-import {
-  convertHexColorToRgba,
-  darkenHexColor,
-  strengthenHexColor,
-} from '../modules_common/color';
+import { convertHexColorToRgba, strengthenHexColor } from '../modules_common/color';
 import { cardStore } from './card_store';
-import { cardBodyUpdateCreator, cardLabelUpdateCreator } from './card_action_creator';
+import {
+  cardBodyUpdateCreator,
+  cardCollapsedListUpdateCreator,
+  cardLabelUpdateCreator,
+} from './card_action_creator';
 import { getConfig } from './config';
 import window from './window';
 import { getCtrlDown, getMetaDown } from '../modules_common/keys';
@@ -201,6 +201,7 @@ export class CardEditorMarkdown implements ICardEditor {
           // console.log(`Selection: ${sel.from}, ${sel.to}`);
           result.push({ type: 'nbsp', selection });
         }
+        /*
         else if (proseNode.textContent === '{.summary}') {
           const selection = new TextSelection(
             rootDoc.resolve(ep!.from),
@@ -209,6 +210,7 @@ export class CardEditorMarkdown implements ICardEditor {
           // console.log(`Selection: ${sel.from}, ${sel.to}`);
           result.push({ type: 'summary', selection });
         }
+        */
       }
     }
     else {
@@ -554,7 +556,7 @@ export class CardEditorMarkdown implements ICardEditor {
     });
   };
 
-  public setData = (body: string): void => {
+  public setData = (body: string, collapsedList: number[]): void => {
     console.log('# load body: ' + body);
 
     /**
@@ -608,11 +610,8 @@ export class CardEditorMarkdown implements ICardEditor {
           // delete a character
           offset--;
         }
+        /*
         else if (result.type === 'summary') {
-          /*
-          const $from = editorView.state.doc.resolve(result.selection.from + offset);
-          const $to = editorView.state.doc.resolve(result.selection.to + offset);
-          */
           const $from = tr.doc.resolve(result.selection.from + offset);
           const $to = tr.doc.resolve(result.selection.to + offset);
 
@@ -650,8 +649,39 @@ export class CardEditorMarkdown implements ICardEditor {
           // delete marks and characters
           offset -= 12; // paragraph("{.summary}")
         }
+        */
       }
-
+      tr.doc.descendants((node: ProseNode, pos: number) => {
+        if (collapsedList.includes(pos)) {
+          console.log('# collapsed: ' + pos);
+          let attr;
+          if (node!.type.name === 'list_item') {
+            attr = {
+              collapsed: true,
+            };
+          }
+          else if (node!.type.name === 'task_list_item') {
+            attr = {
+              collapsed: true,
+              checked: node.attrs.checked,
+            };
+          }
+          else {
+            console.log('Error in setting collapsed list: invalid node type.');
+            return true;
+          }
+          tr.setNodeMarkup(pos, undefined, attr);
+          node.forEach((child, offsetFromParent, index) => {
+            if (child.type.name === 'bullet_list' || child.type.name === 'ordered_list') {
+              // console.log('children index: ' + start + ' + ' + offsetFromParent + ' + 1');
+              tr.setNodeMarkup(pos + offsetFromParent + 1, undefined, {
+                collapsed: true,
+              });
+            }
+          });
+        }
+        return true;
+      });
       const newState = editorView.state.apply(tr);
       editorView.updateState(newState);
     });
@@ -662,7 +692,10 @@ export class CardEditorMarkdown implements ICardEditor {
   showEditor = async (): Promise<void> => {
     if (!this._created) {
       await this.createEditor();
-      await this.setData(cardStore.getState().body._body);
+      await this.setData(
+        cardStore.getState().body._body,
+        cardStore.getState().sketch.collapsedList
+      );
     }
     if (this.isOpened) {
       return;
@@ -707,12 +740,15 @@ export class CardEditorMarkdown implements ICardEditor {
 
   private _saveBody = async (proseNode?: ProseNode) => {
     let currentDoc: { [key: string]: any };
+    let rootNode!: ProseNode;
     if (proseNode !== undefined) {
+      rootNode = proseNode;
       currentDoc = proseNode.toJSON();
     }
     else {
       currentDoc = this._editor.action(ctx => {
         const editorView = ctx.get(editorViewCtx);
+        rootNode = editorView.state.doc;
         return editorView.state.doc.toJSON();
       });
       if (JSON.stringify(currentDoc) === JSON.stringify(this._previousDoc)) {
@@ -721,10 +757,25 @@ export class CardEditorMarkdown implements ICardEditor {
     }
     this._previousDoc = currentDoc;
 
+    const collapsedList: number[] = [];
+    rootNode.descendants((node: ProseNode, pos: number) => {
+      if (
+        (node!.type.name === 'list_item' || node!.type.name === 'task_list_item') &&
+        node!.attrs.collapsed
+      ) {
+        collapsedList.push(pos);
+        //        console.log(node.type.name + '[collapsed]: ' + pos);
+      }
+      else {
+        // console.log(node.type.name + ': ' + pos);
+      }
+      return true;
+    });
+
     let data = this._editor.action(ctx => {
       const editorView = ctx.get(editorViewCtx);
       const serializer = ctx.get(serializerCtx);
-
+      /*
       const newDoc = ProseNode.fromJSON(editorView.state.schema, currentDoc); // clone
 
       const stack: ProseNode[] = [];
@@ -764,9 +815,10 @@ export class CardEditorMarkdown implements ICardEditor {
           // console.log(node!.toString());
         }
       }
-
-      // return serializer(editorView.state.doc); // editorView.state.doc is ProseNode
+      
       return serializer(newDoc);
+      */
+      return serializer(editorView.state.doc); // editorView.state.doc is ProseNode
     });
 
     /**
@@ -807,6 +859,7 @@ export class CardEditorMarkdown implements ICardEditor {
     */
 
     await cardStore.dispatch(cardBodyUpdateCreator(data));
+    await cardStore.dispatch(cardCollapsedListUpdateCreator(collapsedList));
   };
 
   endEdit = async (): Promise<void> => {
@@ -830,7 +883,10 @@ export class CardEditorMarkdown implements ICardEditor {
   getHTML = async (): Promise<string> => {
     if (!this._created) {
       await this.createEditor();
-      await this.setData(cardStore.getState().body._body);
+      await this.setData(
+        cardStore.getState().body._body,
+        cardStore.getState().sketch.collapsedList
+      );
     }
 
     const dom = this._editor.action(ctx => {

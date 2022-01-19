@@ -931,6 +931,7 @@ class Note implements INote {
 
   private _updateCardSketchDoc = async (cardSketch: CardSketch): Promise<TaskMetadata> => {
     console.debug(`# Updating card sketch doc: ${cardSketch._id}`);
+    // console.debug(`# Updating card sketch doc: ${JSON.stringify(cardSketch)}`);
     const task = await new Promise((resolve, reject) => {
       this._noteCollection
         .update(cardSketch, {

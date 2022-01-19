@@ -20,6 +20,7 @@ import { getCurrentDateAndTime } from '../modules_common/utils';
 import {
   CardAction,
   CardBodyAction,
+  CardCollapsedListAction,
   CardConditionAction,
   CardGeometryAction,
   CardLabelAction,
@@ -163,6 +164,23 @@ const cardLabelReducer = (
   }
 };
 
+const cardCollapsedListReducer = (
+  // eslint-disable-next-line default-param-last
+  state: number[] = [],
+  action: CardCollapsedListAction
+) => {
+  switch (action.type) {
+    case 'card-collapsed-list-init':
+    case 'card-collapsed-list-update': {
+      const newState = [...action.payload];
+      console.log('# collapsedListUpdate: ' + JSON.stringify(newState));
+      return newState;
+    }
+    default:
+      return state;
+  }
+};
+
 const cardSketchDateReducer = (
   // eslint-disable-next-line default-param-last
   state: CartaDate = {
@@ -207,6 +225,7 @@ export const cardSketchReducer = combineReducers({
   condition: cardConditionReducer,
   label: cardLabelReducer,
   date: cardSketchDateReducer,
+  collapsedList: cardCollapsedListReducer,
   _id: cardSketchIdReducer,
 });
 

@@ -721,6 +721,10 @@ const onRenderCard = (
     payload: cardSketch.label,
   });
   cardStore.dispatch({
+    type: 'card-collapsed-list-init',
+    payload: cardSketch.collapsedList,
+  });
+  cardStore.dispatch({
     type: 'card-sketch-date-init',
     payload: cardSketch.date,
   });
@@ -955,7 +959,10 @@ const onSyncCardBody = async (changedFile: ChangedFile, enqueueTime: string) => 
     await cardStore.dispatch(cardBodyUpdateCreator('', 'remote', enqueueTime));
   }
   cardEditor.skipSave = true;
-  cardEditor.setData(cardStore.getState().body._body);
+  cardEditor.setData(
+    cardStore.getState().body._body,
+    cardStore.getState().sketch.collapsedList
+  );
   render(['ContentsData', 'CardStyle']);
 };
 
@@ -1073,6 +1080,7 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
         style: newStyle,
         condition: { ...cardStore.getState().sketch.condition },
         label: { ...cardStore.getState().sketch.label },
+        collapsedList: [],
         date: { ...cardStore.getState().sketch.date },
         _id: cardStore.getState().sketch._id,
       };

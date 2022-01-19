@@ -76,6 +76,7 @@ export type CardSketch = {
   style: CardStyle;
   condition: CardCondition;
   label: CardLabel;
+  collapsedList: number[];
   date: CartaDate;
   _id: string;
 };

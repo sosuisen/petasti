@@ -33,7 +33,7 @@ export interface ICardEditor {
   setColor(): void;
 
   createEditor(): Promise<void>;
-  setData(data: string): void;
+  setData(data: string, collapsedList: number[]): void;
   getHTML(): Promise<string>;
   getLabelText(): string;
 }

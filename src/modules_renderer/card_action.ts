@@ -118,6 +118,23 @@ export type CardLabelAction =
   | CardLabelRectUpdateAction;
 
 /**
+ * CardCollapsedListAction
+ */
+export interface CardCollapsedListInitAction {
+  type: 'card-collapsed-list-init';
+  payload: number[];
+}
+
+export interface CardCollapsedListUpdateAction {
+  type: 'card-collapsed-list-update';
+  payload: number[];
+}
+
+export type CardCollapsedListAction =
+  | CardCollapsedListInitAction
+  | CardCollapsedListUpdateAction;
+
+/**
  * CardSketchDateAction
  */
 export type CardSketchDateInitAction = {
