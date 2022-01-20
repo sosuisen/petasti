@@ -195,9 +195,9 @@ export const addSettingsHandler = (note: INote) => {
   const exportJSON = async (filepath: string) => {
     if (note.sync && note.sync.options.live) note.sync.pause();
 
-    const cards = await note.bookDB.find({ prefix: 'card/' });
-    const notes = await note.bookDB.find({ prefix: 'note/' });
-    const snapshots = await note.bookDB.find({ prefix: 'snapshot/' });
+    const cards = await note.bookDB.find({ prefix: 'card/c' });
+    const notes = await note.bookDB.find({ prefix: 'note/n' });
+    const snapshots = await note.bookDB.find({ prefix: 'snapshot/s' });
 
     const bookObj = {
       schemaVersion: SCHEMA_VERSION,
