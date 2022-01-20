@@ -197,6 +197,14 @@ export const addSettingsHandler = (note: INote) => {
 
     const cards = await note.bookDB.find({ prefix: 'card/c' });
     const notes = await note.bookDB.find({ prefix: 'note/n' });
+    const notesProp = await note.bookDB.find({ prefix: 'note/prop.yml' });
+    notes.push(...notesProp);
+    const sortedNotes = (notes as JsonDoc[]).sort((a, b) => {
+      if (a._id > b._id) return 1;
+      else if (a._id < b._id) return -1;
+      return 0;
+    });
+
     const snapshots = await note.bookDB.find({ prefix: 'snapshot/s' });
 
     const bookObj = {
@@ -205,7 +213,7 @@ export const addSettingsHandler = (note: INote) => {
       appVersion: note.info.appinfo.version,
       createdDate: getCurrentDateAndTime(),
       cards,
-      notes,
+      sortedNotes,
       snapshots,
     };
 
