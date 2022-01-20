@@ -344,6 +344,10 @@ class Note implements INote {
       count++;
       // eslint-disable-next-line no-await-in-loop
       const prop: NoteProp = (await noteDir.get('prop')) as NoteProp;
+      if (prop === undefined) {
+        this.logger.debug(`Error: prop.yml does not exist in ${noteDir.collectionPath}`);
+        continue;
+      }
       const pathArr = noteDir.collectionPath.split('/'); // collectionPath is note/nXXXXXX/
       prop._id = pathArr[1]; // Set note id instead of 'prop'.
       initialNoteState.set(prop._id, prop);
