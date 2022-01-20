@@ -195,25 +195,22 @@ export const addSettingsHandler = (note: INote) => {
   const exportJSON = async (filepath: string) => {
     if (note.sync && note.sync.options.live) note.sync.pause();
 
+    // Select only related files.
     const cards = await note.bookDB.find({ prefix: 'card/c' });
     const notes = await note.bookDB.find({ prefix: 'note/n' });
-    const notesProp = await note.bookDB.find({ prefix: 'note/prop.yml' });
-    notes.push(...notesProp);
-    const sortedNotes = (notes as JsonDoc[]).sort((a, b) => {
-      if (a._id > b._id) return 1;
-      else if (a._id < b._id) return -1;
-      return 0;
+    const filteredNotes: JsonDoc[] = notes.filter(sketch => {
+      if (sketch._id.match(/^note\/n.+?\/c.+$/) || sketch._id.match(/^note\/n.+?\/prop$/))
+        return true;
+      return false;
     });
-
     const snapshots = await note.bookDB.find({ prefix: 'snapshot/s' });
-
     const bookObj = {
       schemaVersion: SCHEMA_VERSION,
       app: note.info.appinfo.name,
       appVersion: note.info.appinfo.version,
       createdDate: getCurrentDateAndTime(),
       cards,
-      sortedNotes,
+      notes: filteredNotes,
       snapshots,
     };
 
@@ -253,6 +250,12 @@ export const addSettingsHandler = (note: INote) => {
       return 0;
     });
 
+    const sortedNotes = (jsonObj.notes as JsonDoc[]).sort((a, b) => {
+      if (a._id > b._id) return 1;
+      else if (a._id < b._id) return -1;
+      return 0;
+    });
+
     const sortedSnapshots = (jsonObj.snapshots as JsonDoc[]).sort((a, b) => {
       if (a._id > b._id) return 1;
       else if (a._id < b._id) return -1;
@@ -267,7 +270,7 @@ export const addSettingsHandler = (note: INote) => {
       });
     }
 
-    const maxValue = sortedCards.length + sortedSnapshots.length;
+    const maxValue = sortedCards.length + sortedNotes.length + sortedSnapshots.length;
     const progressBar = new ProgressBar({
       indeterminate: false,
       text: MESSAGE('importingDataProgressBarTitle'),
@@ -354,7 +357,7 @@ export const addSettingsHandler = (note: INote) => {
 
         sortedSnapshots.forEach(snapshot => {
           (snapshot.cards as JsonDoc[]).forEach(tmpCard => {
-            tmpCard._body = tmpCard._body.replace(/\n\s+{.summary}\n/g, '');
+            tmpCard.body._body = tmpCard.body._body.replace(/\n\s+{.summary}\n/g, '');
           });
         });
       }
@@ -362,6 +365,12 @@ export const addSettingsHandler = (note: INote) => {
       for (const card of sortedCards) {
         // eslint-disable-next-line no-await-in-loop
         await tmpBookDB.put(card);
+        progressBar.value++;
+      }
+
+      for (const tmpNote of sortedNotes) {
+        // eslint-disable-next-line no-await-in-loop
+        await tmpBookDB.put(tmpNote);
         progressBar.value++;
       }
 
