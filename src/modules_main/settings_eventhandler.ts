@@ -223,7 +223,7 @@ export const addSettingsHandler = (note: INote) => {
     // console.debug('Start import JSON from ' + filepath);
     const jsonObj = readJSONSync(filepath);
 
-    if (jsonObj.schemaVersion < 0.3) {
+    if (jsonObj.schemaVersion < 0.4) {
       showDialog(settingsDialog, 'error', 'invalidSchemaVersion', jsonObj.schemaVersion);
       return;
     }
@@ -245,12 +245,6 @@ export const addSettingsHandler = (note: INote) => {
       return 0;
     });
 
-    const sortedNotes = (jsonObj.notes as JsonDoc[]).sort((a, b) => {
-      if (a._id > b._id) return 1;
-      else if (a._id < b._id) return -1;
-      return 0;
-    });
-
     const sortedSnapshots = (jsonObj.snapshots as JsonDoc[]).sort((a, b) => {
       if (a._id > b._id) return 1;
       else if (a._id < b._id) return -1;
@@ -265,7 +259,7 @@ export const addSettingsHandler = (note: INote) => {
       });
     }
 
-    const maxValue = sortedCards.length + sortedNotes.length + sortedSnapshots.length;
+    const maxValue = sortedCards.length + sortedSnapshots.length;
     const progressBar = new ProgressBar({
       indeterminate: false,
       text: MESSAGE('importingDataProgressBarTitle'),
@@ -345,69 +339,21 @@ export const addSettingsHandler = (note: INote) => {
       tmpBookDB.committer = note.bookDB.committer;
       await tmpBookDB.saveAuthor();
 
-      if (jsonObj.schemaVersion === 0.3) {
-        const cardIdMap: Record<string, string> = {};
+      if (jsonObj.schemaVersion === 0.4) {
         sortedCards.forEach(card => {
-          const oldId = card._id;
-          const newId = oldId.replace(
-            /(card\/c)(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(.+?)$/,
-            '$1$2-$3-$4-$5-$6-$7-$8'
-          );
-          card._id = newId;
-
-          cardIdMap[oldId.substring(5)] = newId.substring(5);
-        });
-
-        const noteIdMap: Record<string, string> = {};
-        sortedNotes.forEach(tmpNote => {
-          const oldId = tmpNote._id;
-          const found = oldId.match(/^note\/(.+?)\/(.+)$/);
-          const oldNoteId = found[1];
-          let childId = found[2]; // cardId or 'prop'
-          if (cardIdMap[childId]) {
-            childId = cardIdMap[childId];
-          }
-          let newNoteId = '';
-          if (noteIdMap[oldNoteId]) {
-            newNoteId = noteIdMap[oldNoteId];
-          }
-          else {
-            newNoteId = oldNoteId.replace(
-              /(n)(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(.+?)$/,
-              '$1$2-$3-$4-$5-$6-$7-$8'
-            );
-            noteIdMap[oldNoteId] = newNoteId;
-          }
-          newNoteId = 'note/' + newNoteId;
-
-          const newId = newNoteId + '/' + childId;
-          tmpNote._id = newId;
+          card._body = card._body.replace(/\n\s+{.summary}\n/g, '');
         });
 
         sortedSnapshots.forEach(snapshot => {
-          const oldId = snapshot._id;
-          const newId = oldId.replace(
-            /(snapshot\/s)(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(.+?)$/,
-            '$1$2-$3-$4-$5-$6-$7-$8'
-          );
-          snapshot._id = newId;
           (snapshot.cards as JsonDoc[]).forEach(tmpCard => {
-            tmpCard._id = cardIdMap[tmpCard._id];
+            tmpCard._body = tmpCard._body.replace(/\n\s+{.summary}\n/g, '');
           });
-
-          snapshot.note._id = noteIdMap[snapshot.note._id];
         });
       }
 
       for (const card of sortedCards) {
         // eslint-disable-next-line no-await-in-loop
         await tmpBookDB.put(card);
-        progressBar.value++;
-      }
-
-      for (const tmpNote of sortedNotes) {
-        // eslint-disable-next-line no-await-in-loop
-        await tmpBookDB.put(tmpNote);
         progressBar.value++;
       }
 
