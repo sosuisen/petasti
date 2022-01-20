@@ -564,7 +564,21 @@ export class CardEditorMarkdown implements ICardEditor {
      */
     this._editor.action(ctx => {
       const parser = ctx.get(parserCtx);
-      const newDoc = parser(body);
+      let newDoc;
+      try {
+        newDoc = parser(body);
+      } catch (err) {
+        console.log('### parse fallback');
+        // Add list item mark if heading indent does not end with an item mark.
+        body = body.replace(/^(\s+)([^\d\s*-])/gm, '$1* $2');
+        console.log(body);
+        try {
+          newDoc = parser(body);
+        } catch (err2) {
+          // TODO: show error message card
+          return;
+        }
+      }
 
       if (newDoc === undefined || newDoc === null) return;
       // console.log('newDoc: ' + newDoc!.toString());
