@@ -576,6 +576,7 @@ export class CardEditorMarkdown implements ICardEditor {
           newDoc = parser(body);
         } catch (err2) {
           // TODO: show error message card
+          console.log(err2);
           return;
         }
       }
@@ -613,89 +614,42 @@ export class CardEditorMarkdown implements ICardEditor {
         const to = result.selection.to + offset;
         if (result.type === 'nbsp') {
           tr.deleteRange(from, to);
-          /*
-          const newState = editorView.state.apply(
-            editorView.state.tr.deleteRange(from, to)
-            // editorView.state.tr.insertText('x', selection.from, selection.to)
-          );
-          // console.log(`# transformed: (${from}, ${to}) ` + newState.doc.toString());
-          editorView.updateState(newState);
-          */
-          // delete a character
           offset--;
         }
-        /*
-        else if (result.type === 'summary') {
-          const $from = tr.doc.resolve(result.selection.from + offset);
-          const $to = tr.doc.resolve(result.selection.to + offset);
-
-          const range = $from.blockRange($to);
-          // console.log('# parent of summary: ' + range?.parent.type.name);
-          if (
-            range?.parent.type.name === 'list_item' ||
-            range?.parent.type.name === 'task_list_item'
-          ) {
-            //  console.log(editorView.state.doc.toString());
-            const start = $from.before($from.depth - 1); // start position of parent
+      }
+      if (collapsedList.length > 0) {
+        tr.doc.descendants((node: ProseNode, pos: number) => {
+          if (collapsedList.includes(pos)) {
+            console.log('# collapsed: ' + pos);
             let attr;
-            if (range?.parent.type.name === 'list_item') {
+            if (node!.type.name === 'list_item') {
               attr = {
                 collapsed: true,
               };
             }
-            else if (range?.parent.type.name === 'task_list_item') {
+            else if (node!.type.name === 'task_list_item') {
               attr = {
                 collapsed: true,
-                checked: range?.parent.attrs.checked,
+                checked: node.attrs.checked,
               };
             }
-            tr.setNodeMarkup(start, undefined, attr);
-            range?.parent.forEach((child, offsetFromParent, index) => {
+            else {
+              console.log('Error in setting collapsed list: invalid node type.');
+              return true;
+            }
+            tr.setNodeMarkup(pos, undefined, attr);
+            node.forEach((child, offsetFromParent, index) => {
               if (child.type.name === 'bullet_list' || child.type.name === 'ordered_list') {
                 // console.log('children index: ' + start + ' + ' + offsetFromParent + ' + 1');
-                tr.setNodeMarkup(start + offsetFromParent + 1, undefined, {
+                tr.setNodeMarkup(pos + offsetFromParent + 1, undefined, {
                   collapsed: true,
                 });
               }
             });
           }
-          tr.deleteRange(from - 1, to + 1);
-          // delete marks and characters
-          offset -= 12; // paragraph("{.summary}")
-        }
-        */
+          return true;
+        });
       }
-      tr.doc.descendants((node: ProseNode, pos: number) => {
-        if (collapsedList.includes(pos)) {
-          console.log('# collapsed: ' + pos);
-          let attr;
-          if (node!.type.name === 'list_item') {
-            attr = {
-              collapsed: true,
-            };
-          }
-          else if (node!.type.name === 'task_list_item') {
-            attr = {
-              collapsed: true,
-              checked: node.attrs.checked,
-            };
-          }
-          else {
-            console.log('Error in setting collapsed list: invalid node type.');
-            return true;
-          }
-          tr.setNodeMarkup(pos, undefined, attr);
-          node.forEach((child, offsetFromParent, index) => {
-            if (child.type.name === 'bullet_list' || child.type.name === 'ordered_list') {
-              // console.log('children index: ' + start + ' + ' + offsetFromParent + ' + 1');
-              tr.setNodeMarkup(pos + offsetFromParent + 1, undefined, {
-                collapsed: true,
-              });
-            }
-          });
-        }
-        return true;
-      });
       const newState = editorView.state.apply(tr);
       editorView.updateState(newState);
     });
