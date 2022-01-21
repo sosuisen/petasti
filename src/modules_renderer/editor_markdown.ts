@@ -741,53 +741,11 @@ export class CardEditorMarkdown implements ICardEditor {
     });
 
     let data = this._editor.action(ctx => {
-      const editorView = ctx.get(editorViewCtx);
       const serializer = ctx.get(serializerCtx);
-      /*
-      const newDoc = ProseNode.fromJSON(editorView.state.schema, currentDoc); // clone
-
-      const stack: ProseNode[] = [];
-
-      stack.push(newDoc);
-      while (stack.length > 0) {
-        const node = stack.pop();
-        if (node!.childCount > 0) {
-          node!.forEach(child => stack.push(child));
-        }
-
-        if (
-          (node!.type.name === 'list_item' || node!.type.name === 'task_list_item') &&
-          node!.attrs.collapsed
-        ) {
-          const textNode = editorView.state.schema.text('{.summary}');
-          const paragraphNode = editorView.state.schema.nodes.paragraph.create(
-            null,
-            textNode,
-            null
-          );
-          // @ts-ignore
-          const firstChild = node!.content.content.shift();
-          let newFragment;
-          if (firstChild) {
-            newFragment = Fragment.fromArray([
-              firstChild,
-              paragraphNode,
-              // @ts-ignore
-              ...node!.content.content,
-            ]);
-          }
-          else {
-            newFragment = Fragment.fromArray([paragraphNode]);
-          }
-          node!.content = newFragment;
-          // console.log(node!.toString());
-        }
-      }
-      
-      return serializer(newDoc);
-      */
-      return serializer(editorView.state.doc); // editorView.state.doc is ProseNode
+      return serializer(rootNode);
     });
+
+    console.log(data);
 
     /**
      * Replace empty new lines in the editor area with &nbsp; to keep new lines in markdown.
