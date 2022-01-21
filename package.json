@@ -77,7 +77,7 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
-    "@sosuisen/milkdown-core": "^4.11.2-alpha.3",
+    "@sosuisen/milkdown-core": "^4.11.2-alpha.5",
     "@sosuisen/milkdown-plugin-clipboard": "^4.11.2-alpha.4",
     "@sosuisen/milkdown-plugin-emoji": "^4.11.2-alpha.0",
     "@sosuisen/milkdown-plugin-history": "^4.11.1",
