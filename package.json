@@ -97,7 +97,7 @@
     "electron-prompt": "^1.6.2",
     "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^9.0.1",
-    "git-documentdb": "^0.4.7-alpha.14",
+    "git-documentdb": "^0.4.7-alpha.15",
     "git-documentdb-plugin-remote-nodegit": "^1.0.5-alpha.0",
     "hmtid": "^0.1.2",
     "prosemirror-model": "^1.14.3",
