@@ -776,13 +776,11 @@ export class CardEditorMarkdown implements ICardEditor {
     data = data.replace(/\r/g, '\n');
 
     /**
-     * Heading spaces must be replaced by &nbsp; because 4 spaces are misinterpreted as code fence.
+     * Heading spaces must be replaced by &nbsp; except code-fence.
      */
-    /*
-    data = data.replace(/^( +)[^ ]/gm, (match, p1, p2) => {
+    data = data.replace(/^( {0,3})[^ ]/gm, (match, p1, p2) => {
       return match.replace(/ /g, '&nbsp;');
     });
-    */
 
     await cardStore.dispatch(cardBodyUpdateCreator(data));
     await cardStore.dispatch(cardCollapsedListUpdateCreator(collapsedList));
