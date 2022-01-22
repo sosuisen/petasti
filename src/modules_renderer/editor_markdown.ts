@@ -777,11 +777,11 @@ export class CardEditorMarkdown implements ICardEditor {
 
     /**
      * Heading spaces must be replaced by &nbsp; except code-fence.
+     * NOTE: Exclude following hyphen - not to replace spaces before list item
      */
-    data = data.replace(/^( {0,3})[^ ]/gm, (match, p1, p2) => {
+    data = data.replace(/^( {0,3})[^ *+-]/gm, (match, p1, p2) => {
       return match.replace(/ /g, '&nbsp;');
     });
-
     await cardStore.dispatch(cardBodyUpdateCreator(data));
     await cardStore.dispatch(cardCollapsedListUpdateCreator(collapsedList));
   };
