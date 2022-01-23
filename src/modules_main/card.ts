@@ -50,11 +50,7 @@ import {
 import { cacheOfCard } from './card_cache';
 import { setContextMenu } from './card_context_menu';
 import { INote } from './note_types';
-import {
-  getZIndexOfTopCard,
-  setZIndexOfBottomCard,
-  setZIndexOfTopCard,
-} from './card_zindex';
+import { getZIndexOfTopCard } from './card_zindex';
 import { messagesRenderer } from './messages';
 import { cardColors, ColorName } from '../modules_common/color';
 import { noteStore } from './note_store';
@@ -118,10 +114,12 @@ const sortCards = () => {
     if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
     return 0;
   });
+  /*
   if (backToFront.length > 0) {
     setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
     setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
   }
+  */
   return backToFront;
 };
 
@@ -213,10 +211,17 @@ export const createCardWindow = async (
   if (partialCardSketch.geometry !== undefined) {
     partialCardSketch.geometry.z = getZIndexOfTopCard() + 1;
   }
+  console.log('zIndex of new window: ' + partialCardSketch.geometry?.z);
   const card = new Card(note, noteIdOrUrl, partialCardBody, partialCardSketch);
 
   // Async
   note.createCard(card.url, card, false, updateDB);
+
+  // cacheOfCard will be used in card.focus().
+  // Since createCard is async,
+  // the registration to cacheOfCard in createCard depends on timing.
+  // Set it here just in case.
+  cacheOfCard.set(card.url, card);
 
   await card.render();
   console.debug(`focus in createCardWindow: ${card.url}`);
@@ -551,7 +556,7 @@ export class Card implements ICard {
       const modifiedTime = getCurrentDateAndTime();
 
       if (this.sketch.geometry.z === getZIndexOfTopCard()) {
-        // console.log('skip: ' + cardProp.geometry.z);
+        console.log('zIndex no change: ' + this.sketch.geometry.z);
         // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
         this.window.webContents.send('card-focused', undefined, undefined);
         return;
@@ -559,7 +564,7 @@ export class Card implements ICard {
       // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 
       const zIndex = getZIndexOfTopCard() + 1;
-      // console.debug(`new zIndex: ${zIndex}`);
+      console.debug(`zIndex changed to: ${zIndex}`);
 
       this.window.webContents.send('card-focused', zIndex, modifiedTime);
 

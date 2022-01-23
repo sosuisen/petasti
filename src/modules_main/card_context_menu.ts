@@ -7,11 +7,7 @@ import contextMenu from 'electron-context-menu';
 import { cardColors, ColorName } from '../modules_common/color';
 import { CardBody, CardSketch, ICard } from '../modules_common/types';
 import { getCurrentDateAndTime, isLabelOpened } from '../modules_common/utils';
-import {
-  getZIndexOfBottomCard,
-  setZIndexOfBottomCard,
-  setZIndexOfTopCard,
-} from './card_zindex';
+import { getZIndexOfBottomCard } from './card_zindex';
 import { cacheOfCard } from './card_cache';
 import { MESSAGE } from './messages';
 import { INote } from './note_types';
@@ -218,8 +214,10 @@ export const setContextMenu = (note: INote, card: ICard) => {
               if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
               return 0;
             });
+            /*
             setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
             setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
+            */
             backToFront.forEach(myCard => {
               if (myCard.window && !myCard.window.isDestroyed()) {
                 myCard!.suppressFocusEventOnce = true;
