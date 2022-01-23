@@ -152,6 +152,8 @@ export interface ICard {
   moveToNote: (noteID: string) => Promise<void>;
   copyToNote: (noteID: string) => Promise<void>;
 
+  addShortcuts: () => void;
+
   hasSelection: boolean;
 }
 

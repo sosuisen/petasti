@@ -211,21 +211,15 @@ export const createCardWindow = async (
   if (partialCardSketch.geometry !== undefined) {
     partialCardSketch.geometry.z = getZIndexOfTopCard() + 1;
   }
-  console.log('zIndex of new window: ' + partialCardSketch.geometry?.z);
   const card = new Card(note, noteIdOrUrl, partialCardBody, partialCardSketch);
 
   // Async
   note.createCard(card.url, card, false, updateDB);
 
-  // cacheOfCard will be used in card.focus().
-  // Since createCard is async,
-  // the registration to cacheOfCard in createCard depends on timing.
-  // Set it here just in case.
-  cacheOfCard.set(card.url, card);
-
   await card.render();
-  console.debug(`focus in createCardWindow: ${card.url}`);
-  card.focus();
+  card.window.focus();
+  card.addShortcuts();
+  card.window.webContents.send('card-focused', undefined, undefined);
 };
 
 /**
@@ -551,7 +545,7 @@ export class Card implements ICard {
     else {
       console.debug(`# focus ${this.url}`);
 
-      this._addShortcuts();
+      this.addShortcuts();
 
       const modifiedTime = getCurrentDateAndTime();
 
@@ -938,7 +932,7 @@ export class Card implements ICard {
     return type === 'position' ? positionChangeUnitSmall : sizeChangeUnitSmall;
   };
 
-  private _addShortcuts = () => {
+  public addShortcuts = () => {
     lock.acquire('registerShortcut', () => {
       // Available shortcuts
       // https://github.com/electron/electron/blob/main/docs/api/accelerator.md
