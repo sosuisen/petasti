@@ -2,7 +2,13 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-import { BrowserWindow, ipcMain, MenuItemConstructorOptions } from 'electron';
+import {
+  BrowserWindow,
+  Display,
+  ipcMain,
+  MenuItemConstructorOptions,
+  screen,
+} from 'electron';
 import contextMenu from 'electron-context-menu';
 import { cardColors, ColorName } from '../modules_common/color';
 import { CardBody, CardSketch, ICard } from '../modules_common/types';
@@ -79,7 +85,18 @@ export const setContextMenu = (note: INote, card: ICard) => {
 
   const createCardFromMarkdown = (markdown: string) => {
     const geometry = { ...DEFAULT_CARD_GEOMETRY };
-    geometry.x = card.sketch.geometry.x + 30;
+
+    const displayRect: Display = screen.getDisplayNearestPoint({
+      x: card.sketch.geometry.x,
+      y: card.sketch.geometry.y,
+    });
+    geometry.x = card.sketch.geometry.x + card.sketch.geometry.width - geometry.width / 2;
+    if (geometry.x + geometry.width > displayRect.bounds.width) {
+      geometry.x = card.sketch.geometry.x - geometry.width / 2;
+      if (geometry.x < displayRect.bounds.x) {
+        geometry.x = card.sketch.geometry.x + 30;
+      }
+    }
     geometry.y = card.sketch.geometry.y + 30;
 
     const cardBody: Partial<CardBody> = {
@@ -89,7 +106,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
       geometry: {
         x: geometry.x,
         y: geometry.y,
-        z: geometry.z, // z will be overwritten in createCard()
+        z: geometry.z, // z will be overwritten in createCardWindow()
         width: geometry.width,
         height: geometry.height,
       },
