@@ -366,10 +366,14 @@ window.addEventListener('message', event => {
       cardEditor.deleteSelection();
       break;
     case 'get-selected-markdown': {
-      const markdown = cardEditor.getSelectedMarkdown();
+      const [markdown, startLeft, endRight, top, bottom] = cardEditor.getSelectedMarkdown();
       window.api.responseOfGetSelectedMarkdown(
         cardStore.getState().workState.url,
-        markdown
+        markdown,
+        startLeft,
+        endRight,
+        top,
+        bottom
       );
       break;
     }

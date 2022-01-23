@@ -3,7 +3,15 @@
  * © 2021 Hidekazu Kubota
  */
 
-import { app, Display, ipcMain, MouseInputEvent, powerMonitor, screen } from 'electron';
+import {
+  app,
+  Display,
+  ipcMain,
+  MouseInputEvent,
+  powerMonitor,
+  Rectangle,
+  screen,
+} from 'electron';
 import fs from 'fs-extra';
 import {
   Card,
@@ -176,9 +184,16 @@ app.on('window-all-closed', () => {
  */
 emitter.on(
   'create-card',
-  (cardBody: Partial<CardBody>, cardSketch: Partial<CardSketch>) => {
+  (cardBody: Partial<CardBody>, cardSketch: Partial<CardSketch>, moveToRect: Rectangle) => {
     setTimeout(() => {
-      createCardWindow(note, note.settings.currentNoteId, cardBody, cardSketch);
+      createCardWindow(
+        note,
+        note.settings.currentNoteId,
+        cardBody,
+        cardSketch,
+        true,
+        moveToRect
+      );
     }, 100);
   }
 );

@@ -64,10 +64,21 @@ contextBridge.exposeInMainWorld('api', {
   responseOfHasSelection: (url: string, hasSelection: boolean) => {
     ipcRenderer.invoke('response-of-has-selection', url, hasSelection);
   },
-  responseOfGetSelectedMarkdown: (url: string, markdown: string) => {
+  responseOfGetSelectedMarkdown: (
+    url: string,
+    markdown: string,
+    startLeft: number,
+    endRight: number,
+    top: number,
+    bottom: number
+  ) => {
     ipcRenderer.invoke(
       'response-of-get-selected-markdown-' + encodeURIComponent(url),
-      markdown
+      markdown,
+      startLeft,
+      endRight,
+      top,
+      bottom
     );
   },
   sendLeftMouseDown: (url: string, x: number, y: number) => {

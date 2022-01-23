@@ -540,7 +540,7 @@ export class CardEditorMarkdown implements ICardEditor {
     });
   };
 
-  public getSelectedMarkdown = () => {
+  public getSelectedMarkdown = (): [string, number, number, number, number] => {
     return this._editor.action(ctx => {
       const serializer = ctx.get(serializerCtx);
       const editorView = ctx.get(editorViewCtx);
@@ -550,9 +550,14 @@ export class CardEditorMarkdown implements ICardEditor {
         undefined,
         selection.content().content
       );
-      if (!selectionDoc) return '';
+      const fromRect = editorView.coordsAtPos(selection.$from.pos);
+      const toRect = editorView.coordsAtPos(selection.$to.pos);
+
+      if (!selectionDoc)
+        return ['', fromRect.left, toRect.right, fromRect.top, toRect.bottom];
+
       const markdown = serializer(selectionDoc);
-      return markdown;
+      return [markdown, fromRect.left, toRect.right, fromRect.top, toRect.bottom];
     });
   };
 

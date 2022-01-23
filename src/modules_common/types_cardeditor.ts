@@ -11,7 +11,7 @@ export interface ICardEditor {
 
   deleteSelection(): void;
   hasSelection(): boolean;
-  getSelectedMarkdown(): string;
+  getSelectedMarkdown(): [string, number, number, number, number];
 
   getImageTag(id: string, src: string, width: number, height: number, alt: string): string;
 

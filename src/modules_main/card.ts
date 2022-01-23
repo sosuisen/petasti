@@ -205,7 +205,8 @@ export const createCardWindow = async (
   noteIdOrUrl: string,
   partialCardBody: Partial<CardBody>,
   partialCardSketch: Partial<CardSketch>,
-  updateDB = true
+  updateDB = true,
+  moveToRect: Rectangle | undefined = undefined
 ): Promise<void> => {
   // Overwrite z
   if (partialCardSketch.geometry !== undefined) {
@@ -220,6 +221,9 @@ export const createCardWindow = async (
   card.window.focus();
   card.addShortcuts();
   card.window.webContents.send('card-focused', undefined, undefined);
+  if (moveToRect) {
+    card.setRect(moveToRect.x, moveToRect.y, moveToRect.width, moveToRect.height, true);
+  }
 };
 
 /**
@@ -623,7 +627,6 @@ export class Card implements ICard {
         moveFromWidth = rect.width;
         moveFromHeight = rect.height;
         this._currentMoveToX = moveToX = x;
-
         this._currentMoveToY = moveToY = y;
         this._currentMoveToWidth = moveToWidth = width;
         this._currentMoveToHeight = moveToHeight = height;

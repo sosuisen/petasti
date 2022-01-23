@@ -7,6 +7,7 @@ import {
   Display,
   ipcMain,
   MenuItemConstructorOptions,
+  Rectangle,
   screen,
 } from 'electron';
 import contextMenu from 'electron-context-menu';
@@ -18,7 +19,10 @@ import { cacheOfCard } from './card_cache';
 import { MESSAGE } from './messages';
 import { INote } from './note_types';
 import { noteStore } from './note_store';
-import { DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
+import {
+  MINIMUM_WINDOW_HEIGHT,
+  MINIMUM_WINDOW_HEIGHT_OFFSET,
+} from '../modules_common/const';
 import { emitter } from './event';
 
 /**
@@ -83,32 +87,74 @@ export const setContextMenu = (note: INote, card: ICard) => {
       return result;
     }, [] as MenuItemConstructorOptions[]);
 
-  const createCardFromMarkdown = (markdown: string) => {
-    const geometry = { ...DEFAULT_CARD_GEOMETRY };
-
+  const createCardFromMarkdown = (
+    markdown: string,
+    startLeft: number,
+    endRight: number,
+    top: number,
+    bottom: number
+  ) => {
     const displayRect: Display = screen.getDisplayNearestPoint({
       x: card.sketch.geometry.x,
       y: card.sketch.geometry.y,
     });
-    geometry.x = card.sketch.geometry.x + card.sketch.geometry.width - geometry.width / 2;
-    if (geometry.x + geometry.width > displayRect.bounds.width) {
-      geometry.x = card.sketch.geometry.x - geometry.width / 2;
-      if (geometry.x < displayRect.bounds.x) {
-        geometry.x = card.sketch.geometry.x + 30;
+    const cardX = card.sketch.geometry.x + Math.round(startLeft);
+    const cardY = card.sketch.geometry.y + Math.round(top);
+
+    // right of parent card
+    let moveToX = card.sketch.geometry.x + card.sketch.geometry.width + 10;
+    let moveToY = cardY;
+
+    const moveToWidth = card.sketch.geometry.width;
+    let moveToHeight = Math.round(bottom - top);
+    if (moveToHeight < MINIMUM_WINDOW_HEIGHT) {
+      moveToHeight = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
+    }
+    moveToHeight += 50;
+
+    if (moveToX + moveToWidth > displayRect.bounds.width) {
+      // left of parent card
+      moveToX = card.sketch.geometry.x - moveToWidth - 10;
+      if (moveToX < displayRect.bounds.x) {
+        // Calc larger margin
+        if (
+          displayRect.bounds.width - (card.sketch.geometry.x + card.sketch.geometry.width) >
+          card.sketch.geometry.x - displayRect.bounds.x
+        ) {
+          // left of right edge of screen
+          moveToX = displayRect.bounds.width - moveToWidth;
+        }
+        else {
+          // right of left edge of screen
+          moveToX = displayRect.bounds.x;
+        }
       }
     }
-    geometry.y = card.sketch.geometry.y + 30;
+
+    if (moveToY + moveToHeight > displayRect.bounds.height) {
+      moveToY = displayRect.bounds.height - moveToHeight;
+      if (moveToY < displayRect.bounds.y) {
+        moveToY = displayRect.bounds.y;
+      }
+    }
+
+    const moveToRect: Rectangle = {
+      x: moveToX,
+      y: moveToY,
+      width: moveToWidth,
+      height: moveToHeight,
+    };
 
     const cardBody: Partial<CardBody> = {
       _body: markdown,
     };
     const cardSketch: Partial<CardSketch> = {
       geometry: {
-        x: geometry.x,
-        y: geometry.y,
-        z: geometry.z, // z will be overwritten in createCardWindow()
-        width: geometry.width,
-        height: geometry.height,
+        x: cardX,
+        y: cardY,
+        z: 0, // z will be overwritten in createCardWindow()
+        width: moveToWidth,
+        height: moveToHeight,
       },
       style: {
         uiColor: card.sketch.style.uiColor,
@@ -117,7 +163,8 @@ export const setContextMenu = (note: INote, card: ICard) => {
         zoom: card.sketch.style.zoom,
       },
     };
-    emitter.emit('create-card', cardBody, cardSketch);
+
+    emitter.emit('create-card', cardBody, cardSketch, moveToRect);
   };
 
   const dispose = contextMenu({
@@ -161,14 +208,20 @@ export const setContextMenu = (note: INote, card: ICard) => {
               card.window.webContents.send('get-selected-markdown');
               ipcMain.handleOnce(
                 'response-of-get-selected-markdown-' + encodeURIComponent(card.url),
-                (event, markdown) => {
-                  createCardFromMarkdown(markdown);
+                (event, markdown, startLeft, endRight, top, bottom) => {
+                  createCardFromMarkdown(markdown, startLeft, endRight, top, bottom);
                   card.window.webContents.send('delete-selection');
                 }
               );
             }
             else {
-              createCardFromMarkdown('');
+              createCardFromMarkdown(
+                '',
+                card.sketch.geometry.x,
+                card.sketch.geometry.x,
+                card.sketch.geometry.y,
+                card.sketch.geometry.y
+              );
             }
           },
         },
