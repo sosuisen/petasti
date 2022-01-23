@@ -569,7 +569,7 @@ export class Card implements ICard {
       // console.log([...cacheOfCard.values()].map(myCard => myCard.sketch.geometry.z));
       // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
 
-      sortCards();
+      // sortCards();
     }
   };
 
