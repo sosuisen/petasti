@@ -176,8 +176,10 @@ app.on('window-all-closed', () => {
  */
 emitter.on(
   'create-card',
-  async (cardBody: Partial<CardBody>, cardSketch: Partial<CardSketch>) => {
-    await createCardWindow(note, note.settings.currentNoteId, cardBody, cardSketch);
+  (cardBody: Partial<CardBody>, cardSketch: Partial<CardSketch>) => {
+    setTimeout(() => {
+      createCardWindow(note, note.settings.currentNoteId, cardBody, cardSketch);
+    }, 100);
   }
 );
 
