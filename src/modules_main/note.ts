@@ -625,6 +625,8 @@ class Note implements INote {
     z: number,
     modifiedTime: string
   ): Promise<TaskMetadata | false> => {
+    console.log(`# updateCardZ: ${sketchUrl}`);
+
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
     let sketch: CardSketch;
@@ -683,6 +685,7 @@ class Note implements INote {
     cardSketch: CardSketch,
     modifiedDate: string
   ): Promise<TaskMetadata | false> => {
+    console.log(`# updateCardSketch: ${sketchUrl}`);
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
     let sketch: CardSketch;

@@ -548,32 +548,35 @@ export class Card implements ICard {
     }
     else {
       console.debug(`# focus ${this.url}`);
+      try {
+        this.addShortcuts();
 
-      this.addShortcuts();
+        const modifiedTime = getCurrentDateAndTime();
 
-      const modifiedTime = getCurrentDateAndTime();
-
-      if (this.sketch.geometry.z === getZIndexOfTopCard()) {
-        console.log('zIndex no change: ' + this.sketch.geometry.z);
+        if (this.sketch.geometry.z === getZIndexOfTopCard()) {
+          console.log('zIndex no change: ' + this.sketch.geometry.z);
+          // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
+          this.window.webContents.send('card-focused', undefined, undefined);
+          return;
+        }
         // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-        this.window.webContents.send('card-focused', undefined, undefined);
-        return;
+
+        const zIndex = getZIndexOfTopCard() + 1;
+        console.debug(`zIndex changed to: ${zIndex}`);
+
+        this.window.webContents.send('card-focused', zIndex, modifiedTime);
+
+        // const newGeom = { ...this.sketch.geometry, z: zIndex };
+
+        // Async
+        this._note.updateCardZ(this.url, zIndex, modifiedTime);
+        // console.log([...cacheOfCard.values()].map(myCard => myCard.sketch.geometry.z));
+        // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
+
+        // sortCards();
+      } catch (err) {
+        this._note.logger.debug(`# Error in _focusListener of ${this.sketch._id}: ${err}`);
       }
-      // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-
-      const zIndex = getZIndexOfTopCard() + 1;
-      console.debug(`zIndex changed to: ${zIndex}`);
-
-      this.window.webContents.send('card-focused', zIndex, modifiedTime);
-
-      // const newGeom = { ...this.sketch.geometry, z: zIndex };
-
-      // Async
-      this._note.updateCardZ(this.url, zIndex, modifiedTime);
-      // console.log([...cacheOfCard.values()].map(myCard => myCard.sketch.geometry.z));
-      // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
-
-      // sortCards();
     }
   };
 

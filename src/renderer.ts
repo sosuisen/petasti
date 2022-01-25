@@ -213,15 +213,15 @@ const initializeUIEvents = () => {
     if (cardEditor.isOpened) {
       cardEditor.hideEditor();
       await cardEditor.endEdit();
-      render(['TitleBar', 'ContentsData', 'ContentsRect']);
+      render(['ContentsData', 'ContentsRect']);
     }
 
     closing = true;
+    suppressFocusEvent = true; // Suppress focus event in order not to focus and save this card just after closing card window.    
     if (cardStore.getState().body._body === '' || event.ctrlKey) {
       window.api.deleteCard(cardStore.getState().workState.url);
     }
     else {
-      suppressFocusEvent = true; // Suppress focus event in order not to focus and save this card just after closing card window.
       window.api.deleteCardSketch(cardStore.getState().workState.url);
       /**
        * Don't use window.confirm(MESSAGE.confirm_closing)
