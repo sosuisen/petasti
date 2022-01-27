@@ -264,10 +264,67 @@ emitter.on(
  */
 
 ipcMain.handle('delete-card', async (event, url: string) => {
+  const card = cacheOfCard.get(url);
+  if (card) {
+    const display: Display = screen.getDisplayNearestPoint({
+      x: card.sketch.geometry.x,
+      y: card.sketch.geometry.y,
+    });
+
+    // Shrink
+    await card.setRect(
+      card.sketch.geometry.x + card.sketch.geometry.width / 4,
+      card.sketch.geometry.y + card.sketch.geometry.height / 4,
+      card.sketch.geometry.width / 2,
+      card.sketch.geometry.height / 2,
+      true
+    );
+    // Bounds upper
+    await card.setRect(
+      card.sketch.geometry.x + card.sketch.geometry.width / 4,
+      card.sketch.geometry.y + card.sketch.geometry.height / 4 - 50,
+      card.sketch.geometry.width / 2,
+      card.sketch.geometry.height / 2,
+      true
+    );
+    // Move lower
+    await card.setRect(
+      card.sketch.geometry.x + card.sketch.geometry.width / 4,
+      display.bounds.y + display.bounds.height,
+      card.sketch.geometry.width / 4,
+      card.sketch.geometry.height / 4,
+      true
+    );
+  }
   await note.deleteCard(url);
 });
 
 ipcMain.handle('delete-card-sketch', async (event, url: string) => {
+  const card = cacheOfCard.get(url);
+  if (card) {
+    const display: Display = screen.getDisplayNearestPoint({
+      x: card.sketch.geometry.x,
+      y: card.sketch.geometry.y,
+    });
+
+    // Bounds lower
+    await card.setRect(
+      card.sketch.geometry.x,
+      card.sketch.geometry.y + 50,
+      card.sketch.geometry.width,
+      card.sketch.geometry.height,
+      true
+    );
+    // Move upper
+    await card.setRect(
+      card.sketch.geometry.x,
+      display.bounds.y - card.sketch.geometry.height,
+      card.sketch.geometry.width,
+      card.sketch.geometry.height,
+      true
+    );
+  }
+
   await note.deleteCardSketch(url);
 });
 
