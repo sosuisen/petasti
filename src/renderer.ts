@@ -164,6 +164,11 @@ const initializeUIEvents = () => {
   document.getElementById('newBtn')?.addEventListener('click', async () => {
     // Position of a new card is relative to this card.
 
+    document.getElementById('newIcon')?.classList.add('fa-spin');
+    setTimeout(() => {
+      document.getElementById('newIcon')?.classList.remove('fa-spin');
+    }, 1000);
+
     const geometry = { ...DEFAULT_CARD_GEOMETRY };
     geometry.x = cardStore.getState().sketch.geometry.x;
     geometry.y = cardStore.getState().sketch.geometry.y;
