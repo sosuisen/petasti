@@ -743,14 +743,21 @@ class Note implements INote {
 
     if (card !== undefined) {
       await this._deleteCardSketchDoc(cardUrl);
-      cacheOfCard.delete(cardUrl);
+      // cacheOfCard.delete(cardUrl) will be called in _closedListener();
       if (!card.window.isDestroyed()) {
         this.logger.debug('# Start deleting sketch: ' + cardUrl);
         try {
           card.window.destroy();
         } catch (err) {
+          cacheOfCard.delete(cardUrl);
           this.logger.debug('# Error in card.window.destroy(): ' + err);
         }
+      }
+      else {
+        cacheOfCard.delete(cardUrl);
+        this.logger.debug(
+          '# Error in deleteCardSketch: window has been already destroyed. '
+        );
       }
 
       // Update note store & DB
@@ -762,7 +769,7 @@ class Note implements INote {
       */
     }
     else {
-      console.error(`${cardUrl} does not exist`);
+      this.logger.debug(`${cardUrl} does not exist`);
     }
   };
 

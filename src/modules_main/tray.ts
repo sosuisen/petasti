@@ -137,10 +137,22 @@ export const setTrayContextMenu = () => {
                 note.changingToNoteId = noteProp._id;
                 try {
                   // Remove listeners firstly to avoid focus another card in closing process
-                  cacheOfCard.forEach(card =>
-                    card.removeWindowListenersExceptClosedEvent()
-                  );
-                  cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
+                  cacheOfCard.forEach(card => {
+                    if (card) {
+                      card.removeWindowListenersExceptClosedEvent();
+                    }
+                    else {
+                      note.logger.debug('# Error before changing note: card is undefined');
+                    }
+                  });
+                  cacheOfCard.forEach(card => {
+                    if (card && card.window) {
+                      card.window.webContents.send('card-close');
+                    }
+                    else {
+                      note.logger.debug('# Error before changing note: card is undefined');
+                    }
+                  });
                 } catch (e) {
                   console.error(e);
                 }

@@ -698,14 +698,18 @@ export class Card implements ICard {
   };
 
   public removeWindowListenersExceptClosedEvent = () => {
-    this.window.off('will-resize', this._willResizeListener);
-    this.window.off('focus', this._focusListener);
-    this.window.off('blur', this._blurListener);
+    if (this.window) {
+      this.window.off('will-resize', this._willResizeListener);
+      this.window.off('focus', this._focusListener);
+      this.window.off('blur', this._blurListener);
+    }
   };
 
   public removeWindowListeners = () => {
     this.removeWindowListenersExceptClosedEvent();
-    this.window.off('closed', this._closedListener);
+    if (this.window) {
+      this.window.off('closed', this._closedListener);
+    }
   };
 
   public render = async () => {
