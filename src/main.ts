@@ -27,8 +27,9 @@ import { addSettingsHandler } from './modules_main/settings_eventhandler';
 import { cacheOfCard } from './modules_main/card_cache';
 import { DatabaseCommand } from './modules_common/db.types';
 import { defaultLogDir } from './modules_common/store.types';
-import { sleep } from './modules_common/utils';
+import { getRandomInt, sleep } from './modules_common/utils';
 import { initializeUrlSchema, openURL } from './modules_main/url_schema';
+import { DEFAULT_CARD_GEOMETRY } from './modules_common/const';
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -223,13 +224,35 @@ ipcMain.handle(
     event,
     sketchUrl: string | undefined,
     cardBody: Partial<CardBody>,
-    cardSketch: Partial<CardSketch>
+    cardSketch: Partial<CardSketch>,
+    parentRect: Rectangle
   ): Promise<void> => {
+    const xOffset = getRandomInt(10, 30);
+    const yOffset = getRandomInt(10, 30);
+
+    const moveToRect = note.calcVacantLand(
+      parentRect,
+      {
+        x: cardSketch.geometry?.x ?? parentRect.x + 50,
+        y: cardSketch.geometry?.y ?? parentRect.y + 50,
+        width: cardSketch.geometry?.width ?? DEFAULT_CARD_GEOMETRY.width,
+        height: cardSketch.geometry?.height ?? DEFAULT_CARD_GEOMETRY.height,
+      },
+      xOffset,
+      yOffset
+    );
     if (sketchUrl === undefined) {
-      await createCardWindow(note, note.settings.currentNoteId, cardBody, cardSketch);
+      await createCardWindow(
+        note,
+        note.settings.currentNoteId,
+        cardBody,
+        cardSketch,
+        true,
+        moveToRect
+      );
     }
     else {
-      await createCardWindow(note, sketchUrl, cardBody, cardSketch);
+      await createCardWindow(note, sketchUrl, cardBody, cardSketch, true, moveToRect);
     }
   }
 );

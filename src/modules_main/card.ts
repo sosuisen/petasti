@@ -55,6 +55,7 @@ import { messagesRenderer } from './messages';
 import { cardColors, ColorName } from '../modules_common/color';
 import { noteStore } from './note_store';
 import { openURL } from './url_schema';
+import { zip } from 'rxjs';
 
 type AccelCheck = {
   prevTime: number;
@@ -214,6 +215,9 @@ export const createCardWindow = async (
   }
   const card = new Card(note, noteIdOrUrl, partialCardBody, partialCardSketch);
 
+  if (moveToRect) {
+    card.sketch.geometry = { z: card.sketch.geometry.z, ...moveToRect };
+  }
   // Async
   note.createCard(card.url, card, false, updateDB);
 

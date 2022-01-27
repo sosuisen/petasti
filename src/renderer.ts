@@ -165,8 +165,8 @@ const initializeUIEvents = () => {
     // Position of a new card is relative to this card.
 
     const geometry = { ...DEFAULT_CARD_GEOMETRY };
-    geometry.x = cardStore.getState().sketch.geometry.x + 30;
-    geometry.y = cardStore.getState().sketch.geometry.y + 30;
+    geometry.x = cardStore.getState().sketch.geometry.x;
+    geometry.y = cardStore.getState().sketch.geometry.y;
     if (getShiftDown()) {
       geometry.width = cardStore.getState().sketch.geometry.width;
       geometry.height = cardStore.getState().sketch.geometry.height;
@@ -187,7 +187,12 @@ const initializeUIEvents = () => {
         zoom: cardStore.getState().sketch.style.zoom,
       },
     };
-    await window.api.createCard(undefined, cardBody, cardSketch);
+    await window.api.createCard(
+      undefined,
+      cardBody,
+      cardSketch,
+      cardStore.getState().sketch.geometry
+    );
   });
 
   document.getElementById('stickerBtn')?.addEventListener('click', async event => {

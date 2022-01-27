@@ -89,61 +89,19 @@ export const setContextMenu = (note: INote, card: ICard) => {
 
   const createCardFromMarkdown = (
     markdown: string,
-    startLeft: number,
-    endRight: number,
+    left: number,
+    right: number,
     top: number,
     bottom: number
   ) => {
-    const displayRect: Display = screen.getDisplayNearestPoint({
-      x: card.sketch.geometry.x,
-      y: card.sketch.geometry.y,
+    const moveToRect = note.calcVacantLand(card.sketch.geometry, {
+      x: card.sketch.geometry.x + left,
+      y: card.sketch.geometry.y + top,
+      width: card.sketch.geometry.width,
+      height: bottom - top,
     });
-    const cardX = card.sketch.geometry.x + Math.round(startLeft);
+    const cardX = card.sketch.geometry.x + Math.round(left);
     const cardY = card.sketch.geometry.y + Math.round(top);
-
-    // right of parent card
-    let moveToX = card.sketch.geometry.x + card.sketch.geometry.width + 10;
-    let moveToY = cardY;
-
-    const moveToWidth = card.sketch.geometry.width;
-    let moveToHeight = Math.round(bottom - top);
-    if (moveToHeight < MINIMUM_WINDOW_HEIGHT) {
-      moveToHeight = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
-    }
-    moveToHeight += 50;
-
-    if (moveToX + moveToWidth > displayRect.bounds.width) {
-      // left of parent card
-      moveToX = card.sketch.geometry.x - moveToWidth - 10;
-      if (moveToX < displayRect.bounds.x) {
-        // Calc larger margin
-        if (
-          displayRect.bounds.width - (card.sketch.geometry.x + card.sketch.geometry.width) >
-          card.sketch.geometry.x - displayRect.bounds.x
-        ) {
-          // left of right edge of screen
-          moveToX = displayRect.bounds.width - moveToWidth;
-        }
-        else {
-          // right of left edge of screen
-          moveToX = displayRect.bounds.x;
-        }
-      }
-    }
-
-    if (moveToY + moveToHeight > displayRect.bounds.height) {
-      moveToY = displayRect.bounds.height - moveToHeight;
-      if (moveToY < displayRect.bounds.y) {
-        moveToY = displayRect.bounds.y;
-      }
-    }
-
-    const moveToRect: Rectangle = {
-      x: moveToX,
-      y: moveToY,
-      width: moveToWidth,
-      height: moveToHeight,
-    };
 
     const cardBody: Partial<CardBody> = {
       _body: markdown,
@@ -153,8 +111,8 @@ export const setContextMenu = (note: INote, card: ICard) => {
         x: cardX,
         y: cardY,
         z: 0, // z will be overwritten in createCardWindow()
-        width: moveToWidth,
-        height: moveToHeight,
+        width: moveToRect.width,
+        height: moveToRect.height,
       },
       style: {
         uiColor: card.sketch.style.uiColor,

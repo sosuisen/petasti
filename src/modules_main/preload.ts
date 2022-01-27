@@ -2,7 +2,7 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-import { contextBridge, ipcRenderer, MouseInputEvent, webFrame } from 'electron';
+import { contextBridge, ipcRenderer, MouseInputEvent, Rectangle, webFrame } from 'electron';
 import { ChangedFile } from 'git-documentdb';
 import { DatabaseCommand } from '../modules_common/db.types';
 import { CardBody, CardSketch, Geometry, RendererConfig } from '../modules_common/types';
@@ -27,9 +27,10 @@ contextBridge.exposeInMainWorld('api', {
   createCard: (
     sketchUrl: string | undefined,
     cardBody: Partial<CardBody>,
-    cardSketch: Partial<CardSketch>
+    cardSketch: Partial<CardSketch>,
+    parentRect: Rectangle
   ): Promise<void> => {
-    return ipcRenderer.invoke('create-card', sketchUrl, cardBody, cardSketch);
+    return ipcRenderer.invoke('create-card', sketchUrl, cardBody, cardSketch, parentRect);
   },
   confirmDialog: (url: string, buttonLabels: string[], message: string) => {
     return ipcRenderer.invoke('confirm-dialog', url, buttonLabels, message);

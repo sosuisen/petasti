@@ -5,7 +5,15 @@
  */
 import path from 'path';
 import fs from 'fs-extra';
-import { app, BrowserWindow, nativeImage, Tray } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  Display,
+  nativeImage,
+  Rectangle,
+  screen,
+  Tray,
+} from 'electron';
 import {
   Collection,
   CollectionOptions,
@@ -51,7 +59,13 @@ import {
   JAPANESE,
   Messages,
 } from '../modules_common/i18n';
-import { APP_ICON_NAME, APP_SCHEME, SETTINGS_DB_NAME } from '../modules_common/const';
+import {
+  APP_ICON_NAME,
+  APP_SCHEME,
+  MINIMUM_WINDOW_HEIGHT,
+  MINIMUM_WINDOW_HEIGHT_OFFSET,
+  SETTINGS_DB_NAME,
+} from '../modules_common/const';
 
 import { regExpResidentNote, showDialog } from './utils_main';
 import { initSync } from './sync';
@@ -1008,6 +1022,64 @@ class Note implements INote {
 
   createSnapshot = async (snap: Snapshot): Promise<void> => {
     await this._snapshotCollection.put(snap);
+  };
+
+  calcVacantLand = (
+    parentRect: Rectangle,
+    childRect: Rectangle,
+    xOffset = 10,
+    yOffset = 0
+  ): Rectangle => {
+    const displayRect: Display = screen.getDisplayNearestPoint({
+      x: parentRect.x,
+      y: parentRect.y,
+    });
+
+    // right of parent card
+    let moveToX = Math.round(parentRect.x + parentRect.width + xOffset);
+    let moveToY = Math.round(childRect.y + yOffset);
+
+    const moveToWidth = Math.round(childRect.width);
+    let moveToHeight = Math.round(childRect.height);
+    if (moveToHeight < MINIMUM_WINDOW_HEIGHT) {
+      moveToHeight = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
+    }
+    moveToHeight += 50;
+
+    if (moveToX + moveToWidth > displayRect.bounds.width) {
+      // left of parent card
+      moveToX = Math.round(parentRect.x - moveToWidth - xOffset);
+      if (moveToX < displayRect.bounds.x) {
+        // Calc larger margin
+        if (
+          displayRect.bounds.width - (parentRect.x + parentRect.width) >
+          parentRect.x - displayRect.bounds.x
+        ) {
+          // left of right edge of screen
+          moveToX = displayRect.bounds.width - moveToWidth;
+        }
+        else {
+          // right of left edge of screen
+          moveToX = displayRect.bounds.x;
+        }
+      }
+    }
+
+    if (moveToY + moveToHeight > displayRect.bounds.height) {
+      moveToY = displayRect.bounds.height - moveToHeight;
+      if (moveToY < displayRect.bounds.y) {
+        moveToY = displayRect.bounds.y;
+      }
+    }
+
+    const moveToRect: Rectangle = {
+      x: moveToX,
+      y: moveToY,
+      width: moveToWidth,
+      height: moveToHeight,
+    };
+
+    return moveToRect;
   };
 }
 

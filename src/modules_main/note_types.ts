@@ -2,7 +2,7 @@
  * TreeStickies
  * © 2021 Hidekazu Kubota
  */
-import { BrowserWindow, Tray } from 'electron';
+import { BrowserWindow, Rectangle, Tray } from 'electron';
 import {
   Collection,
   GitDocumentDB,
@@ -18,7 +18,6 @@ import {
   CardBody,
   CardProperty,
   CardSketch,
-  Geometry,
   ICard,
   NoteProp,
   Snapshot,
@@ -93,4 +92,11 @@ export interface INote {
     waitFirstCardCreation?: boolean
   ) => Promise<[NoteProp, CardProperty]>;
   getZIndexOfTopCard: (noteId: string) => Promise<number>;
+
+  calcVacantLand: (
+    parentRect: Rectangle,
+    childRect: Rectangle,
+    xOffset?: number,
+    yOffset?: number
+  ) => Rectangle;
 }

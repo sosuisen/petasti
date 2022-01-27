@@ -16,7 +16,8 @@ interface WindowWithAPI extends Window {
     createCard: (
       sketchUrl: string | undefined,
       cardBody: Partial<CardBody>,
-      cardSketch: Partial<CardSketch>
+      cardSketch: Partial<CardSketch>,
+      parentRect: { x: number; y: number; width: number; height: number }
     ) => Promise<void>;
     confirmDialog: (
       url: string,
