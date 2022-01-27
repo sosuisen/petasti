@@ -742,12 +742,16 @@ class Note implements INote {
     const card = cacheOfCard.get(cardUrl);
 
     if (card !== undefined) {
+      await this._deleteCardSketchDoc(cardUrl);
+      cacheOfCard.delete(cardUrl);
       if (!card.window.isDestroyed()) {
         this.logger.debug('# Start deleting sketch: ' + cardUrl);
-        card.window.destroy();
+        try {
+          card.window.destroy();
+        } catch (err) {
+          this.logger.debug('# Error in card.window.destroy(): ' + err);
+        }
       }
-      cacheOfCard.delete(cardUrl);
-      await this._deleteCardSketchDoc(cardUrl);
 
       // Update note store & DB
       /*

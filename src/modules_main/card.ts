@@ -512,15 +512,21 @@ export class Card implements ICard {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    this.removeWindowListeners();
+    try {
+      this.removeWindowListeners();
+    } catch (err) {
+      this._note.logger.debug('# Error in removeWindowListeners() ' + err);
+    }
 
-    this._removeShortcuts();
-
-    cacheOfCard.delete(this.url);
+    try {
+      this._removeShortcuts();
+    } catch (err) {
+      this._note.logger.debug('# Error in removeShortcuts() ' + err);
+    }
 
     this._note.logger.debug('# End deleting sketch: ' + this.url);
 
-    console.log('# cacheOfCard ' + cacheOfCard.size);
+    console.log('# cacheOfCard size ' + cacheOfCard.size);
     // Emit window-all-closed event explicitly
     // because Electron sometimes does not emit it automatically.
     if (cacheOfCard.size === 0) {
