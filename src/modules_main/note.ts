@@ -281,7 +281,7 @@ class Note implements INote {
 
       startingProgressBar = new ProgressBar({
         text: MESSAGE('startingAppProgressBarTitle'),
-        detail: MESSAGE('loadingNoteProgressBarBody'),
+        detail: MESSAGE('loadingNoteBookProgressBarBody'),
       });
       startingProgressBar.on('completed', () => {
         if (startingProgressBar) startingProgressBar.detail = MESSAGE('completed');
@@ -376,7 +376,7 @@ class Note implements INote {
 
       if (startingProgressBar) {
         startingProgressBar.detail =
-          MESSAGE('loadingNoteProgressBarBody') + `(${count}/${noteDirList.length})`;
+          MESSAGE('loadingNoteBookProgressBarBody') + `(${count}/${noteDirList.length})`;
       }
     }
     noteStore.dispatch(noteInitCreator(initialNoteState));

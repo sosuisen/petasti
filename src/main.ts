@@ -13,6 +13,7 @@ import {
   screen,
 } from 'electron';
 import fs from 'fs-extra';
+import ProgressBar from 'electron-progressbar';
 import {
   Card,
   createCardWindow,
@@ -30,6 +31,7 @@ import { defaultLogDir } from './modules_common/store.types';
 import { getRandomInt, sleep } from './modules_common/utils';
 import { initializeUrlSchema, openURL } from './modules_main/url_schema';
 import { DEFAULT_CARD_GEOMETRY } from './modules_common/const';
+import { MESSAGE } from './modules_main/messages';
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -138,32 +140,61 @@ emitter.on('restart', async () => {
  * Change note
  */
 emitter.on('change-note', async (nextNoteId: string) => {
-  handlers.forEach(channel => ipcMain.removeHandler(channel));
-  handlers.length = 0; // empty
-  cacheOfCard.clear();
-
-  note.settings.currentNoteId = nextNoteId;
-  await note.settingsDB.put(note.settings);
-  setTrayContextMenu();
-
-  const cardProps = await note.loadCurrentNote();
-  console.time('new Card');
-  const renderers: Promise<void>[] = [];
-  cardProps.forEach(cardProp => {
-    const card = new Card(note, cardProp.url, cardProp.body, cardProp.sketch);
-    cacheOfCard.set(cardProp.url, card);
-    renderers.push(card.render());
+  let loadingNoteProgressBar: ProgressBar | undefined = new ProgressBar({
+    text: MESSAGE('loadingNoteProgressBarTitle'),
+    detail: MESSAGE('loadingNoteProgressBarBody'),
+    indeterminate: true,
   });
-  console.timeEnd('new Card');
-  console.time('card.render()');
-  await Promise.all(renderers).catch(e => {
-    console.error(`Error while rendering cards in ready event: ${e.message}`);
+  loadingNoteProgressBar.on('completed', () => {
+    if (loadingNoteProgressBar) loadingNoteProgressBar.detail = MESSAGE('completed');
   });
-  console.timeEnd('card.render()');
-  const backToFront = sortCardWindows();
+  loadingNoteProgressBar.on('aborted', () => {
+    if (loadingNoteProgressBar)
+      loadingNoteProgressBar.detail = MESSAGE('loadingNoteFailed');
+  });
 
-  const size = backToFront.length;
-  console.debug(`Completed to load ${size} cards`);
+  try {
+    handlers.forEach(channel => ipcMain.removeHandler(channel));
+    handlers.length = 0; // empty
+    cacheOfCard.clear();
+
+    note.settings.currentNoteId = nextNoteId;
+    await note.settingsDB.put(note.settings);
+    setTrayContextMenu();
+
+    const cardProps = await note.loadCurrentNote();
+    console.time('new Card');
+    const renderers: Promise<void>[] = [];
+    cardProps.forEach(cardProp => {
+      const card = new Card(note, cardProp.url, cardProp.body, cardProp.sketch);
+      cacheOfCard.set(cardProp.url, card);
+      renderers.push(card.render());
+    });
+    console.timeEnd('new Card');
+    console.time('card.render()');
+    await Promise.all(renderers).catch(e => {
+      console.error(`Error while rendering cards in ready event: ${e.message}`);
+    });
+    console.timeEnd('card.render()');
+    const backToFront = sortCardWindows();
+
+    const size = backToFront.length;
+    console.debug(`Completed to load ${size} cards`);
+  } catch (err) {
+    // Show error
+    if (loadingNoteProgressBar) loadingNoteProgressBar.close();
+    note.logger.debug('# Error in change-note: ' + err);
+    // TODO: Need detailed error message for user.
+    return;
+  }
+
+  if (loadingNoteProgressBar) {
+    loadingNoteProgressBar.setCompleted();
+    setTimeout(() => {
+      if (loadingNoteProgressBar) loadingNoteProgressBar.close();
+      loadingNoteProgressBar = undefined;
+    }, 100);
+  }
 });
 
 app.on('window-all-closed', () => {

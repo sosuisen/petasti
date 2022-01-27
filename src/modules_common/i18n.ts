@@ -104,8 +104,11 @@ type MessagesSettings = {
   synchronizingProgressBarTitle: string;
   synchronizingProgressBarBody: string;
   startingAppProgressBarTitle: string;
+  loadingNoteBookProgressBarBody: string;
+  loadingNoteProgressBarTitle: string;
   loadingNoteProgressBarBody: string;
   completed: string;
+  loadingNoteFailed: string;
   exportDataAlert: string;
 };
 
@@ -198,8 +201,11 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   synchronizingProgressBarTitle: 'Synchronizing...',
   synchronizingProgressBarBody: 'Checking remote data...',
   startingAppProgressBarTitle: 'Starting...',
-  loadingNoteProgressBarBody: 'Checking notes...',
+  loadingNoteBookProgressBarBody: 'Checking notes...',
+  loadingNoteProgressBarTitle: 'Loading...',
+  loadingNoteProgressBarBody: 'Loading cards...',
   completed: 'Completed',
+  loadingNoteFailed: 'Failed to load cards.',
   exportDataAlert:
     'Only current cards, notes, and snapshots will be exported. Past changes and deleted data will not be included.',
 };
@@ -335,8 +341,11 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   synchronizingProgressBarTitle: '同期中...',
   synchronizingProgressBarBody: 'リモートのデータを確認しています...',
   startingAppProgressBarTitle: '起動中...',
-  loadingNoteProgressBarBody: 'ノートのデータを確認しています...',
+  loadingNoteBookProgressBarBody: 'ノートのデータを確認しています...',
+  loadingNoteProgressBarTitle: '読み込み中...',
+  loadingNoteProgressBarBody: 'カードを読み込み中...',
   completed: '完了しました',
+  loadingNoteFailed: 'カードの読み込みを失敗しました',
   exportDataAlert:
     '現在のカード、ノート、スナップショットのみエクスポートされます。過去の変更履歴や削除されたデータは含まれません。',
 };
