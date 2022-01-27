@@ -729,6 +729,7 @@ class Note implements INote {
 
     if (card !== undefined) {
       if (!card.window.isDestroyed()) {
+        this.logger.debug('# Start deleting sketch: ' + cardUrl);
         card.window.destroy();
       }
       cacheOfCard.delete(cardUrl);

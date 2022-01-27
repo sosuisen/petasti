@@ -304,6 +304,7 @@ export class Card implements ICard {
     this._note = note;
     let cardId: string;
     let sketchId: string;
+
     if (!noteIdOrUrl.startsWith(APP_SCHEME)) {
       // Create card with default properties
       const noteId = noteIdOrUrl;
@@ -316,6 +317,8 @@ export class Card implements ICard {
       cardId = getCardIdFromUrl(this.url);
       sketchId = getSketchIdFromUrl(this.url);
     }
+
+    this._note.logger.debug('# Start creating card: ' + sketchId);
 
     // Create card with specified CardProp
     this.body = { ...this.body, ...cardBody };
@@ -513,7 +516,8 @@ export class Card implements ICard {
 
     cacheOfCard.delete(this.url);
 
-    console.log('# closed: ' + this.url);
+    this._note.logger.debug('# End deleting sketch: ' + this.url);
+
     console.log('# cacheOfCard ' + cacheOfCard.size);
     // Emit window-all-closed event explicitly
     // because Electron sometimes does not emit it automatically.
@@ -706,6 +710,7 @@ export class Card implements ICard {
       throw new Error(`Error in _renderCard(): ${e.message}`);
     });
     // console.timeEnd('renderCard');
+    this._note.logger.debug('# End creating card (rendered): ' + this.sketch._id);
   };
 
   renderCard = (): Promise<void> => {

@@ -117,6 +117,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
               // eslint-disable-next-line no-await-in-loop
               const cardBody = await note.cardCollection.get(cardId);
               // Data already exists. Do not serialize again.
+              note.logger.debug(`createCardWindow onSyncEvent: ${sketchId}`);
               createCardWindow(
                 note,
                 url,
@@ -124,7 +125,6 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
                 changedFile.new.doc as CardSketch,
                 false
               );
-              note.logger.debug(`createCardWindow: ${sketchId}`);
             }
           }
           else if (changedFile.operation === 'update') {
