@@ -76,6 +76,10 @@ body > .card > .title > .title-btn > .title-btn-icon{
   margin-top: 1px;
 }
 
+body > .card > .title > .title-btn > .title-btn-icon:hover{
+  background-color: rgba(200,200,200,0.5);
+}
+
 body > .card > .title > .title-bar{
   text-align: right;
 }
