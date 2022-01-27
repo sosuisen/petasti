@@ -12,7 +12,6 @@ import {
   ipcMain,
   Rectangle,
   screen,
-  webFrame,
 } from 'electron';
 import { TaskMetadata } from 'git-documentdb';
 import bezier from 'bezier-easing';
@@ -55,7 +54,6 @@ import { messagesRenderer } from './messages';
 import { cardColors, ColorName } from '../modules_common/color';
 import { noteStore } from './note_store';
 import { openURL } from './url_schema';
-import { zip } from 'rxjs';
 
 type AccelCheck = {
   prevTime: number;
