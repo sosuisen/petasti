@@ -74,15 +74,44 @@ const startApp = async (isRestart: boolean) => {
   // load workspaces
   const cardProps = await note.loadNotebook();
 
-  const renderers: Promise<void>[] = [];
-  cardProps.forEach(cardProp => {
-    const card = new Card(note, cardProp.url, cardProp.body, cardProp.sketch);
-    cacheOfCard.set(cardProp.url, card);
-    renderers.push(card.render());
+  let loadingNoteProgressBar: ProgressBar | undefined = new ProgressBar({
+    text: MESSAGE('loadingNoteProgressBarTitle'),
+    detail: MESSAGE('loadingNoteProgressBarBody'),
+    indeterminate: true,
   });
-  await Promise.all(renderers).catch(e => {
-    console.error(`Error while rendering cards in ready event: ${e.message}`);
+  loadingNoteProgressBar.on('completed', () => {
+    if (loadingNoteProgressBar) loadingNoteProgressBar.detail = MESSAGE('completed');
   });
+  loadingNoteProgressBar.on('aborted', () => {
+    if (loadingNoteProgressBar)
+      loadingNoteProgressBar.detail = MESSAGE('loadingNoteFailed');
+  });
+
+  try {
+    const renderers: Promise<void>[] = [];
+    cardProps.forEach(cardProp => {
+      const card = new Card(note, cardProp.url, cardProp.body, cardProp.sketch);
+      cacheOfCard.set(cardProp.url, card);
+      renderers.push(card.render());
+    });
+    await Promise.all(renderers).catch(e => {
+      console.error(`Error while rendering cards in ready event: ${e.message}`);
+    });
+  } catch (err) {
+    // Show error
+    if (loadingNoteProgressBar) loadingNoteProgressBar.close();
+    note.logger.debug('# Error in change-note: ' + err);
+    // TODO: Need detailed error message for user.
+    return;
+  }
+
+  if (loadingNoteProgressBar) {
+    loadingNoteProgressBar.setCompleted();
+    setTimeout(() => {
+      if (loadingNoteProgressBar) loadingNoteProgressBar.close();
+      loadingNoteProgressBar = undefined;
+    }, 100);
+  }
 
   const backToFront = sortCardWindows();
 
