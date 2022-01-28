@@ -20,6 +20,7 @@ import { MESSAGE } from './messages';
 import { INote } from './note_types';
 import { noteStore } from './note_store';
 import {
+  DEFAULT_CARD_GEOMETRY,
   MINIMUM_WINDOW_HEIGHT,
   MINIMUM_WINDOW_HEIGHT_OFFSET,
 } from '../modules_common/const';

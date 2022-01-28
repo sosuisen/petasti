@@ -134,7 +134,8 @@ export interface ICard {
     y: number,
     width: number,
     height: number,
-    animation: boolean
+    animation: boolean,
+    animationMsec?: number
   ) => Promise<void>;
   removeWindowListenersExceptClosedEvent: () => void;
   removeWindowListeners: () => void;

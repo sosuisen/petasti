@@ -16,6 +16,7 @@ import {
 import { TaskMetadata } from 'git-documentdb';
 import bezier from 'bezier-easing';
 import AsyncLock from 'async-lock';
+import { sleep } from 'git-documentdb-plugin-remote-nodegit';
 import {
   generateNewCardId,
   getCardIdFromUrl,
@@ -622,7 +623,8 @@ export class Card implements ICard {
     y: number,
     width: number,
     height: number,
-    animation: boolean
+    animation: boolean,
+    animationMsec = 200
   ): Promise<void> => {
     return new Promise(resolve => {
       if (!animation) {
@@ -631,6 +633,7 @@ export class Card implements ICard {
         resolve();
       }
       else {
+        const interval = animationMsec / 10;
         let moveFromX = 0;
         let moveFromY = 0;
         let moveFromWidth = 0;
@@ -697,7 +700,7 @@ export class Card implements ICard {
               height: Math.floor(nextHeight),
             });
           }
-        }, 20);
+        }, interval);
       }
     });
   };
@@ -830,11 +833,19 @@ export class Card implements ICard {
     });
 
     await this.setRect(
-      display.bounds.x + display.bounds.width,
+      this.sketch.geometry.x - 50,
       this.sketch.geometry.y,
       this.sketch.geometry.width,
       this.sketch.geometry.height,
       true
+    );
+    await this.setRect(
+      display.bounds.x + display.bounds.width,
+      this.sketch.geometry.y,
+      this.sketch.geometry.width,
+      this.sketch.geometry.height,
+      true,
+      400
     );
 
     await this._note.deleteCardSketch(this.url);
@@ -883,19 +894,33 @@ export class Card implements ICard {
       tmpCardSketch,
       true
     );
+    tmpCard.window.setOpacity(0.7);
     this._note.createCard(tmpCard.url, tmpCard, false, false);
+    sortCardWindows();
 
     await tmpCard.render();
 
+    await tmpCard.setRect(
+      this.sketch.geometry.x + 50,
+      this.sketch.geometry.y,
+      this.sketch.geometry.width,
+      this.sketch.geometry.height,
+      true,
+      300
+    );
+    await sleep(300);
     await tmpCard.setRect(
       display.bounds.x + display.bounds.width,
       this.sketch.geometry.y,
       this.sketch.geometry.width,
       this.sketch.geometry.height,
-      true
+      true,
+      400
     );
     tmpCard.window.destroy();
     cacheOfCard.delete(tmpCard.url);
+
+    this.focus();
   };
 
   private _moveByKey = (x: number, y: number) => {
