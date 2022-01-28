@@ -671,10 +671,10 @@ export class Card implements ICard {
               moveAnimeTimer = undefined;
 
               this.window.setBounds({
-                x: moveToX,
-                y: moveToY,
-                width: moveToWidth,
-                height: moveToHeight,
+                x: Math.floor(moveToX),
+                y: Math.floor(moveToY),
+                width: Math.floor(moveToWidth),
+                height: Math.floor(moveToHeight),
               });
               resolve();
             }
