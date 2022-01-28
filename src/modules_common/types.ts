@@ -124,7 +124,7 @@ export interface ICard {
   url: string;
   body: CardBody;
   sketch: CardSketch;
-
+  isFake: boolean;
   // status: CardStatus;
 
   focus: () => void;

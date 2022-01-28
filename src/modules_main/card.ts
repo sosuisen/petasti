@@ -238,6 +238,8 @@ export class Card implements ICard {
    */
   public url: string;
 
+  public isFake: boolean;
+
   public body: CardBody = {
     version: CARD_VERSION,
     type: 'text/markdown',
@@ -301,9 +303,12 @@ export class Card implements ICard {
     note: INote,
     noteIdOrUrl: string,
     cardBody?: Partial<CardBody>,
-    cardSketch?: Partial<CardSketch>
+    cardSketch?: Partial<CardSketch>,
+    isFake = false
   ) {
     this._note = note;
+    this.isFake = isFake;
+
     let cardId: string;
     let sketchId: string;
 
@@ -745,10 +750,12 @@ export class Card implements ICard {
       else {
         myOS = 'linux';
       }
+      const isResident =
+        noteStore.getState().get(getNoteIdFromUrl(this.url))?.isResident ?? false;
       const config: RendererConfig = {
         messages: messagesRenderer,
         os: myOS,
-        isResident: noteStore.getState().get(getNoteIdFromUrl(this.url))!.isResident,
+        isResident,
       };
       this.window.webContents.send('render-card', this.url, this.body, this.sketch, config);
       const checkTimer = setInterval(() => {
@@ -817,6 +824,19 @@ export class Card implements ICard {
         if (!e.message.endsWith(notCurrentNoteMsg)) console.log(e);
       });
 
+    const display: Display = screen.getDisplayNearestPoint({
+      x: this.sketch.geometry.x,
+      y: this.sketch.geometry.y,
+    });
+
+    await this.setRect(
+      display.bounds.x + display.bounds.width,
+      this.sketch.geometry.y,
+      this.sketch.geometry.width,
+      this.sketch.geometry.height,
+      true
+    );
+
     await this._note.deleteCardSketch(this.url);
   };
 
@@ -846,6 +866,36 @@ export class Card implements ICard {
       .catch((e: Error) => {
         if (!e.message.endsWith(notCurrentNoteMsg)) console.log(e);
       });
+
+    // Animation
+    const tmpCardSketch = JSON.parse(JSON.stringify(this.sketch));
+    tmpCardSketch.geometry.z--;
+
+    const display: Display = screen.getDisplayNearestPoint({
+      x: this.sketch.geometry.x,
+      y: this.sketch.geometry.y,
+    });
+
+    const tmpCard = new Card(
+      this._note,
+      getNoteIdFromUrl(this.url),
+      {},
+      tmpCardSketch,
+      true
+    );
+    this._note.createCard(tmpCard.url, tmpCard, false, false);
+
+    await tmpCard.render();
+
+    await tmpCard.setRect(
+      display.bounds.x + display.bounds.width,
+      this.sketch.geometry.y,
+      this.sketch.geometry.width,
+      this.sketch.geometry.height,
+      true
+    );
+    tmpCard.window.destroy();
+    cacheOfCard.delete(tmpCard.url);
   };
 
   private _moveByKey = (x: number, y: number) => {

@@ -559,7 +559,7 @@ class Note implements INote {
     if (getNoteIdFromUrl(sketchUrl) === note.settings.currentNoteId) {
       cacheOfCard.set(sketchUrl, card);
     }
-    if (updateDB) {
+    if (updateDB && !card.isFake) {
       await this._createCardBodyDoc(card.body, waitCreation);
       await this._createCardSketchDoc(card.sketch, waitCreation);
     }
@@ -579,9 +579,11 @@ class Note implements INote {
     cardSketch: CardSketch,
     modifiedDate: string
   ): Promise<void> => {
-    console.log('updateCard...');
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
+    if (card?.isFake) return;
+
+    console.log('updateCard...');
 
     await this._updateCardBodyDoc(cardBody);
     if (card) {
@@ -615,6 +617,7 @@ class Note implements INote {
   ): Promise<TaskMetadata> => {
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
+    if (card?.isFake) return { label: 'update', taskId: '' };
     if (card) {
       card.body = JSON.parse(JSON.stringify(cardBody));
       card.body.date.modifiedDate = modifiedDate;
@@ -639,10 +642,10 @@ class Note implements INote {
     z: number,
     modifiedTime: string
   ): Promise<TaskMetadata | false> => {
-    console.log(`# updateCardZ: ${sketchUrl}`);
-
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
+    if (card?.isFake) return false;
+    console.log(`# updateCardZ: ${sketchUrl}`);
     let sketch: CardSketch;
     if (card) {
       if (card.sketch.geometry.z !== z) {
@@ -681,6 +684,8 @@ class Note implements INote {
     cardSketch: CardSketch,
     waitCreation = false
   ): Promise<TaskMetadata> => {
+    const card = cacheOfCard.get(sketchUrl);
+    if (card?.isFake) return { label: 'update', taskId: '' };
     const task: TaskMetadata = await this._createCardSketchDoc(cardSketch, waitCreation);
 
     // Update note store & DB
@@ -699,9 +704,10 @@ class Note implements INote {
     cardSketch: CardSketch,
     modifiedDate: string
   ): Promise<TaskMetadata | false> => {
-    console.log(`# updateCardSketch: ${sketchUrl}`);
     // Update cacheOfCard
     const card = cacheOfCard.get(sketchUrl);
+    if (card?.isFake) return false;
+    console.log(`# updateCardSketch: ${sketchUrl}`);
     let sketch: CardSketch;
     if (card) {
       const newJSON = JSON.stringify(cardSketch);
@@ -734,15 +740,19 @@ class Note implements INote {
   };
 
   deleteCard = async (cardUrl: string): Promise<void> => {
+    const card = cacheOfCard.get(cardUrl);
     await this.deleteCardSketch(cardUrl);
-    await this._deleteCardBodyDoc(cardUrl);
+    if (!card?.isFake) {
+      await this._deleteCardBodyDoc(cardUrl);
+    }
   };
 
   deleteCardSketch = async (cardUrl: string): Promise<void> => {
     const card = cacheOfCard.get(cardUrl);
-
     if (card !== undefined) {
-      await this._deleteCardSketchDoc(cardUrl);
+      if (!card.isFake) {
+        await this._deleteCardSketchDoc(cardUrl);
+      }
       // cacheOfCard.delete(cardUrl) will be called in _closedListener();
       if (!card.window.isDestroyed()) {
         this.logger.debug('# Start deleting sketch: ' + cardUrl);
