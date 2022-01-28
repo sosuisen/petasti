@@ -280,6 +280,7 @@ ipcMain.handle('delete-card', async (event, url: string) => {
       true
     );
     // Bounds lower
+    /*
     await card.setRect(
       card.sketch.geometry.x + card.sketch.geometry.width / 4,
       card.sketch.geometry.y + card.sketch.geometry.height / 4 + 50,
@@ -287,13 +288,16 @@ ipcMain.handle('delete-card', async (event, url: string) => {
       card.sketch.geometry.height / 2,
       true
     );
+    */
     // Move upper
     await card.setRect(
-      card.sketch.geometry.x + card.sketch.geometry.width / 4,
+      card.sketch.geometry.x +
+        (card.sketch.geometry.width - card.sketch.geometry.width / 8) / 2,
       display.bounds.y - card.sketch.geometry.height / 4,
-      card.sketch.geometry.width / 4,
-      card.sketch.geometry.height / 4,
-      true
+      card.sketch.geometry.width / 8,
+      card.sketch.geometry.height / 8,
+      true,
+      400
     );
   }
   await note.deleteCard(url);
@@ -321,7 +325,8 @@ ipcMain.handle('delete-card-sketch', async (event, url: string) => {
       display.bounds.y + display.bounds.height,
       card.sketch.geometry.width,
       card.sketch.geometry.height,
-      true
+      true,
+      400
     );
   }
 
