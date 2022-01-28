@@ -174,8 +174,7 @@ const renderTitleBar = () => {
     document.getElementById('closeIcon')!.className = 'far fa-trash-alt title-btn-icon';
   }
   else {
-    // document.getElementById('closeIcon')!.className = 'fas fa-minus-circle title-btn-icon';
-    document.getElementById('closeIcon')!.className = 'fas fa-box-open title-btn-icon';
+    document.getElementById('closeIcon')!.className = 'fas fa-check title-btn-icon';
   }
 
   const titleBarLeft =
