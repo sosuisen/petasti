@@ -55,6 +55,7 @@ import { messagesRenderer } from './messages';
 import { cardColors, ColorName } from '../modules_common/color';
 import { noteStore } from './note_store';
 import { openURL } from './url_schema';
+import { playSound } from './sound';
 
 type AccelCheck = {
   prevTime: number;
@@ -839,6 +840,7 @@ export class Card implements ICard {
       this.sketch.geometry.height,
       true
     );
+    playSound('move', 3, true);
     await this.setRect(
       display.bounds.x + display.bounds.width,
       this.sketch.geometry.y,
@@ -908,6 +910,7 @@ export class Card implements ICard {
       true,
       300
     );
+    playSound('move', 3, true);
     await sleep(300);
     await tmpCard.setRect(
       display.bounds.x + display.bounds.width,
