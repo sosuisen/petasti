@@ -168,7 +168,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
               ipcMain.handleOnce(
                 'response-of-get-selected-markdown-' + encodeURIComponent(card.url),
                 (event, markdown, startLeft, endRight, top, bottom) => {
-                  createCardFromMarkdown(markdown, startLeft, endRight, top, bottom);
+                  createCardFromMarkdown(markdown, startLeft, endRight, top, bottom + 50);
                   card.window.webContents.send('delete-selection');
                 }
               );
@@ -176,10 +176,10 @@ export const setContextMenu = (note: INote, card: ICard) => {
             else {
               createCardFromMarkdown(
                 '',
-                card.sketch.geometry.x,
-                card.sketch.geometry.x,
-                card.sketch.geometry.y,
-                card.sketch.geometry.y
+                0,
+                DEFAULT_CARD_GEOMETRY.width,
+                0,
+                DEFAULT_CARD_GEOMETRY.height
               );
             }
           },

@@ -1065,7 +1065,6 @@ class Note implements INote {
     if (moveToHeight < MINIMUM_WINDOW_HEIGHT) {
       moveToHeight = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
     }
-    moveToHeight += 50;
 
     if (moveToX + moveToWidth > displayRect.bounds.width) {
       // left of parent card
