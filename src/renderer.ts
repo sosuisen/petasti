@@ -376,6 +376,11 @@ window.addEventListener('message', event => {
       cardEditor.deleteSelection();
       break;
     case 'get-selected-markdown': {
+      document.getElementById('newIcon')?.classList.add('fa-spin');
+      setTimeout(() => {
+        document.getElementById('newIcon')?.classList.remove('fa-spin');
+      }, 1000);
+
       const [markdown, startLeft, endRight, top, bottom] = cardEditor.getSelectedMarkdown();
       window.api.responseOfGetSelectedMarkdown(
         cardStore.getState().workState.url,
