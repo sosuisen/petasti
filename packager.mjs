@@ -17,7 +17,7 @@ const createInstaller = async () => {
   // iconUrl must be a url that start with http or https. Squirrel cannot accept a local file.
   const iconUrl = 'https://raw.githubusercontent.com/sosuisen/tree-stickies-project/main/assets/tree-stickies-icon.ico';
 
-  const copyright = '© 2021 Hidekazu Kubota';
+  const copyright = '© 2022 Hidekazu Kubota';
 
   await packager({
     dir: '.',

@@ -1,6 +1,6 @@
 /**
  * TreeStickies
- * © 2021 Hidekazu Kubota
+ * © 2022 Hidekazu Kubota
  */
 import { applyMiddleware, combineReducers, createStore } from 'redux';
 import thunk, { ThunkDispatch, ThunkMiddleware } from 'redux-thunk';

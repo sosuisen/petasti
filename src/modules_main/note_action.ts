@@ -1,6 +1,6 @@
 /**
  * TreeStickies
- * © 2021 Hidekazu Kubota
+ * © 2022 Hidekazu Kubota
  */
 import { NoteProp } from '../modules_common/types';
 import { NoteState } from './note_types';

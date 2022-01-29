@@ -1,6 +1,6 @@
 /**
  * TreeStickies
- * © 2021 Hidekazu Kubota
+ * © 2022 Hidekazu Kubota
  */
 import AsyncLock from 'async-lock';
 import { Dispatch } from 'redux';

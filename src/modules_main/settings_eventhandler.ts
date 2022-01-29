@@ -1,6 +1,6 @@
 /**
  * TreeStickies
- * © 2021 Hidekazu Kubota
+ * © 2022 Hidekazu Kubota
  */
 import { BrowserWindow, dialog, ipcMain } from 'electron';
 import fs, { readJSONSync } from 'fs-extra';
