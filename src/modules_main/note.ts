@@ -48,9 +48,11 @@ import {
 import {
   defaultDataDir,
   defaultLogDir,
+  defaultSoundDir,
   InfoState,
   initialSettingsState,
   SettingsState,
+  soundSrcDir,
 } from '../modules_common/store.types';
 import {
   availableLanguages,
@@ -239,6 +241,7 @@ class Note implements INote {
 
     // Open databases
     let startingProgressBar: ProgressBar | undefined;
+
     try {
       this._settingsDB = new GitDocumentDB({
         localDir: defaultDataDir,

@@ -3,6 +3,7 @@
  * © 2022 Hidekazu Kubota
  */
 
+import path from 'path';
 import {
   app,
   Display,
@@ -27,7 +28,7 @@ import { CardBody, CardSketch } from './modules_common/types';
 import { addSettingsHandler } from './modules_main/settings_eventhandler';
 import { cacheOfCard } from './modules_main/card_cache';
 import { DatabaseCommand } from './modules_common/db.types';
-import { defaultLogDir } from './modules_common/store.types';
+import { defaultLogDir, defaultSoundDir, soundSrcDir } from './modules_common/store.types';
 import { getRandomInt, sleep } from './modules_common/utils';
 import { initializeUrlSchema, openURL } from './modules_main/url_schema';
 import { DEFAULT_CARD_GEOMETRY } from './modules_common/const';
@@ -71,6 +72,22 @@ const startApp = async (isRestart: boolean) => {
       continue;
     }
   }
+  // TODO: Check sound file list
+  // Copy sounds
+  if (!fs.existsSync(defaultSoundDir)) {
+    // Copy sounds
+
+    // Cannot use recursive fs.copy in squirrel asar package.
+    // fs.copy(soundSrcDir, defaultSoundDir);
+    await fs.ensureDir(defaultSoundDir);
+    const files = fs.readdirSync(soundSrcDir);
+    files.forEach(function (file) {
+      const src = path.join(soundSrcDir, file);
+      const dst = path.join(defaultSoundDir, file);
+      fs.copyFileSync(src, dst);
+    });
+  }
+
   // load workspaces
   const cardProps = await note.loadNotebook();
 

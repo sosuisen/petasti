@@ -1,12 +1,7 @@
-import path from 'path';
-import { app } from 'electron';
 import { getRandomInt } from '../modules_common/utils';
+import { defaultSoundDir } from '../modules_common/store.types';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const player = require('node-wav-player');
-
-export const soundDir = app.isPackaged
-  ? path.join(__dirname, `../../../../../../dist/sound/`)
-  : path.join(__dirname, `../../dist/sound/`);
 
 export const playSound = (soundName: string, maxInt = 1, async = false) => {
   const rand = getRandomInt(1, maxInt + 1);
@@ -14,7 +9,7 @@ export const playSound = (soundName: string, maxInt = 1, async = false) => {
     setTimeout(() => {
       player
         .play({
-          path: soundDir + soundName + rand + '.wav',
+          path: defaultSoundDir + soundName + rand + '.wav',
         })
         .then(() => {
           console.log('The wav file started to be played successfully.');
@@ -27,7 +22,7 @@ export const playSound = (soundName: string, maxInt = 1, async = false) => {
   else {
     player
       .play({
-        path: soundDir + soundName,
+        path: defaultSoundDir + soundName,
       })
       .then(() => {
         console.log('The wav file started to be played successfully.');
