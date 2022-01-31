@@ -58,158 +58,165 @@ export const setTrayContextMenu = () => {
   if (!tray) {
     return;
   }
-  const currentNote = noteStore.getState().get(note.settings.currentNoteId);
+  try {
+    const currentNote = noteStore.getState().get(note.settings.currentNoteId);
 
-  const createLinkOfNote: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
-    .sort((a, b) => {
-      if (a.name > b.name) return 1;
-      else if (a.name < b.name) return -1;
-      return 0;
-    })
-    .reduce((result, noteProp) => {
-      result.push({
-        label: `${noteProp.name}`,
-        click: () => {
-          const url = getUrlFromNoteId(noteProp._id);
-          const markdown = `[${noteProp.name}](${url})`;
-          const cardBody: Partial<CardBody> = {
-            _body: markdown,
-          };
-          const geometry = { ...DEFAULT_CARD_GEOMETRY };
-          geometry.x += getRandomInt(30, 100);
-          geometry.y += getRandomInt(30, 100);
-          const label = { ...DEFAULT_CARD_LABEL };
-          label.x = geometry.x;
-          label.y = geometry.y;
-          label.width = Math.floor(geometry.width * 0.7);
-          label.height = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
-          label.zoom = 1.0;
-          label.text = `<p class="paragraph"><a href="${url}" class="link" target="_blank">${noteProp.name}</a></p>`;
-          label.status = 'openedLabel';
-          const cardSketch: Partial<CardSketch> = {
-            geometry,
-            label,
-          };
-
-          createRandomColorCard(note, cardBody, cardSketch);
-        },
-      });
-      return result;
-    }, [] as MenuItemConstructorOptions[]);
-
-  const copyUrlOfNote: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
-    .sort((a, b) => {
-      if (a.name > b.name) return 1;
-      else if (a.name < b.name) return -1;
-      return 0;
-    })
-    .reduce((result, noteProp) => {
-      result.push({
-        label: `${noteProp.name}`,
-        click: () => {
-          const noteUrl = getUrlFromNoteId(noteProp._id);
-          clipboard.writeText(noteUrl);
-        },
-      });
-      return result;
-    }, [] as MenuItemConstructorOptions[]);
-
-  let changeNotes: MenuItemConstructorOptions[] = [];
-  if (currentNote !== null) {
-    changeNotes = [...noteStore.getState().values()]
-      .sort(function (a, b) {
+    const createLinkOfNote: MenuItemConstructorOptions[] = [
+      ...noteStore.getState().values(),
+    ]
+      .sort((a, b) => {
         if (a.name > b.name) return 1;
         else if (a.name < b.name) return -1;
         return 0;
       })
-      .map(noteProp => {
-        return {
+      .reduce((result, noteProp) => {
+        result.push({
           label: `${noteProp.name}`,
-          type: 'radio',
-          checked: noteProp._id === note.settings.currentNoteId,
           click: () => {
-            if (noteProp._id !== note.settings.currentNoteId) {
-              closeSettings();
-              if (cacheOfCard.size === 0) {
-                emitter.emit('change-note', noteProp._id);
-              }
-              else {
-                note.changingToNoteId = noteProp._id;
-                try {
-                  // Remove listeners firstly to avoid focus another card in closing process
-                  cacheOfCard.forEach(card => {
-                    if (card) {
-                      card.removeWindowListenersExceptClosedEvent();
-                    }
-                    else {
-                      note.logger.debug('# Error before changing note: card is undefined');
-                    }
-                  });
-                  cacheOfCard.forEach(card => {
-                    if (card && card.window) {
-                      card.window.webContents.send('card-close');
-                    }
-                    else {
-                      note.logger.debug('# Error before changing note: card is undefined');
-                    }
-                  });
-                } catch (e) {
-                  console.error(e);
+            const url = getUrlFromNoteId(noteProp._id);
+            const markdown = `[${noteProp.name}](${url})`;
+            const cardBody: Partial<CardBody> = {
+              _body: markdown,
+            };
+            const geometry = { ...DEFAULT_CARD_GEOMETRY };
+            geometry.x += getRandomInt(30, 100);
+            geometry.y += getRandomInt(30, 100);
+            const label = { ...DEFAULT_CARD_LABEL };
+            label.x = geometry.x;
+            label.y = geometry.y;
+            label.width = Math.floor(geometry.width * 0.7);
+            label.height = MINIMUM_WINDOW_HEIGHT + MINIMUM_WINDOW_HEIGHT_OFFSET;
+            label.zoom = 1.0;
+            label.text = `<p class="paragraph"><a href="${url}" class="link" target="_blank">${noteProp.name}</a></p>`;
+            label.status = 'openedLabel';
+            const cardSketch: Partial<CardSketch> = {
+              geometry,
+              label,
+            };
+
+            createRandomColorCard(note, cardBody, cardSketch);
+          },
+        });
+        return result;
+      }, [] as MenuItemConstructorOptions[]);
+
+    const copyUrlOfNote: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
+      .sort((a, b) => {
+        if (a.name > b.name) return 1;
+        else if (a.name < b.name) return -1;
+        return 0;
+      })
+      .reduce((result, noteProp) => {
+        result.push({
+          label: `${noteProp.name}`,
+          click: () => {
+            const noteUrl = getUrlFromNoteId(noteProp._id);
+            clipboard.writeText(noteUrl);
+          },
+        });
+        return result;
+      }, [] as MenuItemConstructorOptions[]);
+
+    let changeNotes: MenuItemConstructorOptions[] = [];
+    if (currentNote !== null) {
+      changeNotes = [...noteStore.getState().values()]
+        .sort(function (a, b) {
+          if (a.name > b.name) return 1;
+          else if (a.name < b.name) return -1;
+          return 0;
+        })
+        .map(noteProp => {
+          return {
+            label: `${noteProp.name}`,
+            type: 'radio',
+            checked: noteProp._id === note.settings.currentNoteId,
+            click: () => {
+              if (noteProp._id !== note.settings.currentNoteId) {
+                closeSettings();
+                if (cacheOfCard.size === 0) {
+                  emitter.emit('change-note', noteProp._id);
                 }
-                // wait 'window-all-closed' event
+                else {
+                  note.changingToNoteId = noteProp._id;
+                  try {
+                    // Remove listeners firstly to avoid focus another card in closing process
+                    cacheOfCard.forEach(card => {
+                      if (card) {
+                        card.removeWindowListenersExceptClosedEvent();
+                      }
+                      else {
+                        note.logger.debug(
+                          '# Error before changing note: card is undefined'
+                        );
+                      }
+                    });
+                    cacheOfCard.forEach(card => {
+                      if (card && card.window) {
+                        card.window.webContents.send('card-close');
+                      }
+                      else {
+                        note.logger.debug(
+                          '# Error before changing note: card is undefined'
+                        );
+                      }
+                    });
+                  } catch (e) {
+                    console.error(e);
+                  }
+                  // wait 'window-all-closed' event
+                }
               }
-            }
-          },
-        };
-      });
-  }
-  if (changeNotes.length > 0) {
-    changeNotes.unshift({
-      type: 'separator',
-    } as MenuItemConstructorOptions);
-  }
+            },
+          };
+        });
+    }
+    if (changeNotes.length > 0) {
+      changeNotes.unshift({
+        type: 'separator',
+      } as MenuItemConstructorOptions);
+    }
 
-  const contextMenu = Menu.buildFromTemplate([
-    ...changeNotes,
-    {
-      type: 'separator',
-    },
-    {
-      label: MESSAGE('newCard'),
-      click: () => {
-        createRandomColorCard(note);
+    const contextMenu = Menu.buildFromTemplate([
+      ...changeNotes,
+      {
+        type: 'separator',
       },
-    },
-    {
-      type: 'separator',
-    },
-    {
-      label: MESSAGE('noteNew'),
-      click: async () => {
-        const newName: string | void | null = await prompt({
-          title: MESSAGE('note'),
-          label: MESSAGE('noteNewName'),
-          value: `${MESSAGE('noteName', String(noteStore.getState().size + 1))}`,
-          inputAttrs: {
-            type: 'text',
-            required: 'true',
-          },
-          height: 200,
-        }).catch(e => console.error(e.message));
+      {
+        label: MESSAGE('newCard'),
+        click: () => {
+          createRandomColorCard(note);
+        },
+      },
+      {
+        type: 'separator',
+      },
+      {
+        label: MESSAGE('noteNew'),
+        click: async () => {
+          const newName: string | void | null = await prompt({
+            title: MESSAGE('note'),
+            label: MESSAGE('noteNewName'),
+            value: `${MESSAGE('noteName', String(noteStore.getState().size + 1))}`,
+            inputAttrs: {
+              type: 'text',
+              required: 'true',
+            },
+            height: 200,
+          }).catch(e => console.error(e.message));
 
-        if (
-          newName === null ||
-          newName === undefined ||
-          newName === '' ||
-          (newName as string).match(/^\s+$/)
-        ) {
-          return;
-        }
-        const [newNoteProp] = await note.createNote(newName as string, true);
-        setTrayContextMenu();
-        cacheOfCard.forEach(card => card.resetContextMenu());
+          if (
+            newName === null ||
+            newName === undefined ||
+            newName === '' ||
+            (newName as string).match(/^\s+$/)
+          ) {
+            return;
+          }
+          const [newNoteProp] = await note.createNote(newName as string, true);
+          setTrayContextMenu();
+          cacheOfCard.forEach(card => card.resetContextMenu());
 
-        /*
+          /*
         closeSettings();
 
         if (cacheOfCard.size === 0) {
@@ -228,213 +235,217 @@ export const setTrayContextMenu = () => {
           // wait 'window-all-closed' event
         }
         */
-        // setTrayContextMenu() will be called in change-note event.
+          // setTrayContextMenu() will be called in change-note event.
+        },
       },
-    },
-    {
-      label: MESSAGE('noteRename'),
-      click: async () => {
-        const noteProp = noteStore.getState().get(note.settings.currentNoteId)!;
+      {
+        label: MESSAGE('noteRename'),
+        click: async () => {
+          const noteProp = noteStore.getState().get(note.settings.currentNoteId)!;
 
-        const newName: string | void | null = await prompt({
-          title: MESSAGE('note'),
-          label: MESSAGE('noteNewName'),
-          value: noteProp!.name,
-          inputAttrs: {
-            type: 'text',
-            required: 'true',
-          },
-          height: 200,
-        }).catch(e => console.error(e.message));
+          const newName: string | void | null = await prompt({
+            title: MESSAGE('note'),
+            label: MESSAGE('noteNewName'),
+            value: noteProp!.name,
+            inputAttrs: {
+              type: 'text',
+              required: 'true',
+            },
+            height: 200,
+          }).catch(e => console.error(e.message));
 
-        if (
-          newName === null ||
-          newName === undefined ||
-          newName === '' ||
-          (newName as string).match(/^\s+$/)
-        ) {
-          return;
-        }
-
-        noteProp.name = newName as string;
-        noteProp.isResident = regExpResidentNote.test(newName as string);
-        noteProp.date.modifiedDate = getCurrentDateAndTime();
-        await noteStore.dispatch(
-          // @ts-ignore
-          noteUpdateCreator(note, noteProp)
-        );
-
-        setTrayContextMenu();
-        cacheOfCard.forEach(card => card.resetContextMenu());
-      },
-    },
-    {
-      label: MESSAGE('noteCreateLink'),
-      submenu: [...createLinkOfNote],
-    },
-    {
-      label: MESSAGE('noteCopyUrlToClipboard'),
-      submenu: [...copyUrlOfNote],
-    },
-    {
-      label: MESSAGE('noteDelete'),
-      enabled: noteStore.getState().size > 1,
-      click: async () => {
-        if (noteStore.getState().size <= 1) {
-          return;
-        }
-        for (const key of cacheOfCard.keys()) {
-          if (getNoteIdFromUrl(key) === note.settings.currentNoteId) {
-            showDialog(undefined, 'info', 'noteCannotDelete');
+          if (
+            newName === null ||
+            newName === undefined ||
+            newName === '' ||
+            (newName as string).match(/^\s+$/)
+          ) {
             return;
           }
-        }
-        const noteIdList = note.getSortedNoteIdList();
-        const currentNoteIndex = noteIdList.indexOf(note.settings.currentNoteId);
-        const nextNoteIndex = currentNoteIndex > 0 ? currentNoteIndex - 1 : 0;
-        // Delete current note
-        await noteStore.dispatch(noteDeleteCreator(note, note.settings.currentNoteId));
 
-        // Close resident cards
-        // eslint-disable-next-line require-atomic-updates
-        note.changingToNoteId = noteIdList[nextNoteIndex];
-        try {
-          // Remove listeners firstly to avoid focus another card in closing process
-          cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
-          cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
-        } catch (e) {
-          console.error(e);
-        }
+          noteProp.name = newName as string;
+          noteProp.isResident = regExpResidentNote.test(newName as string);
+          noteProp.date.modifiedDate = getCurrentDateAndTime();
+          await noteStore.dispatch(
+            // @ts-ignore
+            noteUpdateCreator(note, noteProp)
+          );
 
-        // eslint-disable-next-line require-atomic-updates
-        // note.settings.currentNoteId = noteIdList[nextNoteIndex];
-        // emitter.emit('change-note', note.settings.currentNoteId);
-
-        // setTrayContextMenu() will be called in change-note event.
+          setTrayContextMenu();
+          cacheOfCard.forEach(card => card.resetContextMenu());
+        },
       },
-    },
-    {
-      type: 'separator',
-    },
-    {
-      label: MESSAGE('saveSnapshot'),
-      click: async () => {
-        const noteProp = noteStore.getState().get(note.settings.currentNoteId);
-        const defaultName = noteProp!.name + ' ' + getCurrentLocalDate();
-
-        const newName: string | void | null = await prompt({
-          title: MESSAGE('saveSnapshot'),
-          label: MESSAGE('snapshotName'),
-          value: defaultName,
-          inputAttrs: {
-            type: 'text',
-            required: 'true',
-          },
-          height: 200,
-        }).catch(e => console.error(e.message));
-
-        if (
-          newName === null ||
-          newName === undefined ||
-          newName === '' ||
-          (newName as string).match(/^\s+$/)
-        ) {
-          return;
-        }
-
-        const backgroundColor = '#D9E5FF';
-        const backgroundImage = '';
-        const cards: {
-          _id: string;
-          sketch: Omit<CardSketch, '_id'>;
-          body: Omit<CardBody, '_id'>;
-        }[] = [];
-        let _body = '';
-        [...cacheOfCard.values()]
-          .sort((a, b) => {
-            // The last modified card is the first.
-            if (a.body.date.modifiedDate > b.body.date.modifiedDate) return -1;
-            else if (a.body.date.modifiedDate < b.body.date.modifiedDate) return 1;
-            return 0;
-          })
-          .forEach(tmpCard => {
-            const clonedBody = JSON.parse(JSON.stringify(tmpCard.body));
-            delete clonedBody._id;
-            const clonedSketch = JSON.parse(JSON.stringify(tmpCard.sketch));
-            delete clonedSketch._id;
-            cards.push({
-              _id: tmpCard.body._id,
-              body: clonedBody,
-              sketch: clonedSketch,
-            });
-            if (_body !== '') {
-              _body += '\n---\n';
+      {
+        label: MESSAGE('noteCreateLink'),
+        submenu: [...createLinkOfNote],
+      },
+      {
+        label: MESSAGE('noteCopyUrlToClipboard'),
+        submenu: [...copyUrlOfNote],
+      },
+      {
+        label: MESSAGE('noteDelete'),
+        enabled: noteStore.getState().size > 1,
+        click: async () => {
+          if (noteStore.getState().size <= 1) {
+            return;
+          }
+          for (const key of cacheOfCard.keys()) {
+            if (getNoteIdFromUrl(key) === note.settings.currentNoteId) {
+              showDialog(undefined, 'info', 'noteCannotDelete');
+              return;
             }
-            _body += clonedBody._body;
-          });
-        const snapshot: Snapshot = {
-          version: '1.0',
-          name: newName as string,
-          backgroundColor,
-          backgroundImage,
-          createdDate: getCurrentDateAndTime(),
-          note: noteProp!,
-          cards,
-          _body,
-        };
-        await note.createSnapshot(snapshot);
-      },
-    },
-    {
-      label: MESSAGE('syncNow'),
-      enabled: note.settings.sync.enabled,
-      click: () => {
-        if (note.sync !== undefined) {
-          note.sync.trySync();
-        }
-      },
-    },
-    {
-      label: MESSAGE('redisplayCards'),
-      click: () => {
-        sortCardWindows(true);
-      },
-    },
+          }
+          const noteIdList = note.getSortedNoteIdList();
+          const currentNoteIndex = noteIdList.indexOf(note.settings.currentNoteId);
+          const nextNoteIndex = currentNoteIndex > 0 ? currentNoteIndex - 1 : 0;
+          // Delete current note
+          await noteStore.dispatch(noteDeleteCreator(note, note.settings.currentNoteId));
 
-    {
-      label: MESSAGE('settings'),
-      click: () => {
-        openSettings(note);
-      },
-    },
-    {
-      label: MESSAGE('exit'),
-      click: () => {
-        note.changingToNoteId = 'exit';
-        closeSettings();
-        if (cacheOfCard.size === 0) {
-          emitter.emit('exit');
-        }
-        else {
+          // Close resident cards
+          // eslint-disable-next-line require-atomic-updates
+          note.changingToNoteId = noteIdList[nextNoteIndex];
           try {
-            cacheOfCard.forEach(card => {
-              card.window.webContents.send('card-close');
-            });
+            // Remove listeners firstly to avoid focus another card in closing process
+            cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
+            cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
           } catch (e) {
             console.error(e);
+          }
+
+          // eslint-disable-next-line require-atomic-updates
+          // note.settings.currentNoteId = noteIdList[nextNoteIndex];
+          // emitter.emit('change-note', note.settings.currentNoteId);
+
+          // setTrayContextMenu() will be called in change-note event.
+        },
+      },
+      {
+        type: 'separator',
+      },
+      {
+        label: MESSAGE('saveSnapshot'),
+        click: async () => {
+          const noteProp = noteStore.getState().get(note.settings.currentNoteId);
+          const defaultName = noteProp!.name + ' ' + getCurrentLocalDate();
+
+          const newName: string | void | null = await prompt({
+            title: MESSAGE('saveSnapshot'),
+            label: MESSAGE('snapshotName'),
+            value: defaultName,
+            inputAttrs: {
+              type: 'text',
+              required: 'true',
+            },
+            height: 200,
+          }).catch(e => console.error(e.message));
+
+          if (
+            newName === null ||
+            newName === undefined ||
+            newName === '' ||
+            (newName as string).match(/^\s+$/)
+          ) {
+            return;
+          }
+
+          const backgroundColor = '#D9E5FF';
+          const backgroundImage = '';
+          const cards: {
+            _id: string;
+            sketch: Omit<CardSketch, '_id'>;
+            body: Omit<CardBody, '_id'>;
+          }[] = [];
+          let _body = '';
+          [...cacheOfCard.values()]
+            .sort((a, b) => {
+              // The last modified card is the first.
+              if (a.body.date.modifiedDate > b.body.date.modifiedDate) return -1;
+              else if (a.body.date.modifiedDate < b.body.date.modifiedDate) return 1;
+              return 0;
+            })
+            .forEach(tmpCard => {
+              const clonedBody = JSON.parse(JSON.stringify(tmpCard.body));
+              delete clonedBody._id;
+              const clonedSketch = JSON.parse(JSON.stringify(tmpCard.sketch));
+              delete clonedSketch._id;
+              cards.push({
+                _id: tmpCard.body._id,
+                body: clonedBody,
+                sketch: clonedSketch,
+              });
+              if (_body !== '') {
+                _body += '\n---\n';
+              }
+              _body += clonedBody._body;
+            });
+          const snapshot: Snapshot = {
+            version: '1.0',
+            name: newName as string,
+            backgroundColor,
+            backgroundImage,
+            createdDate: getCurrentDateAndTime(),
+            note: noteProp!,
+            cards,
+            _body,
+          };
+          await note.createSnapshot(snapshot);
+        },
+      },
+      {
+        label: MESSAGE('syncNow'),
+        enabled: note.settings.sync.enabled,
+        click: () => {
+          if (note.sync !== undefined) {
+            note.sync.trySync();
+          }
+        },
+      },
+      {
+        label: MESSAGE('redisplayCards'),
+        click: () => {
+          sortCardWindows(true);
+        },
+      },
+
+      {
+        label: MESSAGE('settings'),
+        click: () => {
+          openSettings(note);
+        },
+      },
+      {
+        label: MESSAGE('exit'),
+        click: () => {
+          note.changingToNoteId = 'exit';
+          closeSettings();
+          if (cacheOfCard.size === 0) {
             emitter.emit('exit');
           }
-        }
+          else {
+            try {
+              cacheOfCard.forEach(card => {
+                card.window.webContents.send('card-close');
+              });
+            } catch (e) {
+              console.error(e);
+              emitter.emit('exit');
+            }
+          }
+        },
       },
-    },
-  ]);
-  tray.setContextMenu(contextMenu);
-  // const version = process.env.npm_package_version; // It is only available when the app is started by 'npm start'
-  let taskTrayToolTip = `${app.getName()}  ${app.getVersion()}`;
-  if (!app.isPackaged) {
-    taskTrayToolTip += ' (Development)';
+    ]);
+
+    tray.setContextMenu(contextMenu);
+    // const version = process.env.npm_package_version; // It is only available when the app is started by 'npm start'
+    let taskTrayToolTip = `${app.getName()}  ${app.getVersion()}`;
+    if (!app.isPackaged) {
+      taskTrayToolTip += ' (Development)';
+    }
+    tray.setToolTip(taskTrayToolTip);
+  } catch (err) {
+    note.logger.debug('# Error in setTrayContextMenu: ' + err);
   }
-  tray.setToolTip(taskTrayToolTip);
 };
 
 export const initializeTaskTray = (store: INote) => {
