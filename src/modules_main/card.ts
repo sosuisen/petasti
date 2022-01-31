@@ -161,6 +161,8 @@ export const createRandomColorCard = async (
   body: Partial<CardBody> = {},
   sketch: Partial<CardSketch> = {}
 ) => {
+  playSound('create', 5, true);
+
   let geometry: Geometry;
   if (sketch.geometry) {
     geometry = sketch.geometry;
@@ -530,9 +532,10 @@ export class Card implements ICard {
     } catch (err) {
       this._note.logger.debug('# Error in removeShortcuts() ' + err);
     }
+
     cacheOfCard.delete(this.url);
 
-    this._note.logger.debug('# End deleting sketch: ' + this.url);
+    this._note.logger.debug('# End deleting or closing sketch: ' + this.url);
 
     console.log('# cacheOfCard size ' + cacheOfCard.size);
     // Emit window-all-closed event explicitly

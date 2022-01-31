@@ -131,6 +131,9 @@ contextBridge.exposeInMainWorld('api', {
   setZoomLevel: (level: number) => {
     webFrame.setZoomLevel(level);
   },
+  startTransform: (shape: 'card' | 'label') => {
+    ipcRenderer.invoke('start-transform', shape);
+  },
   windowMoved: (url: string) => {
     ipcRenderer.invoke('window-moved', url);
   },

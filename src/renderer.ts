@@ -439,6 +439,8 @@ window.addEventListener('message', event => {
 
 // eslint-disable-next-line complexity
 const onTransformToLabel = async () => {
+  window.api.startTransform('label');
+
   const label = cardStore.getState().sketch.label;
   if (isLabelOpened(label.status)) return;
 
@@ -519,6 +521,8 @@ const setRectToLabel = async () => {
 
 // eslint-disable-next-line complexity
 const onTransformToCard = async () => {
+  window.api.startTransform('card');
+
   const label = cardStore.getState().sketch.label;
   if (!isLabelOpened(label.status)) return;
 

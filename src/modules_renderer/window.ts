@@ -59,6 +59,7 @@ interface WindowWithAPI extends Window {
       animation?: boolean
     ) => Promise<{ x: number; y: number; width: number; height: number }>;
     setZoomLevel: (level: number) => void;
+    startTransform: (shape: 'card' | 'label') => void;
     windowMoved: (url: string) => void;
     windowMoving: (
       url: string,

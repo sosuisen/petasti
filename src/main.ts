@@ -267,6 +267,8 @@ emitter.on(
   'create-card',
   (cardBody: Partial<CardBody>, cardSketch: Partial<CardSketch>, moveToRect: Rectangle) => {
     setTimeout(() => {
+      playSound('create', 5, true);
+
       createCardWindow(
         note,
         note.settings.currentNoteId,
@@ -284,6 +286,8 @@ emitter.on(
  */
 
 ipcMain.handle('delete-card', async (event, url: string) => {
+  playSound('delete', 3, true);
+
   const card = cacheOfCard.get(url);
   if (card) {
     const display: Display = screen.getDisplayNearestPoint({
@@ -324,6 +328,8 @@ ipcMain.handle('delete-card', async (event, url: string) => {
 });
 
 ipcMain.handle('delete-card-sketch', async (event, url: string) => {
+  playSound('drop', 3, true);
+
   const card = cacheOfCard.get(url);
   if (card) {
     const display: Display = screen.getDisplayNearestPoint({
@@ -369,6 +375,8 @@ ipcMain.handle(
     cardSketch: Partial<CardSketch>,
     parentRect: Rectangle
   ): Promise<void> => {
+    playSound('create', 5, true);
+
     const xOffset = getRandomInt(10, 30);
     const yOffset = getRandomInt(10, 30);
 
@@ -475,6 +483,15 @@ ipcMain.handle(
     return card?.window.getBounds();
   }
 );
+
+ipcMain.handle('start-transform', (event, shape: 'label' | 'card') => {
+  if (shape === 'label') {
+    playSound('drop', 3, true);
+  }
+  else if (shape === 'card') {
+    playSound('create', 5, true);
+  }
+});
 
 ipcMain.handle('get-uuid', () => {
   //  return uuidv4();
