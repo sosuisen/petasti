@@ -33,6 +33,7 @@ import { getRandomInt, sleep } from './modules_common/utils';
 import { initializeUrlSchema, openURL } from './modules_main/url_schema';
 import { DEFAULT_CARD_GEOMETRY } from './modules_common/const';
 import { MESSAGE } from './modules_main/messages';
+import { playSound, soundFiles } from './modules_main/sound';
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -75,18 +76,20 @@ const startApp = async (isRestart: boolean) => {
   // TODO: Check sound file list
   // Copy sounds
   if (!fs.existsSync(defaultSoundDir)) {
-    // Copy sounds
-
-    // Cannot use recursive fs.copy in squirrel asar package.
-    // fs.copy(soundSrcDir, defaultSoundDir);
     await fs.ensureDir(defaultSoundDir);
-    const files = fs.readdirSync(soundSrcDir);
-    files.forEach(function (file) {
-      const src = path.join(soundSrcDir, file);
-      const dst = path.join(defaultSoundDir, file);
-      fs.copyFileSync(src, dst);
-    });
   }
+
+  // Copy sounds
+  // Cannot use recursive fs.copy in squirrel asar package.
+  // fs.copy(soundSrcDir, defaultSoundDir);
+  const sounds = Object.values(soundFiles);
+  sounds.forEach(file => {
+    const dst = path.join(defaultSoundDir, file);
+    if (!fs.existsSync(dst)) {
+      const src = path.join(soundSrcDir, file);
+      fs.copyFileSync(src, dst);
+    }
+  });
 
   // load workspaces
   const cardProps = await note.loadNotebook();
