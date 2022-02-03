@@ -810,6 +810,9 @@ export class Card implements ICard {
     const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
     // Overwrite z
     newCardSketch.geometry.z = (await this._note.getZIndexOfTopCard(noteId)) + 1;
+    // Overwrite color
+    newCardSketch.style.backgroundColor = cardColors.white;
+    newCardSketch.style.uiColor = cardColors.white;
     newCardSketch._id = newSketchId;
     const notCurrentNoteMsg =
       'The destination is not the current note. (This is not an error.)';
@@ -862,6 +865,9 @@ export class Card implements ICard {
     const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
     // Overwrite z
     newCardSketch.geometry.z = (await this._note.getZIndexOfTopCard(noteId)) + 1;
+    // Overwrite color
+    newCardSketch.style.backgroundColor = cardColors.white;
+    newCardSketch.style.uiColor = cardColors.white;
     newCardSketch._id = newSketchId;
     const notCurrentNoteMsg =
       'The destination is not the current note. (This is not an error.)';
