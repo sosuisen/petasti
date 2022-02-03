@@ -276,7 +276,7 @@ export const ENGLISH: Messages = {
 const NOTE_JAPANESE: MessagesNote = {
   note: 'ノート',
   noteNew: '新規ノート...',
-  firstNoteName: '#サンドボックス',
+  firstNoteName: '#Sandbox',
   noteName: 'ノート $1',
   noteMove: '移動',
   noteCopy: '分身をコピー',
