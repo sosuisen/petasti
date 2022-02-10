@@ -1,7 +1,7 @@
 {
   "name": "tree-stickies",
   "productName": "TreeStickies",
-  "version": "0.2.31",
+  "version": "0.2.32",
   "description": "TreeStickies",
   "main": "dist/main.js",
   "scripts": {
@@ -97,7 +97,7 @@
     "electron-prompt": "^1.6.2",
     "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^9.0.1",
-    "git-documentdb": "^0.4.7-alpha.16",
+    "git-documentdb": "^0.4.7-alpha.17",
     "git-documentdb-plugin-remote-nodegit": "^1.0.5-alpha.0",
     "hmtid": "^0.1.2",
     "node-wav-player": "^0.2.0",
