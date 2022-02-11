@@ -137,7 +137,7 @@ const LANGUAGES_COMMON: MessagesLanguage = {
 const NOTE_ENGLISH: MessagesNote = {
   note: 'Note',
   noteNew: 'New note...',
-  firstNoteName: '#Sandbox',
+  firstNoteName: '#Workspace',
   noteName: 'Note $1',
   noteMove: 'Move to',
   noteCopy: 'Mirror to',
@@ -276,7 +276,7 @@ export const ENGLISH: Messages = {
 const NOTE_JAPANESE: MessagesNote = {
   note: 'ノート',
   noteNew: '新規ノート...',
-  firstNoteName: '#Sandbox',
+  firstNoteName: '#ワークスペース',
   noteName: 'ノート $1',
   noteMove: '移動',
   noteCopy: '分身をコピー',
