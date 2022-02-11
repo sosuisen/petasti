@@ -409,7 +409,7 @@ ipcMain.handle(
 
 ipcMain.handle('blur-and-focus-with-suppress-events', (event, url: string) => {
   const card = cacheOfCard.get(url);
-  if (card) {
+  if (card && card.window) {
     console.debug(`blurAndFocus: ${url}`);
     /**
      * When a card is blurred, another card will be focused automatically by OS.
@@ -426,7 +426,7 @@ ipcMain.handle('blur-and-focus-with-suppress-events', (event, url: string) => {
 
 ipcMain.handle('blur-and-focus-with-suppress-focus-event', (event, url: string) => {
   const card = cacheOfCard.get(url);
-  if (card) {
+  if (card && card.window) {
     console.debug(`blurAndFocus: ${url}`);
     /**
      * When a card is blurred, another card will be focused automatically by OS.
@@ -441,7 +441,7 @@ ipcMain.handle('blur-and-focus-with-suppress-focus-event', (event, url: string) 
 
 ipcMain.handle('blur', (event, url: string) => {
   const card = cacheOfCard.get(url);
-  if (card) {
+  if (card && card.window) {
     console.debug(`blur: ${url}`);
     card.window.blur();
   }
@@ -449,7 +449,7 @@ ipcMain.handle('blur', (event, url: string) => {
 
 ipcMain.handle('focus', (event, url: string) => {
   const card = cacheOfCard.get(url);
-  if (card) {
+  if (card && card.window) {
     console.debug(`focus: ${url}`);
     card.focus();
   }
@@ -461,7 +461,7 @@ ipcMain.handle('openURL', (event, url: string) => {
 
 ipcMain.handle('set-title', (event, url: string, title: string) => {
   const card = cacheOfCard.get(url);
-  if (card) {
+  if (card && card.window) {
     card.window.setTitle(title);
   }
 });
@@ -480,7 +480,7 @@ ipcMain.handle(
     const card = cacheOfCard.get(url);
     // eslint-disable-next-line no-unused-expressions
     await card?.setRect(x, y, width, height, animation);
-    return card?.window.getBounds();
+    return card?.window?.getBounds();
   }
 );
 
@@ -501,11 +501,8 @@ ipcMain.handle(
   'send-mouse-input',
   (event, url: string, mouseInputEvent: MouseInputEvent[]) => {
     const card = cacheOfCard.get(url);
-    if (!card) {
-      return;
-    }
     mouseInputEvent.forEach(e => {
-      card.window.webContents.sendInputEvent(e);
+      card?.window?.webContents.sendInputEvent(e);
     });
   }
 );
@@ -535,7 +532,7 @@ ipcMain.handle('db', async (event, command: DatabaseCommand) => {
 ipcMain.handle('window-moving', (e, url, { mouseOffsetX, mouseOffsetY }) => {
   const { x, y } = screen.getCursorScreenPoint();
   const card = cacheOfCard.get(url);
-  card!.window.setPosition(x - mouseOffsetX, y - mouseOffsetY);
+  card?.window?.setPosition(x - mouseOffsetX, y - mouseOffsetY);
 });
 
 ipcMain.handle('window-moved', (e, url) => {

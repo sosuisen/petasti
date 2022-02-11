@@ -125,6 +125,7 @@ export interface ICard {
   body: CardBody;
   sketch: CardSketch;
   isFake: boolean;
+  noWindow: boolean;
   // status: CardStatus;
 
   focus: () => void;
@@ -139,7 +140,7 @@ export interface ICard {
   ) => Promise<void>;
   removeWindowListenersExceptClosedEvent: () => void;
   removeWindowListeners: () => void;
-  window: BrowserWindow;
+  window: BrowserWindow | undefined;
 
   resetContextMenu: () => void;
 

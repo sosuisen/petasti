@@ -29,7 +29,7 @@ export function openURL (url: string) {
           try {
             // Remove listeners firstly to avoid focus another card in closing process
             cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
-            cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
+            cacheOfCard.forEach(card => card.window?.webContents.send('card-close'));
           } catch (e) {
             console.error(e);
           }

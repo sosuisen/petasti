@@ -428,7 +428,7 @@ export const addSettingsHandler = (note: INote) => {
       // Remove listeners firstly to avoid focus another card in closing process
       closeSettings();
       cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
-      cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
+      cacheOfCard.forEach(card => card.window?.webContents.send('card-close'));
     } catch (error) {
       console.error(error);
     }
@@ -463,7 +463,7 @@ ipcMain.handle(
     }
     else {
       const card = cacheOfCard.get(url);
-      if (!card) {
+      if (!card || !card.window) {
         return;
       }
       win = card.window;
@@ -487,7 +487,7 @@ ipcMain.handle(
     }
     else {
       const card = cacheOfCard.get(url);
-      if (!card) {
+      if (!card || !card.window) {
         return;
       }
       win = card.window;

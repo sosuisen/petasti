@@ -224,9 +224,9 @@ export const createCardWindow = async (
   note.createCard(card.url, card, false, updateDB);
 
   await card.render();
-  card.window.focus();
+  card.window?.focus();
   card.addShortcuts();
-  card.window.webContents.send('card-focused', undefined, undefined);
+  card.window?.webContents.send('card-focused', undefined, undefined);
   if (moveToRect) {
     card.setRect(moveToRect.x, moveToRect.y, moveToRect.width, moveToRect.height, true);
   }
@@ -242,7 +242,8 @@ export class Card implements ICard {
    */
   public url: string;
 
-  public isFake: boolean;
+  public isFake: boolean; // Don't serialize data if true.
+  public noWindow: boolean; // Don't create window if true.
 
   public body: CardBody = {
     version: CARD_VERSION,
@@ -277,7 +278,7 @@ export class Card implements ICard {
   /**
    * Renderer
    */
-  public window: BrowserWindow;
+  public window: BrowserWindow | undefined = undefined;
   public indexUrl: string;
   public renderingCompleted = false;
 
@@ -297,7 +298,7 @@ export class Card implements ICard {
   /**
    * Context menu
    */
-  public resetContextMenu: () => void;
+  public resetContextMenu: () => void = () => {};
 
   /**
    * Constructor
@@ -308,10 +309,12 @@ export class Card implements ICard {
     noteIdOrUrl: string,
     cardBody?: Partial<CardBody>,
     cardSketch?: Partial<CardSketch>,
-    isFake = false
+    isFake = false,
+    noWindow = false
   ) {
     this._note = note;
     this.isFake = isFake;
+    this.noWindow = noWindow;
 
     let cardId: string;
     let sketchId: string;
@@ -389,97 +392,88 @@ export class Card implements ICard {
     }
     // this.window.setBounds(bounds);
 
-    this.window = new BrowserWindow({
-      webPreferences: {
-        preload: path.join(__dirname, './preload.js'),
-        sandbox: true,
-        contextIsolation: true,
-      },
-      minWidth: MINIMUM_WINDOW_WIDTH,
-      minHeight: MINIMUM_WINDOW_HEIGHT,
+    if (!noWindow) {
+      this.window = new BrowserWindow({
+        webPreferences: {
+          preload: path.join(__dirname, './preload.js'),
+          sandbox: true,
+          contextIsolation: true,
+        },
+        minWidth: MINIMUM_WINDOW_WIDTH,
+        minHeight: MINIMUM_WINDOW_HEIGHT,
 
-      x: bounds.x,
-      y: bounds.y,
-      width: bounds.width,
-      height: bounds.height,
+        x: bounds.x,
+        y: bounds.y,
+        width: bounds.width,
+        height: bounds.height,
 
-      acceptFirstMouse: true, // for MacOS
+        acceptFirstMouse: true, // for MacOS
 
-      // NOTE: Window snap on windows is disable
-      //   if transparent is true or frame is false or maximizable is false.
-      transparent: true,
-      frame: false,
-      maximizable: false,
+        // NOTE: Window snap on windows is disable
+        //   if transparent is true or frame is false or maximizable is false.
+        transparent: true,
+        frame: false,
+        maximizable: false,
 
-      // show: false,
+        // show: false,
 
-      fullscreenable: false,
+        fullscreenable: false,
 
-      icon: path.join(__dirname, `../assets/${APP_ICON_NAME}`),
-    });
-    this.window.setMaxListeners(20);
+        icon: path.join(__dirname, `../assets/${APP_ICON_NAME}`),
+      });
+      this.window.setMaxListeners(20);
 
-    if (!app.isPackaged && process.env.NODE_ENV === 'development') {
-      // this.window.webContents.openDevTools();
-    }
+      if (!app.isPackaged && process.env.NODE_ENV === 'development') {
+        // this.window.webContents.openDevTools();
+      }
 
-    // Resized by hand
-    // will-resize is only emitted when the window is being resized manually.
-    // Resizing the window with setBounds/setSize will not emit this event.
-    this.window.on('will-resize', this._willResizeListener);
+      // Resized by hand
+      // will-resize is only emitted when the window is being resized manually.
+      // Resizing the window with setBounds/setSize will not emit this event.
+      this.window.on('will-resize', this._willResizeListener);
 
-    // Moved by hand
-    // this.window.on('will-move', this._willMoveListener);
+      // Moved by hand
+      // this.window.on('will-move', this._willMoveListener);
 
-    this.window.on('closed', this._closedListener);
+      this.window.on('closed', this._closedListener);
 
-    this.resetContextMenu = setContextMenu(note, this);
+      this.resetContextMenu = setContextMenu(note, this);
 
-    // Open hyperlink on external browser window
-    // by preventing to open it on new electron window
-    // when target='_blank' is set.
-    this.window.webContents.on('new-window', (e, _url) => {
-      e.preventDefault();
-      openURL(_url);
-      // shell.openExternal(_url);
-    });
+      // Open hyperlink on external browser window
+      // by preventing to open it on new electron window
+      // when target='_blank' is set.
+      this.window.webContents.on('new-window', (e, _url) => {
+        e.preventDefault();
+        openURL(_url);
+        // shell.openExternal(_url);
+      });
 
-    this.window.webContents.on('did-finish-load', () => {
-      //      console.debug('did-finish-load: ' + this.window.webContents.getURL());
-    });
+      this.window.webContents.on('did-finish-load', () => {
+        //      console.debug('did-finish-load: ' + this.window.webContents.getURL());
+      });
 
-    this.window.webContents.on('will-navigate', (event, navUrl) => {
-      // block page transition
-      /*      const prevUrl = this.indexUrl.replace(/\\/g, '/');
+      this.window.webContents.on('will-navigate', (event, navUrl) => {
+        // block page transition
+        /*      const prevUrl = this.indexUrl.replace(/\\/g, '/');
       if (navUrl === prevUrl) {
         // console.debug('reload() in top frame is permitted');
       }
       else {
 */
-      console.error('Page navigation in top frame is not permitted.');
-      event.preventDefault();
-      //      }
-    });
-
-    /*
-    this._debouncedCardPositionUpdateActionQueue.subscribe((item: unknown) => {
-      const newSketch: CardSketch = JSON.parse(JSON.stringify(this.sketch));
-      newSketch.geometry.x = (item as CardPositionDebounceItem).cardX;
-      newSketch.geometry.y = (item as CardPositionDebounceItem).cardY;
-      newSketch.label.x = (item as CardPositionDebounceItem).labelX;
-      newSketch.label.y = (item as CardPositionDebounceItem).labelY;
-      note.updateCardSketch(
-        this.url,
-        newSketch,
-        (item as CardPositionDebounceItem).modifiedDate
-      );
-    });
-    */
+        console.error('Page navigation in top frame is not permitted.');
+        event.preventDefault();
+        //      }
+      });
+    }
   }
 
   // private _debouncedCardPositionUpdateActionQueue = new DebounceQueue(1000);
 
   private _willResizeListener = (event: Electron.Event, rect: Electron.Rectangle) => {
+    if (!this.window) {
+      return;
+    }
+
     let newWidth = rect.width;
     let newHeight = rect.height;
     /*
@@ -546,8 +540,10 @@ export class Card implements ICard {
   };
 
   public focus = () => {
-    this.window.focus();
-    this._focusListener(); // Call the listener just in case
+    if (this.window) {
+      this.window.focus();
+      this._focusListener(); // Call the listener just in case
+    }
   };
 
   /**
@@ -579,7 +575,7 @@ export class Card implements ICard {
         if (this.sketch.geometry.z === getZIndexOfTopCard()) {
           console.log('zIndex no change: ' + this.sketch.geometry.z);
           // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-          this.window.webContents.send('card-focused', undefined, undefined);
+          this.window?.webContents.send('card-focused', undefined, undefined);
           return;
         }
         // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
@@ -587,7 +583,7 @@ export class Card implements ICard {
         const zIndex = getZIndexOfTopCard() + 1;
         console.debug(`zIndex changed to: ${zIndex}`);
 
-        this.window.webContents.send('card-focused', zIndex, modifiedTime);
+        this.window?.webContents.send('card-focused', zIndex, modifiedTime);
 
         // const newGeom = { ...this.sketch.geometry, z: zIndex };
 
@@ -613,7 +609,7 @@ export class Card implements ICard {
     }
     else {
       console.debug(`# blur ${this.url}`);
-      this.window.webContents.send('card-blurred');
+      this.window?.webContents.send('card-blurred');
     }
   };
 
@@ -630,7 +626,12 @@ export class Card implements ICard {
     animation: boolean,
     animationMsec = 200
   ): Promise<void> => {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
+      if (!this.window) {
+        resolve(); // Reject silently.
+        return;
+      }
+
       if (!animation) {
         this.window.setPosition(x, y);
         this.window.setSize(width, height);
@@ -682,7 +683,7 @@ export class Card implements ICard {
               clearInterval(moveAnimeTimer!);
               moveAnimeTimer = undefined;
 
-              this.window.setBounds({
+              this.window?.setBounds({
                 x: Math.floor(moveToX),
                 y: Math.floor(moveToY),
                 width: Math.floor(moveToWidth),
@@ -697,7 +698,7 @@ export class Card implements ICard {
             const nextWidth = (moveToWidth - moveFromWidth) * rate + moveFromWidth;
             const nextHeight = (moveToHeight - moveFromHeight) * rate + moveFromHeight;
             // this.window.setPosition(Math.floor(nextX), Math.floor(nextY));
-            this.window.setBounds({
+            this.window?.setBounds({
               x: Math.floor(nextX),
               y: Math.floor(nextY),
               width: Math.floor(nextWidth),
@@ -718,8 +719,8 @@ export class Card implements ICard {
   };
 
   public removeWindowListeners = () => {
-    this.removeWindowListenersExceptClosedEvent();
     if (this.window) {
+      this.removeWindowListenersExceptClosedEvent();
       this.window.off('closed', this._closedListener);
     }
   };
@@ -739,7 +740,11 @@ export class Card implements ICard {
   };
 
   renderCard = (): Promise<void> => {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
+      if (!this.window) {
+        reject(new Error('Error: window is undefined'));
+        return;
+      }
       console.debug(`renderCard in main [${this.url}] ${this.body._body.substr(0, 40)}`);
 
       // this.window.showInactive();
@@ -776,11 +781,16 @@ export class Card implements ICard {
 
   private _loadHTML: () => Promise<void> = () => {
     return new Promise((resolve, reject) => {
+      if (!this.window) {
+        reject(new Error('Error: window is undefined'));
+        return;
+      }
+
       const finishLoadListener = (event: Electron.IpcMainInvokeEvent) => {
         // console.debug('loadHTML  ' + this.url);
         const finishReloadListener = () => {
           console.debug('Reloaded: ' + this.url);
-          this.window.webContents.send('render-card', this.url, this.body, this.sketch);
+          this.window?.webContents.send('render-card', this.url, this.body, this.sketch);
         };
 
         // Don't use 'did-finish-load' event.
@@ -905,7 +915,7 @@ export class Card implements ICard {
       tmpCardSketch,
       true
     );
-    tmpCard.window.setOpacity(0.7);
+    tmpCard.window?.setOpacity(0.7);
     this._note.createCard(tmpCard.url, tmpCard, false, false);
     sortCardWindows();
 
@@ -929,13 +939,17 @@ export class Card implements ICard {
       true,
       400
     );
-    tmpCard.window.destroy();
+    tmpCard.window?.destroy();
     cacheOfCard.delete(tmpCard.url);
 
     this.focus();
   };
 
   private _moveByKey = (x: number, y: number) => {
+    if (!this.window) {
+      return;
+    }
+
     this.window.setPosition(x, y);
 
     let width, height: number;
@@ -959,6 +973,10 @@ export class Card implements ICard {
   };
 
   private _resizeByKey = (width: number, height: number) => {
+    if (!this.window) {
+      return;
+    }
+
     this.window.setSize(width, height);
     let x, y: number;
     if (isLabelOpened(this.sketch.label.status)) {
@@ -1252,6 +1270,7 @@ export class Card implements ICard {
       // For debugging
       globalShortcut.register('CommandOrControl+' + opt + '+D', () => {
         // if (!app.isPackaged && process.env.NODE_ENV === 'development') {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         this.window.webContents.openDevTools();
         // }
       });

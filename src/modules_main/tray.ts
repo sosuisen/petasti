@@ -151,8 +151,8 @@ export const setTrayContextMenu = () => {
                       }
                     });
                     cacheOfCard.forEach(card => {
-                      if (card && card.window) {
-                        card.window.webContents.send('card-close');
+                      if (card) {
+                        card.window?.webContents.send('card-close');
                       }
                       else {
                         note.logger.debug(
@@ -308,7 +308,7 @@ export const setTrayContextMenu = () => {
           try {
             // Remove listeners firstly to avoid focus another card in closing process
             cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
-            cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
+            cacheOfCard.forEach(card => card.window?.webContents.send('card-close'));
           } catch (e) {
             console.error(e);
           }
@@ -424,9 +424,7 @@ export const setTrayContextMenu = () => {
           }
           else {
             try {
-              cacheOfCard.forEach(card => {
-                card.window.webContents.send('card-close');
-              });
+              cacheOfCard.forEach(card => card.window?.webContents.send('card-close'));
             } catch (e) {
               console.error(e);
               emitter.emit('exit');

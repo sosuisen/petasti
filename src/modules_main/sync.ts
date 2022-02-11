@@ -69,7 +69,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
             card.body._body = '';
           }
 
-          card.window.webContents.send(
+          card.window?.webContents.send(
             'sync-card-body',
             changedFile,
             taskMetadata.enqueueTime
@@ -132,12 +132,12 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
               const newSketch = (changedFile.new.doc as unknown) as CardSketch;
               const oldSketch = (changedFile.old.doc as unknown) as CardSketch;
               card.sketch = newSketch;
-              card.window.webContents.send(
+              // eslint-disable-next-line max-depth
+              card.window?.webContents.send(
                 'sync-card-sketch',
                 changedFile,
                 taskMetadata.enqueueTime
               );
-
               // eslint-disable-next-line max-depth
               if (oldSketch.geometry.z !== newSketch.geometry.z) {
                 sortCardWindows(true);
@@ -211,7 +211,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
               try {
                 // Remove listeners firstly to avoid focus another card in closing process
                 cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
-                cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
+                cacheOfCard.forEach(card => card.window?.webContents.send('card-close'));
               } catch (e) {
                 console.error(e);
               }

@@ -37,10 +37,10 @@ export const setContextMenu = (note: INote, card: ICard) => {
         label: MESSAGE(name),
         click: () => {
           if (name === 'transparent') {
-            card.window.webContents.send('change-card-color', cardColors[name], 0.0);
+            card.window?.webContents.send('change-card-color', cardColors[name], 0.0);
           }
           else {
-            card.window.webContents.send('change-card-color', cardColors[name]);
+            card.window?.webContents.send('change-card-color', cardColors[name]);
           }
         },
       };
@@ -166,12 +166,12 @@ export const setContextMenu = (note: INote, card: ICard) => {
                 : MESSAGE('newCard'),
             click: () => {
               if (card.hasSelection) {
-                card.window.webContents.send('get-selected-markdown');
+                card.window?.webContents.send('get-selected-markdown');
                 ipcMain.handleOnce(
                   'response-of-get-selected-markdown-' + encodeURIComponent(card.url),
                   (event, markdown, startLeft, endRight, top, bottom) => {
                     createCardFromMarkdown(markdown, startLeft, endRight, top, bottom + 50);
-                    card.window.webContents.send('delete-selection');
+                    card.window?.webContents.send('delete-selection');
                   }
                 );
               }
@@ -192,10 +192,10 @@ export const setContextMenu = (note: INote, card: ICard) => {
               : MESSAGE('transformToLabel'),
             click: () => {
               if (isLabelOpened(card.sketch.label.status)) {
-                card.window.webContents.send('transform-from-label');
+                card.window?.webContents.send('transform-from-label');
               }
               else {
-                card.window.webContents.send('transform-to-label');
+                card.window?.webContents.send('transform-to-label');
               }
             },
           },
@@ -210,13 +210,13 @@ export const setContextMenu = (note: INote, card: ICard) => {
           {
             label: MESSAGE('zoomIn'),
             click: () => {
-              card.window.webContents.send('zoom-in');
+              card.window?.webContents.send('zoom-in');
             },
           },
           {
             label: MESSAGE('zoomOut'),
             click: () => {
-              card.window.webContents.send('zoom-out');
+              card.window?.webContents.send('zoom-out');
             },
           },
           {
@@ -256,7 +256,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
                 }
               });
 
-              card.window.webContents.send('send-to-back', zIndex, modifiedDate);
+              card.window?.webContents.send('send-to-back', zIndex, modifiedDate);
             },
           },
           /*

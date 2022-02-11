@@ -493,7 +493,7 @@ class Note implements INote {
     await noteStore.dispatch(noteCreateCreator(this, newNote));
 
     // Add first card
-    const firstCard = new Card(this, noteId);
+    const firstCard = new Card(this, noteId, undefined, undefined, false, true);
     await note.createCard(firstCard.url, firstCard, waitFirstCardCreation);
 
     return [
@@ -757,7 +757,7 @@ class Note implements INote {
         await this._deleteCardSketchDoc(cardUrl);
       }
       // cacheOfCard.delete(cardUrl) will be called in _closedListener();
-      if (!card.window.isDestroyed()) {
+      if (card.window && !card.window.isDestroyed()) {
         this.logger.debug('# Start deleting sketch: ' + cardUrl);
         try {
           card.window.destroy();
@@ -796,7 +796,7 @@ class Note implements INote {
       // Remove listeners firstly to avoid focus another card in closing process
       closeSettings();
       cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
-      cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
+      cacheOfCard.forEach(card => card.window?.webContents.send('card-close'));
     } catch (error) {
       console.error(error);
     }
