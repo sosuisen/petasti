@@ -124,7 +124,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
                 cardBody!,
                 changedFile.new.doc as CardSketch,
                 false
-              );
+              ).catch(e => note.logger.debug(e));
             }
           }
           else if (changedFile.operation === 'update') {
