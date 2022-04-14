@@ -4,6 +4,7 @@
  */
 import {
   BrowserWindow,
+  clipboard,
   Display,
   ipcMain,
   MenuItemConstructorOptions,
@@ -138,10 +139,27 @@ export const setContextMenu = (note: INote, card: ICard) => {
         {
           label: MESSAGE('cut'),
           role: 'cut',
+          visible: card.hasSelection && !isLabelOpened(card.sketch.label.status),
         },
         {
           label: MESSAGE('copy'),
           role: 'copy',
+          visible: card.hasSelection && !isLabelOpened(card.sketch.label.status),
+        },
+        {
+          label: MESSAGE('copyAsMarkdown'),
+          click: () => {
+            if (card.hasSelection) {
+              card.window?.webContents.send('get-selected-markdown');
+              ipcMain.handleOnce(
+                'response-of-get-selected-markdown-' + encodeURIComponent(card.url),
+                (event, markdown, startLeft, endRight, top, bottom) => {
+                  clipboard.writeText(markdown);
+                }
+              );
+            }
+          },
+          visible: card.hasSelection && !isLabelOpened(card.sketch.label.status),
         },
         {
           label: MESSAGE('paste'),

@@ -24,6 +24,7 @@ type MessagesMain = {
   // unlockCard: string;
   cut: string;
   copy: string;
+  copyAsMarkdown: string;
   paste: string;
   pasteAndMatchStyle: string;
   white: string;
@@ -253,6 +254,7 @@ export const ENGLISH: Messages = {
   // unlockCard: 'Unlock card',
   cut: 'Cut',
   copy: 'Copy',
+  copyAsMarkdown: 'Copy as markdown',
   paste: 'Paste',
   pasteAndMatchStyle: 'Paste and match style',
   white: 'white',
@@ -390,6 +392,7 @@ export const JAPANESE: Messages = {
   // unlockCard: 'ロック解除する',
   cut: '切り取り',
   copy: 'コピー',
+  copyAsMarkdown: 'コピー（Markdown形式）',
   paste: '貼り付け',
   pasteAndMatchStyle: '貼り付け（書式なし）',
   white: '白',
