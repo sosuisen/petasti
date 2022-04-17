@@ -158,12 +158,20 @@ app.on('ready', () => {
 });
 
 /**
- * Close notebook
+ * Close current note
  */
-const closeNotebook = async () => {
+const closeCurrentNote = async () => {
+  await note.updateNoteZorder();
   handlers.forEach(channel => ipcMain.removeHandler(channel));
   handlers.length = 0; // empty
   cacheOfCard.clear();
+};
+
+/**
+ * Close notebook
+ */
+const closeNotebook = async () => {
+  await closeCurrentNote();
 
   await note.closeDB();
   destroyTray();
@@ -203,10 +211,9 @@ emitter.on('change-note', async (nextNoteId: string) => {
   });
 
   try {
-    handlers.forEach(channel => ipcMain.removeHandler(channel));
-    handlers.length = 0; // empty
-    cacheOfCard.clear();
+    await closeCurrentNote();
 
+    // Open note
     note.settings.currentNoteId = nextNoteId;
     await note.settingsDB.put(note.settings);
     setTrayContextMenu();
