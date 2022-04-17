@@ -487,6 +487,7 @@ class Note implements INote {
       },
       name,
       user: 'local',
+      zOrder: [],
       isResident: regExpResidentNote.test(name),
       _id: noteId,
     };
@@ -810,6 +811,25 @@ class Note implements INote {
       return this._bookDB.close();
     }
     return Promise.resolve();
+  };
+
+  updateNoteZorder = async (): Promise<void> => {
+    const zOrderArray = [...cacheOfCard.values()]
+      .sort((a, b) => {
+        if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
+        if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
+        return 0;
+      })
+      .filter(card => {
+        const isResident =
+          noteStore.getState().get(getNoteIdFromUrl(card.url))?.isResident ?? false;
+        if (isResident) return false;
+        return true;
+      })
+      .map(card => card.body._id);
+    const noteProp = noteStore.getState().get(note.settings.currentNoteId);
+    noteProp.zOrder = zOrderArray;
+    await this.updateNoteDoc(noteProp);
   };
 
   updateNoteDoc = async (noteProp: NoteProp): Promise<TaskMetadata> => {

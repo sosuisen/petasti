@@ -87,6 +87,7 @@ export type NoteProp = {
   user: string;
   date: CartaDate;
 
+  zOrder: string[];
   isResident: boolean;
   updatedTime?: string; // only for redux-thunk
 };
