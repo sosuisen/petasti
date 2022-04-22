@@ -215,26 +215,6 @@ export const setTrayContextMenu = () => {
           const [newNoteProp] = await note.createNote(newName as string, true);
           setTrayContextMenu();
           cacheOfCard.forEach(card => card.resetContextMenu());
-
-          /*
-        closeSettings();
-
-        if (cacheOfCard.size === 0) {
-          emitter.emit('change-note', newNoteProp._id);
-        }
-        else {
-          // eslint-disable-next-line require-atomic-updates
-          note.changingToNoteId = newNoteProp._id;
-          try {
-            // Remove listeners firstly to avoid focus another card in closing process
-            cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
-            cacheOfCard.forEach(card => card.window.webContents.send('card-close'));
-          } catch (e) {
-            console.error(e);
-          }
-          // wait 'window-all-closed' event
-        }
-        */
           // setTrayContextMenu() will be called in change-note event.
         },
       },
