@@ -827,9 +827,12 @@ class Note implements INote {
         return true;
       })
       .map(card => card.body._id);
+
     const noteProp = noteStore.getState().get(note.settings.currentNoteId);
-    noteProp.zOrder = zOrderArray;
-    await this.updateNoteDoc(noteProp);
+    if (noteProp) {
+      noteProp.zOrder = zOrderArray;
+      await this.updateNoteDoc(noteProp);
+    }
   };
 
   updateNoteDoc = async (noteProp: NoteProp): Promise<TaskMetadata> => {
