@@ -1,6 +1,6 @@
 import { shell } from 'electron';
 import { APP_SCHEME } from '../modules_common/const';
-import { cacheOfCard } from './card_cache';
+import { cacheOfCard, closeAllCards } from './card_cache';
 import { emitter } from './event';
 import { INote } from './note_types';
 import { closeSettings } from './settings';
@@ -27,9 +27,7 @@ export function openURL (url: string) {
           note.changingToNoteId = noteId;
           // eslint-disable-next-line max-depth
           try {
-            // Remove listeners firstly to avoid focus another card in closing process
-            cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
-            cacheOfCard.forEach(card => card.window?.webContents.send('card-close'));
+            closeAllCards(note);
           } catch (e) {
             console.error(e);
           }

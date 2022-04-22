@@ -32,7 +32,7 @@ import {
 } from '../modules_common/const';
 import { CardBody, CardSketch, Snapshot } from '../modules_common/types';
 import { MESSAGE } from './messages';
-import { cacheOfCard } from './card_cache';
+import { cacheOfCard, closeAllCards } from './card_cache';
 import { INote } from './note_types';
 import { regExpResidentNote, showDialog } from './utils_main';
 import { noteStore } from './note_store';
@@ -139,27 +139,7 @@ export const setTrayContextMenu = () => {
                 else {
                   note.changingToNoteId = noteProp._id;
                   try {
-                    // Remove listeners firstly to avoid focus another card in closing process
-                    cacheOfCard.forEach(card => {
-                      if (card) {
-                        card.removeWindowListenersExceptClosedEvent();
-                      }
-                      else {
-                        note.logger.debug(
-                          '# Error before changing note: card is undefined'
-                        );
-                      }
-                    });
-                    cacheOfCard.forEach(card => {
-                      if (card) {
-                        card.window?.webContents.send('card-close');
-                      }
-                      else {
-                        note.logger.debug(
-                          '# Error before changing note: card is undefined'
-                        );
-                      }
-                    });
+                    closeAllCards(note);
                   } catch (e) {
                     console.error(e);
                   }
@@ -286,9 +266,7 @@ export const setTrayContextMenu = () => {
           // eslint-disable-next-line require-atomic-updates
           note.changingToNoteId = noteIdList[nextNoteIndex];
           try {
-            // Remove listeners firstly to avoid focus another card in closing process
-            cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
-            cacheOfCard.forEach(card => card.window?.webContents.send('card-close'));
+            closeAllCards(note);
           } catch (e) {
             console.error(e);
           }
@@ -404,7 +382,7 @@ export const setTrayContextMenu = () => {
           }
           else {
             try {
-              cacheOfCard.forEach(card => card.window?.webContents.send('card-close'));
+              closeAllCards(note);
             } catch (e) {
               console.error(e);
               emitter.emit('exit');

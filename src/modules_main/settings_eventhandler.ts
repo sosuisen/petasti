@@ -22,7 +22,7 @@ import { availableLanguages, defaultLanguage, MessageLabel } from '../modules_co
 import { emitter } from './event';
 import { closeSettings, settingsDialog } from './settings';
 import { DIALOG_BUTTON, SCHEMA_VERSION } from '../modules_common/const';
-import { cacheOfCard } from './card_cache';
+import { cacheOfCard, closeAllCards } from './card_cache';
 import { MESSAGE, setMessages } from './messages';
 import { showConfirmDialog, showDialog } from './utils_main';
 import { INote } from './note_types';
@@ -425,10 +425,8 @@ export const addSettingsHandler = (note: INote) => {
     // eslint-disable-next-line require-atomic-updates
     note.changingToNoteId = 'restart';
     try {
-      // Remove listeners firstly to avoid focus another card in closing process
       closeSettings();
-      cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
-      cacheOfCard.forEach(card => card.window?.webContents.send('card-close'));
+      closeAllCards(note);
     } catch (error) {
       console.error(error);
     }

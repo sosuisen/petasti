@@ -13,7 +13,7 @@ import {
 import { showDialog } from './utils_main';
 import { INote } from './note_types';
 import { CardBody, CardSketch, NoteProp } from '../modules_common/types';
-import { cacheOfCard } from './card_cache';
+import { cacheOfCard, closeAllCards } from './card_cache';
 import { setTrayContextMenu } from './tray';
 import { noteStore } from './note_store';
 import {
@@ -209,9 +209,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
               // Close resident cards
               note.changingToNoteId = noteId;
               try {
-                // Remove listeners firstly to avoid focus another card in closing process
-                cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
-                cacheOfCard.forEach(card => card.window?.webContents.send('card-close'));
+                closeAllCards(note);
               } catch (e) {
                 console.error(e);
               }

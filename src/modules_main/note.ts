@@ -72,7 +72,7 @@ import {
 import { regExpResidentNote, showDialog } from './utils_main';
 import { initSync } from './sync';
 import { MESSAGE, setMessages } from './messages';
-import { cacheOfCard } from './card_cache';
+import { cacheOfCard, closeAllCards } from './card_cache';
 import { INote, NoteState } from './note_types';
 import { noteStore } from './note_store';
 import { noteCreateCreator, noteInitCreator } from './note_action_creator';
@@ -794,10 +794,8 @@ class Note implements INote {
     showDialog(target, 'info', 'reloadNotebookByCombine');
     note.changingToNoteId = 'restart';
     try {
-      // Remove listeners firstly to avoid focus another card in closing process
       closeSettings();
-      cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());
-      cacheOfCard.forEach(card => card.window?.webContents.send('card-close'));
+      closeAllCards(note);
     } catch (error) {
       console.error(error);
     }
