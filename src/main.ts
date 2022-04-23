@@ -160,7 +160,7 @@ app.on('ready', () => {
 /**
  * Close current note
  */
-const closeCurrentNote = async () => {
+const closeCurrentNote = () => {
   handlers.forEach(channel => ipcMain.removeHandler(channel));
   handlers.length = 0; // empty
   cacheOfCard.clear();
