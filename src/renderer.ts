@@ -264,6 +264,13 @@ const initializeUIEvents = () => {
 
   window.addEventListener('mouseleave', event => {});
 
+  window.addEventListener('mousemove', event => {
+    if (event.buttons !== 1) {
+      // left button is not down
+      onBodyMouseUp();
+    }
+  });
+
   let mouseOffsetX: number;
   let mouseOffsetY: number;
   const moveWindow = () => {
