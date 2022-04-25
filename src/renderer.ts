@@ -667,6 +667,13 @@ const onCardBlurred = () => {
     }
     endEditor();
   }
+
+  /* reset modifier keys */
+  setShiftDown(false);
+  setCtrlDown(false);
+  setAltDown(false);
+  setMetaDown(false);
+
   render(['TitleBar', 'TitleBarStyle', 'ContentsData', 'CardStyle', 'ContentsRect']);
 };
 
