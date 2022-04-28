@@ -37,6 +37,10 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
 
   if (sync === undefined) return undefined;
 
+  sync.runBeforeLiveSync = () => {
+    note.updateNoteZorder();
+  };
+
   note.cardCollection.onSyncEvent(
     sync,
     'localChange',
