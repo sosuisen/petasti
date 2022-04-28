@@ -14,7 +14,7 @@ export const setZIndexOfTopCard = (zIndex: number) => {
 };
 */
 export const getZIndexOfTopCard = (): number => {
-  console.log('getZIndexOfTopCard');
+  // console.log('getZIndexOfTopCard');
   const backToFront = [...cacheOfCard.values()].sort((a, b) => {
     /*
     if (a.sketch.geometry === undefined) {
@@ -43,7 +43,7 @@ export const setZIndexOfBottomCard = (zIndex: number) => {
 };
 */
 export const getZIndexOfBottomCard = (): number => {
-  console.log('getZIndexOfBottomCard');
+  // console.log('getZIndexOfBottomCard');
   const backToFront = [...cacheOfCard.values()].sort((a, b) => {
     /*
     if (a.sketch.geometry === undefined) {
