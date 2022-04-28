@@ -461,7 +461,7 @@ export const cardWorkStateStatusUpdateCreator = (status: CardStatus) => {
   };
 };
 
-export const cardSketchSendToBackCreator = (zIndex: number, modifiedDate: string) => {
+export const cardSketchZindexUpdateCreator = (zIndex: number, modifiedDate: string) => {
   return function (dispatch: Dispatch<any>, getState: () => CardState) {
     if (getState().sketch._id === '') return;
 

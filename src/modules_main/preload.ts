@@ -210,9 +210,9 @@ ipcRenderer.on('resize-by-hand', (event: Electron.IpcRendererEvent, geometry: Ge
   window.postMessage({ command: 'resize-by-hand', geometry }, 'file://')
 );
 ipcRenderer.on(
-  'send-to-back',
+  'z-index-update',
   (event: Electron.IpcRendererEvent, zIndex: number, modifiedDate: string) =>
-    window.postMessage({ command: 'send-to-back', zIndex, modifiedDate }, 'file://')
+    window.postMessage({ command: 'z-index-update', zIndex, modifiedDate }, 'file://')
 );
 /*
 ipcRenderer.on('set-lock', (event: Electron.IpcRendererEvent, locked: boolean) => {

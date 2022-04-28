@@ -42,8 +42,8 @@ import {
   cardGeometryUpdateCreator,
   cardLabelUpdateCreator,
   cardSketchBringToFrontCreator,
-  cardSketchSendToBackCreator,
   cardSketchUpdateCreator,
+  cardSketchZindexUpdateCreator,
   cardStyleUpdateCreator,
   cardWorkStateStatusUpdateCreator,
 } from './modules_renderer/card_action_creator';
@@ -413,8 +413,8 @@ window.addEventListener('message', event => {
     case 'resize-by-hand':
       onChangeRectByHand(event.data.geometry, true);
       break;
-    case 'send-to-back':
-      onSendToBack(event.data.zIndex, event.data.modifiedDate);
+    case 'z-index-update':
+      onZindexUpdate(event.data.zIndex, event.data.modifiedDate);
       break;
     /*
     case 'set-lock':
@@ -812,8 +812,8 @@ const onRenderCard = (
   });
 };
 
-const onSendToBack = (zIndex: number, modifiedDate: string) => {
-  cardStore.dispatch(cardSketchSendToBackCreator(zIndex, modifiedDate));
+const onZindexUpdate = (zIndex: number, modifiedDate: string) => {
+  cardStore.dispatch(cardSketchZindexUpdateCreator(zIndex, modifiedDate));
 };
 /*
 const onSetLock = (locked: boolean) => {

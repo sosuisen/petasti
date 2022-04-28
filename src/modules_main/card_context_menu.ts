@@ -2,15 +2,7 @@
  * TreeStickies
  * © 2022 Hidekazu Kubota
  */
-import {
-  BrowserWindow,
-  clipboard,
-  Display,
-  ipcMain,
-  MenuItemConstructorOptions,
-  Rectangle,
-  screen,
-} from 'electron';
+import { BrowserWindow, clipboard, ipcMain, MenuItemConstructorOptions } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { cardColors, ColorName } from '../modules_common/color';
 import { CardBody, CardSketch, ICard } from '../modules_common/types';
@@ -20,11 +12,7 @@ import { cacheOfCard } from './card_cache';
 import { MESSAGE } from './messages';
 import { INote } from './note_types';
 import { noteStore } from './note_store';
-import {
-  DEFAULT_CARD_GEOMETRY,
-  MINIMUM_WINDOW_HEIGHT,
-  MINIMUM_WINDOW_HEIGHT_OFFSET,
-} from '../modules_common/const';
+import { DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
 import { emitter } from './event';
 
 /**
@@ -246,35 +234,31 @@ export const setContextMenu = (note: INote, card: ICard) => {
               if (card.sketch.geometry.z === getZIndexOfBottomCard()) {
                 return card.sketch.geometry.z;
               }
+              cacheOfCard.get(card.url)!.sketch.geometry.z = getZIndexOfBottomCard() - 1;
 
-              const zIndex = getZIndexOfBottomCard() - 1;
-              // console.debug(`new zIndex: ${zIndex}`);
-              // const newGeom = JSON.parse(JSON.stringify(card.sketch.geometry)) as Geometry;
-              // newGeom.z = zIndex;
+              const backToFront: ICard[] = [...cacheOfCard.values()]
+                .sort((a, b) => {
+                  if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
+                  if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
+                  return 0;
+                })
+                .filter(c => !c.isFake);
+              for (let i = 0; i < backToFront.length; i++) {
+                backToFront[i].sketch.geometry.z = i;
+              }
 
-              // Async
               const modifiedDate = getCurrentDateAndTime();
-              note.updateCardZ(card.url, zIndex, modifiedDate);
-
-              // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-
-              const backToFront: ICard[] = [...cacheOfCard.values()].sort((a, b) => {
-                if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
-                if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
-                return 0;
-              });
-              /*
-            setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
-            setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
-            */
               backToFront.forEach(myCard => {
                 if (myCard.window && !myCard.window.isDestroyed()) {
                   myCard!.suppressFocusEventOnce = true;
                   myCard!.focus();
+                  myCard.window?.webContents.send(
+                    'z-index-update',
+                    myCard.sketch.geometry.z,
+                    modifiedDate
+                  );
                 }
               });
-
-              card.window?.webContents.send('send-to-back', zIndex, modifiedDate);
             },
           },
           /*

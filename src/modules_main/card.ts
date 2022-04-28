@@ -551,6 +551,7 @@ export class Card implements ICard {
    * After startup, the first window.onfocus event is not invoked in Renderer Process.
    * Listen focus event in Main Process.
    */
+  // eslint-disable-next-line complexity
   private _focusListener = () => {
     // if (this.status === 'Focused') return;
     // this.status = 'Focused';
@@ -580,19 +581,39 @@ export class Card implements ICard {
         }
         // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 
-        const zIndex = getZIndexOfTopCard() + 1;
-        console.debug(`zIndex changed to: ${zIndex}`);
+        const oldZ = this.sketch.geometry.z;
 
-        this.window?.webContents.send('card-focused', zIndex, modifiedTime);
+        cacheOfCard.get(this.url)!.sketch.geometry.z = getZIndexOfTopCard() + 1;
+        const backToFront: ICard[] = [...cacheOfCard.values()]
+          .sort((a, b) => {
+            if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
+            if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
+            return 0;
+          })
+          .filter(c => !c.isFake);
+        for (let i = 0; i < backToFront.length; i++) {
+          backToFront[i].sketch.geometry.z = i;
+        }
 
-        // const newGeom = { ...this.sketch.geometry, z: zIndex };
+        console.log('newZ: ' + cacheOfCard.get(this.url)!.sketch.geometry.z);
 
-        // Async
-        this._note.updateCardZ(this.url, zIndex, modifiedTime);
-        // console.log([...cacheOfCard.values()].map(myCard => myCard.sketch.geometry.z));
-        // NOTE: When bring-to-front is invoked by focus event, the card has been already brought to front.
+        this.window?.webContents.send(
+          'card-focused',
+          cacheOfCard.get(this.url)!.sketch.geometry.z,
+          modifiedTime
+        );
 
-        // sortCards();
+        const modifiedDate = getCurrentDateAndTime();
+        for (let i = oldZ; i < backToFront.length - 1; i++) {
+          const myCard = backToFront[i];
+          if (myCard.window && !myCard.window.isDestroyed()) {
+            myCard.window?.webContents.send(
+              'z-index-update',
+              myCard.sketch.geometry.z,
+              modifiedDate
+            );
+          }
+        }
       } catch (err) {
         this._note.logger.debug(`# Error in _focusListener of ${this.sketch._id}: ${err}`);
       }
