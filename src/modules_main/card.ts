@@ -818,16 +818,21 @@ export class Card implements ICard {
     const newCardSketch = JSON.parse(JSON.stringify(this.sketch));
     const newSketchId = `${noteId}/${getCardIdFromUrl(this.url)}`;
     const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
-    // Overwrite z
-    newCardSketch.geometry.z = (await this._note.getZIndexOfTopCard(noteId)) + 1;
-    // Overwrite color
-    newCardSketch.style.backgroundColor = cardColors.white;
-    newCardSketch.style.uiColor = cardColors.white;
-    newCardSketch._id = newSketchId;
+
     const notCurrentNoteMsg =
       'The destination is not the current note. (This is not an error.)';
+    // Save asynchronously
     this._note
-      .createCardSketch(newUrl, newCardSketch, true)
+      .getZIndexOfTopCard(noteId)
+      .then(z => {
+        // Overwrite z
+        newCardSketch.geometry.z = z + 1;
+        // Overwrite color
+        newCardSketch.style.backgroundColor = cardColors.white;
+        newCardSketch.style.uiColor = cardColors.white;
+        newCardSketch._id = newSketchId;
+        return this._note.createCardSketch(newUrl, newCardSketch, true);
+      })
       .then((task: TaskMetadata) => {
         // When moveToNote is called from archive window, a card may move to the current note.
         if (task.shortId!.startsWith(this._note.settings.currentNoteId)) {
@@ -839,11 +844,12 @@ export class Card implements ICard {
         console.log('Moved to the current note: ' + newUrl);
         createCardWindow(this._note, newUrl, cardBody!, newCardSketch);
       })
-      // createCardSketch throws error when the same sketch exists.
       .catch((e: Error) => {
+        // createCardSketch throws error when the same sketch exists.
         if (!e.message.endsWith(notCurrentNoteMsg)) console.log(e);
       });
 
+    // Play animation
     const display: Display = screen.getDisplayNearestPoint({
       x: this.sketch.geometry.x,
       y: this.sketch.geometry.y,
@@ -873,16 +879,21 @@ export class Card implements ICard {
     const newCardSketch = JSON.parse(JSON.stringify(this.sketch));
     const newSketchId = `${noteId}/${getCardIdFromUrl(this.url)}`;
     const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
-    // Overwrite z
-    newCardSketch.geometry.z = (await this._note.getZIndexOfTopCard(noteId)) + 1;
-    // Overwrite color
-    newCardSketch.style.backgroundColor = cardColors.white;
-    newCardSketch.style.uiColor = cardColors.white;
-    newCardSketch._id = newSketchId;
+
     const notCurrentNoteMsg =
       'The destination is not the current note. (This is not an error.)';
+    // Save asynchronously
     this._note
-      .createCardSketch(newUrl, newCardSketch, true)
+      .getZIndexOfTopCard(noteId)
+      .then(z => {
+        // Overwrite z
+        newCardSketch.geometry.z = z + 1;
+        // Overwrite color
+        newCardSketch.style.backgroundColor = cardColors.white;
+        newCardSketch.style.uiColor = cardColors.white;
+        newCardSketch._id = newSketchId;
+        return this._note.createCardSketch(newUrl, newCardSketch, true);
+      })
       .then((task: TaskMetadata) => {
         // When copyToNote is called from archive window, a card may copy to the current note.
         if (task.shortId!.startsWith(this._note.settings.currentNoteId)) {
@@ -899,7 +910,7 @@ export class Card implements ICard {
         if (!e.message.endsWith(notCurrentNoteMsg)) console.log(e);
       });
 
-    // Animation
+    // Play animation
     const tmpCardSketch = JSON.parse(JSON.stringify(this.sketch));
     tmpCardSketch.geometry.z--;
 
