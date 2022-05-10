@@ -77,11 +77,6 @@ const cardGeometryReducer = (
       console.log('# cardGeometryReducer: ' + JSON.stringify(newState));
       return newState;
     }
-    case 'card-geometry-z-update': {
-      const newState = { ...state, z: action.payload };
-      console.log('# cardGeometryReducer: ' + JSON.stringify(newState));
-      return newState;
-    }
     default:
       return state;
   }

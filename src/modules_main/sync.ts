@@ -142,10 +142,6 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
                 changedFile,
                 taskMetadata.enqueueTime
               );
-              // eslint-disable-next-line max-depth
-              if (oldSketch.geometry.z !== newSketch.geometry.z) {
-                sortCardWindows(true);
-              }
               note.logger.debug(`sync-card-sketch: ${sketchId}`);
             }
           }
@@ -186,14 +182,19 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           cacheOfCard.forEach(card => card.resetContextMenu());
         }
         else if (changedFile.operation === 'update') {
-          const prop = changedFile.new.doc as NoteProp;
-          prop._id = noteId; // Set note id instead of 'prop'.
+          const oldProp = changedFile.old.doc as NoteProp;
+          const newProp = changedFile.new.doc as NoteProp;
+          newProp._id = noteId; // Set note id instead of 'prop'.
           // Deleted note will be created again.
           // Expired update will be skipped.
           noteStore.dispatch(
             // @ts-ignore
             noteUpdateCreator(note, prop, 'remote', taskMetadata.enqueueTime)
           );
+
+          if (JSON.stringify(oldProp.zOrder) !== JSON.stringify(newProp.zOrder)) {
+            sortCardWindows(newProp.zOrder);
+          }
 
           setTrayContextMenu();
           cacheOfCard.forEach(card => card.resetContextMenu());

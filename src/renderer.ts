@@ -43,7 +43,6 @@ import {
   cardLabelUpdateCreator,
   cardSketchBringToFrontCreator,
   cardSketchUpdateCreator,
-  cardSketchZindexUpdateCreator,
   cardStyleUpdateCreator,
   cardWorkStateStatusUpdateCreator,
 } from './modules_renderer/card_action_creator';
@@ -181,7 +180,7 @@ const initializeUIEvents = () => {
       geometry: {
         x: geometry.x,
         y: geometry.y,
-        z: geometry.z, // z will be overwritten in createCard()
+        z: 0,
         width: geometry.width,
         height: geometry.height,
       },
@@ -374,7 +373,7 @@ window.addEventListener('message', event => {
       onCardClose();
       break;
     case 'card-focused':
-      onCardFocused(event.data.zIndex, event.data.modifiedDate);
+      onCardFocused();
       break;
     case 'change-card-color':
       onChangeCardColor(event.data.backgroundColor, event.data.opacity);
@@ -412,9 +411,6 @@ window.addEventListener('message', event => {
       break;
     case 'resize-by-hand':
       onChangeRectByHand(event.data.geometry, true);
-      break;
-    case 'z-index-update':
-      onZindexUpdate(event.data.zIndex, event.data.modifiedDate);
       break;
     /*
     case 'set-lock':
@@ -640,12 +636,12 @@ const onCardClose = async () => {
   close();
 };
 
-const onCardFocused = (zIndex: number | undefined, modifiedDate: string | undefined) => {
+const onCardFocused = () => {
   if (closing) return;
 
   if (suppressFocusEvent) return;
 
-  cardStore.dispatch(cardSketchBringToFrontCreator(zIndex, modifiedDate));
+  cardStore.dispatch(cardSketchBringToFrontCreator());
 
   render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
 
@@ -706,7 +702,7 @@ const onMoveByHand = (geometry: Geometry, modifiedDate: string) => {
     const newGeom: Geometry = {
       x: Math.round(geometry.x),
       y: Math.round(geometry.y),
-      z: currentZ,
+      z: 0,
       width: currentWidth,
       height: currentHeight,
     };
@@ -812,9 +808,6 @@ const onRenderCard = (
   });
 };
 
-const onZindexUpdate = (zIndex: number, modifiedDate: string) => {
-  cardStore.dispatch(cardSketchZindexUpdateCreator(zIndex, modifiedDate));
-};
 /*
 const onSetLock = (locked: boolean) => {
   cardStore.dispatch(cardConditionLockedUpdateCreator(locked));

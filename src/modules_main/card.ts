@@ -56,6 +56,7 @@ import { cardColors, ColorName } from '../modules_common/color';
 import { noteStore } from './note_store';
 import { openURL } from './url_schema';
 import { playSound } from './sound';
+import { note } from './note';
 
 type AccelCheck = {
   prevTime: number;
@@ -99,35 +100,20 @@ export const getGlobalFocusEventListenerPermission = () => {
   return globalFocusListenerPermission;
 };
 
-const sortCards = () => {
-  const backToFront = [...cacheOfCard.values()].sort((a, b) => {
-    /*
-    if (a.sketch.geometry === undefined) {
-      console.log('# geometry undefined: ' + JSON.stringify(a.sketch));
-      return 0;
-    }
-    if (b.sketch.geometry === undefined) {
-      console.log('# geometry undefined: ' + JSON.stringify(b.sketch));
-      return 0;
-    }
-    */
-    if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
-    if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
-    return 0;
-  });
-  /*
-  if (backToFront.length > 0) {
-    setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
-    setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
-  }
-  */
-  return backToFront;
+const sortCards = (zOrder: string[]) => {
+  const backToFront = zOrder
+    .map(myUrl => cacheOfCard.get(myUrl))
+    .filter(myCard => myCard !== undefined);
+
+  // Insert cards which are not found in zOrder after backToFront.
+  // Duplicated ICards are removed by using new Set().
+  return [...new Set([...backToFront, ...cacheOfCard.values()])];
 };
 
-export const sortCardWindows = (suppressFocus = false) => {
-  const backToFront = sortCards();
+export const sortCardWindows = (zOrder: string[], suppressFocus = false) => {
+  const backToFront = sortCards(zOrder);
   backToFront.forEach(card => {
-    if (card.window && !card.window.isDestroyed()) {
+    if (card && card.window && !card.window.isDestroyed()) {
       if (suppressFocus) card.suppressFocusEvent = true;
 
       if (card.window.isMinimized()) {
@@ -144,7 +130,7 @@ export const sortCardWindows = (suppressFocus = false) => {
     }
   });
   if (backToFront.length > 0) {
-    backToFront[backToFront.length - 1].focus();
+    backToFront[backToFront.length - 1]!.focus();
   }
   return backToFront;
 };
@@ -226,7 +212,7 @@ export const createCardWindow = async (
   await card.render();
   card.window?.focus();
   card.addShortcuts();
-  card.window?.webContents.send('card-focused', undefined, undefined);
+  card.window?.webContents.send('card-focused');
   if (moveToRect) {
     card.setRect(moveToRect.x, moveToRect.y, moveToRect.width, moveToRect.height, true);
   }
@@ -571,49 +557,20 @@ export class Card implements ICard {
       try {
         this.addShortcuts();
 
-        const modifiedTime = getCurrentDateAndTime();
-
-        if (this.sketch.geometry.z === getZIndexOfTopCard()) {
-          console.log('zIndex no change: ' + this.sketch.geometry.z);
-          // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-          this.window?.webContents.send('card-focused', undefined, undefined);
+        if (this._note.zOrder[this._note.zOrder.length - 1] === this.url) {
+          console.log('zOrder no change');
+          this.window?.webContents.send('card-focused');
           return;
         }
         // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 
-        const oldZ = this.sketch.geometry.z;
-
-        cacheOfCard.get(this.url)!.sketch.geometry.z = getZIndexOfTopCard() + 1;
-        const backToFront: ICard[] = [...cacheOfCard.values()]
-          .sort((a, b) => {
-            if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
-            if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
-            return 0;
-          })
-          .filter(c => !c.isFake);
-        for (let i = 0; i < backToFront.length; i++) {
-          backToFront[i].sketch.geometry.z = i;
+        const currentZ = this._note.zOrder.indexOf(this.url);
+        if (currentZ > 0) {
+          // remove
+          this._note.zOrder.splice(currentZ, 1);
         }
-
-        console.log('newZ: ' + cacheOfCard.get(this.url)!.sketch.geometry.z);
-
-        this.window?.webContents.send(
-          'card-focused',
-          cacheOfCard.get(this.url)!.sketch.geometry.z,
-          modifiedTime
-        );
-
-        const modifiedDate = getCurrentDateAndTime();
-        for (let i = oldZ; i < backToFront.length - 1; i++) {
-          const myCard = backToFront[i];
-          if (myCard.window && !myCard.window.isDestroyed()) {
-            myCard.window?.webContents.send(
-              'z-index-update',
-              myCard.sketch.geometry.z,
-              modifiedDate
-            );
-          }
-        }
+        this._note.zOrder.push(this.url);
+        this.window?.webContents.send('card-focused');
       } catch (err) {
         this._note.logger.debug(`# Error in _focusListener of ${this.sketch._id}: ${err}`);
       }
@@ -949,7 +906,6 @@ export class Card implements ICard {
     );
     tmpCard.window?.setOpacity(0.7);
     this._note.createCard(tmpCard.url, tmpCard, false, false);
-    sortCardWindows();
 
     await tmpCard.render();
 
@@ -996,7 +952,7 @@ export class Card implements ICard {
     const geometry = {
       x,
       y,
-      z: this.sketch.geometry.z,
+      z: 0,
       width,
       height,
     };
@@ -1022,7 +978,7 @@ export class Card implements ICard {
     const geometry = {
       x,
       y,
-      z: this.sketch.geometry.z,
+      z: 0,
       width,
       height,
     };
@@ -1145,7 +1101,7 @@ export class Card implements ICard {
           geometry: {
             x: geometry.x,
             y: geometry.y,
-            z: geometry.z, // z will be overwritten in createCard()
+            z: 0,
             width: geometry.width,
             height: geometry.height,
           },

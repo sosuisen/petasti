@@ -22,7 +22,6 @@ import {
   CardCollapsedListUpdateAction,
   CardConditionUpdateAction,
   CardGeometryUpdateAction,
-  CardGeometryZUpdateAction,
   CardLabelRectUpdateAction,
   CardLabelUpdateAction,
   CardSketchModifiedDateUpdateAction,
@@ -421,26 +420,10 @@ export const cardLabelUpdateCreator = (
   };
 };
 
-export const cardSketchBringToFrontCreator = (
-  zIndex: number | undefined,
-  modifiedDate: string | undefined
-) => {
+export const cardSketchBringToFrontCreator = () => {
   return function (dispatch: Dispatch<any>, getState: () => CardState) {
     if (getState().sketch._id === '') return;
 
-    if (zIndex !== undefined) {
-      const cardGeometryAction: CardGeometryZUpdateAction = {
-        type: 'card-geometry-z-update',
-        payload: zIndex,
-      };
-      dispatch(cardGeometryAction);
-
-      const cardDateAction: CardSketchModifiedDateUpdateAction = {
-        type: 'card-sketch-modified-date-update',
-        payload: modifiedDate!,
-      };
-      dispatch(cardDateAction);
-    }
     const cardStatusAction: CardWorkStateStatusUpdateAction = {
       type: 'card-work-state-status-update',
       payload: 'Focused',
@@ -458,23 +441,5 @@ export const cardWorkStateStatusUpdateCreator = (status: CardStatus) => {
       payload: status,
     };
     dispatch(cardStatusAction);
-  };
-};
-
-export const cardSketchZindexUpdateCreator = (zIndex: number, modifiedDate: string) => {
-  return function (dispatch: Dispatch<any>, getState: () => CardState) {
-    if (getState().sketch._id === '') return;
-
-    const cardAction: CardGeometryZUpdateAction = {
-      type: 'card-geometry-z-update',
-      payload: zIndex,
-    };
-    dispatch(cardAction);
-
-    const cardDateAction: CardSketchModifiedDateUpdateAction = {
-      type: 'card-sketch-modified-date-update',
-      payload: modifiedDate,
-    };
-    dispatch(cardDateAction);
   };
 };

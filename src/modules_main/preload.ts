@@ -154,13 +154,8 @@ ipcRenderer.on('card-blurred', () =>
 ipcRenderer.on('card-close', () =>
   window.postMessage({ command: 'card-close' }, 'file://')
 );
-ipcRenderer.on(
-  'card-focused',
-  (
-    event: Electron.IpcRendererEvent,
-    zIndex: number | undefined,
-    modifiedDate: string | undefined
-  ) => window.postMessage({ command: 'card-focused', zIndex, modifiedDate }, 'file://')
+ipcRenderer.on('card-focused', (event: Electron.IpcRendererEvent) =>
+  window.postMessage({ command: 'card-focused' }, 'file://')
 );
 ipcRenderer.on(
   'change-card-color',
@@ -209,11 +204,7 @@ ipcRenderer.on(
 ipcRenderer.on('resize-by-hand', (event: Electron.IpcRendererEvent, geometry: Geometry) =>
   window.postMessage({ command: 'resize-by-hand', geometry }, 'file://')
 );
-ipcRenderer.on(
-  'z-index-update',
-  (event: Electron.IpcRendererEvent, zIndex: number, modifiedDate: string) =>
-    window.postMessage({ command: 'z-index-update', zIndex, modifiedDate }, 'file://')
-);
+
 /*
 ipcRenderer.on('set-lock', (event: Electron.IpcRendererEvent, locked: boolean) => {
   window.postMessage({ command: 'set-lock', locked }, 'file://');

@@ -98,7 +98,7 @@
     "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^9.0.1",
     "git-documentdb": "^0.4.7",
-    "git-documentdb-plugin-remote-nodegit": "^1.0.5-alpha.0",
+    "git-documentdb-plugin-remote-nodegit": "^1.0.4",
     "hmtid": "^0.1.2",
     "node-wav-player": "^0.2.0",
     "prosemirror-model": "^1.14.3",

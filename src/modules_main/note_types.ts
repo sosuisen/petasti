@@ -30,6 +30,8 @@ export interface INote {
   bookDB: GitDocumentDB;
   settingsDB: GitDocumentDB;
 
+  zOrder: string[];
+
   logger: Logger;
 
   cardCollection: Collection;
@@ -67,11 +69,6 @@ export interface INote {
     cardBody: CardBody,
     modifiedDate: string
   ) => Promise<TaskMetadata>;
-  updateCardZ: (
-    sketchUrl: string,
-    z: number,
-    modifiedTime: string
-  ) => Promise<TaskMetadata | false>;
   createCardSketch: (
     sketchUrl: string,
     cardSketch: CardSketch,

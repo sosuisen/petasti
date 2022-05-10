@@ -21,7 +21,7 @@ import { DatabaseCommand } from '../modules_common/db.types';
 import { availableLanguages, defaultLanguage, MessageLabel } from '../modules_common/i18n';
 import { emitter } from './event';
 import { closeSettings, settingsDialog } from './settings';
-import { DIALOG_BUTTON, SCHEMA_VERSION } from '../modules_common/const';
+import { APP_SCHEME, DIALOG_BUTTON, SCHEMA_VERSION } from '../modules_common/const';
 import { cacheOfCard, closeAllCards } from './card_cache';
 import { MESSAGE, setMessages } from './messages';
 import { showConfirmDialog, showDialog } from './utils_main';
@@ -30,6 +30,7 @@ import { setTrayContextMenu } from './tray';
 import { initSync } from './sync';
 import { getCurrentDateAndTime } from '../modules_common/utils';
 import { defaultDataDir } from '../modules_common/store.types';
+import { Geometry } from '../modules_common/types';
 
 export const addSettingsHandler = (note: INote) => {
   // Request from settings dialog
@@ -228,7 +229,7 @@ export const addSettingsHandler = (note: INote) => {
     // console.debug('Start import JSON from ' + filepath);
     const jsonObj = readJSONSync(filepath);
 
-    if (jsonObj.schemaVersion < 0.4) {
+    if (jsonObj.schemaVersion < 0.5) {
       showDialog(settingsDialog, 'error', 'invalidSchemaVersion', jsonObj.schemaVersion);
       return;
     }
@@ -350,14 +351,32 @@ export const addSettingsHandler = (note: INote) => {
       tmpBookDB.committer = note.bookDB.committer;
       await tmpBookDB.saveAuthor();
 
-      if (jsonObj.schemaVersion === 0.4) {
-        sortedCards.forEach(card => {
-          card._body = card._body.replace(/\n\s+{.summary}\n/g, '');
-        });
+      if (jsonObj.schemaVersion === 0.5) {
+        const noteHash: { [key: string]: Record<string, unknown>[] } = {};
+        for (const tmpNote of sortedNotes) {
+          const idArray = tmpNote._id.split('/');
+          const noteId = idArray[1];
+          const childName = idArray[2];
+          if (!noteHash[noteId]) {
+            noteHash[noteId] = [];
+          }
+          if (childName === 'prop') {
+            noteHash[noteId].unshift(tmpNote);
+          }
+          else {
+            noteHash[noteId].push(tmpNote);
+          }
+        }
 
-        sortedSnapshots.forEach(snapshot => {
-          (snapshot.cards as JsonDoc[]).forEach(tmpCard => {
-            tmpCard.body._body = tmpCard.body._body.replace(/\n\s+{.summary}\n/g, '');
+        Object.keys(noteHash).forEach(noteId => {
+          const prop = noteHash[noteId].shift();
+          prop!.zOrder = noteHash[noteId]
+            .sort((a, b) => (a.geometry as Geometry).z - (b.geometry as Geometry).z)
+            .map(sketch =>
+              (sketch._id as string).replace(/^note/, `${APP_SCHEME}://local`)
+            );
+          noteHash[noteId].forEach(sketch => {
+            (sketch.geometry as Geometry).z = 0;
           });
         });
       }

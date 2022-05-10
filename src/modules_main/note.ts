@@ -114,6 +114,10 @@ class Note implements INote {
   }
 
   /**
+   * zOrder
+   */
+  zOrder: string[] = [];
+  /**
    * Logger
    */
   logger: Logger;
@@ -222,9 +226,11 @@ class Note implements INote {
 
   /**
    * loadNoteBook
+   *
+   * @returns Array of [CardProperty[], zOrder[]]
    */
   // eslint-disable-next-line complexity
-  loadNotebook = async (): Promise<CardProperty[]> => {
+  loadNotebook = async (): Promise<[CardProperty[], string[]]> => {
     // locale can be got after 'ready'
     const myLocale = app.getLocale();
     console.debug(`locale: ${myLocale}`);
@@ -347,7 +353,7 @@ class Note implements INote {
     }
 
     if (!this._settingsDB || !this._bookDB) {
-      return [];
+      return [[], []];
     }
 
     // Create collections
@@ -434,10 +440,16 @@ class Note implements INote {
     return sortedNoteIdList;
   };
 
-  loadCurrentNote = async (): Promise<CardProperty[]> => {
+  /**
+   * loadCurrentNote
+   *
+   * @returns Array of [CardProperty[], zOrder[]]
+   */
+  loadCurrentNote = async (): Promise<[CardProperty[], string[]]> => {
     // Create note if not exist.
     let createNoteFlag = false;
     let noteName = '';
+    const zOrder: string[] = [];
     if (noteStore.getState().size === 0) {
       createNoteFlag = true;
       noteName = MESSAGE('firstNoteName');
@@ -458,7 +470,7 @@ class Note implements INote {
       this._settings.currentNoteId = currentNoteProp._id;
       await this._settingsDB.put(this._settings);
 
-      return [firstCardProp];
+      return [[firstCardProp], [firstCardProp.url]];
     }
 
     const cards: CardProperty[] = [];
@@ -468,11 +480,13 @@ class Note implements INote {
       if (noteProp.isResident && noteProp._id !== this._settings.currentNoteId) {
         // eslint-disable-next-line no-await-in-loop
         cards.push(...(await this.loadCards(noteProp._id)));
+        zOrder.unshift(...noteProp.zOrder);
       }
     }
     cards.push(...(await this.loadCards(this._settings.currentNoteId)));
+    zOrder.push(...noteStore.getState().get(note.settings.currentNoteId)!.zOrder);
     console.timeEnd('loadCards');
-    return cards;
+    return [cards, zOrder];
   };
 
   createNote = async (
@@ -646,48 +660,6 @@ class Note implements INote {
     return task;
   };
 
-  updateCardZ = async (
-    sketchUrl: string,
-    z: number,
-    modifiedTime: string
-  ): Promise<TaskMetadata | false> => {
-    // Update cacheOfCard
-    const card = cacheOfCard.get(sketchUrl);
-    if (card?.isFake) return false;
-    console.log(`# updateCardZ: ${sketchUrl}`);
-    let sketch: CardSketch;
-    if (card) {
-      if (card.sketch.geometry.z !== z) {
-        card.sketch.geometry.z = z;
-        card.sketch.date.modifiedDate = modifiedTime;
-        sketch = card.sketch;
-      }
-      else {
-        return false;
-      }
-    }
-    else {
-      console.log('Card does not exist in cacheOfCard: ' + sketchUrl);
-      /*
-      sketch = (await this._noteCollection.get(
-        getSketchIdFromUrl(sketchUrl)
-      )) as CardSketch;
-      sketch.geometry = { ...sketch.geometry, ...geometry };
-      */
-      return false;
-    }
-    const task: TaskMetadata = await this._updateCardSketchDoc(sketch!);
-
-    // Update note store & DB
-    /*
-    if (task !== undefined) {
-      const noteId = getNoteIdFromUrl(sketchUrl);
-      noteStore.dispatch(noteModifiedDateUpdateCreator(this, noteId, modifiedTime));
-    }
-    */
-    return task;
-  };
-
   createCardSketch = async (
     sketchUrl: string,
     cardSketch: CardSketch,
@@ -825,23 +797,14 @@ class Note implements INote {
   };
 
   updateNoteZorder = async (): Promise<void> => {
-    const zOrderArray = [...cacheOfCard.values()]
-      .sort((a, b) => {
-        if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
-        if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
-        return 0;
-      })
-      .filter(card => {
-        if (card.isFake) return false;
-        const isResident =
-          noteStore.getState().get(getNoteIdFromUrl(card.url))?.isResident ?? false;
-        if (isResident) return false;
-        return true;
-      })
-      .map(card => card.body._id);
-
     const noteProp = noteStore.getState().get(note.settings.currentNoteId);
     if (noteProp) {
+      const zOrderArray = noteProp.zOrder.filter(myUrl => {
+        const myCard = cacheOfCard.get(myUrl);
+        if (myCard === undefined || myCard.isFake) return false;
+        return true;
+      });
+
       noteProp.zOrder = zOrderArray;
       await this.updateNoteDoc(noteProp);
     }

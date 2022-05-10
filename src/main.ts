@@ -92,7 +92,7 @@ const startApp = async (isRestart: boolean) => {
   });
 
   // load workspaces
-  const cardProps = await note.loadNotebook();
+  const [cardProps, zOrder] = await note.loadNotebook();
 
   let loadingNoteProgressBar: ProgressBar | undefined = new ProgressBar({
     text: MESSAGE('loadingNoteProgressBarTitle'),
@@ -133,7 +133,7 @@ const startApp = async (isRestart: boolean) => {
     }, 100);
   }
 
-  const backToFront = sortCardWindows();
+  const backToFront = sortCardWindows(zOrder);
 
   const size = backToFront.length;
   console.debug(`Completed to load ${size} cards`);
@@ -217,7 +217,7 @@ emitter.on('change-note', async (nextNoteId: string) => {
     await note.settingsDB.put(note.settings);
     setTrayContextMenu();
 
-    const cardProps = await note.loadCurrentNote();
+    const [cardProps, zOrder] = await note.loadCurrentNote();
     console.time('new Card');
     const renderers: Promise<void>[] = [];
     cardProps.forEach(cardProp => {
@@ -231,7 +231,7 @@ emitter.on('change-note', async (nextNoteId: string) => {
       console.error(`Error while rendering cards in ready event: ${e.message}`);
     });
     console.timeEnd('card.render()');
-    const backToFront = sortCardWindows();
+    const backToFront = sortCardWindows(zOrder);
 
     const size = backToFront.length;
     console.debug(`Completed to load ${size} cards`);

@@ -362,7 +362,7 @@ export const setTrayContextMenu = () => {
       {
         label: MESSAGE('redisplayCards'),
         click: () => {
-          sortCardWindows(true);
+          sortCardWindows(note.zOrder, true);
         },
       },
 

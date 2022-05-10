@@ -41,15 +41,7 @@ export interface CardGeometryUpdateAction {
   payload: Geometry;
 }
 
-export interface CardGeometryZUpdateAction {
-  type: 'card-geometry-z-update';
-  payload: number;
-}
-
-export type CardGeometryAction =
-  | CardGeometryInitAction
-  | CardGeometryUpdateAction
-  | CardGeometryZUpdateAction;
+export type CardGeometryAction = CardGeometryInitAction | CardGeometryUpdateAction;
 
 /**
  * CardStyleAction

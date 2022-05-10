@@ -102,7 +102,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
         geometry: {
           x: cardX,
           y: cardY,
-          z: 0, // z will be overwritten in createCardWindow()
+          z: 0,
           width: moveToRect.width,
           height: moveToRect.height,
         },
@@ -228,35 +228,22 @@ export const setContextMenu = (note: INote, card: ICard) => {
           {
             label: MESSAGE('sendToBack'),
             click: () => {
-              // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-
               // Database Update
-              if (card.sketch.geometry.z === getZIndexOfBottomCard()) {
-                return card.sketch.geometry.z;
+              if (note.zOrder[note.zOrder.length - 1] === card.url) {
+                return;
               }
-              cacheOfCard.get(card.url)!.sketch.geometry.z = getZIndexOfBottomCard() - 1;
-
-              const backToFront: ICard[] = [...cacheOfCard.values()]
-                .sort((a, b) => {
-                  if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
-                  if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
-                  return 0;
-                })
-                .filter(c => !c.isFake);
-              for (let i = 0; i < backToFront.length; i++) {
-                backToFront[i].sketch.geometry.z = i;
+              const currentZ = note.zOrder.indexOf(card.url);
+              if (currentZ > 0) {
+                // remove
+                note.zOrder.splice(currentZ, 1);
               }
+              note.zOrder.unshift(card.url);
 
-              const modifiedDate = getCurrentDateAndTime();
-              backToFront.forEach(myCard => {
-                if (myCard.window && !myCard.window.isDestroyed()) {
+              note.zOrder.forEach(myUrl => {
+                const myCard = cacheOfCard.get(myUrl);
+                if (myCard && myCard.window && !myCard.window.isDestroyed()) {
                   myCard!.suppressFocusEventOnce = true;
                   myCard!.focus();
-                  myCard.window?.webContents.send(
-                    'z-index-update',
-                    myCard.sketch.geometry.z,
-                    modifiedDate
-                  );
                 }
               });
             },
