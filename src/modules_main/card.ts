@@ -56,7 +56,6 @@ import { cardColors, ColorName } from '../modules_common/color';
 import { noteStore } from './note_store';
 import { openURL } from './url_schema';
 import { playSound } from './sound';
-import { note } from './note';
 
 type AccelCheck = {
   prevTime: number;
@@ -556,20 +555,24 @@ export class Card implements ICard {
       console.debug(`# focus ${this.url}`);
       try {
         this.addShortcuts();
+        const zOrder = noteStore.getState().get(getNoteIdFromUrl(this.url))?.zOrder!;
 
-        if (this._note.zOrder[this._note.zOrder.length - 1] === this.url) {
+        if (zOrder[zOrder.length - 1] === this.url) {
           console.log('zOrder no change');
           this.window?.webContents.send('card-focused');
           return;
         }
         // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 
-        const currentZ = this._note.zOrder.indexOf(this.url);
+        const currentZ = zOrder.indexOf(this.url);
         if (currentZ > 0) {
           // remove
-          this._note.zOrder.splice(currentZ, 1);
+          zOrder.splice(currentZ, 1);
         }
-        this._note.zOrder.push(this.url);
+        zOrder.push(this.url);
+
+        this._note.currentZOrder = zOrder;
+
         this.window?.webContents.send('card-focused');
       } catch (err) {
         this._note.logger.debug(`# Error in _focusListener of ${this.sketch._id}: ${err}`);

@@ -4,19 +4,25 @@
  */
 import AsyncLock from 'async-lock';
 import { Dispatch } from 'redux';
-import { NoteProp } from '../modules_common/types';
+import { NoteProp, ZOrder } from '../modules_common/types';
 import {
   NoteCreateAction,
   NoteDeleteAction,
   NoteInitAction,
-  NoteModifiedDateUpdateAction,
   NoteUpdateAction,
+  NoteZOrderUpdateAction,
 } from './note_action';
 import { INote, NoteState } from './note_types';
 
 type ChangeFrom = 'local' | 'remote';
 
 const lock = new AsyncLock();
+
+let prevZOrder: ZOrder;
+
+export const setInitialZOrder = (zOrder: ZOrder) => {
+  prevZOrder = zOrder;
+};
 
 export const noteInitCreator = (noteState: NoteState) => {
   const noteAction: NoteInitAction = {
@@ -41,10 +47,10 @@ export const noteCreateCreator = (
   };
 };
 
-export const noteModifiedDateUpdateCreator = (
+export const noteZOrderUpdateCreator = (
   note: INote,
   noteId: string,
-  modifiedDate: string,
+  zOrder: string[],
   changeFrom: ChangeFrom = 'local',
   enqueueTime: string | undefined = undefined
 ) => {
@@ -57,23 +63,27 @@ export const noteModifiedDateUpdateCreator = (
           return;
         }
       }
-      const noteAction: NoteModifiedDateUpdateAction = {
-        type: 'note-modified-date-update',
+      const noteAction: NoteZOrderUpdateAction = {
+        type: 'note-z-order-update',
         payload: {
           id: noteId,
-          modifiedDate,
+          zOrder,
         },
       };
       dispatch(noteAction);
 
-      if (changeFrom === 'local') {
-        const newProp = getState().get(noteId);
-        if (newProp) {
-          const taskMetadata = await note.updateNoteDoc(newProp);
-          // eslint-disable-next-line require-atomic-updates
-          newProp.updatedTime = taskMetadata.enqueueTime;
+      if (JSON.stringify(prevZOrder) !== JSON.stringify(zOrder)) {
+        if (changeFrom === 'local') {
+          const newProp = getState().get(noteId);
+          if (newProp) {
+            const taskMetadata = await note.updateNoteDoc(newProp);
+            // eslint-disable-next-line require-atomic-updates
+            newProp.updatedTime = taskMetadata.enqueueTime;
+          }
         }
       }
+      // eslint-disable-next-line require-atomic-updates
+      prevZOrder = zOrder;
     });
   };
 };

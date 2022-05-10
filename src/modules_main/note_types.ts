@@ -21,6 +21,7 @@ import {
   ICard,
   NoteProp,
   Snapshot,
+  ZOrder,
 } from '../modules_common/types';
 
 export type NoteState = Map<string, NoteProp>;
@@ -30,7 +31,7 @@ export interface INote {
   bookDB: GitDocumentDB;
   settingsDB: GitDocumentDB;
 
-  zOrder: string[];
+  currentZOrder: ZOrder;
 
   logger: Logger;
 
@@ -48,7 +49,7 @@ export interface INote {
 
   closeDB: () => Promise<void>;
 
-  updateNoteZorder: () => Promise<void>;
+  updateNoteZOrder: () => Promise<void>;
   updateNoteDoc: (noteProp: NoteProp) => Promise<TaskMetadata>;
   deleteNoteDoc: (noteId: string) => Promise<TaskMetadata>;
 

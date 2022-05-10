@@ -87,7 +87,7 @@ export type NoteProp = {
   user: string;
   date: CartaDate;
 
-  zOrder: string[];
+  zOrder: ZOrder;
   isResident: boolean;
   updatedTime?: string; // only for redux-thunk
 };
@@ -182,3 +182,5 @@ export type RendererConfig = {
   os: 'win32' | 'darwin' | 'linux';
   isResident: boolean;
 };
+
+export type ZOrder = string[];

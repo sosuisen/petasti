@@ -14,7 +14,7 @@ import { INote } from './note_types';
 export const cacheOfCard: Map<string, ICard> = new Map<string, ICard>(); // means { [sketchUrl: string]: ICard] }
 export const closeAllCards = (note: INote) => {
   note
-    .updateNoteZorder()
+    .updateNoteZOrder()
     .then(() => {
       // Remove listeners firstly to avoid focus another card in closing process
       cacheOfCard.forEach(card => card.removeWindowListenersExceptClosedEvent());

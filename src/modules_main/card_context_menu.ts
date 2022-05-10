@@ -6,8 +6,7 @@ import { BrowserWindow, clipboard, ipcMain, MenuItemConstructorOptions } from 'e
 import contextMenu from 'electron-context-menu';
 import { cardColors, ColorName } from '../modules_common/color';
 import { CardBody, CardSketch, ICard } from '../modules_common/types';
-import { getCurrentDateAndTime, isLabelOpened } from '../modules_common/utils';
-import { getZIndexOfBottomCard } from './card_zindex';
+import { getNoteIdFromUrl, isLabelOpened } from '../modules_common/utils';
 import { cacheOfCard } from './card_cache';
 import { MESSAGE } from './messages';
 import { INote } from './note_types';
@@ -228,24 +227,26 @@ export const setContextMenu = (note: INote, card: ICard) => {
           {
             label: MESSAGE('sendToBack'),
             click: () => {
-              // Database Update
-              if (note.zOrder[note.zOrder.length - 1] === card.url) {
+              const noteId = getNoteIdFromUrl(card.url);
+              const zOrder = noteStore.getState().get(noteId)?.zOrder!;
+              if (zOrder[zOrder.length - 1] === card.url) {
                 return;
               }
-              const currentZ = note.zOrder.indexOf(card.url);
+              const currentZ = zOrder.indexOf(card.url);
               if (currentZ > 0) {
                 // remove
-                note.zOrder.splice(currentZ, 1);
+                zOrder.splice(currentZ, 1);
               }
-              note.zOrder.unshift(card.url);
+              zOrder.unshift(card.url);
 
-              note.zOrder.forEach(myUrl => {
+              zOrder.forEach(myUrl => {
                 const myCard = cacheOfCard.get(myUrl);
                 if (myCard && myCard.window && !myCard.window.isDestroyed()) {
                   myCard!.suppressFocusEventOnce = true;
                   myCard!.focus();
                 }
               });
+              note.currentZOrder = zOrder;
             },
           },
           /*
