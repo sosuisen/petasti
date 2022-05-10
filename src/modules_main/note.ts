@@ -299,6 +299,11 @@ class Note implements INote {
         logLevel,
         logToTransport: this._logToTransport,
         logColorEnabled: false,
+        schema: {
+          json: {
+            keyOfUniqueArray: ['collapsedList', 'zOrder'],
+          },
+        },
       };
 
       this._bookDB = new GitDocumentDB(bookDbOption);
