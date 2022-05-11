@@ -15,11 +15,11 @@ export interface NoteCreateAction {
   payload: NoteProp;
 }
 
-export interface NoteModifiedDateUpdateAction {
-  type: 'note-modified-date-update';
+export interface NoteZOrderUpdateAction {
+  type: 'note-z-order-update';
   payload: {
     id: string;
-    modifiedDate: string;
+    zOrder: string[];
   };
 }
 
@@ -36,6 +36,6 @@ export interface NoteDeleteAction {
 export type NoteAction =
   | NoteInitAction
   | NoteCreateAction
-  | NoteModifiedDateUpdateAction
+  | NoteZOrderUpdateAction
   | NoteUpdateAction
   | NoteDeleteAction;

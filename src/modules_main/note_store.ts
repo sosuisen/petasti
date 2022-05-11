@@ -27,6 +27,11 @@ const noteReducer = (
       newState.get(action.payload.id)!.date.modifiedDate = action.payload.modifiedDate;
       return newState;
     }
+    case 'note-z-order-update': {
+      const newState = new Map(state);
+      newState.get(action.payload.id)!.zOrder = [...action.payload.zOrder];
+      return newState;
+    }
     case 'note-update': {
       const newState = new Map(state);
       newState.set(action.payload._id, action.payload);

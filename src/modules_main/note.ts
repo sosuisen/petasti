@@ -44,6 +44,7 @@ import {
   ICard,
   NoteProp,
   Snapshot,
+  ZOrder,
 } from '../modules_common/types';
 import {
   defaultDataDir,
@@ -75,7 +76,12 @@ import { MESSAGE, setMessages } from './messages';
 import { cacheOfCard, closeAllCards } from './card_cache';
 import { INote, NoteState } from './note_types';
 import { noteStore } from './note_store';
-import { noteCreateCreator, noteInitCreator } from './note_action_creator';
+import {
+  noteCreateCreator,
+  noteInitCreator,
+  noteZOrderUpdateCreator,
+  setInitialZOrder,
+} from './note_action_creator';
 import { Card } from './card';
 import { closeSettings } from './settings';
 
@@ -114,9 +120,11 @@ class Note implements INote {
   }
 
   /**
-   * zOrder
+   * Current zOrder
+   * This will be stored into noteStore and serialized at specific times.
    */
-  zOrder: string[] = [];
+  currentZOrder: ZOrder;
+
   /**
    * Logger
    */
@@ -226,11 +234,9 @@ class Note implements INote {
 
   /**
    * loadNoteBook
-   *
-   * @returns Array of [CardProperty[], zOrder[]]
    */
   // eslint-disable-next-line complexity
-  loadNotebook = async (): Promise<[CardProperty[], string[]]> => {
+  loadNotebook = async (): Promise<CardProperty[]> => {
     // locale can be got after 'ready'
     const myLocale = app.getLocale();
     console.debug(`locale: ${myLocale}`);
@@ -353,7 +359,7 @@ class Note implements INote {
     }
 
     if (!this._settingsDB || !this._bookDB) {
-      return [[], []];
+      return [];
     }
 
     // Create collections
@@ -442,14 +448,11 @@ class Note implements INote {
 
   /**
    * loadCurrentNote
-   *
-   * @returns Array of [CardProperty[], zOrder[]]
    */
-  loadCurrentNote = async (): Promise<[CardProperty[], string[]]> => {
+  loadCurrentNote = async (): Promise<CardProperty[]> => {
     // Create note if not exist.
     let createNoteFlag = false;
     let noteName = '';
-    const zOrder: string[] = [];
     if (noteStore.getState().size === 0) {
       createNoteFlag = true;
       noteName = MESSAGE('firstNoteName');
@@ -470,23 +473,32 @@ class Note implements INote {
       this._settings.currentNoteId = currentNoteProp._id;
       await this._settingsDB.put(this._settings);
 
-      return [[firstCardProp], [firstCardProp.url]];
+      this.currentZOrder = [firstCardProp.url];
+
+      return [firstCardProp];
     }
 
     const cards: CardProperty[] = [];
     const props = noteStore.getState().values();
+
+    const zOrder = noteStore.getState().get(note.settings.currentNoteId)!.zOrder;
+    setInitialZOrder(zOrder);
+
     console.time('loadCards');
     for (const noteProp of props) {
       if (noteProp.isResident && noteProp._id !== this._settings.currentNoteId) {
         // eslint-disable-next-line no-await-in-loop
         cards.push(...(await this.loadCards(noteProp._id)));
-        zOrder.unshift(...noteProp.zOrder);
+        zOrder.unshift(...noteProp.zOrder.filter(url => !zOrder.includes(url)));
       }
     }
     cards.push(...(await this.loadCards(this._settings.currentNoteId)));
-    zOrder.push(...noteStore.getState().get(note.settings.currentNoteId)!.zOrder);
+
+    this.currentZOrder = zOrder;
+
     console.timeEnd('loadCards');
-    return [cards, zOrder];
+
+    return cards;
   };
 
   createNote = async (
@@ -586,14 +598,6 @@ class Note implements INote {
       await this._createCardBodyDoc(card.body, waitCreation);
       await this._createCardSketchDoc(card.sketch, waitCreation);
     }
-
-    // Update note store & DB
-    /*
-    const noteId = getNoteIdFromUrl(sketchUrl);
-    noteStore.dispatch(
-      noteModifiedDateUpdateCreator(this, noteId, card.body.date.modifiedDate)
-    );
-    */
   };
 
   updateCard = async (
@@ -625,12 +629,6 @@ class Note implements INote {
     else {
       console.log('Card does not exist in cacheOfCard: ' + sketchUrl);
     }
-
-    // Update note store & DB
-    /*
-    const noteId = getNoteIdFromUrl(sketchUrl);
-    noteStore.dispatch(noteModifiedDateUpdateCreator(this, noteId, modifiedDate));
-    */
   };
 
   updateCardBody = async (
@@ -650,13 +648,6 @@ class Note implements INote {
     }
     const task = await this._updateCardBodyDoc(cardBody);
 
-    // Update note store & DB
-    /*
-    if (task !== undefined) {
-      const noteId = getNoteIdFromUrl(sketchUrl);
-      noteStore.dispatch(noteModifiedDateUpdateCreator(this, noteId, modifiedDate));
-    }
-    */
     return task;
   };
 
@@ -668,15 +659,6 @@ class Note implements INote {
     const card = cacheOfCard.get(sketchUrl);
     if (card?.isFake) return { label: 'update', taskId: '' };
     const task: TaskMetadata = await this._createCardSketchDoc(cardSketch, waitCreation);
-
-    // Update note store & DB
-    /*
-    const noteId = getNoteIdFromUrl(sketchUrl);
-    noteStore.dispatch(
-      // @ts-ignore
-      noteModifiedDateUpdateCreator(this, noteId, cardSketch.date.modifiedDate)
-    );
-    */
     return task;
   };
 
@@ -720,11 +702,6 @@ class Note implements INote {
     }
     const task: TaskMetadata = await this._updateCardSketchDoc(sketch!);
 
-    // Update note store & DB
-    /*
-    const noteId = getNoteIdFromUrl(sketchUrl);
-    noteStore.dispatch(noteModifiedDateUpdateCreator(this, noteId, modifiedDate));
-    */
     return task;
   };
 
@@ -758,14 +735,6 @@ class Note implements INote {
           '# Error in deleteCardSketch: window has been already destroyed. '
         );
       }
-
-      // Update note store & DB
-      /*
-      const noteId = getNoteIdFromUrl(cardUrl);
-      noteStore.dispatch(
-        noteModifiedDateUpdateCreator(this, noteId, getCurrentDateAndTime())
-      );
-      */
     }
     else {
       this.logger.debug(`${cardUrl} does not exist`);
@@ -796,18 +765,16 @@ class Note implements INote {
     return Promise.resolve();
   };
 
-  updateNoteZorder = async (): Promise<void> => {
-    const noteProp = noteStore.getState().get(note.settings.currentNoteId);
-    if (noteProp) {
-      const zOrderArray = noteProp.zOrder.filter(myUrl => {
-        const myCard = cacheOfCard.get(myUrl);
-        if (myCard === undefined || myCard.isFake) return false;
-        return true;
-      });
-
-      noteProp.zOrder = zOrderArray;
-      await this.updateNoteDoc(noteProp);
-    }
+  updateNoteZOrder = async (): Promise<void> => {
+    const zOrder = this.currentZOrder.filter(myUrl => {
+      const myCard = cacheOfCard.get(myUrl);
+      if (myCard === undefined || myCard.isFake) return false;
+      return true;
+    });
+    await noteStore.dispatch(
+      noteZOrderUpdateCreator(this, this._settings.currentNoteId, zOrder)
+    );
+    this.currentZOrder = zOrder;
   };
 
   updateNoteDoc = async (noteProp: NoteProp): Promise<TaskMetadata> => {

@@ -362,7 +362,10 @@ export const setTrayContextMenu = () => {
       {
         label: MESSAGE('redisplayCards'),
         click: () => {
-          sortCardWindows(note.zOrder, true);
+          sortCardWindows(
+            noteStore.getState().get(note.settings.currentNoteId)!.zOrder,
+            true
+          );
         },
       },
 
