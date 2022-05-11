@@ -97,7 +97,7 @@
     "electron-prompt": "^1.6.2",
     "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^9.0.1",
-    "git-documentdb": "^0.4.7",
+    "git-documentdb": "^0.4.8-alpha.1",
     "git-documentdb-plugin-remote-nodegit": "^1.0.4",
     "hmtid": "^0.1.2",
     "node-wav-player": "^0.2.0",
