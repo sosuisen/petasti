@@ -149,6 +149,11 @@ export const sortCardWindows = (suppressFocus = false) => {
   return backToFront;
 };
 
+export const minimizeAllCards = () => {
+  const backToFront = sortCards();
+  backToFront.forEach(card => card.window?.minimize());
+};
+
 /**
  * Create card
  */
@@ -1286,7 +1291,14 @@ export class Card implements ICard {
       }
       globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
         this._note.tray.popUpContextMenu();
+      });
+      // 'F'ront
+      globalShortcut.registerAll([`CommandOrControl+${opt}+F`], () => {
         sortCardWindows(true);
+      });
+      // 'B'ack
+      globalShortcut.registerAll([`CommandOrControl+${opt}+B`], () => {
+        minimizeAllCards();
       });
     });
   };

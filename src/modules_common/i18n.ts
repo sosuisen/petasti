@@ -41,6 +41,7 @@ type MessagesMain = {
   saveSnapshot: string;
   snapshotName: string;
   redisplayCards: string;
+  minimizeAllCards: string;
   transformToLabel: string;
   transformFromLabel: string;
 };
@@ -270,7 +271,8 @@ export const ENGLISH: Messages = {
   addToDictionary: 'Add to dictionary',
   saveSnapshot: 'Save snapshot',
   snapshotName: 'Enter snapshot name',
-  redisplayCards: 'Bring cards to front',
+  redisplayCards: 'Bring all cards to front',
+  minimizeAllCards: 'Minimize all cards',
   transformToLabel: 'Labelize',
   transformFromLabel: 'Open label',
 };
@@ -408,7 +410,8 @@ export const JAPANESE: Messages = {
   addToDictionary: '辞書に追加',
   saveSnapshot: 'スナップショット保存',
   snapshotName: 'スナップショット名を入力してください',
-  redisplayCards: 'カードを最前面表示',
+  redisplayCards: '全カードを前面に表示',
+  minimizeAllCards: '全カードを最小化',
   transformToLabel: 'ラベルにする',
   transformFromLabel: 'ラベルを開く',
 };

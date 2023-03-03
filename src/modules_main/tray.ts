@@ -13,7 +13,7 @@ import {
   Tray,
 } from 'electron';
 import { closeSettings, openSettings } from './settings';
-import { createRandomColorCard, sortCardWindows } from './card';
+import { createRandomColorCard, minimizeAllCards, sortCardWindows } from './card';
 import { emitter } from './event';
 import {
   getCurrentDateAndTime,
@@ -365,7 +365,12 @@ export const setTrayContextMenu = () => {
           sortCardWindows(true);
         },
       },
-
+      {
+        label: MESSAGE('minimizeAllCards'),
+        click: () => {
+          minimizeAllCards();
+        },
+      },
       {
         label: MESSAGE('settings'),
         click: () => {
@@ -439,7 +444,14 @@ export const initializeTaskTray = (store: INote) => {
   }
   globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
     tray.popUpContextMenu();
-    sortCardWindows(true);    
+  });
+  // 'F'ront
+  globalShortcut.registerAll([`CommandOrControl+${opt}+F`], () => {
+    sortCardWindows(true);
+  });
+  // 'B'ack
+  globalShortcut.registerAll([`CommandOrControl+${opt}+B`], () => {
+    minimizeAllCards();
   });
 
   // for debug
