@@ -1,7 +1,7 @@
 import packager from 'electron-packager';
 import electronRebuild from 'electron-rebuild';
 import electronInstaller from 'electron-winstaller';
-import packageJson from './package.json';
+import packageJson from './package.json' assert{ type: "json" };
 
 const createInstaller = async () => {
 
