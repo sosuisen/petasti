@@ -1286,6 +1286,7 @@ export class Card implements ICard {
       }
       globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
         this._note.tray.popUpContextMenu();
+        sortCardWindows(true);
       });
     });
   };

@@ -439,7 +439,9 @@ export const initializeTaskTray = (store: INote) => {
   }
   globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
     tray.popUpContextMenu();
+    sortCardWindows(true);    
   });
+
   // for debug
   if (
     !app.isPackaged &&
