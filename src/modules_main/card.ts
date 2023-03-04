@@ -126,6 +126,12 @@ const sortCards = () => {
 
 export const sortCardWindows = (suppressFocus = false) => {
   const backToFront = sortCards();
+  if (backToFront.length > 0) {
+    // Focusing a card is needed at first
+    // when another app is focused.
+    if (suppressFocus) backToFront[0].suppressFocusEvent = true;
+    backToFront[0].focus();
+  }
   backToFront.forEach(card => {
     if (card.window && !card.window.isDestroyed()) {
       if (suppressFocus) card.suppressFocusEvent = true;
@@ -143,9 +149,11 @@ export const sortCardWindows = (suppressFocus = false) => {
       }
     }
   });
+
   if (backToFront.length > 0) {
     backToFront[backToFront.length - 1].focus();
   }
+
   return backToFront;
 };
 
