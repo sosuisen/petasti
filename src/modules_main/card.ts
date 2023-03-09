@@ -312,6 +312,7 @@ export class Card implements ICard {
    * Context menu
    */
   public resetContextMenu: () => void = () => {};
+  public disposeContextMenu: () => void = () => {};
 
   /**
    * Constructor
@@ -450,7 +451,9 @@ export class Card implements ICard {
 
       this.window.on('closed', this._closedListener);
 
-      this.resetContextMenu = setContextMenu(note, this);
+      if (!isFake) {
+        [this.resetContextMenu, this.disposeContextMenu] = setContextMenu(note, this);
+      }
 
       // Open hyperlink on external browser window
       // by preventing to open it on new electron window

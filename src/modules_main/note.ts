@@ -756,6 +756,7 @@ class Note implements INote {
     if (card !== undefined) {
       if (!card.isFake) {
         await this._deleteCardSketchDoc(cardUrl);
+        card.disposeContextMenu();
       }
       // cacheOfCard.delete(cardUrl) will be called in _closedListener();
       if (card.window && !card.window.isDestroyed()) {

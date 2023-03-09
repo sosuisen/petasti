@@ -144,6 +144,7 @@ export interface ICard {
   window: BrowserWindow | undefined;
 
   resetContextMenu: () => void;
+  disposeContextMenu: () => void;
 
   suppressFocusEvent: boolean;
   suppressFocusEventOnce: boolean;

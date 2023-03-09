@@ -55,7 +55,8 @@ export const setContextMenu = (note: INote, card: ICard) => {
     card.copyToNote(noteId);
   };
 
-  const moveToNotes: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
+  let submenuMoveToNotes: MenuItemConstructorOptions[] = [];
+  const resetMoveToNotes = () => [...noteStore.getState().values()]
     .sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;
@@ -72,8 +73,10 @@ export const setContextMenu = (note: INote, card: ICard) => {
       }
       return result;
     }, [] as MenuItemConstructorOptions[]);
+  submenuMoveToNotes = resetMoveToNotes();
 
-  const copyToNotes: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
+  let submenuCopyToNotes: MenuItemConstructorOptions[] = [];
+  const resetCopyToNotes = () => [...noteStore.getState().values()]
     .sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;
@@ -90,6 +93,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
       }
       return result;
     }, [] as MenuItemConstructorOptions[]);
+  submenuCopyToNotes = resetCopyToNotes();
 
   const createCardFromMarkdown = (
     markdown: string,
@@ -129,209 +133,212 @@ export const setContextMenu = (note: INote, card: ICard) => {
     emitter.emit('create-card', cardBody, cardSketch, moveToRect);
   };
 
-  const dispose = contextMenu({
-    window: card.window,
-    showSaveImageAs: true,
-    showInspectElement: false,
-    menu: actions => [
-      actions.searchWithGoogle({}),
-      actions.separator(),
-      {
-        label: MESSAGE('cut'),
-        role: 'cut',
-        visible: card.hasSelection && !isLabelOpened(card.sketch.label.status),
-      },
-      {
-        label: MESSAGE('copy'),
-        role: 'copy',
-        visible: card.hasSelection && !isLabelOpened(card.sketch.label.status),
-      },
-      {
-        label: MESSAGE('copyAsMarkdown'),
-        click: () => {
-          if (card.hasSelection) {
-            card.window?.webContents.send('get-selected-markdown');
-            ipcMain.handleOnce(
-              'response-of-get-selected-markdown-' + encodeURIComponent(card.url),
-              (event, markdown, startLeft, endRight, top, bottom) => {
-                clipboard.writeText(markdown);
-              }
-            );
-          }
-        },
-        visible: card.hasSelection && !isLabelOpened(card.sketch.label.status),
-      },
-      {
-        label: MESSAGE('paste'),
-        role: 'paste',
-      },
-      {
-        label: MESSAGE('pasteAndMatchStyle'),
-        role: 'pasteAndMatchStyle',
-      },
-      actions.separator(),
-      actions.saveImageAs({}),
-      actions.separator(),
-      actions.copyLink({}),
-      actions.separator(),
-    ],
-    prepend: (defaultActions, params, browserWindow) => {
-      const menus: MenuItemConstructorOptions[] = [
+  const createMenu = () => {
+    return contextMenu({
+      window: card.window,
+      showSaveImageAs: true,
+      showInspectElement: false,
+      menu: actions => [
+        actions.searchWithGoogle({}),
+        actions.separator(),
         {
-          label:
-            card.hasSelection && !isLabelOpened(card.sketch.label.status)
-              ? MESSAGE('newCardFromSelection')
-              : MESSAGE('newCard'),
+          label: MESSAGE('cut'),
+          role: 'cut',
+          visible: card.hasSelection && !isLabelOpened(card.sketch.label.status),
+        },
+        {
+          label: MESSAGE('copy'),
+          role: 'copy',
+          visible: card.hasSelection && !isLabelOpened(card.sketch.label.status),
+        },
+        {
+          label: MESSAGE('copyAsMarkdown'),
           click: () => {
             if (card.hasSelection) {
               card.window?.webContents.send('get-selected-markdown');
               ipcMain.handleOnce(
                 'response-of-get-selected-markdown-' + encodeURIComponent(card.url),
                 (event, markdown, startLeft, endRight, top, bottom) => {
-                  createCardFromMarkdown(markdown, startLeft, endRight, top, bottom + 50);
-                  card.window?.webContents.send('delete-selection');
+                  clipboard.writeText(markdown);
                 }
               );
             }
-            else {
-              createCardFromMarkdown(
-                '',
-                0,
-                DEFAULT_CARD_GEOMETRY.width,
-                0,
-                DEFAULT_CARD_GEOMETRY.height
-              );
-            }
           },
+          visible: card.hasSelection && !isLabelOpened(card.sketch.label.status),
         },
         {
-          label: isLabelOpened(card.sketch.label.status)
-            ? MESSAGE('transformFromLabel')
-            : MESSAGE('transformToLabel'),
-          click: () => {
-            if (isLabelOpened(card.sketch.label.status)) {
-              card.window?.webContents.send('transform-from-label');
-            }
-            else {
-              card.window?.webContents.send('transform-to-label');
-            }
-          },
+          label: MESSAGE('paste'),
+          role: 'paste',
         },
         {
-          label: MESSAGE('noteMove'),
-          submenu: [...moveToNotes],
+          label: MESSAGE('pasteAndMatchStyle'),
+          role: 'pasteAndMatchStyle',
         },
-        {
-          label: MESSAGE('noteCopy'),
-          submenu: [...copyToNotes],
-        },
-        {
-          label: MESSAGE('zoomIn'),
-          click: () => {
-            card.window?.webContents.send('zoom-in');
-          },
-        },
-        {
-          label: MESSAGE('zoomOut'),
-          click: () => {
-            card.window?.webContents.send('zoom-out');
-          },
-        },
-        {
-          label: MESSAGE('sendToBack'),
-          click: () => {
-            // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-
-            // Database Update
-            if (card.sketch.geometry.z === getZIndexOfBottomCard()) {
-              return card.sketch.geometry.z;
-            }
-
-            const zIndex = getZIndexOfBottomCard() - 1;
-            // console.debug(`new zIndex: ${zIndex}`);
-            // const newGeom = JSON.parse(JSON.stringify(card.sketch.geometry)) as Geometry;
-            // newGeom.z = zIndex;
-
-            // Async
-            const modifiedDate = getCurrentDateAndTime();
-            note.updateCardZ(card.url, zIndex, modifiedDate);
-
-            // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
-
-            const backToFront: ICard[] = [...cacheOfCard.values()].sort((a, b) => {
-              if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
-              if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
-              return 0;
-            });
-            /*
-          setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
-          setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
-          */
-            backToFront.forEach(myCard => {
-              if (myCard.window && !myCard.window.isDestroyed()) {
-                myCard!.suppressFocusEventOnce = true;
-                myCard!.focus();
+        actions.separator(),
+        actions.saveImageAs({}),
+        actions.separator(),
+        actions.copyLink({}),
+        actions.separator(),
+      ],
+      prepend: (defaultActions, params, browserWindow) => {
+        const menus: MenuItemConstructorOptions[] = [
+          {
+            label:
+              card.hasSelection && !isLabelOpened(card.sketch.label.status)
+                ? MESSAGE('newCardFromSelection')
+                : MESSAGE('newCard'),
+            click: () => {
+              if (card.hasSelection) {
+                card.window?.webContents.send('get-selected-markdown');
+                ipcMain.handleOnce(
+                  'response-of-get-selected-markdown-' + encodeURIComponent(card.url),
+                  (event, markdown, startLeft, endRight, top, bottom) => {
+                    createCardFromMarkdown(markdown, startLeft, endRight, top, bottom + 50);
+                    card.window?.webContents.send('delete-selection');
+                  }
+                );
               }
-            });
+              else {
+                createCardFromMarkdown(
+                  '',
+                  0,
+                  DEFAULT_CARD_GEOMETRY.width,
+                  0,
+                  DEFAULT_CARD_GEOMETRY.height
+                );
+              }
+            },
+          },
+          {
+            label: isLabelOpened(card.sketch.label.status)
+              ? MESSAGE('transformFromLabel')
+              : MESSAGE('transformToLabel'),
+            click: () => {
+              if (isLabelOpened(card.sketch.label.status)) {
+                card.window?.webContents.send('transform-from-label');
+              }
+              else {
+                card.window?.webContents.send('transform-to-label');
+              }
+            },
+          },
+          {
+            label: MESSAGE('noteMove'),
+            submenu: submenuMoveToNotes,
+          },
+          {
+            label: MESSAGE('noteCopy'),
+            submenu: submenuCopyToNotes,
+          },
+          {
+            label: MESSAGE('zoomIn'),
+            click: () => {
+              card.window?.webContents.send('zoom-in');
+            },
+          },
+          {
+            label: MESSAGE('zoomOut'),
+            click: () => {
+              card.window?.webContents.send('zoom-out');
+            },
+          },
+          {
+            label: MESSAGE('sendToBack'),
+            click: () => {
+              // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 
-            card.window?.webContents.send('send-to-back', zIndex, modifiedDate);
+              // Database Update
+              if (card.sketch.geometry.z === getZIndexOfBottomCard()) {
+                return card.sketch.geometry.z;
+              }
+
+              const zIndex = getZIndexOfBottomCard() - 1;
+              // console.debug(`new zIndex: ${zIndex}`);
+              // const newGeom = JSON.parse(JSON.stringify(card.sketch.geometry)) as Geometry;
+              // newGeom.z = zIndex;
+
+              // Async
+              const modifiedDate = getCurrentDateAndTime();
+              note.updateCardZ(card.url, zIndex, modifiedDate);
+
+              // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
+
+              const backToFront: ICard[] = [...cacheOfCard.values()].sort((a, b) => {
+                if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
+                if (a.sketch.geometry.z < b.sketch.geometry.z) return -1;
+                return 0;
+              });
+              /*
+            setZIndexOfTopCard(backToFront[backToFront.length - 1].sketch.geometry.z);
+            setZIndexOfBottomCard(backToFront[0].sketch.geometry.z);
+            */
+              backToFront.forEach(myCard => {
+                if (myCard.window && !myCard.window.isDestroyed()) {
+                  myCard!.suppressFocusEventOnce = true;
+                  myCard!.focus();
+                }
+              });
+
+              card.window?.webContents.send('send-to-back', zIndex, modifiedDate);
+            },
+          },
+          /*
+        {
+          label: card.sketch.condition.locked ? MESSAGE('unlockCard') : MESSAGE('lockCard'),
+          click: () => {
+            card.sketch.condition.locked = !card.sketch.condition.locked;
+            card.window.webContents.send('set-lock', card.sketch.condition.locked);
+            resetContextMenu();
           },
         },
-        /*
-      {
-        label: card.sketch.condition.locked ? MESSAGE('unlockCard') : MESSAGE('lockCard'),
-        click: () => {
-          card.sketch.condition.locked = !card.sketch.condition.locked;
-          card.window.webContents.send('set-lock', card.sketch.condition.locked);
-          resetContextMenu();
-        },
+        */
+        ];
+
+        if (params.dictionarySuggestions.length > 0) {
+          menus.push({ type: 'separator' });
+        }
+        // Add each spelling suggestion
+        for (const suggestion of params.dictionarySuggestions) {
+          menus.push({
+            label: suggestion,
+            click: () =>
+              (browserWindow as BrowserWindow).webContents.replaceMisspelling(suggestion),
+          });
+        }
+
+        // Allow users to add the misspelled word to the dictionary
+        if (params.misspelledWord) {
+          menus.push({
+            label: MESSAGE('addToDictionary'),
+            click: () =>
+              (browserWindow as BrowserWindow).webContents.session.addWordToSpellCheckerDictionary(
+                params.misspelledWord
+              ),
+          });
+          menus.push({ type: 'separator' });
+        }
+        return menus;
       },
-      */
-      ];
-
-      if (params.dictionarySuggestions.length > 0) {
-        menus.push({ type: 'separator' });
-      }
-      // Add each spelling suggestion
-      for (const suggestion of params.dictionarySuggestions) {
-        menus.push({
-          label: suggestion,
-          click: () =>
-            (browserWindow as BrowserWindow).webContents.replaceMisspelling(suggestion),
-        });
-      }
-
-      // Allow users to add the misspelled word to the dictionary
-      if (params.misspelledWord) {
-        menus.push({
-          label: MESSAGE('addToDictionary'),
-          click: () =>
-            (browserWindow as BrowserWindow).webContents.session.addWordToSpellCheckerDictionary(
-              params.misspelledWord
-            ),
-        });
-        menus.push({ type: 'separator' });
-      }
-      return menus;
-    },
-    append: () => [
-      setColor('yellow'),
-      setColor('red'),
-      setColor('green'),
-      setColor('blue'),
-      setColor('orange'),
-      setColor('purple'),
-      setColor('white'),
-      setColor('gray'),
-      setColor('transparent'),
-    ],
-  });
-
-  resetContextMenu = () => {
-    // @ts-ignore
-    dispose();
-    setContextMenu(note, card);
+      append: () => [
+        setColor('yellow'),
+        setColor('red'),
+        setColor('green'),
+        setColor('blue'),
+        setColor('orange'),
+        setColor('purple'),
+        setColor('white'),
+        setColor('gray'),
+        setColor('transparent'),
+      ],
+    });
   };
 
-  return resetContextMenu;
+  const dispose = createMenu();
+
+  resetContextMenu = () => {
+    submenuMoveToNotes = resetMoveToNotes();
+    submenuCopyToNotes = resetCopyToNotes();
+  };
+
+  return [resetContextMenu, dispose];
 };

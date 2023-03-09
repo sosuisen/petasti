@@ -232,7 +232,9 @@ export const setTrayContextMenu = () => {
           );
 
           setTrayContextMenu();
-          cacheOfCard.forEach(card => card.resetContextMenu());
+
+          // Need not to call resetContextMenu because each card does not refer current note name.
+          // cacheOfCard.forEach(card => card.resetContextMenu());
         },
       },
       {
