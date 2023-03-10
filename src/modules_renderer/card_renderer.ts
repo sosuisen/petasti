@@ -362,10 +362,27 @@ const renderCardStyle = () => {
   );
 
   if (cardStore.getState().sketch.style.opacity !== 0) {
-    document.getElementById(
-      'card'
-//    )!.style.border = `${cardCssStyle.borderWidth}px solid ${borderRgba}`;
-)!.style.border = `${cardCssStyle.borderWidth}px solid #000000`;
+    if (cardStore.getState().workState.status === 'Focused') {
+      document.getElementById(
+        'card'
+      )!.style.border = `${cardCssStyle.borderWidth}px solid #ff0000`;
+      setTimeout(() => {
+        const card = document.getElementById('card');
+        if(card){
+          card.style.transition = 'border-color 0.5s ease-in';
+          card.style.border = `${cardCssStyle.borderWidth}px solid ${borderRgba}`;
+          setTimeout(() => {
+            const card = document.getElementById('card');
+            if(card) card.style.transition = '';
+          }, 700);
+        }
+      }, 1000);
+    }
+    else {
+      document.getElementById(
+        'card'
+      )!.style.border = `${cardCssStyle.borderWidth}px solid ${borderRgba}`;
+    }
   }
   else {
     document.getElementById(
