@@ -368,12 +368,12 @@ const renderCardStyle = () => {
       )!.style.border = `${cardCssStyle.borderWidth}px solid #ff0000`;
       setTimeout(() => {
         const card = document.getElementById('card');
-        if(card){
+        if (card) {
           card.style.transition = 'border-color 0.5s ease-in';
           card.style.border = `${cardCssStyle.borderWidth}px solid ${borderRgba}`;
           setTimeout(() => {
-            const card = document.getElementById('card');
-            if(card) card.style.transition = '';
+            const card2 = document.getElementById('card');
+            if (card2) card2.style.transition = '';
           }, 700);
         }
       }, 1000);
