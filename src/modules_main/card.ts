@@ -43,11 +43,13 @@ import {
   CardBody,
   CardSketch,
   CardStatus,
+  Direction,
   Geometry,
+  Geometry2D,
   ICard,
   RendererConfig,
 } from '../modules_common/types';
-import { cacheOfCard } from './card_cache';
+import { cacheOfCard, calcRelativePositionOfCardUrl } from './card_cache';
 import { setContextMenu } from './card_context_menu';
 import { INote } from './note_types';
 import { getZIndexOfTopCard } from './card_zindex';
@@ -161,6 +163,30 @@ export const minimizeAllCards = () => {
   const backToFront = sortCards();
   backToFront.forEach(card => card.window?.minimize());
 };
+
+export const moveFocusTo = (direction: Direction) => {
+  // Move current focus to right card
+  let topCard: ICard | null = null;
+  for (const card of cacheOfCard.values()) {
+    if (card.isFake) continue;
+    if (topCard === null) {
+      topCard = card;
+      continue;
+    }
+    if (card.sketch.geometry.z > topCard.sketch.geometry.z) topCard = card;
+  }
+  if (topCard === null) return;
+
+  const relPos = calcRelativePositionOfCardUrl(topCard.url);
+  if (relPos[direction].length > 0) {
+    const nearestCardUrl = relPos[direction].reduce((prev, cur) => prev.distance > cur.distance ? cur : prev, relPos[direction][0]).url;
+    cacheOfCard.get(nearestCardUrl)?.window?.focus();
+    // console.log(nearestCardUrl);
+  }
+  else {
+    // console.log('no cards');
+  }
+}
 
 /**
  * Create card
@@ -311,14 +337,14 @@ export class Card implements ICard {
   /**
    * Context menu
    */
-  public resetContextMenu: () => void = () => {};
-  public disposeContextMenu: () => void = () => {};
+  public resetContextMenu: () => void = () => { };
+  public disposeContextMenu: () => void = () => { };
 
   /**
    * Constructor
    */
   // eslint-disable-next-line complexity
-  constructor (
+  constructor(
     note: INote,
     noteIdOrUrl: string,
     cardBody?: Partial<CardBody>,
@@ -1021,23 +1047,23 @@ export class Card implements ICard {
     left: AccelCheck;
     right: AccelCheck;
   } = {
-    up: {
-      prevTime: 0,
-      count: 0,
-    },
-    down: {
-      prevTime: 0,
-      count: 0,
-    },
-    left: {
-      prevTime: 0,
-      count: 0,
-    },
-    right: {
-      prevTime: 0,
-      count: 0,
-    },
-  };
+      up: {
+        prevTime: 0,
+        count: 0,
+      },
+      down: {
+        prevTime: 0,
+        count: 0,
+      },
+      left: {
+        prevTime: 0,
+        count: 0,
+      },
+      right: {
+        prevTime: 0,
+        count: 0,
+      },
+    };
 
   // eslint-disable-next-line complexity
   private _getChangeUnit = (
@@ -1310,6 +1336,19 @@ export class Card implements ICard {
       // 'B'ack
       globalShortcut.registerAll([`CommandOrControl+${opt}+B`], () => {
         minimizeAllCards();
+      });
+      // Spatial hjkl
+      globalShortcut.registerAll([`CommandOrControl+${opt}+H`], () => {
+        moveFocusTo('left');
+      });
+      globalShortcut.registerAll([`CommandOrControl+${opt}+J`], () => {
+        moveFocusTo('down');
+      });
+      globalShortcut.registerAll([`CommandOrControl+${opt}+K`], () => {
+        moveFocusTo('up');
+      });
+      globalShortcut.registerAll([`CommandOrControl+${opt}+L`], () => {
+        moveFocusTo('right');
       });
     });
   };

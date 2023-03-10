@@ -183,3 +183,8 @@ export type RendererConfig = {
   os: 'win32' | 'darwin' | 'linux';
   isResident: boolean;
 };
+
+export type Direction = 'up' | 'down' | 'left' | 'right';
+export type RelativePositionOfCardUrl = {
+  [key in Direction]: { url: string; distance: number; radian: number; }[];
+};

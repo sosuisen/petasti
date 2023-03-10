@@ -13,7 +13,7 @@ import {
   Tray,
 } from 'electron';
 import { closeSettings, openSettings } from './settings';
-import { createRandomColorCard, minimizeAllCards, sortCardWindows } from './card';
+import { createRandomColorCard, minimizeAllCards, moveFocusTo, sortCardWindows } from './card';
 import { emitter } from './event';
 import {
   getCurrentDateAndTime,
@@ -30,9 +30,9 @@ import {
   MINIMUM_WINDOW_HEIGHT,
   MINIMUM_WINDOW_HEIGHT_OFFSET,
 } from '../modules_common/const';
-import { CardBody, CardSketch, Snapshot } from '../modules_common/types';
+import { CardBody, CardSketch, ICard, Snapshot } from '../modules_common/types';
 import { MESSAGE } from './messages';
-import { cacheOfCard, closeAllCards } from './card_cache';
+import { cacheOfCard, calcRelativePositionOfCardUrl, closeAllCards } from './card_cache';
 import { INote } from './note_types';
 import { regExpResidentNote, showDialog } from './utils_main';
 import { noteStore } from './note_store';
@@ -456,9 +456,17 @@ export const initializeTaskTray = (store: INote) => {
     minimizeAllCards();
   });
   // Spatial hjkl
+  globalShortcut.registerAll([`CommandOrControl+${opt}+H`], () => {
+    moveFocusTo('left');
+  });
+  globalShortcut.registerAll([`CommandOrControl+${opt}+J`], () => {
+    moveFocusTo('down');
+  });
+  globalShortcut.registerAll([`CommandOrControl+${opt}+K`], () => {
+    moveFocusTo('up');
+  });
   globalShortcut.registerAll([`CommandOrControl+${opt}+L`], () => {
-    // Move current focus to right card
-    moveFocusTo();
+    moveFocusTo('right');
   });
 
   // for debug
