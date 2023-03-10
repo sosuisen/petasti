@@ -13,11 +13,7 @@ import {
   Tray,
 } from 'electron';
 import { closeSettings, openSettings } from './settings';
-import {
-  createRandomColorCard,
-  minimizeAllCards,
-  sortCardWindows,
-} from './card';
+import { createRandomColorCard, minimizeAllCards, sortCardWindows } from './card';
 import { emitter } from './event';
 import {
   getCurrentDateAndTime,
@@ -36,7 +32,7 @@ import {
 } from '../modules_common/const';
 import { CardBody, CardSketch, ICard, Snapshot } from '../modules_common/types';
 import { MESSAGE } from './messages';
-import { cacheOfCard, calcRelativePositionOfCardUrl, closeAllCards } from './card_cache';
+import { cacheOfCard, closeAllCards } from './card_cache';
 import { INote } from './note_types';
 import { regExpResidentNote, showDialog } from './utils_main';
 import { noteStore } from './note_store';
