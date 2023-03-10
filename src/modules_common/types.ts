@@ -186,5 +186,10 @@ export type RendererConfig = {
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 export type RelativePositionOfCardUrl = {
-  [key in Direction]: { url: string; distance: number; radian: number }[];
+  [key in Direction]: {
+    url: string;
+    distance: number;
+    centroidDistance: number;
+    radian: number;
+  }[];
 };

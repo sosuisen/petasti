@@ -49,7 +49,7 @@ import {
   ICard,
   RendererConfig,
 } from '../modules_common/types';
-import { cacheOfCard, calcRelativePositionOfCardUrl } from './card_cache';
+import { cacheOfCard } from './card_cache';
 import { setContextMenu } from './card_context_menu';
 import { INote } from './note_types';
 import { getZIndexOfTopCard } from './card_zindex';
@@ -58,6 +58,7 @@ import { cardColors, ColorName } from '../modules_common/color';
 import { noteStore } from './note_store';
 import { openURL } from './url_schema';
 import { playSound } from './sound';
+import { calcRelativePositionOfCardUrl } from './card_locator';
 
 type AccelCheck = {
   prevTime: number;
@@ -163,7 +164,6 @@ export const minimizeAllCards = () => {
   const backToFront = sortCards();
   backToFront.forEach(card => card.window?.minimize());
 };
-
 
 /**
  * Create card
@@ -314,14 +314,14 @@ export class Card implements ICard {
   /**
    * Context menu
    */
-  public resetContextMenu: () => void = () => { };
-  public disposeContextMenu: () => void = () => { };
+  public resetContextMenu: () => void = () => {};
+  public disposeContextMenu: () => void = () => {};
 
   /**
    * Constructor
    */
   // eslint-disable-next-line complexity
-  constructor(
+  constructor (
     note: INote,
     noteIdOrUrl: string,
     cardBody?: Partial<CardBody>,
@@ -1024,23 +1024,23 @@ export class Card implements ICard {
     left: AccelCheck;
     right: AccelCheck;
   } = {
-      up: {
-        prevTime: 0,
-        count: 0,
-      },
-      down: {
-        prevTime: 0,
-        count: 0,
-      },
-      left: {
-        prevTime: 0,
-        count: 0,
-      },
-      right: {
-        prevTime: 0,
-        count: 0,
-      },
-    };
+    up: {
+      prevTime: 0,
+      count: 0,
+    },
+    down: {
+      prevTime: 0,
+      count: 0,
+    },
+    left: {
+      prevTime: 0,
+      count: 0,
+    },
+    right: {
+      prevTime: 0,
+      count: 0,
+    },
+  };
 
   // eslint-disable-next-line complexity
   private _getChangeUnit = (
@@ -1309,7 +1309,7 @@ export class Card implements ICard {
           // console.log('no cards');
         }
       };
-      
+
       // Spatial hjkl
       globalShortcut.registerAll([`${opt}+Left`], () => {
         moveFocusTo('left');
