@@ -24,3 +24,46 @@ export const closeAllCards = (note: INote) => {
       throw e;
     });
 };
+
+/**
+ * Calc relative positions
+ */
+const calcInnerProduct = (ax: number, ay: number, bx: number, by: number) => {
+  return ax * bx + ay * by;
+};
+
+const calcOuterProduct = (ax: number, ay: number, bx: number, by: number) => {
+  return ax * by - ay * bx;
+};
+
+const calcRelativePositions = (targetCard: ICard) => {
+  // up: from PI/4 to PI*3/4
+  // left: from PI*3/4 to PI*5/4
+  // down: from PI*5/4 to PI*7/4
+  // right: from 0 to PI*/4 and from PI*7/4 to PI*2
+  const relPos = {
+    up: [],
+    down: [],
+    left: [],
+    right: [],
+  };
+  cacheOfCard.forEach(card => {
+    calcCentroid(card.sketch.geometry);
+    // counterclockwise angle from targetCard
+    let rad = Math.acos(
+      calcInnerProduct(
+        targetCard.sketch.geometry.x,
+        targetCard.sketch.geometry.y,
+        card.sketch.geometry.x,
+        card.sketch.geometry.y
+      )
+    );
+    const outerProduct = calcOuterProduct(
+      targetCard.sketch.geometry.x,
+      targetCard.sketch.geometry.y,
+      card.sketch.geometry.x,
+      card.sketch.geometry.y
+    );
+    if (outerProduct < 0) rad = -rad;
+  });
+};

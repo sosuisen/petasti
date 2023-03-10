@@ -455,6 +455,11 @@ export const initializeTaskTray = (store: INote) => {
   globalShortcut.registerAll([`CommandOrControl+${opt}+B`], () => {
     minimizeAllCards();
   });
+  // Spatial hjkl
+  globalShortcut.registerAll([`CommandOrControl+${opt}+L`], () => {
+    // Move current focus to right card
+    moveFocusTo();
+  });
 
   // for debug
   if (
