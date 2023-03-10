@@ -130,7 +130,6 @@ export const calcRelativePositionOfCardUrl = (
   for (const card of cacheOfCard.values()) {
     if (card === targetCard) continue;
     const cardGeometry = getActualGeometry2D(card);
-
     const currentCentroid = calcCentroid(cardGeometry);
     const targetVector: GeometryXY = {
       x: currentCentroid.x - targetCentroid.x,
@@ -172,7 +171,10 @@ export const calcRelativePositionOfCardUrl = (
     const outerProduct = calcOuterProduct(unitVector, targetVector);
     if (outerProduct > 0) rad = -rad;
 
-    let distance = targetLength;
+    let rightDistance = targetLength;
+    let leftDistance = targetLength;
+    let upDistance = targetLength;
+    let downDistance = targetLength;
 
     let isLeft = false;
     let isRight = false;
@@ -184,51 +186,65 @@ export const calcRelativePositionOfCardUrl = (
     if (cardGeometry.y + cardGeometry.height <= targetGeometry.y) isUp = true;
 
     if (rad > -Math.PI / 4 && rad <= Math.PI / 4) {
-      // Use shorter distance
-      distance = cardGeometry.x - targetGeometry.x + targetGeometry.width;
+      if (isRight) {
+        // Use shorter distance
+        rightDistance = cardGeometry.x - (targetGeometry.x + targetGeometry.width);
+      }
       isRight = true;
     }
     else if (rad > Math.PI / 4 && rad <= (Math.PI * 3) / 4) {
-      distance = targetGeometry.y - (cardGeometry.y + cardGeometry.height);
+      if (isUp) {
+        upDistance = targetGeometry.y - (cardGeometry.y + cardGeometry.height);
+      }
       isUp = true;
     }
     else if (rad > (Math.PI * 3) / 4 || rad <= (-Math.PI * 3) / 4) {
-      distance = targetGeometry.x - (cardGeometry.x + cardGeometry.width);
+      if (isLeft) {
+        leftDistance = targetGeometry.x - (cardGeometry.x + cardGeometry.width);
+      }
       isLeft = true;
     }
     else if (rad > (-Math.PI * 3) / 4 && rad <= -Math.PI / 4) {
-      distance = cardGeometry.y - (targetGeometry.y + targetGeometry.height);
+      if (isDown) {
+        downDistance = cardGeometry.y - (targetGeometry.y + targetGeometry.height);
+      }
       isDown = true;
     }
 
     if (isRight) {
+      // Adjust distance by angle
+      // The greater the angle, the greater the distance.
+      rightDistance *= Math.pow(1 + Math.abs(Math.sin(rad)), 4);
       relPos.right.push({
         url: card.url,
-        distance,
+        distance: rightDistance,
         centroidDistance: targetLength,
         radian: rad,
       });
     }
     if (isLeft) {
+      leftDistance *= Math.pow(1 + Math.abs(Math.sin(rad)), 4);
       relPos.left.push({
         url: card.url,
-        distance,
+        distance: leftDistance,
         centroidDistance: targetLength,
         radian: rad,
       });
     }
     if (isUp) {
+      upDistance *= Math.pow(1 + Math.abs(Math.cos(rad)), 4);
       relPos.up.push({
         url: card.url,
-        distance,
+        distance: upDistance,
         centroidDistance: targetLength,
         radian: rad,
       });
     }
     if (isDown) {
+      downDistance *= Math.pow(1 + Math.abs(Math.cos(rad)), 4);
       relPos.down.push({
         url: card.url,
-        distance,
+        distance: downDistance,
         centroidDistance: targetLength,
         radian: rad,
       });
