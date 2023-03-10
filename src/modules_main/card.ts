@@ -164,29 +164,6 @@ export const minimizeAllCards = () => {
   backToFront.forEach(card => card.window?.minimize());
 };
 
-export const moveFocusTo = (direction: Direction) => {
-  // Move current focus to right card
-  let topCard: ICard | null = null;
-  for (const card of cacheOfCard.values()) {
-    if (card.isFake) continue;
-    if (topCard === null) {
-      topCard = card;
-      continue;
-    }
-    if (card.sketch.geometry.z > topCard.sketch.geometry.z) topCard = card;
-  }
-  if (topCard === null) return;
-
-  const relPos = calcRelativePositionOfCardUrl(topCard.url);
-  if (relPos[direction].length > 0) {
-    const nearestCardUrl = relPos[direction].reduce((prev, cur) => prev.distance > cur.distance ? cur : prev, relPos[direction][0]).url;
-    cacheOfCard.get(nearestCardUrl)?.window?.focus();
-    // console.log(nearestCardUrl);
-  }
-  else {
-    // console.log('no cards');
-  }
-}
 
 /**
  * Create card
@@ -1316,6 +1293,36 @@ export class Card implements ICard {
         this.window.webContents.openDevTools();
         // }
       });
+
+      const moveFocusTo = (direction: Direction) => {
+        // Move current focus to right card
+        const relPos = calcRelativePositionOfCardUrl(this.url);
+        if (relPos[direction].length > 0) {
+          const nearestCardUrl = relPos[direction].reduce(
+            (prev, cur) => (prev.distance > cur.distance ? cur : prev),
+            relPos[direction][0]
+          ).url;
+          cacheOfCard.get(nearestCardUrl)?.window?.focus();
+          // console.log(nearestCardUrl);
+        }
+        else {
+          // console.log('no cards');
+        }
+      };
+      
+      // Spatial hjkl
+      globalShortcut.registerAll([`${opt}+Left`], () => {
+        moveFocusTo('left');
+      });
+      globalShortcut.registerAll([`${opt}+Down`], () => {
+        moveFocusTo('down');
+      });
+      globalShortcut.registerAll([`${opt}+Up`], () => {
+        moveFocusTo('up');
+      });
+      globalShortcut.registerAll([`${opt}+Right`], () => {
+        moveFocusTo('right');
+      });
     });
   };
 
@@ -1336,19 +1343,6 @@ export class Card implements ICard {
       // 'B'ack
       globalShortcut.registerAll([`CommandOrControl+${opt}+B`], () => {
         minimizeAllCards();
-      });
-      // Spatial hjkl
-      globalShortcut.registerAll([`CommandOrControl+${opt}+H`], () => {
-        moveFocusTo('left');
-      });
-      globalShortcut.registerAll([`CommandOrControl+${opt}+J`], () => {
-        moveFocusTo('down');
-      });
-      globalShortcut.registerAll([`CommandOrControl+${opt}+K`], () => {
-        moveFocusTo('up');
-      });
-      globalShortcut.registerAll([`CommandOrControl+${opt}+L`], () => {
-        moveFocusTo('right');
       });
     });
   };

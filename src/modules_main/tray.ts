@@ -13,7 +13,11 @@ import {
   Tray,
 } from 'electron';
 import { closeSettings, openSettings } from './settings';
-import { createRandomColorCard, minimizeAllCards, moveFocusTo, sortCardWindows } from './card';
+import {
+  createRandomColorCard,
+  minimizeAllCards,
+  sortCardWindows,
+} from './card';
 import { emitter } from './event';
 import {
   getCurrentDateAndTime,
@@ -454,19 +458,6 @@ export const initializeTaskTray = (store: INote) => {
   // 'B'ack
   globalShortcut.registerAll([`CommandOrControl+${opt}+B`], () => {
     minimizeAllCards();
-  });
-  // Spatial hjkl
-  globalShortcut.registerAll([`CommandOrControl+${opt}+H`], () => {
-    moveFocusTo('left');
-  });
-  globalShortcut.registerAll([`CommandOrControl+${opt}+J`], () => {
-    moveFocusTo('down');
-  });
-  globalShortcut.registerAll([`CommandOrControl+${opt}+K`], () => {
-    moveFocusTo('up');
-  });
-  globalShortcut.registerAll([`CommandOrControl+${opt}+L`], () => {
-    moveFocusTo('right');
   });
 
   // for debug
