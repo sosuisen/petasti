@@ -137,7 +137,9 @@ export const sortCardWindows = (suppressFocus = false) => {
   }
   backToFront.forEach(card => {
     if (card.window && !card.window.isDestroyed()) {
-      if (suppressFocus) card.suppressFocusEvent = true;
+      // Do not suppress focus event for the top card
+      if (suppressFocus && card !== backToFront[backToFront.length - 1])
+        card.suppressFocusEvent = true;
 
       if (card.window.isMinimized()) {
         card.window.restore();
@@ -145,7 +147,7 @@ export const sortCardWindows = (suppressFocus = false) => {
       card.window.moveTop();
 
       // !ALERT: Dirty hack not to call updateCardSketchDoc
-      if (suppressFocus) {
+      if (suppressFocus && card !== backToFront[backToFront.length - 1]) {
         setTimeout(() => {
           card.suppressFocusEvent = false;
         }, 3000);
@@ -1302,7 +1304,11 @@ export class Card implements ICard {
             (prev, cur) => (prev.distance > cur.distance ? cur : prev),
             relPos[direction][0]
           ).url;
-          cacheOfCard.get(nearestCardUrl)?.window?.focus();
+          const nextCard = cacheOfCard.get(nearestCardUrl);
+          if (nextCard) {
+            nextCard.suppressFocusEvent = false;
+            nextCard.window?.focus();
+          }
         }
       };
 
