@@ -1303,10 +1303,6 @@ export class Card implements ICard {
             relPos[direction][0]
           ).url;
           cacheOfCard.get(nearestCardUrl)?.window?.focus();
-          // console.log(nearestCardUrl);
-        }
-        else {
-          // console.log('no cards');
         }
       };
 
