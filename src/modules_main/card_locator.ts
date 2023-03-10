@@ -204,7 +204,7 @@ export const calcRelativePositionOfCardUrl = (
     if (isRight) {
       relPos.right.push({
         url: card.url,
-        distance: distance,
+        distance,
         centroidDistance: targetLength,
         radian: rad,
       });
@@ -212,7 +212,7 @@ export const calcRelativePositionOfCardUrl = (
     if (isLeft) {
       relPos.left.push({
         url: card.url,
-        distance: distance,
+        distance,
         centroidDistance: targetLength,
         radian: rad,
       });
@@ -220,7 +220,7 @@ export const calcRelativePositionOfCardUrl = (
     if (isUp) {
       relPos.up.push({
         url: card.url,
-        distance: distance,
+        distance,
         centroidDistance: targetLength,
         radian: rad,
       });
@@ -228,7 +228,7 @@ export const calcRelativePositionOfCardUrl = (
     if (isDown) {
       relPos.down.push({
         url: card.url,
-        distance: distance,
+        distance,
         centroidDistance: targetLength,
         radian: rad,
       });
