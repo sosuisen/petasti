@@ -364,7 +364,8 @@ const renderCardStyle = () => {
   if (cardStore.getState().sketch.style.opacity !== 0) {
     document.getElementById(
       'card'
-    )!.style.border = `${cardCssStyle.borderWidth}px solid ${borderRgba}`;
+//    )!.style.border = `${cardCssStyle.borderWidth}px solid ${borderRgba}`;
+)!.style.border = `${cardCssStyle.borderWidth}px solid #000000`;
   }
   else {
     document.getElementById(
