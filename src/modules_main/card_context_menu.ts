@@ -31,7 +31,7 @@ import { emitter } from './event';
  * Context Menu
  */
 export const setContextMenu = (note: INote, card: ICard) => {
-  let resetContextMenu = () => { };
+  let resetContextMenu = () => {};
 
   const setColor = (name: ColorName) => {
     return {
@@ -56,43 +56,45 @@ export const setContextMenu = (note: INote, card: ICard) => {
   };
 
   let submenuMoveToNotes: MenuItemConstructorOptions[] = [];
-  const resetMoveToNotes = () => [...noteStore.getState().values()]
-    .sort((a, b) => {
-      if (a.name > b.name) return 1;
-      else if (a.name < b.name) return -1;
-      return 0;
-    })
-    .reduce((result, noteProp) => {
-      if (noteProp._id !== note.settings.currentNoteId) {
-        result.push({
-          label: `${noteProp.name}`,
-          click: () => {
-            moveCardToNote(noteProp._id);
-          },
-        });
-      }
-      return result;
-    }, [] as MenuItemConstructorOptions[]);
+  const resetMoveToNotes = () =>
+    [...noteStore.getState().values()]
+      .sort((a, b) => {
+        if (a.name > b.name) return 1;
+        else if (a.name < b.name) return -1;
+        return 0;
+      })
+      .reduce((result, noteProp) => {
+        if (noteProp._id !== note.settings.currentNoteId) {
+          result.push({
+            label: `${noteProp.name}`,
+            click: () => {
+              moveCardToNote(noteProp._id);
+            },
+          });
+        }
+        return result;
+      }, [] as MenuItemConstructorOptions[]);
   submenuMoveToNotes = resetMoveToNotes();
 
   let submenuCopyToNotes: MenuItemConstructorOptions[] = [];
-  const resetCopyToNotes = () => [...noteStore.getState().values()]
-    .sort((a, b) => {
-      if (a.name > b.name) return 1;
-      else if (a.name < b.name) return -1;
-      return 0;
-    })
-    .reduce((result, noteProp) => {
-      if (noteProp._id !== note.settings.currentNoteId) {
-        result.push({
-          label: `${noteProp.name}`,
-          click: () => {
-            copyCardToNote(noteProp._id);
-          },
-        });
-      }
-      return result;
-    }, [] as MenuItemConstructorOptions[]);
+  const resetCopyToNotes = () =>
+    [...noteStore.getState().values()]
+      .sort((a, b) => {
+        if (a.name > b.name) return 1;
+        else if (a.name < b.name) return -1;
+        return 0;
+      })
+      .reduce((result, noteProp) => {
+        if (noteProp._id !== note.settings.currentNoteId) {
+          result.push({
+            label: `${noteProp.name}`,
+            click: () => {
+              copyCardToNote(noteProp._id);
+            },
+          });
+        }
+        return result;
+      }, [] as MenuItemConstructorOptions[]);
   submenuCopyToNotes = resetCopyToNotes();
 
   const createCardFromMarkdown = (
