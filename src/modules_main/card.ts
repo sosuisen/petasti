@@ -42,10 +42,8 @@ import { handlers } from './event';
 import {
   CardBody,
   CardSketch,
-  CardStatus,
   Direction,
   Geometry,
-  Geometry2D,
   ICard,
   RendererConfig,
 } from '../modules_common/types';
@@ -58,7 +56,12 @@ import { cardColors, ColorName } from '../modules_common/color';
 import { noteStore } from './note_store';
 import { openURL } from './url_schema';
 import { playSound } from './sound';
-import { calcRelativePositionOfCardUrl, moveCardOutsideFromBottom } from './card_locator';
+import {
+  calcRelativePositionOfCardUrl,
+  moveCardOutsideFromBottom,
+  moveCardOutsideFromRightForCopy,
+  moveCardOutsideFromRightForMove,
+} from './card_locator';
 
 type AccelCheck = {
   prevTime: number;
@@ -868,28 +871,7 @@ export class Card implements ICard {
         if (!e.message.endsWith(notCurrentNoteMsg)) console.log(e);
       });
 
-    const display: Display = screen.getDisplayNearestPoint({
-      x: this.sketch.geometry.x,
-      y: this.sketch.geometry.y,
-    });
-
-    await this.setRect(
-      this.sketch.geometry.x - 50,
-      this.sketch.geometry.y,
-      this.sketch.geometry.width,
-      this.sketch.geometry.height,
-      true
-    );
-    playSound('move', 3, true);
-    await this.setRect(
-      display.bounds.x + display.bounds.width,
-      this.sketch.geometry.y,
-      this.sketch.geometry.width,
-      this.sketch.geometry.height,
-      true,
-      400
-    );
-
+    await moveCardOutsideFromRightForMove(this.url);
     await this._note.deleteCardSketch(this.url);
   };
 
@@ -927,11 +909,6 @@ export class Card implements ICard {
     const tmpCardSketch = JSON.parse(JSON.stringify(this.sketch));
     tmpCardSketch.geometry.z--;
 
-    const display: Display = screen.getDisplayNearestPoint({
-      x: this.sketch.geometry.x,
-      y: this.sketch.geometry.y,
-    });
-
     const tmpCard = new Card(
       this._note,
       getNoteIdFromUrl(this.url),
@@ -944,25 +921,7 @@ export class Card implements ICard {
     sortCardWindows();
 
     await tmpCard.render();
-
-    await tmpCard.setRect(
-      this.sketch.geometry.x + 50,
-      this.sketch.geometry.y,
-      this.sketch.geometry.width,
-      this.sketch.geometry.height,
-      true,
-      300
-    );
-    playSound('move', 3, true);
-    await sleep(300);
-    await tmpCard.setRect(
-      display.bounds.x + display.bounds.width,
-      this.sketch.geometry.y,
-      this.sketch.geometry.width,
-      this.sketch.geometry.height,
-      true,
-      400
-    );
+    await moveCardOutsideFromRightForCopy(tmpCard.url);
     tmpCard.window?.destroy();
     cacheOfCard.delete(tmpCard.url);
 

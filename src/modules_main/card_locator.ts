@@ -5,7 +5,7 @@ import {
   ICard,
   RelativePositionOfCardUrl,
 } from '../modules_common/types';
-import { isLabelOpened } from '../modules_common/utils';
+import { isLabelOpened, sleep } from '../modules_common/utils';
 import { cacheOfCard } from './card_cache';
 import { playSound } from './sound';
 
@@ -303,6 +303,51 @@ export const moveCardOutsideFromBottom = async (url: string) => {
     await card.setRect(
       bounds.x,
       display.bounds.y + display.bounds.height,
+      bounds.width,
+      bounds.height,
+      true,
+      400
+    );
+  }
+};
+
+export const moveCardOutsideFromRightForCopy = async (url: string) => {
+  playSound('move', 3, true);
+  const card = cacheOfCard.get(url);
+  if (card) {
+    const bounds: Geometry2D = getActualGeometry2D(card);
+    const display: Display = screen.getDisplayNearestPoint({
+      x: bounds.x,
+      y: bounds.y,
+    });
+
+    await card.setRect(bounds.x + 50, bounds.y, bounds.width, bounds.height, true, 300);
+    await sleep(300);
+    await card.setRect(
+      display.bounds.x + display.bounds.width,
+      bounds.y,
+      bounds.width,
+      bounds.height,
+      true,
+      400
+    );
+  }
+};
+
+export const moveCardOutsideFromRightForMove = async (url: string) => {
+  playSound('move', 3, true);
+  const card = cacheOfCard.get(url);
+  if (card) {
+    const bounds: Geometry2D = getActualGeometry2D(card);
+    const display: Display = screen.getDisplayNearestPoint({
+      x: bounds.x,
+      y: bounds.y,
+    });
+
+    await card.setRect(bounds.x - 50, bounds.y, bounds.width, bounds.height, true);
+    await card.setRect(
+      display.bounds.x + display.bounds.width,
+      bounds.y,
       bounds.width,
       bounds.height,
       true,
