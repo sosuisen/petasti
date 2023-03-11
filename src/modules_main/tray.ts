@@ -39,6 +39,7 @@ import { INote } from './note_types';
 import { regExpResidentNote, showDialog } from './utils_main';
 import { noteStore } from './note_store';
 import { noteDeleteCreator, noteUpdateCreator } from './note_action_creator';
+import ProgressBar from 'electron-progressbar';
 
 /**
  * Task tray
@@ -263,19 +264,50 @@ export const setTrayContextMenu = () => {
           ) {
             return;
           }
+          const maxValue = cacheOfCard.size;
+          const progressBar = new ProgressBar({
+            indeterminate: false,
+            text: MESSAGE('duplicatingNoteProgressBarTitle'),
+            detail: MESSAGE('duplicatingNoteProgressBarBody'),
+            maxValue,
+          });
+          progressBar
+            .on('completed', () => {
+              progressBar.detail = MESSAGE('completed');
+            })
+            // @ts-ignore
+            .on('progress', (value: number) => {
+              progressBar.detail = MESSAGE(
+                'duplicatingNoteProgressBarProgress',
+                `${value}`,
+                `${maxValue}`
+              );
+            });
+
           const [newNoteProp] = await note.createNote(newName as string, true);
 
-          const copyCardToNote = (card: ICard, noteId: String) => {
-            const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
-            const newSketchId = `${noteId}/${getCardIdFromUrl(card.url)}`;
-            const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
-            newCardSketch._id = newSketchId;
-            note.createCardSketch(newUrl, newCardSketch, false);
+          const copyCardToNote = async (card: ICard, noteId: String) => {
+            try {
+              const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
+              const newSketchId = `${noteId}/${getCardIdFromUrl(card.url)}`;
+              const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
+              newCardSketch._id = newSketchId;
+              await note.createCardSketch(newUrl, newCardSketch, true);
+            } catch (err) {
+              progressBar.close();
+              showDialog(undefined, 'error', 'databaseCreateError', (err as Error).message);
+              console.log(err);
+            }
           };
+
           for(const card of cacheOfCard.values()){
             // Duplicate cards asyncronously
-            copyCardToNote(card, newNoteProp._id);
+            await copyCardToNote(card, newNoteProp._id);
+            if (progressBar.isInProgress()) {
+              progressBar.value++;
+            }
           };
+          
           setTrayContextMenu();
           cacheOfCard.forEach(card => card.resetContextMenu());
         },
