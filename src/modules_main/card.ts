@@ -58,7 +58,7 @@ import { cardColors, ColorName } from '../modules_common/color';
 import { noteStore } from './note_store';
 import { openURL } from './url_schema';
 import { playSound } from './sound';
-import { calcRelativePositionOfCardUrl } from './card_locator';
+import { calcRelativePositionOfCardUrl, moveCardOutsideFromBottom } from './card_locator';
 
 type AccelCheck = {
   prevTime: number;
@@ -1160,7 +1160,11 @@ export class Card implements ICard {
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         this.window.webContents.send('zoom-out');
       });
-
+      globalShortcut.register('CommandOrControl+' + opt + '+A', async () => {
+        // 'A'rchive
+        await moveCardOutsideFromBottom(this.url);
+        await this._note.deleteCardSketch(this.url);
+      });
       globalShortcut.register('CommandOrControl+' + opt + '+Up', () => {
         // if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
