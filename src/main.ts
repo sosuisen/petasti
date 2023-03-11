@@ -34,7 +34,10 @@ import { initializeUrlSchema, openURL } from './modules_main/url_schema';
 import { DEFAULT_CARD_GEOMETRY } from './modules_common/const';
 import { MESSAGE } from './modules_main/messages';
 import { playSound, soundFiles } from './modules_main/sound';
-import { moveCardOutsideFromBottom, moveCardOutsideFromTop } from './modules_main/card_locator';
+import {
+  moveCardOutsideFromBottom,
+  moveCardOutsideFromTop,
+} from './modules_main/card_locator';
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
