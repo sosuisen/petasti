@@ -317,11 +317,13 @@ export const setTrayContextMenu = () => {
           if (noteStore.getState().size <= 1) {
             return;
           }
+          let hasResidentCards = false;
           for (const key of cacheOfCard.keys()) {
             if (getNoteIdFromUrl(key) === note.settings.currentNoteId) {
               showDialog(undefined, 'info', 'noteCannotDelete');
               return;
             }
+            hasResidentCards = true;
           }
           const noteIdList = note.getSortedNoteIdList();
           const currentNoteIndex = noteIdList.indexOf(note.settings.currentNoteId);
@@ -329,20 +331,20 @@ export const setTrayContextMenu = () => {
           // Delete current note
           await noteStore.dispatch(noteDeleteCreator(note, note.settings.currentNoteId));
 
-          // Close resident cards
-          // eslint-disable-next-line require-atomic-updates
-          note.changingToNoteId = noteIdList[nextNoteIndex];
           try {
-            closeAllCards(note);
+            if (hasResidentCards) {
+              // Close resident cards
+              closeAllCards(note);
+              // eslint-disable-next-line require-atomic-updates
+              note.changingToNoteId = noteIdList[nextNoteIndex];
+            }
+            else {
+              emitter.emit('change-note', noteIdList[nextNoteIndex]);
+            }
+            // setTrayContextMenu() will be called in change-note event.
           } catch (e) {
             console.error(e);
           }
-
-          // eslint-disable-next-line require-atomic-updates
-          // note.settings.currentNoteId = noteIdList[nextNoteIndex];
-          // emitter.emit('change-note', note.settings.currentNoteId);
-
-          // setTrayContextMenu() will be called in change-note event.
         },
       },
       {
