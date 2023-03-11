@@ -703,13 +703,14 @@ export class Card implements ICard {
             if (moveAnimeTimer) {
               clearInterval(moveAnimeTimer!);
               moveAnimeTimer = undefined;
-
-              this.window?.setBounds({
-                x: Math.floor(moveToX),
-                y: Math.floor(moveToY),
-                width: Math.floor(moveToWidth),
-                height: Math.floor(moveToHeight),
-              });
+              if (!this.window?.isDestroyed()) {
+                this.window?.setBounds({
+                  x: Math.floor(moveToX),
+                  y: Math.floor(moveToY),
+                  width: Math.floor(moveToWidth),
+                  height: Math.floor(moveToHeight),
+                });
+              }
               resolve();
             }
           }
@@ -719,12 +720,14 @@ export class Card implements ICard {
             const nextWidth = (moveToWidth - moveFromWidth) * rate + moveFromWidth;
             const nextHeight = (moveToHeight - moveFromHeight) * rate + moveFromHeight;
             // this.window.setPosition(Math.floor(nextX), Math.floor(nextY));
-            this.window?.setBounds({
-              x: Math.floor(nextX),
-              y: Math.floor(nextY),
-              width: Math.floor(nextWidth),
-              height: Math.floor(nextHeight),
-            });
+            if (!this.window?.isDestroyed()) {
+              this.window?.setBounds({
+                x: Math.floor(nextX),
+                y: Math.floor(nextY),
+                width: Math.floor(nextWidth),
+                height: Math.floor(nextHeight),
+              });
+            }
           }
         }, interval);
       }
