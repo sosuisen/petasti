@@ -279,6 +279,9 @@ export const setTrayContextMenu = () => {
           const promises: Promise<TaskMetadata>[] = [];
 
           for (const card of cacheOfCard.values()) {
+            // Skip resident cards
+            if (getNoteIdFromUrl(card.url) !== note.settings.currentNoteId) continue;
+
             const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
             const newSketchId = `${newNoteProp._id}/${getCardIdFromUrl(card.url)}`;
             const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
