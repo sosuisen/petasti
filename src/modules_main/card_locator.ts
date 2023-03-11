@@ -1,3 +1,4 @@
+import { Display, screen } from 'electron';
 import {
   Geometry2D,
   GeometryXY,
@@ -6,6 +7,7 @@ import {
 } from '../modules_common/types';
 import { isLabelOpened } from '../modules_common/utils';
 import { cacheOfCard } from './card_cache';
+import { playSound } from './sound';
 
 /**
  * Calc relative positions
@@ -251,4 +253,75 @@ export const calcRelativePositionOfCardUrl = (
     }
   }
   return relPos;
+};
+
+export const moveCardOutsideFromTop = async (url: string) => {
+  playSound('delete', 3, true);
+
+  const card = cacheOfCard.get(url);
+  if (card) {
+    const display: Display = screen.getDisplayNearestPoint({
+      x: card.sketch.geometry.x,
+      y: card.sketch.geometry.y,
+    });
+
+    // Shrink
+    await card.setRect(
+      card.sketch.geometry.x + card.sketch.geometry.width / 4,
+      card.sketch.geometry.y + card.sketch.geometry.height / 4,
+      card.sketch.geometry.width / 2,
+      card.sketch.geometry.height / 2,
+      true
+    );
+    // Bounds lower
+    /*
+    await card.setRect(
+      card.sketch.geometry.x + card.sketch.geometry.width / 4,
+      card.sketch.geometry.y + card.sketch.geometry.height / 4 + 50,
+      card.sketch.geometry.width / 2,
+      card.sketch.geometry.height / 2,
+      true
+    );
+    */
+    // Move upper
+    await card.setRect(
+      card.sketch.geometry.x +
+        (card.sketch.geometry.width - card.sketch.geometry.width / 8) / 2,
+      display.bounds.y - card.sketch.geometry.height / 4,
+      card.sketch.geometry.width / 8,
+      card.sketch.geometry.height / 8,
+      true,
+      400
+    );
+  }
+};
+
+export const moveCardOutsideFromBottom = async (url: string) => {
+  playSound('drop', 3, true);
+
+  const card = cacheOfCard.get(url);
+  if (card) {
+    const display: Display = screen.getDisplayNearestPoint({
+      x: card.sketch.geometry.x,
+      y: card.sketch.geometry.y,
+    });
+
+    // Bounds upper
+    await card.setRect(
+      card.sketch.geometry.x,
+      card.sketch.geometry.y - 50,
+      card.sketch.geometry.width,
+      card.sketch.geometry.height,
+      true
+    );
+    // Move lower
+    await card.setRect(
+      card.sketch.geometry.x,
+      display.bounds.y + display.bounds.height,
+      card.sketch.geometry.width,
+      card.sketch.geometry.height,
+      true,
+      400
+    );
+  }
 };
