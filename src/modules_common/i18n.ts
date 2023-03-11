@@ -114,7 +114,6 @@ type MessagesSettings = {
   loadingNoteProgressBarBody: string;
   duplicatingNoteProgressBarTitle: string;
   duplicatingNoteProgressBarBody: string;
-  duplicatingNoteProgressBarProgress: string;
   completed: string;
   loadingNoteFailed: string;
   exportDataAlert: string;
@@ -216,7 +215,6 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   loadingNoteProgressBarBody: 'Loading cards...',
   duplicatingNoteProgressBarTitle: 'Duplicating note...',
   duplicatingNoteProgressBarBody: 'Duplicating all cards...',
-  duplicatingNoteProgressBarProgress: 'Copy cards ($1 out of $2)',
   completed: 'Completed',
   loadingNoteFailed: 'Failed to load cards.',
   exportDataAlert:
@@ -364,7 +362,6 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   loadingNoteProgressBarBody: 'カードを読み込み中...',
   duplicatingNoteProgressBarTitle: 'ノートを複製中...',
   duplicatingNoteProgressBarBody: '全カードを複製しています...',
-  duplicatingNoteProgressBarProgress: '$2 個のうち $1 個のカードを複製しました',
   completed: '完了しました',
   loadingNoteFailed: 'カードの読み込みを失敗しました',
   exportDataAlert:

@@ -12,6 +12,8 @@ import {
   MenuItemConstructorOptions,
   Tray,
 } from 'electron';
+import ProgressBar from 'electron-progressbar';
+import { TaskMetadata } from 'git-documentdb';
 import { closeSettings, openSettings } from './settings';
 import { createRandomColorCard, minimizeAllCards, sortCardWindows } from './card';
 import { emitter } from './event';
@@ -39,7 +41,6 @@ import { INote } from './note_types';
 import { regExpResidentNote, showDialog } from './utils_main';
 import { noteStore } from './note_store';
 import { noteDeleteCreator, noteUpdateCreator } from './note_action_creator';
-import ProgressBar from 'electron-progressbar';
 
 /**
  * Task tray
@@ -264,50 +265,36 @@ export const setTrayContextMenu = () => {
           ) {
             return;
           }
-          const maxValue = cacheOfCard.size;
+
           const progressBar = new ProgressBar({
-            indeterminate: false,
             text: MESSAGE('duplicatingNoteProgressBarTitle'),
             detail: MESSAGE('duplicatingNoteProgressBarBody'),
-            maxValue,
           });
-          progressBar
-            .on('completed', () => {
-              progressBar.detail = MESSAGE('completed');
-            })
-            // @ts-ignore
-            .on('progress', (value: number) => {
-              progressBar.detail = MESSAGE(
-                'duplicatingNoteProgressBarProgress',
-                `${value}`,
-                `${maxValue}`
-              );
-            });
+          progressBar.on('completed', () => {
+            progressBar.detail = MESSAGE('completed');
+          });
 
           const [newNoteProp] = await note.createNote(newName as string, true);
 
-          const copyCardToNote = async (card: ICard, noteId: String) => {
-            try {
-              const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
-              const newSketchId = `${noteId}/${getCardIdFromUrl(card.url)}`;
-              const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
-              newCardSketch._id = newSketchId;
-              await note.createCardSketch(newUrl, newCardSketch, true);
-            } catch (err) {
-              progressBar.close();
-              showDialog(undefined, 'error', 'databaseCreateError', (err as Error).message);
-              console.log(err);
-            }
-          };
+          const promises: Promise<TaskMetadata>[] = [];
 
-          for(const card of cacheOfCard.values()){
-            // Duplicate cards asyncronously
-            await copyCardToNote(card, newNoteProp._id);
-            if (progressBar.isInProgress()) {
-              progressBar.value++;
-            }
-          };
-          
+          for (const card of cacheOfCard.values()) {
+            const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
+            const newSketchId = `${newNoteProp._id}/${getCardIdFromUrl(card.url)}`;
+            const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
+            newCardSketch._id = newSketchId;
+            promises.push(note.createCardSketch(newUrl, newCardSketch, true));
+          }
+          const tmpSyncAfterChanges = note.settings.sync.syncAfterChanges;
+          note.settings.sync.syncAfterChanges = false;
+          await Promise.all(promises).catch(err => {
+            progressBar.close();
+            showDialog(undefined, 'error', 'databaseCreateError', (err as Error).message);
+            console.log(err);
+          });
+          progressBar.close();
+          // eslint-disable-next-line require-atomic-updates
+          note.settings.sync.syncAfterChanges = tmpSyncAfterChanges;
           setTrayContextMenu();
           cacheOfCard.forEach(card => card.resetContextMenu());
         },
