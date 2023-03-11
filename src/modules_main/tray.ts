@@ -16,6 +16,7 @@ import { closeSettings, openSettings } from './settings';
 import { createRandomColorCard, minimizeAllCards, sortCardWindows } from './card';
 import { emitter } from './event';
 import {
+  getCardIdFromUrl,
   getCurrentDateAndTime,
   getCurrentLocalDate,
   getNoteIdFromUrl,
@@ -25,6 +26,7 @@ import {
 import {
   APP_ICON_NAME,
   APP_ICON_NAME_MONO,
+  APP_SCHEME,
   DEFAULT_CARD_GEOMETRY,
   DEFAULT_CARD_LABEL,
   MINIMUM_WINDOW_HEIGHT,
@@ -235,6 +237,47 @@ export const setTrayContextMenu = () => {
 
           // Need not to call resetContextMenu because each card does not refer current note name.
           // cacheOfCard.forEach(card => card.resetContextMenu());
+        },
+      },
+      {
+        label: MESSAGE('noteDuplicate'),
+        click: async () => {
+          const noteProp = noteStore.getState().get(note.settings.currentNoteId)!;
+
+          const newName: string | void | null = await prompt({
+            title: MESSAGE('note'),
+            label: MESSAGE('noteNewNameDuplicate'),
+            value: noteProp!.name + MESSAGE('copyOf'),
+            inputAttrs: {
+              type: 'text',
+              required: 'true',
+            },
+            height: 200,
+          }).catch(e => console.error(e.message));
+
+          if (
+            newName === null ||
+            newName === undefined ||
+            newName === '' ||
+            (newName as string).match(/^\s+$/)
+          ) {
+            return;
+          }
+          const [newNoteProp] = await note.createNote(newName as string, true);
+
+          const copyCardToNote = (card: ICard, noteId: String) => {
+            const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
+            const newSketchId = `${noteId}/${getCardIdFromUrl(card.url)}`;
+            const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
+            newCardSketch._id = newSketchId;
+            note.createCardSketch(newUrl, newCardSketch, false);
+          };
+          for(const card of cacheOfCard.values()){
+            // Duplicate cards asyncronously
+            copyCardToNote(card, newNoteProp._id);
+          };
+          setTrayContextMenu();
+          cacheOfCard.forEach(card => card.resetContextMenu());
         },
       },
       {

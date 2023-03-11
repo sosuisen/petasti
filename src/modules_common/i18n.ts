@@ -44,6 +44,7 @@ type MessagesMain = {
   minimizeAllCards: string;
   transformToLabel: string;
   transformFromLabel: string;
+  copyOf: string;
 };
 
 type MessagesNote = {
@@ -58,6 +59,8 @@ type MessagesNote = {
   noteDelete: string;
   noteCannotDelete: string;
   noteNewName: string;
+  noteDuplicate: string;
+  noteNewNameDuplicate: string;
   residentNoteName: string;
   noteCopyUrlToClipboard: string;
   noteCreateLink: string;
@@ -149,6 +152,8 @@ const NOTE_ENGLISH: MessagesNote = {
   noteCannotDelete:
     'To delete note, delete all cards in this note or move them to another note.',
   noteNewName: 'Enter new note name',
+  noteDuplicate: 'Duplicate this note',
+  noteNewNameDuplicate: 'Enter duplicated note name',
   residentNoteName: 'Resident note',
   noteCopyUrlToClipboard: 'Copy note URL',
   noteCreateLink: 'Create link to note',
@@ -275,6 +280,7 @@ export const ENGLISH: Messages = {
   minimizeAllCards: 'Minimize all cards',
   transformToLabel: 'Labelize',
   transformFromLabel: 'Open label',
+  copyOf: '-copy',
 };
 
 const NOTE_JAPANESE: MessagesNote = {
@@ -290,6 +296,8 @@ const NOTE_JAPANESE: MessagesNote = {
   noteCannotDelete:
     'ノートを削除するには、このノートのカードを全て削除するか他のノートへ移動してください。',
   noteNewName: '新しいノート名を入力してください',
+  noteDuplicate: 'ノートを複製',
+  noteNewNameDuplicate: '複製先のノート名を入力してください',
   residentNoteName: '常駐ノート',
   noteCopyUrlToClipboard: 'ノートのURLをコピー',
   noteCreateLink: 'ノートへのリンクを作成',
@@ -414,6 +422,7 @@ export const JAPANESE: Messages = {
   minimizeAllCards: '全カードを最小化',
   transformToLabel: 'ラベルにする',
   transformFromLabel: 'ラベルを開く',
+  copyOf: 'のコピー',
 };
 
 export const availableLanguages = ['en', 'ja'];
