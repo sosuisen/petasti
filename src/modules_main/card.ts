@@ -900,8 +900,10 @@ export class Card implements ICard {
     );
     tmpCard.window?.setOpacity(0.7);
     this._note.createCard(tmpCard.url, tmpCard, false, false);
+    // The animation card is hidden behind current card
+    // by focusing current card.
+    // Set zOrder just to be sure.
     this._note.currentZOrder.splice(-1, 0, tmpCardSketch.url);
-    // need sortCardWindows() here
 
     await tmpCard.render();
 
@@ -925,7 +927,7 @@ export class Card implements ICard {
     );
     tmpCard.window?.destroy();
     cacheOfCard.delete(tmpCard.url);
-
+    // Focus current card to hide animation card behind.
     this.focus();
   };
 
