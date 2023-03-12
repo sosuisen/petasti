@@ -441,7 +441,7 @@ export const setTrayContextMenu = () => {
       {
         label: MESSAGE('minimizeAllCards'),
         click: () => {
-          minimizeAllCards();
+          minimizeAllCards(note.currentZOrder);
         },
       },
       {
@@ -520,11 +520,11 @@ export const initializeTaskTray = (store: INote) => {
   });
   // 'F'ront
   globalShortcut.registerAll([`CommandOrControl+${opt}+F`], () => {
-    sortCardWindows(true);
+    sortCardWindows(note.currentZOrder, true);
   });
   // 'B'ack
   globalShortcut.registerAll([`CommandOrControl+${opt}+B`], () => {
-    minimizeAllCards();
+    minimizeAllCards(note.currentZOrder);
   });
 
   // for debug

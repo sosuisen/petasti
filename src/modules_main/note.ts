@@ -18,7 +18,6 @@ import {
   Collection,
   CollectionOptions,
   DatabaseOptions,
-  DeleteResultJsonDoc,
   Err,
   GitDocumentDB,
   RemoteOptions,
@@ -40,7 +39,6 @@ import {
   CardBody,
   CardProperty,
   CardSketch,
-  Geometry,
   ICard,
   NoteProp,
   Snapshot,
@@ -49,11 +47,9 @@ import {
 import {
   defaultDataDir,
   defaultLogDir,
-  defaultSoundDir,
   InfoState,
   initialSettingsState,
   SettingsState,
-  soundSrcDir,
 } from '../modules_common/store.types';
 import {
   availableLanguages,
