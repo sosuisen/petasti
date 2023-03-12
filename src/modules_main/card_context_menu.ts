@@ -228,25 +228,21 @@ export const setContextMenu = (note: INote, card: ICard) => {
             label: MESSAGE('sendToBack'),
             click: () => {
               const noteId = getNoteIdFromUrl(card.url);
-              const zOrder = noteStore.getState().get(noteId)?.zOrder!;
-              if (zOrder[zOrder.length - 1] === card.url) {
+              if (note.currentZOrder[0] === card.url) {
                 return;
               }
-              const currentZ = zOrder.indexOf(card.url);
-              if (currentZ > 0) {
-                // remove
-                zOrder.splice(currentZ, 1);
-              }
-              zOrder.unshift(card.url);
+              const currentZ = note.currentZOrder.indexOf(card.url);
+              // remove
+              note.currentZOrder.splice(currentZ, 1);
+              note.currentZOrder.unshift(card.url);
 
-              zOrder.forEach(myUrl => {
+              note.currentZOrder.forEach(myUrl => {
                 const myCard = cacheOfCard.get(myUrl);
-                if (myCard && myCard.window && !myCard.window.isDestroyed()) {
+                if (myCard && myCard.window && !myCard.isFake && !myCard.window.isDestroyed()) {
                   myCard!.suppressFocusEventOnce = true;
                   myCard!.focus();
                 }
               });
-              note.currentZOrder = zOrder;
             },
           },
           /*

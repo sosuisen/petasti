@@ -21,7 +21,7 @@ const lock = new AsyncLock();
 let prevZOrder: ZOrder;
 
 export const setInitialZOrder = (zOrder: ZOrder) => {
-  prevZOrder = zOrder;
+  prevZOrder = [...zOrder];
 };
 
 export const noteInitCreator = (noteState: NoteState) => {
@@ -83,7 +83,7 @@ export const noteZOrderUpdateCreator = (
         }
       }
       // eslint-disable-next-line require-atomic-updates
-      prevZOrder = zOrder;
+      prevZOrder = [...zOrder];
     });
   };
 };

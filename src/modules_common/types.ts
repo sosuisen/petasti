@@ -183,4 +183,7 @@ export type RendererConfig = {
   isResident: boolean;
 };
 
+/**
+ * url array from back to front
+ */
 export type ZOrder = string[];

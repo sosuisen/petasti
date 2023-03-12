@@ -123,7 +123,7 @@ class Note implements INote {
    * Current zOrder
    * This will be stored into noteStore and serialized at specific times.
    */
-  currentZOrder: ZOrder;
+  currentZOrder: ZOrder = [];
 
   /**
    * Logger
@@ -481,7 +481,7 @@ class Note implements INote {
     const cards: CardProperty[] = [];
     const props = noteStore.getState().values();
 
-    const zOrder = noteStore.getState().get(note.settings.currentNoteId)!.zOrder;
+    const zOrder = [...noteStore.getState().get(note.settings.currentNoteId)!.zOrder];
     setInitialZOrder(zOrder);
 
     console.time('loadCards');
@@ -489,12 +489,18 @@ class Note implements INote {
       if (noteProp.isResident && noteProp._id !== this._settings.currentNoteId) {
         // eslint-disable-next-line no-await-in-loop
         cards.push(...(await this.loadCards(noteProp._id)));
+        // Add new resident cards at bottom.
         zOrder.unshift(...noteProp.zOrder.filter(url => !zOrder.includes(url)));
       }
     }
     cards.push(...(await this.loadCards(this._settings.currentNoteId)));
 
-    this.currentZOrder = zOrder;
+    const existingCardUrls = cards.map(card => card.url);
+    const existingZOrder = zOrder.filter(url => existingCardUrls.includes(url));
+    // Remove duplicated cards by using 'Set'.
+    // Merge cards that do not exist in zOrder.
+    // The new cards are added on the top.
+    this.currentZOrder =  [...new Set([...existingZOrder, ...existingCardUrls])];
 
     console.timeEnd('loadCards');
 

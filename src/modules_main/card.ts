@@ -196,10 +196,6 @@ export const createCardWindow = async (
   updateDB = true,
   moveToRect: Rectangle | undefined = undefined
 ): Promise<void> => {
-  // Overwrite z
-  if (partialCardSketch.geometry !== undefined) {
-    partialCardSketch.geometry.z = getZIndexOfTopCard() + 1;
-  }
   const card = new Card(note, noteIdOrUrl, partialCardBody, partialCardSketch);
 
   if (moveToRect) {
@@ -212,6 +208,9 @@ export const createCardWindow = async (
   card.window?.focus();
   card.addShortcuts();
   card.window?.webContents.send('card-focused');
+
+  note.currentZOrder.push(card.url);
+
   if (moveToRect) {
     card.setRect(moveToRect.x, moveToRect.y, moveToRect.width, moveToRect.height, true);
   }
@@ -555,23 +554,18 @@ export class Card implements ICard {
       console.debug(`# focus ${this.url}`);
       try {
         this.addShortcuts();
-        const zOrder = noteStore.getState().get(getNoteIdFromUrl(this.url))?.zOrder!;
 
-        if (zOrder[zOrder.length - 1] === this.url) {
+        if (this._note.currentZOrder[this._note.currentZOrder.length - 1] === this.url) {
           console.log('zOrder no change');
           this.window?.webContents.send('card-focused');
           return;
         }
         // console.log([...cacheOfCard.values()].map(myCard => myCard.geometry.z));
 
-        const currentZ = zOrder.indexOf(this.url);
-        if (currentZ > 0) {
-          // remove
-          zOrder.splice(currentZ, 1);
-        }
-        zOrder.push(this.url);
-
-        this._note.currentZOrder = zOrder;
+        const currentZ = this._note.currentZOrder.indexOf(this.url);
+        // remove
+        this._note.currentZOrder.splice(currentZ, 1);
+        this._note.currentZOrder.push(this.url);
 
         this.window?.webContents.send('card-focused');
       } catch (err) {
