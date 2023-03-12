@@ -356,10 +356,14 @@ const renderCardStyle = () => {
   // contentsElement.style.backgroundColor = backgroundRgba;
   document.getElementById('card')!.style.backgroundColor = backgroundRgba;
 
-  const borderRgba = convertHexColorToRgba(
+  let borderRgba = convertHexColorToRgba(
     strengthenHexColor(cardStore.getState().sketch.style.uiColor),
     0.6
   );
+
+  if (getConfig().isResident) {
+    borderRgba = '#000000';
+  }
 
   if (cardStore.getState().sketch.style.opacity !== 0) {
     document.getElementById(
