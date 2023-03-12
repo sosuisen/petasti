@@ -900,6 +900,8 @@ export class Card implements ICard {
     );
     tmpCard.window?.setOpacity(0.7);
     this._note.createCard(tmpCard.url, tmpCard, false, false);
+    this._note.currentZOrder.splice(-1, 0, tmpCardSketch.url);
+    // need sortCardWindows() here
 
     await tmpCard.render();
 
