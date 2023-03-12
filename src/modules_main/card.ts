@@ -551,6 +551,8 @@ export class Card implements ICard {
       this._note.logger.debug('# Error in removeShortcuts() ' + err);
     }
 
+    this.disposeContextMenu();
+
     cacheOfCard.delete(this.url);
 
     this._note.logger.debug('# End deleting or closing sketch: ' + this.url);
