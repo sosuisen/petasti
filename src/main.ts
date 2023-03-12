@@ -34,6 +34,10 @@ import { initializeUrlSchema, openURL } from './modules_main/url_schema';
 import { DEFAULT_CARD_GEOMETRY } from './modules_common/const';
 import { MESSAGE } from './modules_main/messages';
 import { playSound, soundFiles } from './modules_main/sound';
+import {
+  moveCardOutsideFromBottom,
+  moveCardOutsideFromTop,
+} from './modules_main/card_locator';
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -292,76 +296,12 @@ emitter.on(
  */
 
 ipcMain.handle('delete-card', async (event, url: string) => {
-  playSound('delete', 3, true);
-
-  const card = cacheOfCard.get(url);
-  if (card) {
-    const display: Display = screen.getDisplayNearestPoint({
-      x: card.sketch.geometry.x,
-      y: card.sketch.geometry.y,
-    });
-
-    // Shrink
-    await card.setRect(
-      card.sketch.geometry.x + card.sketch.geometry.width / 4,
-      card.sketch.geometry.y + card.sketch.geometry.height / 4,
-      card.sketch.geometry.width / 2,
-      card.sketch.geometry.height / 2,
-      true
-    );
-    // Bounds lower
-    /*
-    await card.setRect(
-      card.sketch.geometry.x + card.sketch.geometry.width / 4,
-      card.sketch.geometry.y + card.sketch.geometry.height / 4 + 50,
-      card.sketch.geometry.width / 2,
-      card.sketch.geometry.height / 2,
-      true
-    );
-    */
-    // Move upper
-    await card.setRect(
-      card.sketch.geometry.x +
-        (card.sketch.geometry.width - card.sketch.geometry.width / 8) / 2,
-      display.bounds.y - card.sketch.geometry.height / 4,
-      card.sketch.geometry.width / 8,
-      card.sketch.geometry.height / 8,
-      true,
-      400
-    );
-  }
+  await moveCardOutsideFromTop(url);
   await note.deleteCard(url);
 });
 
 ipcMain.handle('delete-card-sketch', async (event, url: string) => {
-  playSound('drop', 3, true);
-
-  const card = cacheOfCard.get(url);
-  if (card) {
-    const display: Display = screen.getDisplayNearestPoint({
-      x: card.sketch.geometry.x,
-      y: card.sketch.geometry.y,
-    });
-
-    // Bounds upper
-    await card.setRect(
-      card.sketch.geometry.x,
-      card.sketch.geometry.y - 50,
-      card.sketch.geometry.width,
-      card.sketch.geometry.height,
-      true
-    );
-    // Move lower
-    await card.setRect(
-      card.sketch.geometry.x,
-      display.bounds.y + display.bounds.height,
-      card.sketch.geometry.width,
-      card.sketch.geometry.height,
-      true,
-      400
-    );
-  }
-
+  await moveCardOutsideFromBottom(url);
   await note.deleteCardSketch(url);
 });
 

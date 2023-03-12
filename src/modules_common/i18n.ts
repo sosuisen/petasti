@@ -41,8 +41,10 @@ type MessagesMain = {
   saveSnapshot: string;
   snapshotName: string;
   redisplayCards: string;
+  minimizeAllCards: string;
   transformToLabel: string;
   transformFromLabel: string;
+  copyOf: string;
 };
 
 type MessagesNote = {
@@ -57,6 +59,8 @@ type MessagesNote = {
   noteDelete: string;
   noteCannotDelete: string;
   noteNewName: string;
+  noteDuplicate: string;
+  noteNewNameDuplicate: string;
   residentNoteName: string;
   noteCopyUrlToClipboard: string;
   noteCreateLink: string;
@@ -108,6 +112,8 @@ type MessagesSettings = {
   loadingNoteBookProgressBarBody: string;
   loadingNoteProgressBarTitle: string;
   loadingNoteProgressBarBody: string;
+  duplicatingNoteProgressBarTitle: string;
+  duplicatingNoteProgressBarBody: string;
   completed: string;
   loadingNoteFailed: string;
   exportDataAlert: string;
@@ -148,6 +154,8 @@ const NOTE_ENGLISH: MessagesNote = {
   noteCannotDelete:
     'To delete note, delete all cards in this note or move them to another note.',
   noteNewName: 'Enter new note name',
+  noteDuplicate: 'Duplicate this note',
+  noteNewNameDuplicate: 'Enter duplicated note name',
   residentNoteName: 'Resident note',
   noteCopyUrlToClipboard: 'Copy note URL',
   noteCreateLink: 'Create link to note',
@@ -205,6 +213,8 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   loadingNoteBookProgressBarBody: 'Checking notes...',
   loadingNoteProgressBarTitle: 'Loading...',
   loadingNoteProgressBarBody: 'Loading cards...',
+  duplicatingNoteProgressBarTitle: 'Duplicating note...',
+  duplicatingNoteProgressBarBody: 'Duplicating all cards...',
   completed: 'Completed',
   loadingNoteFailed: 'Failed to load cards.',
   exportDataAlert:
@@ -270,9 +280,11 @@ export const ENGLISH: Messages = {
   addToDictionary: 'Add to dictionary',
   saveSnapshot: 'Save snapshot',
   snapshotName: 'Enter snapshot name',
-  redisplayCards: 'Bring cards to front',
+  redisplayCards: 'Bring all cards to front',
+  minimizeAllCards: 'Minimize all cards',
   transformToLabel: 'Labelize',
   transformFromLabel: 'Open label',
+  copyOf: '-copy',
 };
 
 const NOTE_JAPANESE: MessagesNote = {
@@ -288,6 +300,8 @@ const NOTE_JAPANESE: MessagesNote = {
   noteCannotDelete:
     'ノートを削除するには、このノートのカードを全て削除するか他のノートへ移動してください。',
   noteNewName: '新しいノート名を入力してください',
+  noteDuplicate: 'ノートを複製',
+  noteNewNameDuplicate: '複製先のノート名を入力してください',
   residentNoteName: '常駐ノート',
   noteCopyUrlToClipboard: 'ノートのURLをコピー',
   noteCreateLink: 'ノートへのリンクを作成',
@@ -346,6 +360,8 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   loadingNoteBookProgressBarBody: 'ノートのデータを確認しています...',
   loadingNoteProgressBarTitle: '読み込み中...',
   loadingNoteProgressBarBody: 'カードを読み込み中...',
+  duplicatingNoteProgressBarTitle: 'ノートを複製中...',
+  duplicatingNoteProgressBarBody: '全カードを複製しています...',
   completed: '完了しました',
   loadingNoteFailed: 'カードの読み込みを失敗しました',
   exportDataAlert:
@@ -408,9 +424,11 @@ export const JAPANESE: Messages = {
   addToDictionary: '辞書に追加',
   saveSnapshot: 'スナップショット保存',
   snapshotName: 'スナップショット名を入力してください',
-  redisplayCards: 'カードを最前面表示',
+  redisplayCards: '全カードを前面に表示',
+  minimizeAllCards: '全カードを最小化',
   transformToLabel: 'ラベルにする',
   transformFromLabel: 'ラベルを開く',
+  copyOf: 'のコピー',
 };
 
 export const availableLanguages = ['en', 'ja'];

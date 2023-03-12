@@ -144,6 +144,7 @@ export interface ICard {
   window: BrowserWindow | undefined;
 
   resetContextMenu: () => void;
+  disposeContextMenu: () => void;
 
   suppressFocusEvent: boolean;
   suppressFocusEventOnce: boolean;
@@ -187,3 +188,13 @@ export type RendererConfig = {
  * url array from back to front
  */
 export type ZOrder = string[];
+
+export type Direction = 'up' | 'down' | 'left' | 'right';
+export type RelativePositionOfCardUrl = {
+  [key in Direction]: {
+    url: string;
+    distance: number;
+    centroidDistance: number;
+    radian: number;
+  }[];
+};

@@ -42,7 +42,7 @@ import { handlers } from './event';
 import {
   CardBody,
   CardSketch,
-  CardStatus,
+  Direction,
   Geometry,
   ICard,
   RendererConfig,
@@ -56,6 +56,12 @@ import { noteStore } from './note_store';
 import { openURL } from './url_schema';
 import { playSound } from './sound';
 import { noteZOrderUpdateCreator } from './note_action_creator';
+import {
+  calcRelativePositionOfCardUrl,
+  moveCardOutsideFromBottom,
+  moveCardOutsideFromRightForCopy,
+  moveCardOutsideFromRightForMove,
+} from './card_locator';
 
 type AccelCheck = {
   prevTime: number;
@@ -102,7 +108,7 @@ export const getGlobalFocusEventListenerPermission = () => {
 const sortCards = (zOrder: string[]) => {
   const backToFront = zOrder
     .map(myUrl => cacheOfCard.get(myUrl))
-    .filter(myCard => myCard !== undefined);
+    .filter(myCard => myCard !== undefined) as ICard[];
 
   // Insert cards which are not found in zOrder after backToFront.
   // Duplicated ICards are removed by using new Set().
@@ -111,9 +117,17 @@ const sortCards = (zOrder: string[]) => {
 
 export const sortCardWindows = (zOrder: string[], suppressFocus = false) => {
   const backToFront = sortCards(zOrder);
+  if (backToFront.length > 0) {
+    // Focusing a card is needed at first
+    // when another app is focused.
+    if (suppressFocus) backToFront[0].suppressFocusEvent = true;
+    backToFront[0].focus();
+  }
   backToFront.forEach(card => {
-    if (card && card.window && !card.window.isDestroyed()) {
-      if (suppressFocus) card.suppressFocusEvent = true;
+    if (card.window && !card.window.isDestroyed()) {
+      // Do not suppress focus event for the top card
+      if (suppressFocus && card !== backToFront[backToFront.length - 1])
+        card.suppressFocusEvent = true;
 
       if (card.window.isMinimized()) {
         card.window.restore();
@@ -121,17 +135,24 @@ export const sortCardWindows = (zOrder: string[], suppressFocus = false) => {
       card.window.moveTop();
 
       // !ALERT: Dirty hack not to call updateCardSketchDoc
-      if (suppressFocus) {
+      if (suppressFocus && card !== backToFront[backToFront.length - 1]) {
         setTimeout(() => {
           card.suppressFocusEvent = false;
         }, 3000);
       }
     }
   });
+
   if (backToFront.length > 0) {
     backToFront[backToFront.length - 1]!.focus();
   }
+
   return backToFront;
+};
+
+export const minimizeAllCards = (zOrder: string[]) => {
+  const backToFront = sortCards(zOrder);
+  backToFront.forEach(card => card.window?.minimize());
 };
 
 /**
@@ -283,6 +304,7 @@ export class Card implements ICard {
    * Context menu
    */
   public resetContextMenu: () => void = () => {};
+  public disposeContextMenu: () => void = () => {};
 
   /**
    * Constructor
@@ -422,7 +444,7 @@ export class Card implements ICard {
       this.window.on('closed', this._closedListener);
 
       if (!isFake) {
-        this.resetContextMenu = setContextMenu(note, this);
+        [this.resetContextMenu, this.disposeContextMenu] = setContextMenu(note, this);
       }
 
       // Open hyperlink on external browser window
@@ -512,6 +534,8 @@ export class Card implements ICard {
     } catch (err) {
       this._note.logger.debug('# Error in removeShortcuts() ' + err);
     }
+
+    this.disposeContextMenu();
 
     cacheOfCard.delete(this.url);
 
@@ -659,13 +683,14 @@ export class Card implements ICard {
             if (moveAnimeTimer) {
               clearInterval(moveAnimeTimer!);
               moveAnimeTimer = undefined;
-
-              this.window?.setBounds({
-                x: Math.floor(moveToX),
-                y: Math.floor(moveToY),
-                width: Math.floor(moveToWidth),
-                height: Math.floor(moveToHeight),
-              });
+              if (!this.window?.isDestroyed()) {
+                this.window?.setBounds({
+                  x: Math.floor(moveToX),
+                  y: Math.floor(moveToY),
+                  width: Math.floor(moveToWidth),
+                  height: Math.floor(moveToHeight),
+                });
+              }
               resolve();
             }
           }
@@ -675,12 +700,14 @@ export class Card implements ICard {
             const nextWidth = (moveToWidth - moveFromWidth) * rate + moveFromWidth;
             const nextHeight = (moveToHeight - moveFromHeight) * rate + moveFromHeight;
             // this.window.setPosition(Math.floor(nextX), Math.floor(nextY));
-            this.window?.setBounds({
-              x: Math.floor(nextX),
-              y: Math.floor(nextY),
-              width: Math.floor(nextWidth),
-              height: Math.floor(nextHeight),
-            });
+            if (!this.window?.isDestroyed()) {
+              this.window?.setBounds({
+                x: Math.floor(nextX),
+                y: Math.floor(nextY),
+                width: Math.floor(nextWidth),
+                height: Math.floor(nextHeight),
+              });
+            }
           }
         }, interval);
       }
@@ -829,29 +856,7 @@ export class Card implements ICard {
       );
     }
 
-    // Play animation
-    const display: Display = screen.getDisplayNearestPoint({
-      x: this.sketch.geometry.x,
-      y: this.sketch.geometry.y,
-    });
-
-    await this.setRect(
-      this.sketch.geometry.x - 50,
-      this.sketch.geometry.y,
-      this.sketch.geometry.width,
-      this.sketch.geometry.height,
-      true
-    );
-    playSound('move', 3, true);
-    await this.setRect(
-      display.bounds.x + display.bounds.width,
-      this.sketch.geometry.y,
-      this.sketch.geometry.width,
-      this.sketch.geometry.height,
-      true,
-      400
-    );
-
+    await moveCardOutsideFromRightForMove(this.url);
     await this._note.deleteCardSketch(this.url);
   };
 
@@ -896,11 +901,6 @@ export class Card implements ICard {
     // Play animation
     const tmpCardSketch = JSON.parse(JSON.stringify(this.sketch));
 
-    const display: Display = screen.getDisplayNearestPoint({
-      x: this.sketch.geometry.x,
-      y: this.sketch.geometry.y,
-    });
-
     const tmpCard = new Card(
       this._note,
       getNoteIdFromUrl(this.url),
@@ -912,25 +912,7 @@ export class Card implements ICard {
     this._note.createCard(tmpCard.url, tmpCard, false, false);
 
     await tmpCard.render();
-
-    await tmpCard.setRect(
-      this.sketch.geometry.x + 50,
-      this.sketch.geometry.y,
-      this.sketch.geometry.width,
-      this.sketch.geometry.height,
-      true,
-      300
-    );
-    playSound('move', 3, true);
-    await sleep(300);
-    await tmpCard.setRect(
-      display.bounds.x + display.bounds.width,
-      this.sketch.geometry.y,
-      this.sketch.geometry.width,
-      this.sketch.geometry.height,
-      true,
-      400
-    );
+    await moveCardOutsideFromRightForCopy(tmpCard.url);
     tmpCard.window?.destroy();
     cacheOfCard.delete(tmpCard.url);
 
@@ -1131,7 +1113,11 @@ export class Card implements ICard {
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         this.window.webContents.send('zoom-out');
       });
-
+      globalShortcut.register('CommandOrControl+' + opt + '+A', async () => {
+        // 'A'rchive
+        await moveCardOutsideFromBottom(this.url);
+        await this._note.deleteCardSketch(this.url);
+      });
       globalShortcut.register('CommandOrControl+' + opt + '+Up', () => {
         // if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
@@ -1266,6 +1252,36 @@ export class Card implements ICard {
         this.window.webContents.openDevTools();
         // }
       });
+
+      const moveFocusTo = (direction: Direction) => {
+        // Move current focus to right card
+        const relPos = calcRelativePositionOfCardUrl(this.url);
+        if (relPos[direction].length > 0) {
+          const nearestCardUrl = relPos[direction].reduce(
+            (prev, cur) => (prev.distance > cur.distance ? cur : prev),
+            relPos[direction][0]
+          ).url;
+          const nextCard = cacheOfCard.get(nearestCardUrl);
+          if (nextCard) {
+            nextCard.suppressFocusEvent = false;
+            nextCard.window?.focus();
+          }
+        }
+      };
+
+      // Spatial hjkl
+      globalShortcut.registerAll([`${opt}+Left`], () => {
+        moveFocusTo('left');
+      });
+      globalShortcut.registerAll([`${opt}+Down`], () => {
+        moveFocusTo('down');
+      });
+      globalShortcut.registerAll([`${opt}+Up`], () => {
+        moveFocusTo('up');
+      });
+      globalShortcut.registerAll([`${opt}+Right`], () => {
+        moveFocusTo('right');
+      });
     });
   };
 
@@ -1278,6 +1294,14 @@ export class Card implements ICard {
       }
       globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
         this._note.tray.popUpContextMenu();
+      });
+      // 'F'ront
+      globalShortcut.registerAll([`CommandOrControl+${opt}+F`], () => {
+        sortCardWindows(this._note.currentZOrder, true);
+      });
+      // 'B'ack
+      globalShortcut.registerAll([`CommandOrControl+${opt}+B`], () => {
+        minimizeAllCards(this._note.currentZOrder);
       });
     });
   };

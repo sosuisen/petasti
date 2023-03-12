@@ -19,30 +19,32 @@ import { emitter } from './event';
  */
 export const setContextMenu = (note: INote, card: ICard) => {
   let resetContextMenu = () => {};
-  try {
-    const setColor = (name: ColorName) => {
-      return {
-        label: MESSAGE(name),
-        click: () => {
-          if (name === 'transparent') {
-            card.window?.webContents.send('change-card-color', cardColors[name], 0.0);
-          }
-          else {
-            card.window?.webContents.send('change-card-color', cardColors[name]);
-          }
-        },
-      };
-    };
 
-    const moveCardToNote = (noteId: string) => {
-      card.moveToNote(noteId);
+  const setColor = (name: ColorName) => {
+    return {
+      label: MESSAGE(name),
+      click: () => {
+        if (name === 'transparent') {
+          card.window?.webContents.send('change-card-color', cardColors[name], 0.0);
+        }
+        else {
+          card.window?.webContents.send('change-card-color', cardColors[name]);
+        }
+      },
     };
+  };
 
-    const copyCardToNote = (noteId: string) => {
-      card.copyToNote(noteId);
-    };
+  const moveCardToNote = (noteId: string) => {
+    card.moveToNote(noteId);
+  };
 
-    const moveToNotes: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
+  const copyCardToNote = (noteId: string) => {
+    card.copyToNote(noteId);
+  };
+
+  let submenuMoveToNotes: MenuItemConstructorOptions[] = [];
+  const resetMoveToNotes = () =>
+    [...noteStore.getState().values()]
       .sort((a, b) => {
         if (a.name > b.name) return 1;
         else if (a.name < b.name) return -1;
@@ -59,8 +61,11 @@ export const setContextMenu = (note: INote, card: ICard) => {
         }
         return result;
       }, [] as MenuItemConstructorOptions[]);
+  submenuMoveToNotes = resetMoveToNotes();
 
-    const copyToNotes: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
+  let submenuCopyToNotes: MenuItemConstructorOptions[] = [];
+  const resetCopyToNotes = () =>
+    [...noteStore.getState().values()]
       .sort((a, b) => {
         if (a.name > b.name) return 1;
         else if (a.name < b.name) return -1;
@@ -77,46 +82,48 @@ export const setContextMenu = (note: INote, card: ICard) => {
         }
         return result;
       }, [] as MenuItemConstructorOptions[]);
+  submenuCopyToNotes = resetCopyToNotes();
 
-    const createCardFromMarkdown = (
-      markdown: string,
-      left: number,
-      right: number,
-      top: number,
-      bottom: number
-    ) => {
-      const moveToRect = note.calcVacantLand(card.sketch.geometry, {
-        x: card.sketch.geometry.x + left,
-        y: card.sketch.geometry.y + top,
-        width: card.sketch.geometry.width,
-        height: bottom - top,
-      });
-      const cardX = card.sketch.geometry.x + Math.round(left);
-      const cardY = card.sketch.geometry.y + Math.round(top);
+  const createCardFromMarkdown = (
+    markdown: string,
+    left: number,
+    right: number,
+    top: number,
+    bottom: number
+  ) => {
+    const moveToRect = note.calcVacantLand(card.sketch.geometry, {
+      x: card.sketch.geometry.x + left,
+      y: card.sketch.geometry.y + top,
+      width: card.sketch.geometry.width,
+      height: bottom - top,
+    });
+    const cardX = card.sketch.geometry.x + Math.round(left);
+    const cardY = card.sketch.geometry.y + Math.round(top);
 
-      const cardBody: Partial<CardBody> = {
-        _body: markdown,
-      };
-      const cardSketch: Partial<CardSketch> = {
-        geometry: {
-          x: cardX,
-          y: cardY,
-          z: 0,
-          width: moveToRect.width,
-          height: moveToRect.height,
-        },
-        style: {
-          uiColor: card.sketch.style.uiColor,
-          backgroundColor: card.sketch.style.backgroundColor,
-          opacity: card.sketch.style.opacity,
-          zoom: card.sketch.style.zoom,
-        },
-      };
-
-      emitter.emit('create-card', cardBody, cardSketch, moveToRect);
+    const cardBody: Partial<CardBody> = {
+      _body: markdown,
+    };
+    const cardSketch: Partial<CardSketch> = {
+      geometry: {
+        x: cardX,
+        y: cardY,
+        z: 0,
+        width: moveToRect.width,
+        height: moveToRect.height,
+      },
+      style: {
+        uiColor: card.sketch.style.uiColor,
+        backgroundColor: card.sketch.style.backgroundColor,
+        opacity: card.sketch.style.opacity,
+        zoom: card.sketch.style.zoom,
+      },
     };
 
-    const dispose = contextMenu({
+    emitter.emit('create-card', cardBody, cardSketch, moveToRect);
+  };
+
+  const createMenu = () => {
+    return contextMenu({
       window: card.window,
       showSaveImageAs: true,
       showInspectElement: false,
@@ -206,11 +213,11 @@ export const setContextMenu = (note: INote, card: ICard) => {
           },
           {
             label: MESSAGE('noteMove'),
-            submenu: [...moveToNotes],
+            submenu: submenuMoveToNotes,
           },
           {
             label: MESSAGE('noteCopy'),
-            submenu: [...copyToNotes],
+            submenu: submenuCopyToNotes,
           },
           {
             label: MESSAGE('zoomIn'),
@@ -299,15 +306,14 @@ export const setContextMenu = (note: INote, card: ICard) => {
         setColor('transparent'),
       ],
     });
+  };
 
-    resetContextMenu = () => {
-      // @ts-ignore
-      dispose();
-      setContextMenu(note, card);
-    };
-  } catch (err) {
-    note.logger.debug('# Error in setContextMenu: ' + err);
-  }
+  const dispose = createMenu();
 
-  return resetContextMenu;
+  resetContextMenu = () => {
+    submenuMoveToNotes = resetMoveToNotes();
+    submenuCopyToNotes = resetCopyToNotes();
+  };
+
+  return [resetContextMenu, dispose];
 };

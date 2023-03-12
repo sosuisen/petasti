@@ -2,7 +2,15 @@
  * TreeStickies
  * © 2022 Hidekazu Kubota
  */
-import { ICard } from '../modules_common/types';
+import { isContext } from 'vm';
+import {
+  Geometry,
+  Geometry2D,
+  GeometryXY,
+  ICard,
+  RelativePositionOfCardUrl,
+} from '../modules_common/types';
+import { isLabelOpened } from '../modules_common/utils';
 import { INote } from './note_types';
 /**
  * cacheOfCard

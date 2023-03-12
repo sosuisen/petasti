@@ -706,6 +706,7 @@ class Note implements INote {
     if (card !== undefined) {
       if (!card.isFake) {
         await this._deleteCardSketchDoc(cardUrl);
+        card.disposeContextMenu();
       }
 
       const index = this.currentZOrder.indexOf(cardUrl);

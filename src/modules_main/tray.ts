@@ -12,10 +12,13 @@ import {
   MenuItemConstructorOptions,
   Tray,
 } from 'electron';
+import ProgressBar from 'electron-progressbar';
+import { TaskMetadata } from 'git-documentdb';
 import { closeSettings, openSettings } from './settings';
-import { createRandomColorCard, sortCardWindows } from './card';
+import { createRandomColorCard, minimizeAllCards, sortCardWindows } from './card';
 import { emitter } from './event';
 import {
+  getCardIdFromUrl,
   getCurrentDateAndTime,
   getCurrentLocalDate,
   getNoteIdFromUrl,
@@ -25,12 +28,13 @@ import {
 import {
   APP_ICON_NAME,
   APP_ICON_NAME_MONO,
+  APP_SCHEME,
   DEFAULT_CARD_GEOMETRY,
   DEFAULT_CARD_LABEL,
   MINIMUM_WINDOW_HEIGHT,
   MINIMUM_WINDOW_HEIGHT_OFFSET,
 } from '../modules_common/const';
-import { CardBody, CardSketch, Snapshot } from '../modules_common/types';
+import { CardBody, CardSketch, ICard, Snapshot } from '../modules_common/types';
 import { MESSAGE } from './messages';
 import { cacheOfCard, closeAllCards } from './card_cache';
 import { INote } from './note_types';
@@ -233,6 +237,69 @@ export const setTrayContextMenu = () => {
           );
 
           setTrayContextMenu();
+
+          // Need not to call resetContextMenu because each card does not refer current note name.
+          // cacheOfCard.forEach(card => card.resetContextMenu());
+        },
+      },
+      {
+        label: MESSAGE('noteDuplicate'),
+        click: async () => {
+          const noteProp = noteStore.getState().get(note.settings.currentNoteId)!;
+
+          const newName: string | void | null = await prompt({
+            title: MESSAGE('note'),
+            label: MESSAGE('noteNewNameDuplicate'),
+            value: noteProp!.name + MESSAGE('copyOf'),
+            inputAttrs: {
+              type: 'text',
+              required: 'true',
+            },
+            height: 200,
+          }).catch(e => console.error(e.message));
+
+          if (
+            newName === null ||
+            newName === undefined ||
+            newName === '' ||
+            (newName as string).match(/^\s+$/)
+          ) {
+            return;
+          }
+
+          const progressBar = new ProgressBar({
+            text: MESSAGE('duplicatingNoteProgressBarTitle'),
+            detail: MESSAGE('duplicatingNoteProgressBarBody'),
+          });
+          progressBar.on('completed', () => {
+            progressBar.detail = MESSAGE('completed');
+          });
+
+          const [newNoteProp] = await note.createNote(newName as string, true);
+
+          const promises: Promise<TaskMetadata>[] = [];
+
+          for (const card of cacheOfCard.values()) {
+            // Skip resident cards
+            if (getNoteIdFromUrl(card.url) !== note.settings.currentNoteId) continue;
+
+            const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
+            const newSketchId = `${newNoteProp._id}/${getCardIdFromUrl(card.url)}`;
+            const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
+            newCardSketch._id = newSketchId;
+            promises.push(note.createCardSketch(newUrl, newCardSketch, true));
+          }
+          const tmpSyncAfterChanges = note.settings.sync.syncAfterChanges;
+          note.settings.sync.syncAfterChanges = false;
+          await Promise.all(promises).catch(err => {
+            progressBar.close();
+            showDialog(undefined, 'error', 'databaseCreateError', (err as Error).message);
+            console.log(err);
+          });
+          progressBar.close();
+          // eslint-disable-next-line require-atomic-updates
+          note.settings.sync.syncAfterChanges = tmpSyncAfterChanges;
+          setTrayContextMenu();
           cacheOfCard.forEach(card => card.resetContextMenu());
         },
       },
@@ -251,11 +318,13 @@ export const setTrayContextMenu = () => {
           if (noteStore.getState().size <= 1) {
             return;
           }
+          let hasResidentCards = false;
           for (const key of cacheOfCard.keys()) {
             if (getNoteIdFromUrl(key) === note.settings.currentNoteId) {
               showDialog(undefined, 'info', 'noteCannotDelete');
               return;
             }
+            hasResidentCards = true;
           }
           const noteIdList = note.getSortedNoteIdList();
           const currentNoteIndex = noteIdList.indexOf(note.settings.currentNoteId);
@@ -263,20 +332,20 @@ export const setTrayContextMenu = () => {
           // Delete current note
           await noteStore.dispatch(noteDeleteCreator(note, note.settings.currentNoteId));
 
-          // Close resident cards
-          // eslint-disable-next-line require-atomic-updates
-          note.changingToNoteId = noteIdList[nextNoteIndex];
           try {
-            closeAllCards(note);
+            if (hasResidentCards) {
+              // Close resident cards
+              closeAllCards(note);
+              // eslint-disable-next-line require-atomic-updates
+              note.changingToNoteId = noteIdList[nextNoteIndex];
+            }
+            else {
+              emitter.emit('change-note', noteIdList[nextNoteIndex]);
+            }
+            // setTrayContextMenu() will be called in change-note event.
           } catch (e) {
             console.error(e);
           }
-
-          // eslint-disable-next-line require-atomic-updates
-          // note.settings.currentNoteId = noteIdList[nextNoteIndex];
-          // emitter.emit('change-note', note.settings.currentNoteId);
-
-          // setTrayContextMenu() will be called in change-note event.
         },
       },
       {
@@ -369,7 +438,12 @@ export const setTrayContextMenu = () => {
           );
         },
       },
-
+      {
+        label: MESSAGE('minimizeAllCards'),
+        click: () => {
+          minimizeAllCards();
+        },
+      },
       {
         label: MESSAGE('settings'),
         click: () => {
@@ -444,6 +518,15 @@ export const initializeTaskTray = (store: INote) => {
   globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
     tray.popUpContextMenu();
   });
+  // 'F'ront
+  globalShortcut.registerAll([`CommandOrControl+${opt}+F`], () => {
+    sortCardWindows(true);
+  });
+  // 'B'ack
+  globalShortcut.registerAll([`CommandOrControl+${opt}+B`], () => {
+    minimizeAllCards();
+  });
+
   // for debug
   if (
     !app.isPackaged &&
