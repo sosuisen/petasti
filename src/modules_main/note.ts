@@ -707,6 +707,10 @@ class Note implements INote {
       if (!card.isFake) {
         await this._deleteCardSketchDoc(cardUrl);
       }
+
+      const index = this.currentZOrder.indexOf(cardUrl);
+      this.currentZOrder.splice(index, 1);
+
       // cacheOfCard.delete(cardUrl) will be called in _closedListener();
       if (card.window && !card.window.isDestroyed()) {
         this.logger.debug('# Start deleting sketch: ' + cardUrl);
