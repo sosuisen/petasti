@@ -668,16 +668,12 @@ class Note implements INote {
     let sketch: CardSketch;
     if (card) {
       const oldJSON = JSON.parse(JSON.stringify(card.sketch));
-      oldJSON.geometry.z = 0;
       oldJSON.date.modifiedDate = '';
       const newJSON = JSON.parse(JSON.stringify(cardSketch));
-      newJSON.geometry.z = 0;
       newJSON.date.modifiedDate = '';
       if (JSON.stringify(oldJSON) !== JSON.stringify(newJSON)) {
         console.log(`# updateCardSketch: ${sketchUrl}`);
         card.sketch = newJSON;
-        card.sketch.geometry.z = cardSketch.geometry.z;
-        console.log(card.sketch.geometry.z);
         card.sketch.date.modifiedDate = modifiedDate;
         sketch = card.sketch;
       }
