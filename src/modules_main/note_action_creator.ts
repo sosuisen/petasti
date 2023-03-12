@@ -12,17 +12,12 @@ import {
   NoteUpdateAction,
   NoteZOrderUpdateAction,
 } from './note_action';
+import { noteStore } from './note_store';
 import { INote, NoteState } from './note_types';
 
 type ChangeFrom = 'local' | 'remote';
 
 const lock = new AsyncLock();
-
-let prevZOrder: ZOrder;
-
-export const setInitialZOrder = (zOrder: ZOrder) => {
-  prevZOrder = [...zOrder];
-};
 
 export const noteInitCreator = (noteState: NoteState) => {
   const noteAction: NoteInitAction = {
@@ -52,7 +47,8 @@ export const noteZOrderUpdateCreator = (
   noteId: string,
   zOrder: string[],
   changeFrom: ChangeFrom = 'local',
-  enqueueTime: string | undefined = undefined
+  enqueueTime: string | undefined = undefined,
+  skipUpdateCheck = false
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => NoteState) {
     await lock.acquire('noteUpdate', async () => {
@@ -63,16 +59,28 @@ export const noteZOrderUpdateCreator = (
           return;
         }
       }
-      const noteAction: NoteZOrderUpdateAction = {
-        type: 'note-z-order-update',
-        payload: {
-          id: noteId,
-          zOrder,
-        },
-      };
-      dispatch(noteAction);
 
-      if (JSON.stringify(prevZOrder) !== JSON.stringify(zOrder)) {
+      let isUpdated = false;
+      if (skipUpdateCheck) {
+        isUpdated = true;
+      }
+      else {
+        const prevZOrder = [...noteStore.getState().get(noteId)!.zOrder];
+        if (JSON.stringify(prevZOrder) !== JSON.stringify(zOrder)) {
+          isUpdated = true;
+        }
+      }
+
+      if (isUpdated) {
+        const noteAction: NoteZOrderUpdateAction = {
+          type: 'note-z-order-update',
+          payload: {
+            id: noteId,
+            zOrder,
+          },
+        };
+        dispatch(noteAction);
+
         if (changeFrom === 'local') {
           const newProp = getState().get(noteId);
           if (newProp) {
@@ -82,8 +90,6 @@ export const noteZOrderUpdateCreator = (
           }
         }
       }
-      // eslint-disable-next-line require-atomic-updates
-      prevZOrder = [...zOrder];
     });
   };
 };

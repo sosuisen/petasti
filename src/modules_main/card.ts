@@ -803,9 +803,6 @@ export class Card implements ICard {
     newCardSketch.style.backgroundColor = cardColors.white;
     newCardSketch.style.uiColor = cardColors.white;
     newCardSketch._id = newSketchId;
-    // zOrder of target note will be changed
-    // when the target note is opened.
-    // Moved card will be on the top.
     this._note
       .createCardSketch(newUrl, newCardSketch, true)
       .then((task: TaskMetadata) => {
@@ -823,6 +820,14 @@ export class Card implements ICard {
         // createCardSketch throws error when the same sketch exists.
         if (!e.message.endsWith(notCurrentNoteMsg)) console.log(e);
       });
+    // Update zOrder of target note asynchronously
+    const zOrder = [...noteStore.getState().get(noteId)!.zOrder];
+    if (!zOrder.includes(newUrl)) {
+      zOrder.push(newUrl);
+      noteStore.dispatch(
+        noteZOrderUpdateCreator(this._note, noteId, zOrder, 'local', undefined, true)
+      );
+    }
 
     // Play animation
     const display: Display = screen.getDisplayNearestPoint({
@@ -862,9 +867,6 @@ export class Card implements ICard {
     newCardSketch.style.backgroundColor = cardColors.white;
     newCardSketch.style.uiColor = cardColors.white;
     newCardSketch._id = newSketchId;
-    // zOrder of target note will be changed
-    // when the target note is opened.
-    // Copied card will be on the top.
     this._note
       .createCardSketch(newUrl, newCardSketch, true)
       .then((task: TaskMetadata) => {
@@ -882,6 +884,14 @@ export class Card implements ICard {
       .catch((e: Error) => {
         if (!e.message.endsWith(notCurrentNoteMsg)) console.log(e);
       });
+    // Update zOrder of target note asynchronously
+    const zOrder = [...noteStore.getState().get(noteId)!.zOrder];
+    if (!zOrder.includes(newUrl)) {
+      zOrder.push(newUrl);
+      noteStore.dispatch(
+        noteZOrderUpdateCreator(this._note, noteId, zOrder, 'local', undefined, true)
+      );
+    }
 
     // Play animation
     const tmpCardSketch = JSON.parse(JSON.stringify(this.sketch));
@@ -900,10 +910,6 @@ export class Card implements ICard {
     );
     tmpCard.window?.setOpacity(0.7);
     this._note.createCard(tmpCard.url, tmpCard, false, false);
-    // The animation card is hidden behind current card
-    // by focusing current card.
-    // Set zOrder just to be sure.
-    this._note.currentZOrder.splice(-1, 0, tmpCardSketch.url);
 
     await tmpCard.render();
 
@@ -927,7 +933,7 @@ export class Card implements ICard {
     );
     tmpCard.window?.destroy();
     cacheOfCard.delete(tmpCard.url);
-    // Focus current card to hide animation card behind.
+
     this.focus();
   };
 

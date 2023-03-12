@@ -80,7 +80,6 @@ import {
   noteCreateCreator,
   noteInitCreator,
   noteZOrderUpdateCreator,
-  setInitialZOrder,
 } from './note_action_creator';
 import { Card } from './card';
 import { closeSettings } from './settings';
@@ -482,7 +481,6 @@ class Note implements INote {
     const props = noteStore.getState().values();
 
     const zOrder = [...noteStore.getState().get(note.settings.currentNoteId)!.zOrder];
-    setInitialZOrder(zOrder);
 
     console.time('loadCards');
     for (const noteProp of props) {
