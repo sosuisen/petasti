@@ -372,14 +372,15 @@ const renderCardStyle = () => {
     )!.style.border = `${cardCssStyle.borderWidth}px solid transparent`;
   }
 
-  if (cardStore.getState().workState.status === 'Focused') {
+  if (cardStore.getState().workState.status === 'Focused' || getConfig().isResident) {
     document.getElementById('card')!.style.opacity = '1.0';
   }
-  else if (!getConfig().isResident && cardStore.getState().workState.status === 'Blurred') {
+  else if (cardStore.getState().workState.status === 'Blurred') {
     document.getElementById('card')!.style.opacity = '0.95';
   }
 
   let boxShadow = 'none';
+  // Resident card does not have shadow
   if (!getConfig().isResident) {
     if (
       cardStore.getState().sketch.style.opacity !== 0 &&
