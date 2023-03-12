@@ -500,7 +500,7 @@ class Note implements INote {
     // Remove duplicated cards by using 'Set'.
     // Merge cards that do not exist in zOrder.
     // The new cards are added on the top.
-    this.currentZOrder =  [...new Set([...existingZOrder, ...existingCardUrls])];
+    this.currentZOrder = [...new Set([...existingZOrder, ...existingCardUrls])];
 
     console.timeEnd('loadCards');
 
@@ -543,18 +543,6 @@ class Note implements INote {
   /**
    * Card
    */
-  getZIndexOfTopCard = async (noteId: string) => {
-    const cardDocs = await this._noteCollection.find({
-      prefix: noteId + '/c',
-    });
-    let maxZIndex: number | undefined;
-    cardDocs.forEach(cardDoc => {
-      if (maxZIndex === undefined || cardDoc.geometry.z > maxZIndex)
-        maxZIndex = cardDoc.geometry.z;
-    });
-    if (maxZIndex === undefined) return 0;
-    return maxZIndex;
-  };
 
   loadCards = async (noteId: string): Promise<CardProperty[]> => {
     const sketchDocs = await this._noteCollection.find({

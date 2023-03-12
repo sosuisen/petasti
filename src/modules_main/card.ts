@@ -50,12 +50,12 @@ import {
 import { cacheOfCard } from './card_cache';
 import { setContextMenu } from './card_context_menu';
 import { INote } from './note_types';
-import { getZIndexOfTopCard } from './card_zindex';
 import { messagesRenderer } from './messages';
 import { cardColors, ColorName } from '../modules_common/color';
 import { noteStore } from './note_store';
 import { openURL } from './url_schema';
 import { playSound } from './sound';
+import { noteZOrderUpdateCreator } from './note_action_creator';
 
 type AccelCheck = {
   prevTime: number;
@@ -421,7 +421,9 @@ export class Card implements ICard {
 
       this.window.on('closed', this._closedListener);
 
-      this.resetContextMenu = setContextMenu(note, this);
+      if (!isFake) {
+        this.resetContextMenu = setContextMenu(note, this);
+      }
 
       // Open hyperlink on external browser window
       // by preventing to open it on new electron window
@@ -797,17 +799,15 @@ export class Card implements ICard {
     const notCurrentNoteMsg =
       'The destination is not the current note. (This is not an error.)';
     // Save asynchronously
+    // Overwrite color
+    newCardSketch.style.backgroundColor = cardColors.white;
+    newCardSketch.style.uiColor = cardColors.white;
+    newCardSketch._id = newSketchId;
+    // zOrder of target note will be changed
+    // when the target note is opened.
+    // Moved card will be on the top.
     this._note
-      .getZIndexOfTopCard(noteId)
-      .then(z => {
-        // Overwrite z
-        newCardSketch.geometry.z = z + 1;
-        // Overwrite color
-        newCardSketch.style.backgroundColor = cardColors.white;
-        newCardSketch.style.uiColor = cardColors.white;
-        newCardSketch._id = newSketchId;
-        return this._note.createCardSketch(newUrl, newCardSketch, true);
-      })
+      .createCardSketch(newUrl, newCardSketch, true)
       .then((task: TaskMetadata) => {
         // When moveToNote is called from archive window, a card may move to the current note.
         if (task.shortId!.startsWith(this._note.settings.currentNoteId)) {
@@ -858,17 +858,15 @@ export class Card implements ICard {
     const notCurrentNoteMsg =
       'The destination is not the current note. (This is not an error.)';
     // Save asynchronously
+    // Overwrite color
+    newCardSketch.style.backgroundColor = cardColors.white;
+    newCardSketch.style.uiColor = cardColors.white;
+    newCardSketch._id = newSketchId;
+    // zOrder of target note will be changed
+    // when the target note is opened.
+    // Copied card will be on the top.
     this._note
-      .getZIndexOfTopCard(noteId)
-      .then(z => {
-        // Overwrite z
-        newCardSketch.geometry.z = z + 1;
-        // Overwrite color
-        newCardSketch.style.backgroundColor = cardColors.white;
-        newCardSketch.style.uiColor = cardColors.white;
-        newCardSketch._id = newSketchId;
-        return this._note.createCardSketch(newUrl, newCardSketch, true);
-      })
+      .createCardSketch(newUrl, newCardSketch, true)
       .then((task: TaskMetadata) => {
         // When copyToNote is called from archive window, a card may copy to the current note.
         if (task.shortId!.startsWith(this._note.settings.currentNoteId)) {
@@ -887,7 +885,6 @@ export class Card implements ICard {
 
     // Play animation
     const tmpCardSketch = JSON.parse(JSON.stringify(this.sketch));
-    tmpCardSketch.geometry.z--;
 
     const display: Display = screen.getDisplayNearestPoint({
       x: this.sketch.geometry.x,

@@ -90,8 +90,6 @@ export interface INote {
     name?: string,
     waitFirstCardCreation?: boolean
   ) => Promise<[NoteProp, CardProperty]>;
-  getZIndexOfTopCard: (noteId: string) => Promise<number>;
-
   calcVacantLand: (
     parentRect: Rectangle,
     childRect: Rectangle,

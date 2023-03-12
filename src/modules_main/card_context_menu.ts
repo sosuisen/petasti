@@ -238,7 +238,12 @@ export const setContextMenu = (note: INote, card: ICard) => {
 
               note.currentZOrder.forEach(myUrl => {
                 const myCard = cacheOfCard.get(myUrl);
-                if (myCard && myCard.window && !myCard.isFake && !myCard.window.isDestroyed()) {
+                if (
+                  myCard &&
+                  myCard.window &&
+                  !myCard.isFake &&
+                  !myCard.window.isDestroyed()
+                ) {
                   myCard!.suppressFocusEventOnce = true;
                   myCard!.focus();
                 }
