@@ -1124,8 +1124,8 @@ export class Card implements ICard {
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         this.window.webContents.send('zoom-out');
       });
-      globalShortcut.register('CommandOrControl+' + opt + '+A', async () => {
-        // 'A'rchive
+      globalShortcut.register('CommandOrControl+' + opt + '+W', async () => {
+        // Close
         await moveCardOutsideFromBottom(this.url);
         await this._note.deleteCardSketch(this.url);
       });
