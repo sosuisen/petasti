@@ -241,3 +241,7 @@ ipcRenderer.on('transform-to-label', (event: Electron.IpcRendererEvent) =>
 ipcRenderer.on('transform-from-label', (event: Electron.IpcRendererEvent) =>
   window.postMessage({ command: 'transform-from-label' }, 'file://')
 );
+
+ipcRenderer.on('toggle-sticker', (event: Electron.IpcRendererEvent) =>
+  window.postMessage({ command: 'toggle-sticker' }, 'file://')
+);

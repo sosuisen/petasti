@@ -130,6 +130,19 @@ const onBodyMouseUp = async () => {
   }
 };
 
+const toggleSticker = async () => {
+  if (!isLabelOpened(cardStore.getState().sketch.label.status)) return;
+  const label = cardStore.getState().sketch.label;
+  if (cardStore.getState().sketch.label.status === 'openedSticker') {
+    label.status = 'openedLabel';
+  }
+  else {
+    label.status = 'openedSticker';
+  }
+  await cardStore.dispatch(cardLabelUpdateCreator(label));
+  render(['TitleBar']);
+};
+
 /**
  * Initialize
  */
@@ -200,16 +213,9 @@ const initializeUIEvents = () => {
     );
   });
 
-  document.getElementById('stickerBtn')?.addEventListener('click', async event => {
-    const label = cardStore.getState().sketch.label;
-    if (cardStore.getState().sketch.label.status === 'openedSticker') {
-      label.status = 'openedLabel';
-    }
-    else {
-      label.status = 'openedSticker';
-    }
-    await cardStore.dispatch(cardLabelUpdateCreator(label));
-    render(['TitleBar']);
+  
+  document.getElementById('stickerBtn')?.addEventListener('click', event => {
+    toggleSticker();
   });
 
   /*
@@ -438,6 +444,9 @@ window.addEventListener('message', event => {
       break;
     case 'transform-from-label':
       onTransformToCard();
+      break;
+    case 'toggle-sticker':
+      toggleSticker();
       break;
     default:
       break;

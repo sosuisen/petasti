@@ -1245,6 +1245,12 @@ export class Card implements ICard {
         this._resizeByKey(oldWidth, newHeight);
       });
 
+      globalShortcut.register('CommandOrControl+' + opt + '+S', () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        if (isLabelOpened(this.sketch.label.status))
+          this.window.webContents.send('toggle-sticker');
+      });
+
       globalShortcut.register('CommandOrControl+' + opt + '+Space', () => {
         // if (this.status === 'Blurred') return;
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
