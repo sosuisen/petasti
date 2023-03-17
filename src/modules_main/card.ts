@@ -1113,8 +1113,8 @@ export class Card implements ICard {
         if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
         this.window.webContents.send('zoom-out');
       });
-      globalShortcut.register('CommandOrControl+' + opt + '+A', async () => {
-        // 'A'rchive
+      globalShortcut.register('CommandOrControl+' + opt + '+W', async () => {
+        // Close
         await moveCardOutsideFromBottom(this.url);
         await this._note.deleteCardSketch(this.url);
       });
@@ -1232,6 +1232,12 @@ export class Card implements ICard {
         const [oldWidth, oldHeight] = this.window.getSize();
         const newHeight = oldHeight + changeUnit;
         this._resizeByKey(oldWidth, newHeight);
+      });
+
+      globalShortcut.register('CommandOrControl+' + opt + '+S', () => {
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        if (isLabelOpened(this.sketch.label.status))
+          this.window.webContents.send('toggle-sticker');
       });
 
       globalShortcut.register('CommandOrControl+' + opt + '+Space', () => {
