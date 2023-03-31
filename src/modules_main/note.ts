@@ -813,6 +813,8 @@ class Note implements INote {
   };
 
   updateNoteZorder = async (): Promise<void> => {
+    return Promise.resolve();
+    /*
     const zOrderArray = [...cacheOfCard.values()]
       .sort((a, b) => {
         if (a.sketch.geometry.z > b.sketch.geometry.z) return 1;
@@ -832,6 +834,7 @@ class Note implements INote {
       noteProp.zOrder = zOrderArray;
       await this.updateNoteDoc(noteProp);
     }
+    */
   };
 
   updateNoteDoc = async (noteProp: NoteProp): Promise<TaskMetadata> => {
