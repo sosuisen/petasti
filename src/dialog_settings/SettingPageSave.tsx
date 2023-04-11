@@ -28,7 +28,7 @@ export function SettingPageSave (props: SettingPageSaveProps) {
 
   const settings = useSelector(selectorSettings);
   const [saveZOrderValue, setSaveZOrderValue] = useState(
-    settings.sync.syncAfterChanges
+    settings.saveZOrder
   );
 
 
