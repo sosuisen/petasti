@@ -6,6 +6,7 @@ import { Dispatch } from 'redux';
 import {
   DatabaseDataStorePathUpdate,
   DatabaseLanguageUpdate,
+  DatabaseSaveZOrderUpdate,
   DatabaseSyncAfterChangesUpdate,
   DatabaseSyncEnabledUpdate,
   DatabaseSyncIntervalUpdate,
@@ -16,6 +17,7 @@ import { SettingsDialogState } from '../modules_common/store.types';
 import {
   SettingsDataStorePathUpdateAction,
   SettingsLanguageUpdateAction,
+  SettingsSaveZOrderUpdateAction,
   SettingsSyncAfterChangesUpdateAction,
   SettingsSyncEnabledUpdateAction,
   SettingsSyncIntervalUpdateAction,

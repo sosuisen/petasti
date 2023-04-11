@@ -486,13 +486,12 @@ class Note implements INote {
     console.time('loadCards');
 
     cards.push(...(await this.loadCards(this._settings.currentNoteId)));
-
     const zOrder: string[] = [];
     if (note.settings.saveZOrder) {
       zOrder.push(...noteStore.getState().get(note.settings.currentNoteId)!.zOrder);
     }
     else {
-      // The label will be behind the card.
+      // Labels will be behind the cards.
       const labels: CardProperty[] = [];
       const notLabels: CardProperty[] = [];
       cards.forEach(card => {
@@ -513,8 +512,8 @@ class Note implements INote {
         else if (a.sketch.date.modifiedDate < b.sketch.date.modifiedDate) return -1;
         return 0;
       });
-      zOrder.push(...notLabels.map(card => card.url));
       zOrder.push(...labels.map(card => card.url));
+      zOrder.push(...notLabels.map(card => card.url));
     }
 
     for (const noteProp of props) {
