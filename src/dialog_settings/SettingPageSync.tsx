@@ -188,7 +188,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
       </dialog>
       <div styleName='syncEnabledToggleButton'>
         <Toggle
-          color={uiColors.red}
+          color={uiColors.gray}
           activeColor={uiColors.yellow}
           checked={syncEnabledValue}
           onChange={bool => syncEnabledToggleOnChange(bool)}
@@ -263,7 +263,7 @@ export function SettingPageSync (props: SettingPageSecurityProps) {
           <div styleName='syncAfterChangesHeader'>{messages.syncAfterChangesHeader}</div>
           <div styleName='syncAfterChangesToggleButton'>
             <Toggle
-              color={uiColors.red}
+              color={uiColors.gray}
               activeColor={uiColors.yellow}
               checked={syncAfterChangesValue}
               onChange={bool => syncAfterChangesToggleOnChange(bool)}

@@ -114,6 +114,21 @@ export const settingsSyncAfterChangesUpdateCreator = (bool: boolean) => {
   };
 };
 
+export const settingsSaveZOrderUpdateCreator = (bool: boolean) => {
+  return async function (dispatch: Dispatch<any>, getState: () => SettingsDialogState) {
+    const settingsAction: SettingsSaveZOrderUpdateAction = {
+      type: 'settings-save-zorder-update',
+      payload: bool,
+    };
+    dispatch(settingsAction);
+    const cmd: DatabaseSaveZOrderUpdate = {
+      command: 'db-save-zorder-update',
+      data: bool,
+    };
+    await window.api.db(cmd);
+  };
+};
+
 export const settingsDataStorePathUpdateCreator = (saveDir: string) => {
   return async function (dispatch: Dispatch<any>, getState: () => SettingsDialogState) {
     const settingsAction: SettingsDataStorePathUpdateAction = {

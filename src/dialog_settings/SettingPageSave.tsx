@@ -3,16 +3,18 @@
  * © 2022 Hidekazu Kubota
  */
 import * as React from 'react';
+import { useState } from 'react';
 import './SettingPageSave.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { MenuItemProps } from './MenuItem';
 import { SettingPageTemplate } from './SettingPageTemplate';
 import { ColorName, uiColors } from '../modules_common/color';
 import { DIALOG_BUTTON } from '../modules_common/const';
-import { selectorDataStorePath, selectorMessages } from './selector';
+import { selectorDataStorePath, selectorMessages, selectorSettings } from './selector';
 import { dataDirName } from '../modules_common/store.types';
-import { settingsDataStorePathUpdateCreator } from './action_creator';
+import { settingsSaveZOrderUpdateCreator } from './action_creator';
 import window from './window';
+import { Toggle } from './Toggle';
 
 export interface SettingPageSaveProps {
   item: MenuItemProps;
@@ -23,6 +25,12 @@ export function SettingPageSave (props: SettingPageSaveProps) {
   const dispatch = useDispatch();
   const messages = useSelector(selectorMessages);
   const dataStorePath = useSelector(selectorDataStorePath);
+
+  const settings = useSelector(selectorSettings);
+  const [saveZOrderValue, setSaveZOrderValue] = useState(
+    settings.sync.syncAfterChanges
+  );
+
 
   const onChangeButtonClick = async () => {
     /* Use window.api
@@ -97,13 +105,17 @@ export function SettingPageSave (props: SettingPageSaveProps) {
       });
   };
 
+  const saveZOrderToggleOnChange = (saveZOrder: boolean) => {
+    setSaveZOrderValue(saveZOrder);
+    dispatch(settingsSaveZOrderUpdateCreator(saveZOrder));
+  };
+
   const buttonStyle = (color: ColorName) => ({
     backgroundColor: uiColors[color],
   });
+
   return (
     <SettingPageTemplate item={props.item} index={props.index}>
-      <p>{messages.saveDetailedText}</p>
-      <input type='radio' styleName='locationSelector' checked />
       <div styleName='saveFilePath'>
         <div styleName='saveFilePathLabel'>{messages.saveFilePath}:</div>
         <button
@@ -114,6 +126,16 @@ export function SettingPageSave (props: SettingPageSaveProps) {
           {messages.saveChangeFilePathButton}
         </button>
         <div styleName='saveFilePathValue'>{dataStorePath}</div>
+      </div>
+      <div styleName='saveZOrderHeader'>{messages.saveZOrder}</div>
+      <div styleName='saveZOrderToggleButton'>
+        <Toggle
+          color={uiColors.gray}
+          activeColor={uiColors.red}
+          checked={saveZOrderValue}
+          onChange={bool => saveZOrderToggleOnChange(bool)}
+          size='small'
+        />
       </div>
       <br style={{ clear: 'both' }} />
       <hr></hr>

@@ -43,7 +43,7 @@ window.addEventListener('message', event => {
               icon: 'fas fa-share-square',
               color: 'yellow',
               width: 450,
-              height: 220,
+              height: 270,
             },
             {
               id: 'sync',
@@ -51,7 +51,7 @@ window.addEventListener('message', event => {
               icon: 'fas fa-shield-alt',
               color: 'purple',
               width: 350,
-              height: 220,
+              height: 270,
             },
             {
               id: 'language',
@@ -59,7 +59,7 @@ window.addEventListener('message', event => {
               icon: 'fas fa-globe',
               color: 'orange',
               width: 400,
-              height: 220,
+              height: 270,
             },
             {
               id: 'about',
@@ -67,7 +67,7 @@ window.addEventListener('message', event => {
               icon: 'fas fa-info-circle',
               color: 'lightgray',
               width: 420,
-              height: 220,
+              height: 270,
             },
           ],
         },

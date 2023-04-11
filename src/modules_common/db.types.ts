@@ -54,6 +54,11 @@ export type DatabaseSyncAfterChangesUpdate = {
   data: boolean;
 };
 
+export type DatabaseSaveZOrderUpdate = {
+  command: 'db-save-zorder-update';
+  data: boolean;
+};
+
 export type DatabaseLanguageUpdate = {
   command: 'db-language-update';
   data: string;
@@ -93,6 +98,7 @@ export type DatabaseCommand =
   | DatabaseSyncPersonalAccessTokenUpdate
   | DatabaseSyncIntervalUpdate
   | DatabaseSyncAfterChangesUpdate
+  | DatabaseSaveZOrderUpdate
   | DatabaseLanguageUpdate
   | DatabaseDataStorePathUpdate
   | DatabaseTestSync

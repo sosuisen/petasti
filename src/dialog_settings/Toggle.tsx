@@ -42,7 +42,8 @@ export function Toggle (props: ToggleProps) {
             ? 'toggle-switch-small'
             : 'toggle-switch'
       }
-      style={{ borderColor: props.color }}
+      // style={{ borderColor: props.color }}
+      style={{ borderColor: '#909090' }}
     >
       <span
         styleName={props.size === 'small' ? 'toggle-small' : 'toggle'}

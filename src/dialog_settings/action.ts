@@ -46,6 +46,11 @@ export interface SettingsSyncAfterChangesUpdateAction {
   payload: boolean;
 }
 
+export interface SettingsSaveZOrderUpdateAction {
+  type: 'settings-save-zorder-update';
+  payload: boolean;
+}
+
 export interface SettingsDataStorePathUpdateAction {
   type: 'settings-data-store-path-update';
   payload: string;
@@ -59,4 +64,5 @@ export type SettingsAction =
   | SettingsSyncPersonalAccessTokenUpdateAction
   | SettingsSyncIntervalUpdateAction
   | SettingsSyncAfterChangesUpdateAction
+  | SettingsSaveZOrderUpdateAction
   | SettingsDataStorePathUpdateAction;

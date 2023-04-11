@@ -119,6 +119,11 @@ export const addSettingsHandler = (note: INote) => {
         await note.settingsDB.put(note.settings);
         break;
       }
+      case 'db-save-zorder-update': {
+        note.settings.saveZOrder = command.data;
+        await note.settingsDB.put(note.settings);
+        break;
+      }
       case 'db-test-sync': {
         if (note.sync !== undefined) {
           note.bookDB.removeSync(note.sync.remoteURL);
