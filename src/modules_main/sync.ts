@@ -38,11 +38,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
   if (sync === undefined) return undefined;
 
   sync.runBeforeLiveSync = () => {
-    const prevZOrder = [...noteStore.getState().get(note.settings.currentNoteId)!.zOrder];
-    console.log("## currentZOrder[before in notestore]:" + prevZOrder);
-    console.log("## currentZOrder[before]:" + note.currentZOrder);
     note.updateNoteZOrder();
-    console.log("## currentZOrder[after]:" + note.currentZOrder);
   };
 
   note.cardCollection.onSyncEvent(
@@ -196,8 +192,6 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
             noteUpdateCreator(note, newProp, 'remote', taskMetadata.enqueueTime)
           );
           if (note.settings.currentNoteId === noteId) {
-            console.log("old:" + oldProp.zOrder);
-            console.log("new:" + newProp.zOrder);
             if (JSON.stringify(oldProp.zOrder) !== JSON.stringify(newProp.zOrder)) {
               sortCardWindows(newProp.zOrder);
             }
