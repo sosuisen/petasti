@@ -813,7 +813,7 @@ class Note implements INote {
   };
 
   updateNoteZorder = async (): Promise<void> => {
-    return Promise.resolve();
+    return await Promise.resolve();
     /*
     const zOrderArray = [...cacheOfCard.values()]
       .sort((a, b) => {
