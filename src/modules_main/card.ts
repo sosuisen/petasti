@@ -848,12 +848,14 @@ export class Card implements ICard {
         if (!e.message.endsWith(notCurrentNoteMsg)) console.log(e);
       });
     // Update zOrder of target note asynchronously
-    const zOrder = [...noteStore.getState().get(noteId)!.zOrder];
-    if (!zOrder.includes(newUrl)) {
-      zOrder.push(newUrl);
-      noteStore.dispatch(
-        noteZOrderUpdateCreator(this._note, noteId, zOrder, 'local', undefined, true)
-      );
+    if (this._note.settings.saveZOrder) {
+      const zOrder = [...noteStore.getState().get(noteId)!.zOrder];
+      if (!zOrder.includes(newUrl)) {
+        zOrder.push(newUrl);
+        noteStore.dispatch(
+          noteZOrderUpdateCreator(this._note, noteId, zOrder, 'local', undefined, true)
+        );
+      }
     }
 
     await moveCardOutsideFromRightForMove(this.url);
@@ -890,12 +892,14 @@ export class Card implements ICard {
         if (!e.message.endsWith(notCurrentNoteMsg)) console.log(e);
       });
     // Update zOrder of target note asynchronously
-    const zOrder = [...noteStore.getState().get(noteId)!.zOrder];
-    if (!zOrder.includes(newUrl)) {
-      zOrder.push(newUrl);
-      noteStore.dispatch(
-        noteZOrderUpdateCreator(this._note, noteId, zOrder, 'local', undefined, true)
-      );
+    if (this._note.settings.saveZOrder) {
+      const zOrder = [...noteStore.getState().get(noteId)!.zOrder];
+      if (!zOrder.includes(newUrl)) {
+        zOrder.push(newUrl);
+        noteStore.dispatch(
+          noteZOrderUpdateCreator(this._note, noteId, zOrder, 'local', undefined, true)
+        );
+      }
     }
 
     // Play animation

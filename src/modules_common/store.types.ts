@@ -56,6 +56,7 @@ export type SettingsState = {
   dataStorePath: string;
   currentNoteId: string;
   currentNotebookName: string;
+  saveZOrder: boolean;
   sync: {
     enabled: boolean;
     remoteUrl: string;
@@ -82,6 +83,7 @@ export const initialSettingsState: SettingsState = {
   dataStorePath: defaultDataDir,
   currentNoteId: '',
   currentNotebookName: notebookDbName,
+  saveZOrder: false,
   sync: {
     enabled: false,
     remoteUrl: '',

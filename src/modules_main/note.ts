@@ -34,6 +34,7 @@ import {
   getCurrentDateAndTime,
   getLocalDateAndTime,
   getNoteIdFromUrl,
+  isLabelOpened,
 } from '../modules_common/utils';
 import {
   CardBody,
@@ -476,9 +477,40 @@ class Note implements INote {
     const cards: CardProperty[] = [];
     const props = noteStore.getState().values();
 
-    const zOrder = [...noteStore.getState().get(note.settings.currentNoteId)!.zOrder];
-
     console.time('loadCards');
+
+    cards.push(...(await this.loadCards(this._settings.currentNoteId)));
+
+    const zOrder: string[] = [];
+    if(note.settings.saveZOrder) {
+      zOrder.push(...noteStore.getState().get(note.settings.currentNoteId)!.zOrder);
+    }
+    else {
+      // The label will be behind the card.
+      const labels: CardProperty[] = [];
+      const notLabels: CardProperty[] = [];
+      cards.forEach(card => {
+        if(isLabelOpened(card.sketch.label.status)){
+          labels.push(card);
+        }
+        else {
+          notLabels.push(card);
+        }
+      });
+      labels.sort((a, b) => {
+        if (a.sketch.date.modifiedDate > b.sketch.date.modifiedDate) return 1;
+        else if (a.sketch.date.modifiedDate < b.sketch.date.modifiedDate) return -1;
+        return 0;
+      });
+      notLabels.sort((a, b) => {
+        if (a.sketch.date.modifiedDate > b.sketch.date.modifiedDate) return 1;
+        else if (a.sketch.date.modifiedDate < b.sketch.date.modifiedDate) return -1;
+        return 0;
+      });
+      zOrder.push(...notLabels.map(card => card.url));
+      zOrder.push(...labels.map(card => card.url));
+    }
+    
     for (const noteProp of props) {
       if (noteProp.isResident && noteProp._id !== this._settings.currentNoteId) {
         // eslint-disable-next-line no-await-in-loop
@@ -487,8 +519,7 @@ class Note implements INote {
         zOrder.unshift(...noteProp.zOrder.filter(url => !zOrder.includes(url)));
       }
     }
-    cards.push(...(await this.loadCards(this._settings.currentNoteId)));
-
+    
     const existingCardUrls = cards.map(card => card.url);
     const existingZOrder = zOrder.filter(url => existingCardUrls.includes(url));
     // Remove duplicated cards by using 'Set'.
@@ -760,9 +791,11 @@ class Note implements INote {
       if (myCard === undefined || myCard.isFake) return false;
       return true;
     });
-    await noteStore.dispatch(
-      noteZOrderUpdateCreator(this, this._settings.currentNoteId, zOrder)
-    );
+    if (this.settings.saveZOrder) {
+      await noteStore.dispatch(
+        noteZOrderUpdateCreator(this, this._settings.currentNoteId, zOrder)
+      );
+    }
     this.currentZOrder = zOrder;
   };
 

@@ -41,6 +41,7 @@ const settingsReducer = (
     dataStorePath: '',
     currentNoteId: '',
     currentNotebookName: '',
+    saveZOrder: false,
     sync: {
       enabled: false,
       remoteUrl: '',
