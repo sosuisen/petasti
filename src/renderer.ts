@@ -131,8 +131,8 @@ const onBodyMouseUp = async () => {
 
 const toggleSticker = async () => {
   if (!isLabelOpened(cardStore.getState().sketch.label.status)) return;
-  const label = cardStore.getState().sketch.label;
-  if (cardStore.getState().sketch.label.status === 'openedSticker') {
+  const label = JSON.parse(JSON.stringify(cardStore.getState().sketch.label));
+  if (label.status === 'openedSticker') {
     label.status = 'openedLabel';
   }
   else {
@@ -452,7 +452,7 @@ window.addEventListener('message', event => {
 const onTransformToLabel = async () => {
   window.api.startTransform('label');
 
-  const label = cardStore.getState().sketch.label;
+  const label = JSON.parse(JSON.stringify(cardStore.getState().sketch.label)) as CardLabel;
   if (isLabelOpened(label.status)) return;
 
   if (cardEditor.isOpened) {
@@ -534,11 +534,12 @@ const setRectToLabel = async () => {
 const onTransformToCard = async () => {
   window.api.startTransform('card');
 
-  const label = cardStore.getState().sketch.label;
+  const label = JSON.parse(JSON.stringify(cardStore.getState().sketch.label)) as CardLabel;
+
   if (!isLabelOpened(label.status)) return;
 
   let newGeom: Geometry;
-  if (cardStore.getState().sketch.label.status === 'openedSticker') {
+  if (label.status === 'openedSticker') {
     newGeom = cardStore.getState().sketch.geometry;
     label.status = 'closedSticker';
   }
@@ -557,10 +558,10 @@ const onTransformToCard = async () => {
   // console.log(displayRect);
   let stashed = false;
   if (
-    cardStore.getState().sketch.label.status === 'closedLabel' ||
-    (cardStore.getState().sketch.label.status === 'closedSticker' &&
-      cardStore.getState().sketch.label.x === cardStore.getState().sketch.geometry.x &&
-      cardStore.getState().sketch.label.y === cardStore.getState().sketch.geometry.y)
+    label.status === 'closedLabel' ||
+    (label.status === 'closedSticker' &&
+      label.x === cardStore.getState().sketch.geometry.x &&
+      label.y === cardStore.getState().sketch.geometry.y)
   ) {
     if (newGeom.x + newGeom.width > displayRect.x + displayRect.width) {
       newGeom.x = displayRect.x + displayRect.width - newGeom.width;
