@@ -135,12 +135,12 @@ const cardLabelReducer = (
   switch (action.type) {
     case 'card-label-init': {
       const newState = { ...action.payload };
-      console.log('# cardLabelReducer: ' + JSON.stringify(newState));
+      console.log('# cardLabelReducer init: ' + JSON.stringify(newState));
       return newState;
     }
     case 'card-label-update': {
       const newState = { ...state, ...action.payload };
-      console.log('# cardLabelReducer: ' + JSON.stringify(newState));
+      console.log('# cardLabelReducer update: ' + JSON.stringify(newState));
       return newState;
     }
     case 'card-label-rect-update': {
@@ -151,7 +151,7 @@ const cardLabelReducer = (
         width: action.payload.width,
         height: action.payload.height,
       };
-      console.log('# cardLabelReducer: ' + JSON.stringify(newState));
+      console.log('# cardLabelReducer rect-update: ' + JSON.stringify(newState));
       return newState;
     }
     default:

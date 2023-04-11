@@ -52,6 +52,10 @@ export const cardBodyUpdateCreator = (
         }
       }
 
+      if (JSON.stringify(getState().body) === JSON.stringify(_body)) {
+        return;
+      }
+
       const cardAction: CardBodyUpdateAction = {
         type: 'card-body-body-update',
         payload: _body,
@@ -86,6 +90,10 @@ export const cardCollapsedListUpdateCreator = (
           console.log('Block expired remote update');
           return;
         }
+      }
+
+      if (JSON.stringify(getState().sketch.collapsedList) === JSON.stringify(collapsedList)) {
+        return;
       }
 
       const cardAction: CardCollapsedListUpdateAction = {
@@ -129,6 +137,11 @@ export const cardSketchUpdateCreator = (
           return;
         }
       }
+
+      if (JSON.stringify(getState().sketch) === JSON.stringify(cardSketch)) {
+        return;
+      }
+
       const cardGeometryAction: CardGeometryUpdateAction = {
         type: 'card-geometry-update',
         payload: cardSketch.geometry,
@@ -197,6 +210,15 @@ export const cardGeometryUpdateCreator = (
       }
 
       if (isLabelOpened(getState().sketch.label.status)) {
+        if (
+          geometry.x === getState().sketch.label.x &&
+          geometry.y === getState().sketch.label.y &&
+          geometry.width === getState().sketch.label.width &&
+          geometry.height === getState().sketch.label.height
+        ) {
+          return;
+        }
+
         // Change label size
         const cardLabelAction: CardLabelRectUpdateAction = {
           type: 'card-label-rect-update',
@@ -218,6 +240,10 @@ export const cardGeometryUpdateCreator = (
         dispatch(cardGeometryAction);
       }
       else {
+        if (JSON.stringify(getState().sketch.geometry) === JSON.stringify(geometry)) {
+          return;
+        }
+
         const cardAction: CardGeometryUpdateAction = {
           type: 'card-geometry-update',
           payload: geometry,
@@ -291,6 +317,10 @@ export const cardStyleUpdateCreator = (
           console.log('Block expired remote update');
           return;
         }
+      }
+
+      if (JSON.stringify(getState().sketch.style) === JSON.stringify(style)) {
+        return;
       }
 
       const cardAction: CardStyleUpdateAction = {
@@ -387,6 +417,10 @@ export const cardLabelUpdateCreator = (
           console.log('Block expired remote update');
           return;
         }
+      }
+
+      if (JSON.stringify(getState().sketch.label) === JSON.stringify(label)) {
+        return;
       }
 
       const cardAction: CardLabelUpdateAction = {
