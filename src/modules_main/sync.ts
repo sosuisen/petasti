@@ -189,7 +189,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           // Expired update will be skipped.
           noteStore.dispatch(
             // @ts-ignore
-            noteUpdateCreator(note, prop, 'remote', taskMetadata.enqueueTime)
+            noteUpdateCreator(note, newProp, 'remote', taskMetadata.enqueueTime)
           );
 
           if (JSON.stringify(oldProp.zOrder) !== JSON.stringify(newProp.zOrder)) {
