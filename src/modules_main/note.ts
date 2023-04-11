@@ -273,6 +273,12 @@ class Note implements INote {
           loadedSettings.sync.connection.engine = 'nodegit';
           await this._settingsDB.put(loadedSettings);
         }
+        // saveZOrder was added from v0.2.36
+        // Set default value when settings does not have saveZOrder.
+        if (loadedSettings.saveZOrder === undefined) {
+          loadedSettings.saveZOrder = false;
+        }
+
         this._settings = loadedSettings;
       }
 
@@ -482,7 +488,7 @@ class Note implements INote {
     cards.push(...(await this.loadCards(this._settings.currentNoteId)));
 
     const zOrder: string[] = [];
-    if(note.settings.saveZOrder) {
+    if (note.settings.saveZOrder) {
       zOrder.push(...noteStore.getState().get(note.settings.currentNoteId)!.zOrder);
     }
     else {
@@ -490,7 +496,7 @@ class Note implements INote {
       const labels: CardProperty[] = [];
       const notLabels: CardProperty[] = [];
       cards.forEach(card => {
-        if(isLabelOpened(card.sketch.label.status)){
+        if (isLabelOpened(card.sketch.label.status)) {
           labels.push(card);
         }
         else {
@@ -510,7 +516,7 @@ class Note implements INote {
       zOrder.push(...notLabels.map(card => card.url));
       zOrder.push(...labels.map(card => card.url));
     }
-    
+
     for (const noteProp of props) {
       if (noteProp.isResident && noteProp._id !== this._settings.currentNoteId) {
         // eslint-disable-next-line no-await-in-loop
@@ -519,7 +525,7 @@ class Note implements INote {
         zOrder.unshift(...noteProp.zOrder.filter(url => !zOrder.includes(url)));
       }
     }
-    
+
     const existingCardUrls = cards.map(card => card.url);
     const existingZOrder = zOrder.filter(url => existingCardUrls.includes(url));
     // Remove duplicated cards by using 'Set'.

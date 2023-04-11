@@ -212,7 +212,6 @@ const initializeUIEvents = () => {
     );
   });
 
-  
   document.getElementById('stickerBtn')?.addEventListener('click', event => {
     toggleSticker();
   });
