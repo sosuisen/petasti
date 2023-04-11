@@ -191,7 +191,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
             // @ts-ignore
             noteUpdateCreator(note, newProp, 'remote', taskMetadata.enqueueTime)
           );
-          if (note.settings.currentNoteId === noteId) {
+          if (note.settings.saveZOrder && note.settings.currentNoteId === noteId) {
             if (JSON.stringify(oldProp.zOrder) !== JSON.stringify(newProp.zOrder)) {
               sortCardWindows(newProp.zOrder);
             }
