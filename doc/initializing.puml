@@ -1,6 +1,6 @@
 ' PlantUML
 @startuml
-title Initializing TreeStickies
+title Initializing Petasti
 
 autonumber "<font color=orange>0. "
 participant main <<main.ts>> order 10

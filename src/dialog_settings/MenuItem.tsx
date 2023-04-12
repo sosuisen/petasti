@@ -1,5 +1,5 @@
 /**
- * TreeStickies
+ * Petasti
  * © 2022 Hidekazu Kubota
  */
 import * as React from 'react';

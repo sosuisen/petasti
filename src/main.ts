@@ -1,5 +1,5 @@
 /**
- * TreeStickies
+ * Petasti
  * © 2022 Hidekazu Kubota
  */
 
@@ -44,7 +44,7 @@ if (!gotTheLock) {
   app.quit();
 }
 
-app.setAppUserModelId('com.squirrel.TreeStickies.TreeStickies');
+app.setAppUserModelId('com.squirrel.Petasti.Petasti');
 // process.on('unhandledRejection', console.dir);
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.

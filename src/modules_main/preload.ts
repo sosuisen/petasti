@@ -1,5 +1,5 @@
 /**
- * TreeStickies
+ * Petasti
  * © 2022 Hidekazu Kubota
  */
 import { contextBridge, ipcRenderer, MouseInputEvent, Rectangle, webFrame } from 'electron';

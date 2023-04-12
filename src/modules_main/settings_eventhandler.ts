@@ -1,5 +1,5 @@
 /**
- * TreeStickies
+ * Petasti
  * © 2022 Hidekazu Kubota
  */
 import { BrowserWindow, dialog, ipcMain } from 'electron';
@@ -178,7 +178,7 @@ export const addSettingsHandler = (note: INote) => {
         if (file) {
           const filepath =
             file[0] +
-            '/treestickies_' +
+            '/petasti_' +
             getCurrentDateAndTime().replace(/\s/g, '_').replace(/:/g, '') +
             '.json';
           exportJSON(filepath);

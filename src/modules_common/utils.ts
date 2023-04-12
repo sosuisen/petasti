@@ -1,5 +1,5 @@
 /**
- * TreeStickies
+ * Petasti
  * © 2022 Hidekazu Kubota
  */
 import { ulid } from 'ulid';
@@ -63,12 +63,12 @@ export const getLocationFromUrl = (cardUrl: string): string => {
 };
 
 export const getNoteIdFromUrl = (url: string): string => {
-  const rexNote = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/note/(n.+?)$`); // treestickies://local/note/noteID
+  const rexNote = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/note/(n.+?)$`); // petast ://local/note/noteID
   const resultNote = url.match(rexNote);
   if (resultNote && resultNote.length === 2) {
     return resultNote[1];
   }
-  const rexCard = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/(n.+?)\\/`); // treestickies://local/noteID/(cardID|noteID)
+  const rexCard = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/(n.+?)\\/`); // petasti://local/noteID/(cardID|noteID)
   const resultCard = url.match(rexCard);
   if (resultCard && resultCard.length === 2) {
     return resultCard[1];
@@ -82,7 +82,7 @@ export const getCardIdFromUrl = (url: string): string => {
 };
 
 export const getSketchIdFromUrl = (url: string): string => {
-  const rex = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/(n.+?)$`); // treestickies://local/noteID/(cardID|noteID)
+  const rex = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/(n.+?)$`); // petasti://local/noteID/(cardID|noteID)
   const result = url.match(rex);
   if (result && result.length === 2) {
     return result[1];

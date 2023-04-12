@@ -1,5 +1,5 @@
 /**
- * TreeStickies
+ * Petasti
  * © 2022 Hidekazu Kubota
  */
 import { MessageLabelRenderer, MessagesRenderer } from '../modules_common/i18n';

@@ -175,7 +175,7 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   saveChangeFilePathButton: 'Change',
   chooseSaveFilePath: 'Select the place for saving data',
   saveChangeFilePathAlert:
-    'Save data will be copied from the old folder to the new folder.\n(The data in the old folder is not removed.) \n[tree_stickies_data] folder will be created in the new folder,\n  and save data is saved in this folder.',
+    'Save data will be copied from the old folder to the new folder.\n(The data in the old folder is not removed.) \n[petasti_data] folder will be created in the new folder,\n  and save data is saved in this folder.',
   saveChangeFilePathError: 'Data cannot be copied here. Please select another location.',
   saveZOrder: 'Save the order of card overlap',
   languageDetailedText: 'Select the Language in which you want this App to appear',
@@ -321,7 +321,7 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   saveChangeFilePathButton: '変更',
   chooseSaveFilePath: 'データの保存先を選んでください',
   saveChangeFilePathAlert:
-    'データは新しい保存先へコピーされます（元の保存先からは削除されません）\n保存先には「tree_stickies_data」という名前のフォルダが作成され、\nデータはこのフォルダの中に保存されます。',
+    'データは新しい保存先へコピーされます（元の保存先からは削除されません）\n保存先には「petasti_data」という名前のフォルダが作成され、\nデータはこのフォルダの中に保存されます。',
   saveChangeFilePathError: 'データをコピーできませんでした。他の保存先を選んでください。',
   saveZOrder: 'カードの重なり順を保存する',
   languageDetailedText: 'このアプリのメニュー表示のために使用する言語を選んでください。',

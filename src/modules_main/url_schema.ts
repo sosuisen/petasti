@@ -13,7 +13,7 @@ export const initializeUrlSchema = (store: INote) => {
 
 export function openURL (url: string) {
   if (url.startsWith(APP_SCHEME + '://')) {
-    const rexNote = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/note/(n.+?)$`); // treestickies://local/note/noteID
+    const rexNote = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/note/(n.+?)$`); // petasti://local/note/noteID
     const resultNote = url.match(rexNote);
     if (resultNote && resultNote.length === 2) {
       // URL is note

@@ -7,6 +7,9 @@ yarn-error.log*
 lerna-debug.log*
 
 # Card dir
+petasti_data/
+petasti_data.bu/
+petasti_data_old/*
 tree_stickies_data/
 tree_stickies_data.bu/
 tree_stickies_data_old/*
@@ -98,5 +101,5 @@ out/
 config.json
 
 node_modules_before_using_rxdb
-TreeStickies-win32-x64/
+Petasti-win32-x64/
 installer/

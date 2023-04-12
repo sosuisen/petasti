@@ -1,6 +1,6 @@
 /* eslint-disable dot-notation */
 /**
- * TreeStickies
+ * Petasti
  * © 2022 Hidekazu Kubota
  */
 import path from 'path';
@@ -94,7 +94,7 @@ export const generateNewNoteId = () => {
 class Note implements INote {
   constructor () {
     this.logger = new Logger({
-      name: 'TreeStickies',
+      name: 'Petasti',
       minLevel: logLevel,
       displayDateTime: true,
       displayFunctionName: false,
@@ -580,7 +580,7 @@ class Note implements INote {
     });
 
     const getCardProp = async (sketchDoc: CardSketch): Promise<CardProperty> => {
-      const url = `${APP_SCHEME}://local/${sketchDoc._id}`; // treestickies://local/noteID/(cardID|noteID)
+      const url = `${APP_SCHEME}://local/${sketchDoc._id}`; // petasti://local/noteID/(cardID|noteID)
       const cardId = getCardIdFromUrl(url);
       let cardBodyDoc = await this._cardCollection.get(cardId);
       if (cardBodyDoc === undefined) {

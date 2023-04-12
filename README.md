@@ -1,3 +1,3 @@
-# TreeStickies
+# Petasti
 
-Tree-Structured Stickies
+Enjoy quadrillion(peta) of stickies!

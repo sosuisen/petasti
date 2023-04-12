@@ -1,8 +1,8 @@
 {
-  "name": "tree-stickies",
-  "productName": "TreeStickies",
+  "name": "petasti",
+  "productName": "Petasti",
   "version": "0.2.35",
-  "description": "TreeStickies",
+  "description": "Petasti",
   "main": "dist/main.js",
   "scripts": {
     "rebuild-native": "npx electron-rebuild -f",

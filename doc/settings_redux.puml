@@ -1,6 +1,6 @@
 ' PlantUML
 @startuml
-title Using Redux for App settings in Media Stickies
+title Using Redux for App settings in Petasti
 
 skinparam activity {
   BackgroundColor #e0ffff

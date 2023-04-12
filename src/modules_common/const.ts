@@ -1,5 +1,5 @@
 /**
- * TreeStickies
+ * Petasti
  * © 2022 Hidekazu Kubota
  */
 
@@ -15,11 +15,11 @@ export const DIALOG_BUTTON = {
 export const notebookDbName = 'book001'; // This will be variable in the next version.
 
 // Ubuntu and mac cannot load .ico
-// export const APP_ICON_NAME = 'tree-stickies-icon.ico';
-export const APP_ICON_NAME = 'tree-stickies-icon-128x128.png';
-export const APP_ICON_NAME_MONO = 'tree-stickies-icon-Template@2x.png';
+// export const APP_ICON_NAME = 'petasti-icon.ico';
+export const APP_ICON_NAME = 'petasti-icon-128x128.png';
+export const APP_ICON_NAME_MONO = 'petasti-icon-Template@2x.png';
 
-export const APP_SCHEME = 'treestickies';
+export const APP_SCHEME = 'petasti';
 
 export const CARD_VERSION = '1.0';
 export const DEFAULT_CARD_GEOMETRY: Geometry = {

@@ -1,5 +1,5 @@
 /**
- * TreeStickies
+ * Petasti
  * © 2022 Hidekazu Kubota
  */
 
@@ -8,7 +8,7 @@ import { app } from 'electron';
 import { notebookDbName } from './const';
 import { Messages } from './i18n';
 
-export const dataDirName = 'tree_stickies_data';
+export const dataDirName = 'petasti_data';
 /**
  * Default data directory
  *
@@ -24,7 +24,7 @@ export const dataDirName = 'tree_stickies_data';
 export const defaultDataDir = app.isPackaged
   ? path.join(__dirname, `../../../../../../${dataDirName}`)
   : path.join(__dirname, `../../${dataDirName}`);
-// export const defaultDataDir = 'C:\\Users\\kubota\\AppData\\Local\\tree_stickies_data';
+// export const defaultDataDir = 'C:\\Users\\kubota\\AppData\\Local\\petasti_data';
 
 export const defaultLogDir = defaultDataDir + '/logs/';
 
