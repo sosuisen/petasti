@@ -1,6 +1,6 @@
 /**
  * Petasti
- * © 2022 Hidekazu Kubota
+ * © 2023 Hidekazu Kubota
  */
 import { ulid } from 'ulid';
 import { monotonicFactory as monotonicFactoryHmtid } from 'hmtid';

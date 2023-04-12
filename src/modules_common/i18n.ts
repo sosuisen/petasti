@@ -184,7 +184,7 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   securityDetailedText:
     'Only following websites are allowed to load into a card. Remove by clicking \u00D7 if not needed.',
   securityNoUrl: 'No URL allowed',
-  aboutCopyright: '© 2022 Hidekazu Kubota',
+  aboutCopyright: '© 2023 Hidekazu Kubota',
   aboutAppUrl: 'https://github.com/sosuisen/',
   testingSync: 'Testing synchronization...',
   syncRemoteUrlHeader: 'Remote repository (GitHub URL)',
@@ -330,7 +330,7 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   securityDetailedText:
     '次のドメインのサイトのみカードに読み込むことができます。不要なサイトは×ボタンを押して削除してください。',
   securityNoUrl: '許可されたサイトはありません',
-  aboutCopyright: '© 2022 Hidekazu Kubota',
+  aboutCopyright: '© 2023 Hidekazu Kubota',
   aboutAppUrl: 'https://github.com/sosuisen/',
   testingSync: '同期のテスト中...',
   syncRemoteUrlHeader: '同期先のリポジトリ (GitHub URL)',

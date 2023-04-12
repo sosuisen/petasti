@@ -1,6 +1,6 @@
 /**
  * Petasti
- * © 2022 Hidekazu Kubota
+ * © 2023 Hidekazu Kubota
  */
 import { MessageLabelRenderer, MessagesRenderer } from '../modules_common/i18n';
 

@@ -1,7 +1,7 @@
 /* eslint-disable dot-notation */
 /**
  * Petasti
- * © 2022 Hidekazu Kubota
+ * © 2023 Hidekazu Kubota
  */
 import path from 'path';
 import fs from 'fs-extra';

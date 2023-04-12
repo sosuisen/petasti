@@ -1,6 +1,6 @@
 /**
  * Petasti
- * © 2022 Hidekazu Kubota
+ * © 2023 Hidekazu Kubota
  */
 import { contextBridge, ipcRenderer, MouseInputEvent, Rectangle, webFrame } from 'electron';
 import { ChangedFile } from 'git-documentdb';

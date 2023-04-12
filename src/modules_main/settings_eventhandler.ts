@@ -1,6 +1,6 @@
 /**
  * Petasti
- * © 2022 Hidekazu Kubota
+ * © 2023 Hidekazu Kubota
  */
 import { BrowserWindow, dialog, ipcMain } from 'electron';
 import fs, { readJSONSync } from 'fs-extra';
