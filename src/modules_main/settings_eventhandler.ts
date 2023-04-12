@@ -234,7 +234,7 @@ export const addSettingsHandler = (note: INote) => {
     // console.debug('Start import JSON from ' + filepath);
     const jsonObj = readJSONSync(filepath);
 
-    if (jsonObj.schemaVersion < 0.5) {
+    if (jsonObj.schemaVersion < 0.6) {
       showDialog(settingsDialog, 'error', 'invalidSchemaVersion', jsonObj.schemaVersion);
       return;
     }
@@ -356,34 +356,10 @@ export const addSettingsHandler = (note: INote) => {
       tmpBookDB.committer = note.bookDB.committer;
       await tmpBookDB.saveAuthor();
 
-      if (jsonObj.schemaVersion === 0.5) {
-        const noteHash: { [key: string]: Record<string, unknown>[] } = {};
+      if (jsonObj.schemaVersion === 0.6) {
         for (const tmpNote of sortedNotes) {
-          const idArray = tmpNote._id.split('/');
-          const noteId = idArray[1];
-          const childName = idArray[2];
-          if (!noteHash[noteId]) {
-            noteHash[noteId] = [];
-          }
-          if (childName === 'prop') {
-            noteHash[noteId].unshift(tmpNote);
-          }
-          else {
-            noteHash[noteId].push(tmpNote);
-          }
+          tmpNote.zOrder = [];
         }
-
-        Object.keys(noteHash).forEach(noteId => {
-          const prop = noteHash[noteId].shift();
-          prop!.zOrder = noteHash[noteId]
-            .sort((a, b) => (a.geometry as Geometry).z - (b.geometry as Geometry).z)
-            .map(sketch =>
-              (sketch._id as string).replace(/^note/, `${APP_SCHEME}://local`)
-            );
-          noteHash[noteId].forEach(sketch => {
-            (sketch.geometry as Geometry).z = 0;
-          });
-        });
       }
 
       for (const card of sortedCards) {

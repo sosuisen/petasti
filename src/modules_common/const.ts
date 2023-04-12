@@ -70,7 +70,7 @@ export const MINIMUM_WINDOW_HEIGHT_OFFSET = 9;
 
 export const SETTINGS_DB_NAME = 'local_settings';
 
-export const SCHEMA_VERSION = 0.6;
+export const SCHEMA_VERSION = 0.7;
 
 export const CARD_MARGIN_TOP = 3;
 export const CARD_MARGIN_LEFT = 7;
