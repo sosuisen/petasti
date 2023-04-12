@@ -92,7 +92,9 @@ export const cardCollapsedListUpdateCreator = (
         }
       }
 
-      if (JSON.stringify(getState().sketch.collapsedList) === JSON.stringify(collapsedList)) {
+      if (
+        JSON.stringify(getState().sketch.collapsedList) === JSON.stringify(collapsedList)
+      ) {
         return;
       }
 
