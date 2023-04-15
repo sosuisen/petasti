@@ -124,7 +124,7 @@ const startApp = async (isRestart: boolean) => {
   } catch (err) {
     // Show error
     if (loadingNoteProgressBar) loadingNoteProgressBar.close();
-    note.logger.debug('# Error in change-note: ' + err);
+    note.logger.debug('# Error in initializing renderers: ' + err);
     // TODO: Need detailed error message for user.
     return;
   }
