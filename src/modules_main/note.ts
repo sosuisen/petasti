@@ -62,6 +62,7 @@ import {
 import {
   APP_ICON_NAME,
   APP_SCHEME,
+  DEFAULT_CARD_LABEL,
   MINIMUM_WINDOW_HEIGHT,
   MINIMUM_WINDOW_HEIGHT_OFFSET,
   SETTINGS_DB_NAME,
@@ -593,6 +594,10 @@ class Note implements INote {
           },
         };
       }
+      if (!sketchDoc.label || !sketchDoc.label.status) {
+        sketchDoc.label = JSON.parse(JSON.stringify(DEFAULT_CARD_LABEL));
+      }
+
       const cardProp: CardProperty = {
         url,
         body: cardBodyDoc as CardBody,
