@@ -89,6 +89,10 @@ export type DatabaseImportData = {
   command: 'import-data';
 };
 
+export type DatabaseRebuildIndex = {
+  command: 'rebuild-index';
+};
+
 export type DatabaseCommand =
   | DatabaseCardBodyUpdate
   | DatabaseCardSketchUpdate
@@ -105,4 +109,5 @@ export type DatabaseCommand =
   | DatabasePauseSync
   | DatabaseResumeSync
   | DatabaseExportData
-  | DatabaseImportData;
+  | DatabaseImportData
+  | DatabaseRebuildIndex;

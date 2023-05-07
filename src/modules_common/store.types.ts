@@ -28,6 +28,8 @@ export const defaultDataDir = app.isPackaged
 
 export const defaultLogDir = defaultDataDir + '/logs/';
 
+export const defaultIndexDir = defaultDataDir + '/indexes/';
+
 export const soundSrcDir = path.join(__dirname, `../../sounds_main/`);
 export const defaultSoundDir = defaultDataDir + '/sounds/';
 

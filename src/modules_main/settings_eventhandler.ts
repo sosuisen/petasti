@@ -195,6 +195,10 @@ export const addSettingsHandler = (note: INote) => {
         }
         break;
       }
+      case 'rebuild-index': {
+        await note.rebuildSearchIndex();
+        break;
+      }
     }
   });
 

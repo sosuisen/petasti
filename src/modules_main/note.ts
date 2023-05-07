@@ -15,12 +15,13 @@ import {
   Tray,
 } from 'electron';
 import {
-  Collection,
   CollectionOptions,
   DatabaseOptions,
   Err,
   GitDocumentDB,
+  ICollection,
   RemoteOptions,
+  SearchEngineOption,
   Sync,
   TaskMetadata,
 } from 'git-documentdb';
@@ -47,6 +48,7 @@ import {
 } from '../modules_common/types';
 import {
   defaultDataDir,
+  defaultIndexDir,
   defaultLogDir,
   InfoState,
   initialSettingsState,
@@ -150,18 +152,18 @@ class Note implements INote {
     return this._settingsDB;
   }
 
-  private _noteCollection!: Collection;
-  get noteCollection (): Collection {
+  private _noteCollection!: ICollection;
+  get noteCollection (): ICollection {
     return this._noteCollection;
   }
 
-  private _snapshotCollection!: Collection;
-  get snapshotCollection (): Collection {
+  private _snapshotCollection!: ICollection;
+  get snapshotCollection (): ICollection {
     return this._snapshotCollection;
   }
 
-  private _cardCollection!: Collection;
-  get cardCollection (): Collection {
+  private _cardCollection!: ICollection;
+  get cardCollection (): ICollection {
     return this._cardCollection;
   }
 
@@ -305,6 +307,28 @@ class Note implements INote {
         if (startingProgressBar) startingProgressBar.detail = MESSAGE('completed');
       });
 
+      const cardSearchEngineOption: SearchEngineOption = {
+        engineName: 'full-text',
+        collectionPath: 'card',
+        configs: [
+          {
+            indexName: 'card',
+            targetProperties: ['_body'],
+            indexFilePath: `${defaultIndexDir}${this._settings.currentNotebookName}_card_index.zip`,
+          },
+        ],
+      };
+      const noteSearchEngineOption: SearchEngineOption = {
+        engineName: 'full-text',
+        collectionPath: 'note',
+        configs: [
+          {
+            indexName: 'noteprop',
+            targetProperties: ['name'],
+            indexFilePath: `${defaultIndexDir}${this._settings.currentNotebookName}_noteprop_index.zip`,
+          },
+        ],
+      };
       const bookDbOption: DatabaseOptions & CollectionOptions = {
         localDir: this._settings.dataStorePath,
         dbName: this._settings.currentNotebookName,
@@ -319,6 +343,7 @@ class Note implements INote {
             keyOfUniqueArray: ['collapsedList', 'zOrder'],
           },
         },
+        searchEngineOptions: [cardSearchEngineOption, noteSearchEngineOption],
       };
 
       this._bookDB = new GitDocumentDB(bookDbOption);
@@ -858,6 +883,11 @@ class Note implements INote {
         .catch(err => reject(err));
     }).catch((err: Error) => console.log(err.message + ', ' + noteId + '/prop'));
     return (task as unknown) as TaskMetadata;
+  };
+
+  rebuildSearchIndex = async () => {
+    await this._cardCollection.rebuildIndex();
+    await this._noteCollection.rebuildIndex();
   };
 
   private _createCardBodyDoc = async (

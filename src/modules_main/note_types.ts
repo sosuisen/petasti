@@ -4,8 +4,8 @@
  */
 import { BrowserWindow, Rectangle, Tray } from 'electron';
 import {
-  Collection,
   GitDocumentDB,
+  ICollection,
   RemoteOptions,
   Sync,
   TaskMetadata,
@@ -35,8 +35,8 @@ export interface INote {
 
   logger: Logger;
 
-  cardCollection: Collection;
-  noteCollection: Collection;
+  cardCollection: ICollection;
+  noteCollection: ICollection;
   combineDB: (target: BrowserWindow | undefined) => void;
   settings: SettingsState;
   info: InfoState;
@@ -96,4 +96,6 @@ export interface INote {
     xOffset?: number,
     yOffset?: number
   ) => Rectangle;
+
+  rebuildSearchIndex: () => Promise<void>;
 }

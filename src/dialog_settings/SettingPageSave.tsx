@@ -27,10 +27,7 @@ export function SettingPageSave (props: SettingPageSaveProps) {
   const dataStorePath = useSelector(selectorDataStorePath);
 
   const settings = useSelector(selectorSettings);
-  const [saveZOrderValue, setSaveZOrderValue] = useState(
-    settings.saveZOrder
-  );
-
+  const [saveZOrderValue, setSaveZOrderValue] = useState(settings.saveZOrder);
 
   const onChangeButtonClick = async () => {
     /* Use window.api
@@ -105,6 +102,12 @@ export function SettingPageSave (props: SettingPageSaveProps) {
       });
   };
 
+  const onRebuildIndexButtonClick = async () => {
+    await window.api.db({
+      command: 'rebuild-index',
+    });
+  };
+
   const saveZOrderToggleOnChange = (saveZOrder: boolean) => {
     setSaveZOrderValue(saveZOrder);
     dispatch(settingsSaveZOrderUpdateCreator(saveZOrder));
@@ -137,6 +140,17 @@ export function SettingPageSave (props: SettingPageSaveProps) {
           size='small'
         />
       </div>
+      <div styleName='rebuildIndex'>
+        <div styleName='rebuildIndexLabel'>{messages.rebuildIndexLabel}:</div>
+        <button
+          styleName='rebuildIndexButton'
+          onClick={onRebuildIndexButtonClick}
+          style={buttonStyle('red')}
+        >
+          {messages.rebuildIndexButton}
+        </button>
+      </div>
+
       <br style={{ clear: 'both' }} />
       <hr></hr>
       <div styleName='exportData'>

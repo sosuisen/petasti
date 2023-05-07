@@ -28,7 +28,12 @@ import { CardBody, CardSketch } from './modules_common/types';
 import { addSettingsHandler } from './modules_main/settings_eventhandler';
 import { cacheOfCard } from './modules_main/card_cache';
 import { DatabaseCommand } from './modules_common/db.types';
-import { defaultLogDir, defaultSoundDir, soundSrcDir } from './modules_common/store.types';
+import {
+  defaultIndexDir,
+  defaultLogDir,
+  defaultSoundDir,
+  soundSrcDir,
+} from './modules_common/store.types';
 import { getRandomInt, sleep } from './modules_common/utils';
 import { initializeUrlSchema, openURL } from './modules_main/url_schema';
 import { DEFAULT_CARD_GEOMETRY } from './modules_common/const';
@@ -67,16 +72,30 @@ const startApp = async (isRestart: boolean) => {
   for (let i = 0; i < retry + 1; i++) {
     // eslint-disable-next-line no-await-in-loop
     const resEnsure = await fs.ensureDir(defaultLogDir).catch((err: Error) => {
-      if (i >= retry) console.error(err.message);
+      if (i >= retry) note.logger.error(console.error(err.message));
       return 'cannot_create';
     });
     if (resEnsure === 'cannot_create') {
       // eslint-disable-next-line no-await-in-loop
       await sleep(2000);
-      console.log('retrying ensureDir in startApp');
+      note.logger.error('retrying ensure defaultLogDir in startApp');
       continue;
     }
   }
+  for (let i = 0; i < retry + 1; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    const resEnsure = await fs.ensureDir(defaultIndexDir).catch((err: Error) => {
+      if (i >= retry) note.logger.error(console.error(err.message));
+      return 'cannot_create';
+    });
+    if (resEnsure === 'cannot_create') {
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(2000);
+      note.logger.error('retrying ensure defaultIndexDir in startApp');
+      continue;
+    }
+  }
+
   // TODO: Check sound file list
   // Copy sounds
   if (!fs.existsSync(defaultSoundDir)) {

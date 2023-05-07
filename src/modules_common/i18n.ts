@@ -117,6 +117,8 @@ type MessagesSettings = {
   completed: string;
   loadingNoteFailed: string;
   exportDataAlert: string;
+  rebuildIndexLabel: string;
+  rebuildIndexButton: string;
 };
 
 type MessagesLanguage = {
@@ -219,6 +221,8 @@ const SETTINGS_ENGLISH: MessagesSettings = {
   loadingNoteFailed: 'Failed to load cards.',
   exportDataAlert:
     'Only current cards, notes, and snapshots will be exported. Past changes and deleted data will not be included.',
+  rebuildIndexLabel: 'Rebuild index',
+  rebuildIndexButton: 'Rebuild',
 };
 
 const RENDERER_ENGLISH: MessagesRenderer = {
@@ -366,6 +370,8 @@ const SETTINGS_JAPANESE: MessagesSettings = {
   loadingNoteFailed: 'カードの読み込みを失敗しました',
   exportDataAlert:
     '現在のカード、ノート、スナップショットのみエクスポートされます。過去の変更履歴や削除されたデータは含まれません。',
+  rebuildIndexLabel: 'インデックス再構築',
+  rebuildIndexButton: '再構築',
 };
 
 const RENDERER_JAPANESE: MessagesRenderer = {
