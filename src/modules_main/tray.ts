@@ -41,6 +41,7 @@ import { INote } from './note_types';
 import { regExpResidentNote, showDialog } from './utils_main';
 import { noteStore } from './note_store';
 import { noteDeleteCreator, noteUpdateCreator } from './note_action_creator';
+import { openDashboard } from './dashboard';
 
 /**
  * Task tray
@@ -517,6 +518,9 @@ export const initializeTaskTray = (store: INote) => {
   }
   globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
     tray.popUpContextMenu();
+  });
+  globalShortcut.registerAll([`CommandOrControl+${opt}+Shift+Enter`], () => {
+    openDashboard(note);
   });
   // 'F'ront
   globalShortcut.registerAll([`CommandOrControl+${opt}+F`], () => {

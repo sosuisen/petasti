@@ -3,7 +3,7 @@ const cssModulesScopedName = '[path]___[name]__[local]___[hash:base64:5]';
 const createElectronReloadWebpackPlugin = require('electron-reload-webpack-plugin');
 
 const { merge } = require('webpack-merge');
-const common = require('./webpack.dashboard.common.js');
+const common = require('./webpack.settings.common.js');
 
 // Create one plugin for both renderer and main process
 const electronReloadWebpackPlugin = createElectronReloadWebpackPlugin({
@@ -40,7 +40,7 @@ module.exports = merge(common, {
           {
             loader: 'ts-loader',
             options: {
-              configFile: 'tsconfig.dashboard.development.json',
+              configFile: 'tsconfig.settings.development.json',
             },
           },
         ],

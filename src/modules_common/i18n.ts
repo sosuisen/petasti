@@ -121,6 +121,12 @@ type MessagesSettings = {
   rebuildIndexButton: string;
 };
 
+type MessagesDashboard = {
+  dashboard: string;
+  dashboardPageSearch: string;
+  dashboardPageSpace: string;
+};
+
 type MessagesLanguage = {
   en: string;
   ja: string;
@@ -135,6 +141,7 @@ export type Messages = MessagesMain &
   MessagesNote &
   MessagesSettings &
   MessagesLanguage &
+  MessagesDashboard &
   MessagesRenderer;
 export type MessageLabel = keyof Messages;
 
@@ -229,6 +236,12 @@ const RENDERER_ENGLISH: MessagesRenderer = {
   exitCode: 'Press $1+Shift+Down to exit the code',
 };
 
+const DASHBOARD_ENGLISH: MessagesDashboard = {
+  dashboard: 'Dashboard',
+  dashboardPageSearch: 'Search',
+  dashboardPageSpace: 'Space',
+};
+
 export const messageLabelsForRenderer: MessageLabelRenderer[] = Object.keys(
   RENDERER_ENGLISH
 ) as MessageLabelRenderer[];
@@ -238,6 +251,7 @@ export const ENGLISH: Messages = {
   ...NOTE_ENGLISH,
   ...SETTINGS_ENGLISH,
   ...RENDERER_ENGLISH,
+  ...DASHBOARD_ENGLISH,
   databaseCreateError: 'Error: Cannot create database($1)',
   exit: 'Exit',
   zoomIn: 'Zoom In',
@@ -378,11 +392,18 @@ const RENDERER_JAPANESE: MessagesRenderer = {
   exitCode: '$1+Shift+ ↓ でカーソルをコード外へ',
 };
 
+const DASHBOARD_JAPANESE: MessagesDashboard = {
+  dashboard: 'ダッシュボード',
+  dashboardPageSearch: '検索',
+  dashboardPageSpace: 'スペース',
+};
+
 export const JAPANESE: Messages = {
   ...LANGUAGES_COMMON,
   ...NOTE_JAPANESE,
   ...SETTINGS_JAPANESE,
   ...RENDERER_JAPANESE,
+  ...DASHBOARD_JAPANESE,
   databaseCreateError: 'エラー：データベースを作成できませんでした。($1)',
   exit: '終了',
   zoomIn: '拡大',

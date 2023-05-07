@@ -6,10 +6,12 @@
   "include": [
     "src/main.ts",
     "src/modules_main/preload.ts",
-    "src/modules_main/preload_settings.ts"
+    "src/modules_main/preload_settings.ts",
+    "src/modules_main/preload_dashboard.ts"
   ],
   "exclude": [
     "src/dialog_settings/*",
+    "src/dashboard/*",
     "src/modules_renderer/*"    
   ]
 }

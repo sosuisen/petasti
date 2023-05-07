@@ -62,6 +62,7 @@ import {
   moveCardOutsideFromRightForCopy,
   moveCardOutsideFromRightForMove,
 } from './card_locator';
+import { openDashboard } from './dashboard';
 
 type AccelCheck = {
   prevTime: number;
@@ -1304,6 +1305,9 @@ export class Card implements ICard {
       }
       globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
         this._note.tray.popUpContextMenu();
+      });
+      globalShortcut.registerAll([`CommandOrControl+${opt}+Shift+Enter`], () => {
+        openDashboard(this._note);
       });
       // 'F'ront
       globalShortcut.registerAll([`CommandOrControl+${opt}+F`], () => {

@@ -1,0 +1,39 @@
+@font-face {
+	font-family: 'tegaki_zatsu';
+	src: url(./851tegaki_zatsu_normal_0883.ttf);
+}
+
+body {
+  font-family: tegaki_zatsu;
+}
+
+.previousActivePage {
+  transform-origin: left top;
+  animation: flip 0.5s linear 1;
+  opacity: 1.0;
+  transform: rotateZ(-3deg);    
+}
+
+@keyframes flip {
+  0% { transform:rotateZ(0) rotateY(45deg); opacity: 0.7; z-index: 1000; }
+  20% { transform:rotateZ(180deg) rotateY(270deg); opacity: 0.7; }  
+  100% { transform:rotateZ(270deg) rotateY(315deg); opacity: 0.4; z-index: 100; }    
+}
+
+.activePage {
+  transform-origin: left top;
+  animation: fluffy1 0.5s ease-out 1 ;  
+}
+
+@keyframes fluffy1 {
+  0% { transform:rotateZ(-5deg) translateX(15px) }
+  20% { transform:rotateZ(3deg) translateX(0px) }
+  60% { transform:rotateZ(-1deg) translateX(0px) }
+  80% { transform:rotateZ(1deg) translateX(0px) }  
+  100% { transform:rotateZ(0) translateX(0px) }  
+}
+
+.inactivePage {
+  opacity: 1.0;
+  transform: rotateZ(-5deg);  
+}

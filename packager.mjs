@@ -17,7 +17,7 @@ const createInstaller = async () => {
   // iconUrl must be a url that start with http or https. Squirrel cannot accept a local file.
   const iconUrl = 'https://raw.githubusercontent.com/sosuisen/petasti-project/main/assets/petasti-icon.ico';
 
-  const copyright = '© 2022 Hidekazu Kubota';
+  const copyright = '© 2023 Hidekazu Kubota';
 
   await packager({
     dir: '.',

@@ -1,0 +1,8 @@
+.settingPageTemplate {
+  position: absolute;
+  margin: 0px;
+  padding: 32px;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 5px 5px 10px 0 rgba(0,0,0, .5);  
+}

@@ -1,23 +1,10 @@
 const cssModulesScopedName = '[path]___[name]__[local]___[hash:base64:5]';
 
-const createElectronReloadWebpackPlugin = require('electron-reload-webpack-plugin');
-
 const { merge } = require('webpack-merge');
 const common = require('./webpack.dashboard.common.js');
 
-// Create one plugin for both renderer and main process
-const electronReloadWebpackPlugin = createElectronReloadWebpackPlugin({
-  // Path to `package.json` file with main field set to main process file path, or just main process file path
-  path: './',
-  // or just `path: './'`,
-  // Other 'electron-connect' options
-  logLevel: 0,
-});
-
 module.exports = merge(common, {
-  mode: 'development',
-  devtool: 'inline-source-map',
-  plugins: [electronReloadWebpackPlugin('electron-renderer')],
+  mode: 'production',
 
   module: {
     rules: [
@@ -40,15 +27,10 @@ module.exports = merge(common, {
           {
             loader: 'ts-loader',
             options: {
-              configFile: 'tsconfig.dashboard.development.json',
+              configFile: 'tsconfig.dashboard.production.json',
             },
           },
         ],
-      },
-      {
-        enforce: 'pre',
-        test: /\.js$/,
-        loader: 'source-map-loader',
       },
       {
         test: /\.css$/,

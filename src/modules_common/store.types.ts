@@ -34,6 +34,9 @@ export const soundSrcDir = path.join(__dirname, `../../sounds_main/`);
 export const defaultSoundDir = defaultDataDir + '/sounds/';
 
 /**
+ * Setting Dialog
+ */
+/**
  * Temporal State
  */
 export type InfoState = {
@@ -129,3 +132,12 @@ export type AppPutAction = {
 export type TemporalSettingsAction = MessagesPutAction | AppPutAction;
 
 export type SettingsDialogAction = PersistentSettingsAction | TemporalSettingsAction;
+
+/**
+ * Dashboard
+ */
+export type DashboardState = {
+  info: InfoState;
+};
+
+export type TemporalDashboardAction = MessagesPutAction | AppPutAction;

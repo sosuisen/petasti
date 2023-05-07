@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig-base-react",
+  "include": [
+    "src/dashboard/*",
+    "src/modules_common/*"
+  ]  
+}
