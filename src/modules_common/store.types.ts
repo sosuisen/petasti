@@ -132,12 +132,3 @@ export type AppPutAction = {
 export type TemporalSettingsAction = MessagesPutAction | AppPutAction;
 
 export type SettingsDialogAction = PersistentSettingsAction | TemporalSettingsAction;
-
-/**
- * Dashboard
- */
-export type DashboardState = {
-  info: InfoState;
-};
-
-export type TemporalDashboardAction = MessagesPutAction | AppPutAction;

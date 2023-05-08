@@ -5,3 +5,8 @@
   padding: 3px;
   border: 1px solid #909090;
 }
+
+.resultArea {
+  font-family:  sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';  
+  font-size: 12px;
+}

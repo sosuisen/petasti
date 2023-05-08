@@ -9,6 +9,7 @@ import { JsonDoc } from 'git-documentdb';
 import { InfoState } from '../modules_common/store.types';
 import { Dashboard, DashboardProps } from './Dashboard';
 import { dashboardStore } from './store';
+import { SearchResult } from '../modules_common/search.types';
 
 // window.document.addEventListener('DOMContentLoaded', onready);
 
@@ -74,16 +75,23 @@ window.addEventListener('message', event => {
     case 'search-result-note-and-card': {
       const noteDocs = event.data.noteResults as JsonDoc[];
       const cardDocs = event.data.cardResults as JsonDoc[];
-      console.log(JSON.stringify(noteDocs.map(doc => doc.name)));
-      console.log(JSON.stringify(cardDocs.map(doc => doc._body.substr(100))));
-
-      // 結果をdispatchするべし。
-      /*
-      dashboardStore.dispatch({
-        type: 'info-init',
-        payload: info,
+      const noteList = noteDocs.map(doc => {
+        const label: SearchResult = { type: 'note', text: doc.name };
+        return label;
       });
-      */
+      const cardList = cardDocs.map(doc => {
+        const label: SearchResult = {
+          type: 'card',
+          text: doc._body.substr(0, 40).replace(/&nbps;/,' '),
+        };
+        return label;
+      });
+
+      dashboardStore.dispatch({
+        type: 'search-result-show',
+        payload: [...noteList, ...cardList],
+      });
+
       break;
     }
     default:
