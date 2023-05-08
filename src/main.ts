@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 /**
  * Petasti
  * © 2023 Hidekazu Kubota
@@ -43,6 +44,8 @@ import {
   moveCardOutsideFromBottom,
   moveCardOutsideFromTop,
 } from './modules_main/card_locator';
+import { openDashboard } from './modules_main/dashboard';
+import { addDashboardHandler } from './modules_main/dashboard_eventhandler';
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -163,6 +166,7 @@ const startApp = async (isRestart: boolean) => {
 
   if (!isRestart) {
     addSettingsHandler(note);
+    addDashboardHandler(note);
   }
 
   /**
@@ -174,6 +178,15 @@ const startApp = async (isRestart: boolean) => {
    * Initialize URL schema
    */
   initializeUrlSchema(note);
+
+  // for debug
+  if (
+    !app.isPackaged &&
+    process.env.NODE_ENV === 'development' &&
+    process.env.DASHBOARD === 'open'
+  ) {
+    openDashboard(note);
+  }
 };
 
 app.on('ready', () => {

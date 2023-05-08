@@ -10,7 +10,7 @@ contextBridge.exposeInMainWorld('api', {
    * Command from Renderer process
    */
   db: (command: DatabaseCommand) => {
-    return ipcRenderer.invoke('db-settings', command);
+    return ipcRenderer.invoke('db-dashboard', command);
   },
 });
 
@@ -23,4 +23,11 @@ ipcRenderer.on('initialize-store', (event, info, settings) => {
 
 ipcRenderer.on('update-info', (event, info) => {
   window.postMessage({ command: 'update-info', info }, 'file://');
+});
+
+ipcRenderer.on('search-result-note-and-card', (event, noteResults, cardResults) => {
+  window.postMessage(
+    { command: 'search-result-note-and-card', noteResults, cardResults },
+    'file://'
+  );
 });

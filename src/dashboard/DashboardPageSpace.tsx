@@ -18,7 +18,6 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
 
   return (
     <DashboardPageTemplate item={props.item} index={props.index}>
-      <p>{messages.aboutCopyright}</p>
       <p>
         <a href={messages.aboutAppUrl} target='_blank'>
           {messages.aboutAppUrl}

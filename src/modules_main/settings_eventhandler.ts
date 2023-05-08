@@ -31,6 +31,7 @@ import { initSync } from './sync';
 import { getCurrentDateAndTime } from '../modules_common/utils';
 import { defaultDataDir } from '../modules_common/store.types';
 import { Geometry } from '../modules_common/types';
+import { dashboard } from './dashboard';
 
 export const addSettingsHandler = (note: INote) => {
   // Request from settings dialog
@@ -55,6 +56,7 @@ export const addSettingsHandler = (note: INote) => {
         note.info.messages = note.translations.messages();
         setMessages(note.info.messages);
         settingsDialog.webContents.send('update-info', note.info);
+        dashboard.webContents.send('update-info', note.info);
 
         emitter.emit('updateTrayContextMenu');
 

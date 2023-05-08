@@ -28,7 +28,7 @@ export const openDashboard = (note: INote) => {
       contextIsolation: true,
     },
     width: 800,
-    height: 360,
+    height: 480,
     maximizable: false,
     fullscreenable: false,
     autoHideMenuBar: true,

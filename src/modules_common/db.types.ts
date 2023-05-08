@@ -93,6 +93,11 @@ export type DatabaseRebuildIndex = {
   command: 'rebuild-index';
 };
 
+export type DatabaseSearchNoteAndCard = {
+  command: 'search-note-and-card';
+  data: string;
+};
+
 export type DatabaseCommand =
   | DatabaseCardBodyUpdate
   | DatabaseCardSketchUpdate
@@ -110,4 +115,5 @@ export type DatabaseCommand =
   | DatabaseResumeSync
   | DatabaseExportData
   | DatabaseImportData
-  | DatabaseRebuildIndex;
+  | DatabaseRebuildIndex
+  | DatabaseSearchNoteAndCard;

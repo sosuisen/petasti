@@ -44,7 +44,7 @@ export function DashboardTitle (props: DashboardTitleProps) {
       <h1 styleName='title'>
         <div styleName='draggable'>
           <div style={{ float: 'left' }}>
-            <span style={{ color: '#909090' }} className='fas fa-cog'></span>&nbsp;&nbsp;
+            <span style={{ color: '#909090' }} className='fas fa-tachometer-alt'></span>&nbsp;&nbsp;
             {messages[props.title]}
           </div>
         </div>

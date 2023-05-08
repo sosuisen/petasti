@@ -5,7 +5,8 @@
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { DashboardState, InfoState } from '../modules_common/store.types';
+import { JsonDoc } from 'git-documentdb';
+import { InfoState } from '../modules_common/store.types';
 import { Dashboard, DashboardProps } from './Dashboard';
 import { dashboardStore } from './store';
 
@@ -34,18 +35,18 @@ window.addEventListener('message', event => {
             {
               id: 'search',
               label: 'dashboardPageSearch',
-              icon: 'fas fa-share-square',
+              icon: 'fas fa-search',
               color: 'yellow',
               width: 450,
-              height: 270,
+              height: 350,
             },
             {
               id: 'space',
               label: 'dashboardPageSpace',
-              icon: 'fas fa-shield-alt',
+              icon: 'fas fa-th',
               color: 'purple',
-              width: 350,
-              height: 270,
+              width: 440,
+              height: 370,
             } /*,
             {
               id: 'card',
@@ -68,6 +69,13 @@ window.addEventListener('message', event => {
         },
       };
       ReactDOM.render(React.createElement(Dashboard, props), domContainer);
+      break;
+    }
+    case 'search-result-note-and-card': {
+      const noteDocs = event.data.noteResults as JsonDoc[];
+      const cardDocs = event.data.cardResults as JsonDoc[];
+      console.log(JSON.stringify(noteDocs.map(doc => doc.name)));
+      console.log(JSON.stringify(cardDocs.map(doc => doc._body.substr(100))));
       break;
     }
     default:

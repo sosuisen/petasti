@@ -125,6 +125,7 @@ type MessagesDashboard = {
   dashboard: string;
   dashboardPageSearch: string;
   dashboardPageSpace: string;
+  dashboardSpaceOrKeyword: string;
 };
 
 type MessagesLanguage = {
@@ -240,6 +241,7 @@ const DASHBOARD_ENGLISH: MessagesDashboard = {
   dashboard: 'Dashboard',
   dashboardPageSearch: 'Search',
   dashboardPageSpace: 'Space',
+  dashboardSpaceOrKeyword: 'Space name or keyword',
 };
 
 export const messageLabelsForRenderer: MessageLabelRenderer[] = Object.keys(
@@ -396,6 +398,7 @@ const DASHBOARD_JAPANESE: MessagesDashboard = {
   dashboard: 'ダッシュボード',
   dashboardPageSearch: '検索',
   dashboardPageSpace: 'スペース',
+  dashboardSpaceOrKeyword: 'スペース名またはキーワード',
 };
 
 export const JAPANESE: Messages = {
