@@ -76,6 +76,14 @@ window.addEventListener('message', event => {
       const cardDocs = event.data.cardResults as JsonDoc[];
       console.log(JSON.stringify(noteDocs.map(doc => doc.name)));
       console.log(JSON.stringify(cardDocs.map(doc => doc._body.substr(100))));
+
+      // 結果をdispatchするべし。
+      /*
+      dashboardStore.dispatch({
+        type: 'info-init',
+        payload: info,
+      });
+      */
       break;
     }
     default:
