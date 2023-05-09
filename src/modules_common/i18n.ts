@@ -153,23 +153,23 @@ const LANGUAGES_COMMON: MessagesLanguage = {
 };
 
 const NOTE_ENGLISH: MessagesNote = {
-  note: 'Note',
-  noteNew: 'New note...',
+  note: 'Space',
+  noteNew: 'New space...',
   firstNoteName: '#Workspace',
-  noteName: 'Note $1',
+  noteName: 'Space $1',
   noteMove: 'Move to',
   noteCopy: 'Mirror to',
-  noteCardExist: 'Card already exists on the note.',
-  noteRename: 'Rename this note',
-  noteDelete: 'Delete this note',
+  noteCardExist: 'Card already exists on the space.',
+  noteRename: 'Rename this space',
+  noteDelete: 'Delete this space',
   noteCannotDelete:
-    'To delete note, delete all cards in this note or move them to another note.',
-  noteNewName: 'Enter new note name',
-  noteDuplicate: 'Duplicate this note',
-  noteNewNameDuplicate: 'Enter duplicated note name',
-  residentNoteName: 'Resident note',
-  noteCopyUrlToClipboard: 'Copy note URL',
-  noteCreateLink: 'Create link to note',
+    'To delete space, delete all cards in this space or move them to another space.',
+  noteNewName: 'Enter new space name',
+  noteDuplicate: 'Duplicate this space',
+  noteNewNameDuplicate: 'Enter duplicated space name',
+  residentNoteName: 'Resident space',
+  noteCopyUrlToClipboard: 'Copy space URL',
+  noteCreateLink: 'Create link to space',
 };
 
 const SETTINGS_ENGLISH: MessagesSettings = {
@@ -216,20 +216,20 @@ const SETTINGS_ENGLISH: MessagesSettings = {
     'Synchronization has been stopped. Before resuming synchronization again, please delete the remote repository that is currently being synchronized. If you do not delete it, the data in the remote repository will be merged into the imported data after the synchronization.',
   importingDataProgressBarTitle: 'Importing...',
   importingDataProgressBarBody:
-    'Please do not manipulate the cards or notes during the import process.',
+    'Please do not manipulate the cards or spaces during the import process.',
   importingDataProgressBarProgress: 'Import $1 out of $2',
   synchronizingProgressBarTitle: 'Synchronizing...',
   synchronizingProgressBarBody: 'Checking remote data...',
   startingAppProgressBarTitle: 'Starting...',
-  loadingNoteBookProgressBarBody: 'Checking notes...',
+  loadingNoteBookProgressBarBody: 'Checking spaces...',
   loadingNoteProgressBarTitle: 'Loading...',
   loadingNoteProgressBarBody: 'Loading cards...',
-  duplicatingNoteProgressBarTitle: 'Duplicating note...',
+  duplicatingNoteProgressBarTitle: 'Duplicating space...',
   duplicatingNoteProgressBarBody: 'Duplicating all cards...',
   completed: 'Completed',
   loadingNoteFailed: 'Failed to load cards.',
   exportDataAlert:
-    'Only current cards, notes, and snapshots will be exported. Past changes and deleted data will not be included.',
+    'Only current cards, spaces, and snapshots will be exported. Past changes and deleted data will not be included.',
   rebuildIndexLabel: 'Rebuild index',
   rebuildIndexButton: 'Rebuild',
 };
@@ -310,23 +310,23 @@ export const ENGLISH: Messages = {
 };
 
 const NOTE_JAPANESE: MessagesNote = {
-  note: 'ノート',
-  noteNew: '新規ノート...',
+  note: 'スペース',
+  noteNew: '新規スペース...',
   firstNoteName: '#ワークスペース',
-  noteName: 'ノート $1',
+  noteName: 'スペース $1',
   noteMove: '移動',
   noteCopy: '分身をコピー',
   noteCardExist: 'コピー先には既に分身があります。',
-  noteRename: 'ノート名を変更',
-  noteDelete: 'このノートを削除',
+  noteRename: 'スペース名を変更',
+  noteDelete: 'このスペースを削除',
   noteCannotDelete:
-    'ノートを削除するには、このノートのカードを全て削除するか他のノートへ移動してください。',
-  noteNewName: '新しいノート名を入力してください',
-  noteDuplicate: 'ノートを複製',
-  noteNewNameDuplicate: '複製先のノート名を入力してください',
-  residentNoteName: '常駐ノート',
-  noteCopyUrlToClipboard: 'ノートのURLをコピー',
-  noteCreateLink: 'ノートへのリンクを作成',
+    'スペースを削除するには、このスペースのカードを全て削除するか他のスペースへ移動してください。',
+  noteNewName: '新しいスペース名を入力してください',
+  noteDuplicate: 'スペースを複製',
+  noteNewNameDuplicate: '複製先のスペース名を入力してください',
+  residentNoteName: '常駐スペース',
+  noteCopyUrlToClipboard: 'スペースのURLをコピー',
+  noteCreateLink: 'スペースへのリンクを作成',
 };
 
 const SETTINGS_JAPANESE: MessagesSettings = {
@@ -374,20 +374,20 @@ const SETTINGS_JAPANESE: MessagesSettings = {
     '同期を停止しました。同期を再開する前に、現在の同期先のリモートリポジトリを削除してください。削除しない場合、同期時にリモートリポジトリのデータがインポートしたデータへ結合されます。',
   importingDataProgressBarTitle: 'インポート中...',
   importingDataProgressBarBody:
-    'インポート処理中はカードやノートを操作しないようお願いします。',
+    'インポート処理中はカードやスペースを操作しないようお願いします。',
   importingDataProgressBarProgress: '$2 個のうち $1 個をインポートしました',
   synchronizingProgressBarTitle: '同期中...',
   synchronizingProgressBarBody: 'リモートのデータを確認しています...',
   startingAppProgressBarTitle: '起動中...',
-  loadingNoteBookProgressBarBody: 'ノートのデータを確認しています...',
+  loadingNoteBookProgressBarBody: 'スペースのデータを確認しています...',
   loadingNoteProgressBarTitle: '読み込み中...',
   loadingNoteProgressBarBody: 'カードを読み込み中...',
-  duplicatingNoteProgressBarTitle: 'ノートを複製中...',
+  duplicatingNoteProgressBarTitle: 'スペースを複製中...',
   duplicatingNoteProgressBarBody: '全カードを複製しています...',
   completed: '完了しました',
   loadingNoteFailed: 'カードの読み込みを失敗しました',
   exportDataAlert:
-    '現在のカード、ノート、スナップショットのみエクスポートされます。過去の変更履歴や削除されたデータは含まれません。',
+    '現在のカード、スペース、スナップショットのみエクスポートされます。過去の変更履歴や削除されたデータは含まれません。',
   rebuildIndexLabel: 'インデックス再構築',
   rebuildIndexButton: '再構築',
 };

@@ -64,6 +64,9 @@ export const addDashboardHandler = (note: INote) => {
         openURL(url);
         break;
       }
+      case 'dashboard-create-note': {
+        break;
+      }
     }
   });
 };

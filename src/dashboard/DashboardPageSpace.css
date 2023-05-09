@@ -11,7 +11,21 @@
   font-size: 12px;
 
   width: 450px;
-  height: 330px;
+  height: 300px;
   overflow-y: auto;
   padding: 3px;
+}
+
+.newSpaceButton {
+  color: '#000000';
+  cursor: 'pointer'; 
+  float: left;
+  height: 30px;
+  margin-left: 0px;
+  margin-bottom: 7px;
+  border-radius: 7px;
+  border: 0px;
+  cursor: pointer;
+  box-shadow: 3px 3px 10px 0 rgba(128, 96, 96, 0.7);  
+  font-weight: bold;  
 }

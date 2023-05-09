@@ -8,4 +8,8 @@ export type DashboardChangeNote = {
   url: string;
 };
 
-export type DashboardCommand = DashboardChangeNote;
+export type DashboardCreateNote = {
+  command: 'dashboard-create-note';
+};
+
+export type DashboardCommand = DashboardChangeNote | DashboardCreateNote;

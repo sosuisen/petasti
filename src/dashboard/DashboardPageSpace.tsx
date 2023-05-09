@@ -14,6 +14,7 @@ import window from './window';
 import { dashboardStore } from './store';
 import { localContext, LocalProvider } from './store_local';
 import { openAnotherTab } from './utils';
+import { uiColors } from '../modules_common/color';
 
 export interface DashboardPageSpaceProps {
   item: MenuItemProps;
@@ -142,8 +143,23 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
     ></SearchResult>
   ));
 
+  window.api.dashboard({
+    command: 'dashboard-create-note',
+  });
+  const newSpaceButtonOnClick = () => {};
+
   return (
     <DashboardPageTemplate item={props.item} index={props.index}>
+      <button
+        styleName='newSpaceButton'
+        onClick={newSpaceButtonOnClick}
+        style={{
+          backgroundColor: uiColors.yellow,
+        }}
+      >
+        <i className='fas fa-plus-circle'></i>&nbsp;&nbsp;
+        <span>{messages.noteNew}</span>
+      </button>
       <input
         ref={inputEl}
         type='text'
