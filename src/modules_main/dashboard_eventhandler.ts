@@ -12,6 +12,23 @@ import { openURL } from './url_schema';
 import { noteStore } from './note_store';
 import { MESSAGE } from './messages';
 import { cacheOfCard } from './card_cache';
+import {
+  getCardIdFromUrl,
+  getCurrentDateAndTime,
+  getRandomInt,
+} from '../modules_common/utils';
+import { cardColors } from '../modules_common/color';
+import { CardSketch, Geometry } from '../modules_common/types';
+import {
+  APP_SCHEME,
+  DEFAULT_CARD_CONDITION,
+  DEFAULT_CARD_GEOMETRY,
+  DEFAULT_CARD_LABEL,
+  DIALOG_BUTTON,
+} from '../modules_common/const';
+import { createCardWindow } from './card';
+import { noteZOrderUpdateCreator } from './note_action_creator';
+import { showConfirmDialog } from './utils_main';
 
 export const addDashboardHandler = (note: INote) => {
   // eslint-disable-next-line complexity
@@ -59,6 +76,7 @@ export const addDashboardHandler = (note: INote) => {
     }
   });
 
+  // eslint-disable-next-line complexity
   ipcMain.handle('dashboard', async (e, command: DashboardCommand) => {
     // eslint-disable-next-line default-case
     switch (command.command) {
@@ -98,6 +116,83 @@ export const addDashboardHandler = (note: INote) => {
 
         dashboard.webContents.send('search-result-note', noteDocs);
 
+        break;
+      }
+      case 'dashboard-clone-cards': {
+        const confirmResult = showConfirmDialog(
+          dashboard,
+          'question',
+          ['btnOK', 'btnCancel'],
+          'cloneCardsConfirmation'
+        );
+
+        if (confirmResult !== DIALOG_BUTTON.ok) {
+          return;
+        }
+
+        const searchResults = command.data;
+        for (const result of searchResults) {
+          const cardId = getCardIdFromUrl(result.url);
+
+          const geometry: Geometry = {
+            x: 20,
+            y: 20,
+            z: 0,
+            width: 250,
+            height: 250,
+          };
+          geometry.x += getRandomInt(30, 400);
+          geometry.y += getRandomInt(30, 400);
+          geometry.width += getRandomInt(0, 100);
+          geometry.width += getRandomInt(0, 100);
+
+          const bgColor: string = cardColors.white;
+
+          const newUrl = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
+
+          const current = getCurrentDateAndTime();
+          const date = {
+            createdDate: current,
+            modifiedDate: current,
+          };
+
+          const cardSketch: CardSketch = {
+            geometry,
+            style: {
+              uiColor: bgColor,
+              backgroundColor: bgColor,
+              opacity: 1.0,
+              zoom: 1.0,
+            },
+            condition: DEFAULT_CARD_CONDITION,
+            label: DEFAULT_CARD_LABEL,
+            collapsedList: [],
+            date,
+            _id: `note/${note.settings.currentNoteId}/${cardId}`,
+          };
+
+          note
+            .createCardSketch(newUrl, cardSketch, true)
+            .then(() => {
+              return note.cardCollection.get(getCardIdFromUrl(newUrl));
+            })
+            .then(cardBody => {
+              createCardWindow(note, newUrl, cardBody!, cardSketch);
+            })
+            // createCardSketch throws error when the same sketch exists.
+            .catch(() => {});
+          // Update zOrder of target note asynchronously
+          if (note.settings.saveZOrder) {
+            const noteId = note.settings.currentNoteId;
+            const zOrder = [...noteStore.getState().get(noteId)!.zOrder];
+            if (!zOrder.includes(newUrl)) {
+              zOrder.push(newUrl);
+              noteStore.dispatch(
+                noteZOrderUpdateCreator(note, noteId, zOrder, 'local', undefined, true)
+              );
+            }
+          }
+        }
         break;
       }
     }

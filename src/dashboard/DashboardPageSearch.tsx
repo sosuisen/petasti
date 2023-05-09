@@ -126,6 +126,13 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     }
   };
 
+  const onCloneAllButtonClick = () => {
+    window.api.dashboard({
+      command: 'dashboard-clone-cards',
+      data: searchResult.list.filter(result => result.type === 'card'),
+    });
+  };
+
   const results = searchResult.list.map((result, index: number) => (
     <SearchResult
       text={result.text}
@@ -148,6 +155,9 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
         onChange={onSearchFieldChanged}
         onKeyDown={onSearchFieldKeyDown}
       ></input>
+      <div styleName='cloneAllButton' onClick={onCloneAllButtonClick}>
+        <i className='fas fa-file-download'></i>
+      </div>
       <div id='resultArea' styleName='resultArea'>
         {results}
       </div>

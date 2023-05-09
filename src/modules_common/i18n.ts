@@ -127,6 +127,7 @@ type MessagesDashboard = {
   dashboardPageSpace: string;
   dashboardInputSpaceOrKeyword: string;
   dashboardInputSpace: string;
+  cloneCardsConfirmation: string;
 };
 
 type MessagesLanguage = {
@@ -244,6 +245,8 @@ const DASHBOARD_ENGLISH: MessagesDashboard = {
   dashboardPageSpace: 'Space',
   dashboardInputSpaceOrKeyword: 'Input space name or keyword',
   dashboardInputSpace: 'Input space name',
+  cloneCardsConfirmation:
+    'Clone all search result cards to this space. Are you sure you want to proceed?',
 };
 
 export const messageLabelsForRenderer: MessageLabelRenderer[] = Object.keys(
@@ -402,6 +405,8 @@ const DASHBOARD_JAPANESE: MessagesDashboard = {
   dashboardPageSpace: 'スペース',
   dashboardInputSpaceOrKeyword: 'スペース名またはキーワードを入力',
   dashboardInputSpace: 'スペース名を入力',
+  cloneCardsConfirmation:
+    '検索結果のカードを全てこのスペースへクローンします。進めてよろしいですか？',
 };
 
 export const JAPANESE: Messages = {
