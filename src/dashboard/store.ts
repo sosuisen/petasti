@@ -15,6 +15,8 @@ import {
   SearchResultNoteAndCardActions,
   SearchResultNoteAndCardState,
   SearchResultNoteState,
+  SelectedCardAction,
+  SelectedCardState,
 } from '../modules_common/search.types';
 
 const infoReducer = (
@@ -85,10 +87,36 @@ const searchResultNoteReducer = (
   }
 };
 
+const selectedCardReducer = (
+  // eslint-disable-next-line default-param-last
+  state: SelectedCardState = {
+    card: {},
+    sketches: [],
+  },
+  action: SelectedCardAction
+) => {
+  // eslint-disable-next-line default-case
+  switch (action.type) {
+    case 'set-selected-card':
+      return {
+        card: JSON.parse(JSON.stringify(action.payload)),
+        sketches: JSON.parse(JSON.stringify(state.sketches)),
+      };
+    case 'set-selected-card-reference':
+      return {
+        card: JSON.parse(JSON.stringify(state.card)),
+        sketches: JSON.parse(JSON.stringify(action.payload)),
+      };
+    default:
+      return state;
+  }
+};
+
 export const dashboardReducer = combineReducers({
   info: infoReducer,
   searchResultNoteAndCard: searchResultNoteAndCardReducer,
   searchResultNote: searchResultNoteReducer,
+  selectedCard: selectedCardReducer,
 });
 
 type IAppDispatch = ThunkDispatch<DashboardState, any, DashboardAction>;

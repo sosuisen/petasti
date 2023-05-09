@@ -15,3 +15,7 @@ export const selectorSearchResultNoteAndCard = (state: DashboardState) => {
 export const selectorSearchResultNote = (state: DashboardState) => {
   return state.searchResultNote;
 };
+
+export const selectorSelectedCard = (state: DashboardState) => {
+  return state.selectedCard;
+};

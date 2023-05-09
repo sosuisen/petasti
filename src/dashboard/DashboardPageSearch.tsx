@@ -8,12 +8,18 @@ import './DashboardPageSearch.css';
 import { useEffect, useRef } from 'react';
 import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
-import { selectorMessages, selectorSearchResultNoteAndCard } from './selector';
+import {
+  selectorMessages,
+  selectorSearchResultNoteAndCard,
+  selectorSelectedCard,
+} from './selector';
 import window from './window';
 import { SearchResult } from './SearchResult';
+import { SearchResult as SearchResultType } from '../modules_common/search.types';
+
 import { dashboardStore } from './store';
 import { LocalAction, localContext, LocalProvider } from './store_local';
-import { getRandomInt } from '../modules_common/utils';
+import { getRandomInt, getUrlFromCardId } from '../modules_common/utils';
 import { openAnotherTab } from './utils';
 
 export interface DashboardPageSearchProps {
@@ -26,6 +32,8 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const searchResult = useSelector(selectorSearchResultNoteAndCard);
   const [state, dispatch]: LocalProvider = React.useContext(localContext);
   const inputEl = useRef(null);
+
+  const selectedCard = useSelector(selectorSelectedCard);
 
   const postfix = '-note-and-card';
 
@@ -133,6 +141,25 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     });
   };
 
+  const closeCardButtonOnClick = () => {
+    dashboardStore.dispatch({
+      type: 'set-selected-card',
+      payload: {},
+    });
+  };
+
+  const cloneCardButtonOnClick = () => {
+    const result: SearchResultType = {
+      type: 'card',
+      text: '',
+      url: getUrlFromCardId(selectedCard.card._id),
+    };
+    window.api.dashboard({
+      command: 'dashboard-clone-cards',
+      data: [result],
+    });
+  };
+
   const results = searchResult.list.map((result, index: number) => (
     <SearchResult
       text={result.text}
@@ -160,6 +187,27 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
       </div>
       <div id='resultArea' styleName='resultArea'>
         {results}
+      </div>
+      <div
+        id='cardPanel'
+        styleName={`cardPanel ${
+          Object.keys(selectedCard.card).length > 0 ? 'visible' : 'hidden'
+        }`}
+      >
+        <div id='cardPanelTool' styleName='cardPanelTool'>
+          <div styleName='closeCardButton' onClick={closeCardButtonOnClick}>
+            <span className='fas fa-window-close'></span>
+          </div>
+          <div styleName='cloneCardButton' onClick={cloneCardButtonOnClick}>
+            <span className='fas fa-file-download'></span>
+          </div>
+        </div>
+        <textarea
+          id='cardArea'
+          styleName='cardArea'
+          value={selectedCard.card._body}
+        ></textarea>
+        <div id='referenceArea' styleName='referenceArea'></div>
       </div>
     </DashboardPageTemplate>
   );

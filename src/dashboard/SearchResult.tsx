@@ -19,10 +19,16 @@ export interface SearchResultProps {
 
 export function SearchResult (props: SearchResultProps) {
   const handleClick = () => {
+    const url = props.url;
     if (props.type === 'note') {
-      const url = props.url;
       window.api.dashboard({
         command: 'dashboard-change-note',
+        url,
+      });
+    }
+    else {
+      window.api.dashboard({
+        command: 'dashboard-open-card',
         url,
       });
     }

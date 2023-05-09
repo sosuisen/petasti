@@ -19,7 +19,13 @@ export type DashboardCloneCards = {
   data: SearchResult[];
 };
 
+export type DashboardOpenCard = {
+  command: 'dashboard-open-card';
+  url: string;
+};
+
 export type DashboardCommand =
   | DashboardChangeNote
   | DashboardCreateNote
-  | DashboardCloneCards;
+  | DashboardCloneCards
+  | DashboardOpenCard;

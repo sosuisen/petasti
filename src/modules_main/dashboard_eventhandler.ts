@@ -91,6 +91,14 @@ export const addDashboardHandler = (note: INote) => {
         openURL(url);
         break;
       }
+      case 'dashboard-open-card': {
+        const url = command.url;
+        const cardProp = await note.cardCollection.get(getCardIdFromUrl(url));
+        if (cardProp) {
+          dashboard.webContents.send('open-card', cardProp);
+        }
+        break;
+      }
       case 'dashboard-create-note': {
         const newName: string | void | null = await prompt({
           title: MESSAGE('note'),
@@ -125,15 +133,19 @@ export const addDashboardHandler = (note: INote) => {
         break;
       }
       case 'dashboard-clone-cards': {
-        const confirmResult = showConfirmDialog(
-          dashboard,
-          'question',
-          ['btnOK', 'btnCancel'],
-          'cloneCardsConfirmation'
-        );
+        const searchResults = command.data;
 
-        if (confirmResult !== DIALOG_BUTTON.ok) {
-          return;
+        if (searchResults.length > 1) {
+          const confirmResult = showConfirmDialog(
+            dashboard,
+            'question',
+            ['btnOK', 'btnCancel'],
+            'cloneCardsConfirmation'
+          );
+
+          if (confirmResult !== DIALOG_BUTTON.ok) {
+            return;
+          }
         }
 
         let zOrder: ZOrder;
@@ -141,7 +153,6 @@ export const addDashboardHandler = (note: INote) => {
           zOrder = [...noteStore.getState().get(note.settings.currentNoteId)!.zOrder];
         }
 
-        const searchResults = command.data;
         for (const result of searchResults) {
           const cardId = getCardIdFromUrl(result.url);
 

@@ -124,6 +124,14 @@ window.addEventListener('message', event => {
       });
       break;
     }
+    case 'open-card': {
+      const cardProp = event.data.cardProp;
+      dashboardStore.dispatch({
+        type: 'set-selected-card',
+        payload: cardProp,
+      });
+      break;
+    }
     default:
       break;
   }

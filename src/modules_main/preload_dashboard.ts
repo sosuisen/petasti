@@ -43,3 +43,7 @@ ipcRenderer.on('search-result-note', (event, noteResults) => {
 ipcRenderer.on('get-all-notes', (event, noteResults) => {
   window.postMessage({ command: 'get-all-notes', noteResults }, 'file://');
 });
+
+ipcRenderer.on('open-card', (event, cardProp) => {
+  window.postMessage({ command: 'open-card', cardProp }, 'file://');
+});

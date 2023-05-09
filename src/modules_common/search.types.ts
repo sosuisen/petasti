@@ -1,3 +1,4 @@
+import { JsonDoc } from 'git-documentdb';
 import { AppPutAction, InfoState, MessagesPutAction } from './store.types';
 
 /**
@@ -53,12 +54,33 @@ export type SearchResultNoteActions = SearchResultNoteAction | SearchResultSelec
 
 export type SearchResultAction = SearchResultNoteAndCardActions | SearchResultNoteActions;
 
+export type SelectedCardState = {
+  card: JsonDoc;
+  sketches: string[];
+};
+
+export interface SelectedCardSetAction {
+  type: 'set-selected-card';
+  payload: JsonDoc;
+}
+export interface SelectedCardReferenceSetAction {
+  type: 'set-selected-card-reference';
+  payload: string[];
+}
+
+export type SelectedCardAction = SelectedCardSetAction | SelectedCardReferenceSetAction;
+
 export type DashboardState = {
   info: InfoState;
   searchResultNoteAndCard: SearchResultNoteAndCardState;
   searchResultNote: SearchResultNoteState;
+  selectedCard: SelectedCardState;
 };
 
-export type TemporalDashboardAction = MessagesPutAction | AppPutAction | SearchResultAction;
+export type TemporalDashboardAction =
+  | MessagesPutAction
+  | AppPutAction
+  | SearchResultAction
+  | SelectedCardAction;
 
 export type DashboardAction = DashboardInitAction | TemporalDashboardAction;
