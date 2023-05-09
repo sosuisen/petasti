@@ -159,8 +159,8 @@ const NOTE_ENGLISH: MessagesNote = {
   firstNoteName: '#Workspace',
   noteName: 'Space $1',
   noteMove: 'Move to',
-  noteCopy: 'Mirror to',
-  noteCardExist: 'Card already exists on the space.',
+  noteCopy: 'Clone to',
+  noteCardExist: 'Clone already exists on the space.',
   noteRename: 'Rename this space',
   noteDelete: 'Delete this space',
   noteCannotDelete:
@@ -318,8 +318,8 @@ const NOTE_JAPANESE: MessagesNote = {
   firstNoteName: '#ワークスペース',
   noteName: 'スペース $1',
   noteMove: '移動',
-  noteCopy: '分身をコピー',
-  noteCardExist: 'コピー先には既に分身があります。',
+  noteCopy: 'クローンを作成',
+  noteCardExist: 'コピー先には既にクローンがあります。',
   noteRename: 'スペース名を変更',
   noteDelete: 'このスペースを削除',
   noteCannotDelete:
