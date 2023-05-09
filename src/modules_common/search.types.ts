@@ -11,6 +11,7 @@ export interface DashboardInitAction {
 
 export type SearchResultState = {
   list: SearchResult[];
+  selected: number;
 };
 
 export type SearchResult = {

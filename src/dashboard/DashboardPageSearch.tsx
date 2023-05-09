@@ -32,12 +32,12 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     // dispatch(settingsLanguageUpdateCreator(value));
   };
 
-  const results = searchResult.list.map(result => (
+  const results = searchResult.list.map((result, index) => (
     <SearchResult
       click={handleClick}
       text={result.text}
       type={result.type}
-      selected={true}
+      selected={index === searchResult.selected}
     ></SearchResult>
   ));
 

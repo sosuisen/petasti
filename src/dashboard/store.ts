@@ -38,6 +38,7 @@ const searchResultReducer = (
   // eslint-disable-next-line default-param-last
   state: SearchResultState = {
     list: [],
+    selected: -1,
   },
   action: SearchResultShowAction
 ) => {
@@ -45,6 +46,7 @@ const searchResultReducer = (
     case 'search-result-show':
       return {
         list: JSON.parse(JSON.stringify(action.payload)),
+        selected: -1,
       };
     default:
       return state;

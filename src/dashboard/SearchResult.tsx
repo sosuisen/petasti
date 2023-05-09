@@ -20,7 +20,7 @@ export function SearchResult (props: SearchResultProps) {
     backgroundColor: uiColors[color],
   });
 
-  let color: ColorName = 'yellow';
+  let color: ColorName = 'white';
   if (props.selected) {
     color = 'green';
   }
