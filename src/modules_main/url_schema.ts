@@ -4,6 +4,7 @@ import { cacheOfCard, closeAllCards } from './card_cache';
 import { emitter } from './event';
 import { INote } from './note_types';
 import { closeSettings } from './settings';
+import { closeDashboard } from './dashboard';
 
 let note: INote;
 
@@ -20,6 +21,7 @@ export function openURL (url: string) {
       const noteId = resultNote[1];
       if (noteId !== note.settings.currentNoteId) {
         closeSettings();
+        closeDashboard();
         if (cacheOfCard.size === 0) {
           emitter.emit('change-note', noteId);
         }

@@ -83,6 +83,7 @@ import {
 } from './note_action_creator';
 import { Card } from './card';
 import { closeSettings } from './settings';
+import { closeDashboard } from './dashboard';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 GitDocumentDB.plugin(require('git-documentdb-plugin-remote-nodegit'));
@@ -804,6 +805,7 @@ class Note implements INote {
     note.changingToNoteId = 'restart';
     try {
       closeSettings();
+      closeDashboard();
       closeAllCards(note);
     } catch (error) {
       console.error(error);

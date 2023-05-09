@@ -41,7 +41,7 @@ import { INote } from './note_types';
 import { regExpResidentNote, showDialog } from './utils_main';
 import { noteStore } from './note_store';
 import { noteDeleteCreator, noteUpdateCreator } from './note_action_creator';
-import { openDashboard } from './dashboard';
+import { closeDashboard, openDashboard } from './dashboard';
 
 /**
  * Task tray
@@ -138,6 +138,7 @@ export const setTrayContextMenu = () => {
             click: () => {
               if (noteProp._id !== note.settings.currentNoteId) {
                 closeSettings();
+                closeDashboard();
                 if (cacheOfCard.size === 0) {
                   note.updateNoteZOrder();
                   emitter.emit('change-note', noteProp._id);
@@ -456,6 +457,7 @@ export const setTrayContextMenu = () => {
         click: () => {
           note.changingToNoteId = 'exit';
           closeSettings();
+          closeDashboard();
           if (cacheOfCard.size === 0) {
             emitter.emit('exit');
           }

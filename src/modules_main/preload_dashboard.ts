@@ -4,6 +4,7 @@
  */
 import { contextBridge, ipcRenderer } from 'electron';
 import { DatabaseCommand } from '../modules_common/db.types';
+import { DashboardCommand } from '../modules_common/dashboard.types';
 
 contextBridge.exposeInMainWorld('api', {
   /**
@@ -11,6 +12,9 @@ contextBridge.exposeInMainWorld('api', {
    */
   db: (command: DatabaseCommand) => {
     return ipcRenderer.invoke('db-dashboard', command);
+  },
+  dashboard: (command: DashboardCommand) => {
+    return ipcRenderer.invoke('dashboard', command);
   },
 });
 

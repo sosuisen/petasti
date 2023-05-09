@@ -10,6 +10,7 @@ import { InfoState } from '../modules_common/store.types';
 import { Dashboard, DashboardProps } from './Dashboard';
 import { dashboardStore } from './store';
 import { SearchResult } from '../modules_common/search.types';
+import { getUrlFromCardId, getUrlFromNoteId } from '../modules_common/utils';
 
 // window.document.addEventListener('DOMContentLoaded', onready);
 
@@ -76,13 +77,16 @@ window.addEventListener('message', event => {
       const noteDocs = event.data.noteResults as JsonDoc[];
       const cardDocs = event.data.cardResults as JsonDoc[];
       const noteList = noteDocs.map(doc => {
-        const label: SearchResult = { type: 'note', text: doc.name };
+        const url = getUrlFromNoteId(doc._id.replace(/\/prop$/, ''));
+        const label: SearchResult = { type: 'note', text: doc.name, url };
         return label;
       });
       const cardList = cardDocs.map(doc => {
+        const url = getUrlFromCardId(doc._id);
         const label: SearchResult = {
           type: 'card',
           text: doc._body.substr(0, 70).replaceAll('&nbsp;', ' '),
+          url,
         };
         return label;
       });

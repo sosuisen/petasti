@@ -31,7 +31,7 @@ import { initSync } from './sync';
 import { getCurrentDateAndTime } from '../modules_common/utils';
 import { defaultDataDir } from '../modules_common/store.types';
 import { Geometry } from '../modules_common/types';
-import { dashboard } from './dashboard';
+import { closeDashboard, dashboard } from './dashboard';
 
 export const addSettingsHandler = (note: INote) => {
   // Request from settings dialog
@@ -432,6 +432,7 @@ export const addSettingsHandler = (note: INote) => {
     note.changingToNoteId = 'restart';
     try {
       closeSettings();
+      closeDashboard();
       closeAllCards(note);
     } catch (error) {
       console.error(error);

@@ -11,7 +11,6 @@ import {
   DashboardAction,
   DashboardState,
   SearchResultAction,
-  SearchResultShowAction,
   SearchResultState,
 } from '../modules_common/search.types';
 

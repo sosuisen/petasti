@@ -58,7 +58,17 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   };
 
   const onSearchFieldKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'ArrowDown') {
+    if (event.key === 'Enter') {
+      const result = searchResult.list[searchResult.selected];
+      if (result.type === 'note') {
+        const url = result.url;
+        window.api.dashboard({
+          command: 'dashboard-change-note',
+          url,
+        });
+      }
+    }
+    else if (event.key === 'ArrowDown') {
       if (searchResult.selected < searchResult.list.length - 1) {
         if (searchResult.selected > 2) {
           setScrolltop(searchResult.selected + 1);
@@ -98,6 +108,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
       click={handleClick}
       text={result.text}
       type={result.type}
+      url={result.url}
       index={index}
       selected={index === searchResult.selected}
     ></SearchResult>

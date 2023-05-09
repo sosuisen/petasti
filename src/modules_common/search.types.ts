@@ -17,6 +17,7 @@ export type SearchResultState = {
 export type SearchResult = {
   type: 'note' | 'card';
   text: string;
+  url: string;
 };
 
 export interface SearchResultShowAction {

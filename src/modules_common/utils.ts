@@ -94,6 +94,10 @@ export const getUrlFromNoteId = (noteId: string): string => {
   return `${APP_SCHEME}://local/note/${noteId}`;
 };
 
+export const getUrlFromCardId = (cardId: string): string => {
+  return `${APP_SCHEME}://local/card/${cardId}`;
+};
+
 export const isLabelOpened = (status: LabelStatus): boolean => {
   if (status === 'openedLabel' || status === 'openedSticker') return true;
   return false;

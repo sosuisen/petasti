@@ -6,6 +6,8 @@ import { ipcMain } from 'electron';
 import { DatabaseCommand } from '../modules_common/db.types';
 import { INote } from './note_types';
 import { dashboard } from './dashboard';
+import { DashboardCommand } from '../modules_common/dashboard.types';
+import { openURL } from './url_schema';
 
 export const addDashboardHandler = (note: INote) => {
   // eslint-disable-next-line complexity
@@ -26,6 +28,17 @@ export const addDashboardHandler = (note: INote) => {
 
         dashboard.webContents.send('search-result-note-and-card', noteDocs, cardDocs);
 
+        break;
+      }
+    }
+  });
+
+  ipcMain.handle('dashboard', (e, command: DashboardCommand) => {
+    // eslint-disable-next-line default-case
+    switch (command.command) {
+      case 'dashboard-change-note': {
+        const url = command.url;
+        openURL(url);
         break;
       }
     }

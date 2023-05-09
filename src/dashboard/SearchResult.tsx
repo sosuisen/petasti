@@ -6,17 +6,27 @@ import * as React from 'react';
 import './SearchResult.css';
 import { ColorName, uiColors } from '../modules_common/color';
 import { dashboardStore } from './store';
+import window from './window';
 
 export interface SearchResultProps {
   click: (value: any) => void;
   text: string;
+  url: string;
   type: string;
   index: number;
   selected: boolean;
 }
 
 export function SearchResult (props: SearchResultProps) {
-  const handleClick = () => {};
+  const handleClick = () => {
+    if (props.type === 'note') {
+      const url = props.url;
+      window.api.dashboard({
+        command: 'dashboard-change-note',
+        url,
+      });
+    }
+  };
 
   const style = (color: ColorName) => ({
     backgroundColor: uiColors[color],
