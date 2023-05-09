@@ -447,6 +447,12 @@ export const setTrayContextMenu = () => {
         },
       },
       {
+        label: MESSAGE('dashboard'),
+        click: () => {
+          openDashboard(note);
+        },
+      },
+      {
         label: MESSAGE('settings'),
         click: () => {
           openSettings(note);
