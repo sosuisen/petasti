@@ -116,6 +116,14 @@ window.addEventListener('message', event => {
 
       break;
     }
+    case 'update-info': {
+      const info: InfoState = event.data.info;
+      dashboardStore.dispatch({
+        type: 'info-init',
+        payload: info,
+      });
+      break;
+    }
     default:
       break;
   }
