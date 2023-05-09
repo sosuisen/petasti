@@ -62,7 +62,7 @@ import {
   moveCardOutsideFromRightForCopy,
   moveCardOutsideFromRightForMove,
 } from './card_locator';
-import { openDashboard } from './dashboard';
+import { closeDashboard, dashboard, openDashboard } from './dashboard';
 
 type AccelCheck = {
   prevTime: number;
@@ -1307,7 +1307,12 @@ export class Card implements ICard {
         this._note.tray.popUpContextMenu();
       });
       globalShortcut.registerAll([`CommandOrControl+${opt}+Shift+Enter`], () => {
-        openDashboard(this._note);
+        if (dashboard !== undefined && !dashboard.isDestroyed()) {
+          closeDashboard();
+        }
+        else {
+          openDashboard(this._note);
+        }
       });
       // 'F'ront
       globalShortcut.registerAll([`CommandOrControl+${opt}+F`], () => {

@@ -22,7 +22,7 @@ export function DashboardTitle (props: DashboardTitleProps) {
   const [localState, dispatch]: LocalProvider = React.useContext(localContext);
 
   const activeItem: MenuItemProps | undefined = props.items.find(
-    item => item.id === localState.activeSettingId
+    item => item.id === localState.activeDashboardId
   );
   let style;
   if (activeItem !== undefined) {

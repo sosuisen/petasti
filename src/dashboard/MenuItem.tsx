@@ -10,6 +10,7 @@ import { LocalAction, localContext, LocalProvider } from './store_local';
 import { MessageLabel } from '../modules_common/i18n';
 import { getRandomInt } from '../modules_common/utils';
 import { selectorMessages } from './selector';
+import { openAnotherTab } from './utils';
 
 export interface MenuItemProps {
   id: string;
@@ -18,6 +19,7 @@ export interface MenuItemProps {
   color: ColorName;
   width: number;
   height: number;
+  shortcut: string;
 }
 
 export interface MenuItemPropsInternal {
@@ -28,8 +30,8 @@ export function MenuItem (props: MenuItemProps & MenuItemPropsInternal) {
   const messages = useSelector(selectorMessages);
   const [state, dispatch]: LocalProvider = React.useContext(localContext);
 
-  const isActive = state.activeSettingId === props.id;
-  const isPrevActive = state.previousActiveSettingId === props.id;
+  const isActive = state.activeDashboardId === props.id;
+  const isPrevActive = state.previousActiveDashboardId === props.id;
 
   const menuHeight = 50;
   const style = (color: ColorName) => ({
@@ -37,22 +39,8 @@ export function MenuItem (props: MenuItemProps & MenuItemPropsInternal) {
     zIndex: isActive ? 190 : props.index,
   });
 
-  let currentAudio: HTMLAudioElement;
   const handleClick = () => {
-    // Play if page changes
-    if (currentAudio !== undefined) {
-      currentAudio.pause();
-    }
-    currentAudio = document.getElementById(
-      'soundEffect0' + getRandomInt(1, 4)
-    ) as HTMLAudioElement;
-    currentAudio.play();
-
-    const action: LocalAction = {
-      type: 'UpdateActiveSetting',
-      activeSettingId: props.id,
-    };
-    dispatch(action);
+    openAnotherTab(dispatch, props.id);
   };
 
   return (
@@ -69,6 +57,9 @@ export function MenuItem (props: MenuItemProps & MenuItemPropsInternal) {
       </span>
       <span styleName={`title ${isActive ? 'activeTitle' : 'inactiveTitle'}`}>
         {messages[props.label]}
+      </span>
+      <span styleName={`shortcut ${isActive ? 'activeShortcut' : 'inactiveShortcut'}`}>
+        {props.shortcut}
       </span>
     </h2>
   );

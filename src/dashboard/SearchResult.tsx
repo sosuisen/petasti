@@ -62,10 +62,7 @@ export function SearchResult (props: SearchResultProps) {
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <span
-        style={props.type === 'note' ? { color: '#ff90f0' } : { color: '#e0b040' }}
-        className={props.type === 'note' ? 'fas fa-th' : 'fab fa-flipboard'}
-      ></span>
+      <span style={{ color: '#ff90f0' }} className='fab fa-flipboard'></span>
       &nbsp;&nbsp;
       {props.text}
     </div>

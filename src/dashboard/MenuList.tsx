@@ -23,6 +23,7 @@ export function MenuList (props: MenuListProps) {
           index={index}
           width={item.width}
           height={item.height}
+          shortcut={item.shortcut}
         />
       ))}
     </div>

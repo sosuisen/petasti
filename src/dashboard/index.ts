@@ -30,7 +30,7 @@ window.addEventListener('message', event => {
       const domContainer = document.getElementById('react-container');
 
       const props: DashboardProps = {
-        defaultSettingId: 'search',
+        defaultDashboardId: 'search',
         title: 'dashboard',
         menu: {
           items: [
@@ -41,6 +41,7 @@ window.addEventListener('message', event => {
               color: 'yellow',
               width: 450,
               height: 350,
+              shortcut: '(Ctrl+k)',
             },
             {
               id: 'space',
@@ -49,6 +50,7 @@ window.addEventListener('message', event => {
               color: 'purple',
               width: 440,
               height: 370,
+              shortcut: '(Ctrl+s)',
             } /*,
             {
               id: 'card',

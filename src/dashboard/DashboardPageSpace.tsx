@@ -5,12 +5,15 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 import './DashboardPageSpace.css';
+import { useEffect, useRef } from 'react';
 import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
 import { selectorMessages, selectorSearchResultNote } from './selector';
 import { SearchResult } from './SearchResult';
 import window from './window';
 import { dashboardStore } from './store';
+import { localContext, LocalProvider } from './store_local';
+import { openAnotherTab } from './utils';
 
 export interface DashboardPageSpaceProps {
   item: MenuItemProps;
@@ -20,12 +23,23 @@ export interface DashboardPageSpaceProps {
 export function DashboardPageSpace (props: DashboardPageSpaceProps) {
   const messages = useSelector(selectorMessages);
   const searchResult = useSelector(selectorSearchResultNote);
+  const [state, dispatch]: LocalProvider = React.useContext(localContext);
+  const inputEl = useRef(null);
 
   const postfix = '-note';
 
-  window.api.db({
-    command: 'get-all-notes',
-  });
+  useEffect(() => {
+    if (state.activeDashboardId === props.item.id) {
+      // @ts-ignore
+      if (inputEl.current) inputEl.current.focus();
+    }
+  }, [state.activeDashboardId]);
+
+  useEffect(() => {
+    window.api.db({
+      command: 'get-all-notes',
+    });
+  }, []);
 
   const debounce = <T extends (...args: any[]) => unknown>(
     callback: T,
@@ -40,10 +54,18 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
   };
 
   const searchFieldChanged = (keyword: string) => {
-    window.api.db({
-      command: 'search-note',
-      data: keyword,
-    });
+    if (keyword === '') {
+      window.api.db({
+        command: 'get-all-notes',
+      });
+    }
+    else {
+      window.api.db({
+        command: 'search-note',
+        data: keyword,
+      });
+    }
+    document.getElementById('resultAreaNote')!.scrollTop = 0;
   };
   const debouncedSearchFieldChanged = debounce(searchFieldChanged);
 
@@ -52,7 +74,7 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
     debouncedSearchFieldChanged(keyword);
   };
 
-  const setScrolltop = (selected: number) => {
+  const setScrollTop = (selected: number) => {
     const resultArea = document.getElementById('resultAreaNote')!;
     let resultHeight = 0;
     const margin = 3;
@@ -63,8 +85,12 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
     resultArea.scrollTop = resultHeight;
   };
 
+  // eslint-disable-next-line complexity
   const onSearchFieldKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
+    if (event.ctrlKey && event.key === 'k') {
+      openAnotherTab(dispatch, 'search');
+    }
+    else if (event.key === 'Enter') {
       const result = searchResult.list[searchResult.selected];
       if (result && result.type === 'note') {
         const url = result.url;
@@ -77,7 +103,7 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
     else if (event.key === 'ArrowDown') {
       if (searchResult.selected < searchResult.list.length - 1) {
         if (searchResult.selected > 2) {
-          setScrolltop(searchResult.selected + 1);
+          setScrollTop(searchResult.selected + 1);
         }
 
         dashboardStore.dispatch({
@@ -89,7 +115,7 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
     else if (event.key === 'ArrowUp') {
       if (searchResult.selected >= 0) {
         if (searchResult.selected > 2) {
-          setScrolltop(searchResult.selected - 1);
+          setScrollTop(searchResult.selected - 1);
         }
         dashboardStore.dispatch({
           type: 'search-result-select-note',
@@ -119,6 +145,7 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
   return (
     <DashboardPageTemplate item={props.item} index={props.index}>
       <input
+        ref={inputEl}
         type='text'
         id='searchFieldNote'
         styleName='searchField'

@@ -5,12 +5,16 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 import './DashboardPageSearch.css';
+import { useEffect, useRef } from 'react';
 import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
 import { selectorMessages, selectorSearchResultNoteAndCard } from './selector';
 import window from './window';
 import { SearchResult } from './SearchResult';
 import { dashboardStore } from './store';
+import { LocalAction, localContext, LocalProvider } from './store_local';
+import { getRandomInt } from '../modules_common/utils';
+import { openAnotherTab } from './utils';
 
 export interface DashboardPageSearchProps {
   item: MenuItemProps;
@@ -20,8 +24,24 @@ export interface DashboardPageSearchProps {
 export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const messages = useSelector(selectorMessages);
   const searchResult = useSelector(selectorSearchResultNoteAndCard);
+  const [state, dispatch]: LocalProvider = React.useContext(localContext);
+  const inputEl = useRef(null);
 
   const postfix = '-note-and-card';
+
+  useEffect(() => {
+    if (state.activeDashboardId === props.item.id) {
+      // @ts-ignore
+      if (inputEl.current) inputEl.current.focus();
+    }
+  }, [state.activeDashboardId]);
+
+  useEffect(() => {
+    if (state.activeDashboardId === props.item.id) {
+      // @ts-ignore
+      if (inputEl.current) inputEl.current.focus();
+    }
+  }, []);
 
   const debounce = <T extends (...args: any[]) => unknown>(
     callback: T,
@@ -40,6 +60,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
       command: 'search-note-and-card',
       data: keyword,
     });
+    document.getElementById('resultAreaNote')!.scrollTop = 0;
   };
   const debouncedSearchFieldChanged = debounce(searchFieldChanged);
 
@@ -48,7 +69,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     debouncedSearchFieldChanged(keyword);
   };
 
-  const setScrolltop = (selected: number) => {
+  const setScrollTop = (selected: number) => {
     const resultArea = document.getElementById('resultArea')!;
     let resultHeight = 0;
     const margin = 3;
@@ -59,8 +80,12 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     resultArea.scrollTop = resultHeight;
   };
 
+  // eslint-disable-next-line complexity
   const onSearchFieldKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
+    if (event.ctrlKey && event.key === 's') {
+      openAnotherTab(dispatch, 'space');
+    }
+    else if (event.key === 'Enter') {
       const result = searchResult.list[searchResult.selected];
       if (result && result.type === 'note') {
         const url = result.url;
@@ -73,7 +98,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     else if (event.key === 'ArrowDown') {
       if (searchResult.selected < searchResult.list.length - 1) {
         if (searchResult.selected > 2) {
-          setScrolltop(searchResult.selected + 1);
+          setScrollTop(searchResult.selected + 1);
         }
 
         dashboardStore.dispatch({
@@ -85,7 +110,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     else if (event.key === 'ArrowUp') {
       if (searchResult.selected >= 0) {
         if (searchResult.selected > 2) {
-          setScrolltop(searchResult.selected - 1);
+          setScrollTop(searchResult.selected - 1);
         }
         dashboardStore.dispatch({
           type: 'search-result-select-note-and-card',
@@ -115,6 +140,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   return (
     <DashboardPageTemplate item={props.item} index={props.index}>
       <input
+        ref={inputEl}
         type='text'
         id='searchField'
         styleName='searchField'

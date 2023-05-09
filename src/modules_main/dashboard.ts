@@ -41,11 +41,6 @@ export const openDashboard = (note: INote) => {
     dashboard.webContents.send('initialize-store', note.info);
   });
 
-  dashboard.webContents.on('new-window', (e, _url) => {
-    e.preventDefault();
-    shell.openExternal(_url);
-  });
-
   dashboard.loadFile(path.join(__dirname, '../dashboard/dashboard.html'));
 
   // hot reload

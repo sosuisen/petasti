@@ -34,6 +34,7 @@ body {
 }
 
 .inactivePage {
+  transform-origin: left top;
   opacity: 1.0;
-  transform: rotateZ(-5deg);  
+  transform: rotateZ(-3deg);  
 }

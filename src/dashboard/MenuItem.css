@@ -24,6 +24,20 @@
   opacity: 0.8;
 }
 
+.shortcut {
+  margin-top: 4px;
+  float: left;
+  font-size: 14px;
+}
+
+.activeShortcut {
+  opacity: 0.8;  
+}
+
+.inactiveShortcut {
+  opacity: 0.8;
+}
+
 .icon {
   float: left;
   margin-right: 10px;

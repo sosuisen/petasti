@@ -9,27 +9,27 @@ import React from 'react';
  * Local Redux Store used only in this Renderer process
  */
 export interface LocalState {
-  activeSettingId: string;
-  previousActiveSettingId: string;
+  activeDashboardId: string;
+  previousActiveDashboardId: string;
 }
 
 export interface LocalAction {
   type: 'UpdateActiveSetting';
-  activeSettingId: string;
+  activeDashboardId: string;
 }
 
 export const localReducer = (state: LocalState, action: LocalAction) => {
   if (action.type === 'UpdateActiveSetting') {
     const nextState: LocalState = {
-      activeSettingId: action.activeSettingId,
-      previousActiveSettingId: state.activeSettingId,
+      activeDashboardId: action.activeDashboardId,
+      previousActiveDashboardId: state.activeDashboardId,
     };
     return nextState;
   }
   return state;
 };
 export const localContext = React.createContext<LocalState | any>({
-  activeSettingId: '',
-  previousActiveSettingId: '',
+  activeDashboardId: '',
+  previousActiveDashboardId: '',
 });
 export type LocalProvider = [LocalState, React.Dispatch<LocalAction>];

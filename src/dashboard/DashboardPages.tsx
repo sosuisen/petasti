@@ -25,7 +25,7 @@ export function DashboardPages (props: DashboardProps) {
       page = <DashboardPageSpace item={item} index={index} />;
     }
 
-    if (localState.activeSettingId === item.id) {
+    if (localState.activeDashboardId === item.id) {
       activePage = page!;
     }
     else {

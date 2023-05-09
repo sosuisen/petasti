@@ -19,16 +19,16 @@ export function DashboardPageTemplate (props: DashboardPageTemplateProps) {
   const [localState, dispatch]: LocalProvider = React.useContext(localContext);
   const style = (color: ColorName) => ({
     backgroundColor: uiColors[color],
-    zIndex: localState.activeSettingId === props.item.id ? 200 : 150 - props.index,
+    zIndex: localState.activeDashboardId === props.item.id ? 200 : 150 - props.index,
     width: props.item.width + 'px',
     height: props.item.height + 'px',
   });
 
   let activeState = 'inactivePage';
-  if (localState.activeSettingId === props.item.id) {
+  if (localState.activeDashboardId === props.item.id) {
     activeState = 'activePage';
   }
-  else if (localState.previousActiveSettingId === props.item.id) {
+  else if (localState.previousActiveDashboardId === props.item.id) {
     activeState = 'previousActivePage';
   }
 
@@ -40,7 +40,7 @@ export function DashboardPageTemplate (props: DashboardPageTemplateProps) {
       ) as HTMLAudioElement).play();
       const action: LocalAction = {
         type: 'UpdateActiveSetting',
-        activeSettingId: props.item.id,
+        activeDashboardId: props.item.id,
       };
       dispatch(action);
     }

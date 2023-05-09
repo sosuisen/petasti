@@ -15,13 +15,13 @@ import { localContext, LocalProvider, localReducer } from './store_local';
 export interface DashboardProps {
   title: MessageLabel;
   menu: MenuListProps;
-  defaultSettingId: string;
+  defaultDashboardId: string;
 }
 
 export function Dashboard (props: DashboardProps) {
   const [state, dispatch]: LocalProvider = React.useReducer(localReducer, {
-    activeSettingId: props.defaultSettingId,
-    previousActiveSettingId: '',
+    activeDashboardId: props.defaultDashboardId,
+    previousActiveDashboardId: '',
   });
   return (
     <div styleName='dashboard'>
