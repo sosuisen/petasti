@@ -20,12 +20,29 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const messages = useSelector(selectorMessages);
   const searchResult = useSelector(selectorSearchResult);
 
-  const onSearchFieldChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const keyword = event.target.value;
+  const debounce = <T extends (...args: any[]) => unknown>(
+    callback: T,
+    delay = 250
+  ): ((...args: Parameters<T>) => void) => {
+    let timeoutId: NodeJS.Timeout;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      // eslint-disable-next-line node/no-callback-literal
+      timeoutId = setTimeout(() => callback(...args), delay);
+    };
+  };
+
+  const searchFieldChanged = (keyword: string) => {
     window.api.db({
       command: 'search-note-and-card',
       data: keyword,
     });
+  };
+  const debouncedSearchFieldChanged = debounce(searchFieldChanged);
+
+  const onSearchFieldChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const keyword = event.target.value;
+    debouncedSearchFieldChanged(keyword);
   };
 
   const handleClick = (value: string) => {
