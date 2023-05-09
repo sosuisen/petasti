@@ -24,14 +24,18 @@ export interface SearchResultShowAction {
   payload: SearchResult[];
 }
 
+export interface SearchResultSelectAction {
+  type: 'search-result-select';
+  payload: number;
+}
+
+export type SearchResultAction = SearchResultShowAction | SearchResultSelectAction;
+
 export type DashboardState = {
   info: InfoState;
   searchResult: SearchResultState;
 };
 
-export type TemporalDashboardAction =
-  | MessagesPutAction
-  | AppPutAction
-  | SearchResultShowAction;
+export type TemporalDashboardAction = MessagesPutAction | AppPutAction | SearchResultAction;
 
 export type DashboardAction = DashboardInitAction | TemporalDashboardAction;

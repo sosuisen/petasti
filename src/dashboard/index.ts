@@ -82,7 +82,7 @@ window.addEventListener('message', event => {
       const cardList = cardDocs.map(doc => {
         const label: SearchResult = {
           type: 'card',
-          text: doc._body.substr(0, 40).replaceAll('&nbps;', ' '),
+          text: doc._body.substr(0, 70).replaceAll('&nbsp;', ' '),
         };
         return label;
       });

@@ -10,6 +10,7 @@ import { ENGLISH } from '../modules_common/i18n';
 import {
   DashboardAction,
   DashboardState,
+  SearchResultAction,
   SearchResultShowAction,
   SearchResultState,
 } from '../modules_common/search.types';
@@ -40,7 +41,7 @@ const searchResultReducer = (
     list: [],
     selected: -1,
   },
-  action: SearchResultShowAction
+  action: SearchResultAction
 ) => {
   switch (action.type) {
     case 'search-result-show':
@@ -48,6 +49,11 @@ const searchResultReducer = (
         list: JSON.parse(JSON.stringify(action.payload)),
         selected: -1,
       };
+    case 'search-result-select': {
+      const newState = JSON.parse(JSON.stringify(state));
+      newState.selected = action.payload;
+      return newState;
+    }
     default:
       return state;
   }

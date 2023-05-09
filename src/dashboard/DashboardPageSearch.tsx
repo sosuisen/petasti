@@ -10,6 +10,7 @@ import { DashboardPageTemplate } from './DashboardPageTemplate';
 import { selectorMessages, selectorSearchResult } from './selector';
 import window from './window';
 import { SearchResult } from './SearchResult';
+import { dashboardStore } from './store';
 
 export interface DashboardPageSearchProps {
   item: MenuItemProps;
@@ -45,6 +46,49 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     debouncedSearchFieldChanged(keyword);
   };
 
+  const setScrolltop = (selected: number) => {
+    const resultArea = document.getElementById('resultArea')!;
+    let resultHeight = 0;
+    const margin = 3;
+    for (let i = 0; i <= selected - 4; i++) {
+      resultHeight += document.getElementById(`search-result-${i}`)!.offsetHeight;
+      resultHeight += margin;
+    }
+    resultArea.scrollTop = resultHeight;
+  };
+
+  const onSearchFieldKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown') {
+      if (searchResult.selected < searchResult.list.length - 1) {
+        if (searchResult.selected > 2) {
+          setScrolltop(searchResult.selected + 1);
+        }
+
+        dashboardStore.dispatch({
+          type: 'search-result-select',
+          payload: searchResult.selected + 1,
+        });
+      }
+    }
+    else if (event.key === 'ArrowUp') {
+      if (searchResult.selected >= 0) {
+        if (searchResult.selected > 2) {
+          setScrolltop(searchResult.selected - 1);
+        }
+        dashboardStore.dispatch({
+          type: 'search-result-select',
+          payload: searchResult.selected - 1,
+        });
+      }
+
+      setTimeout(() => {
+        const field = document.getElementById('searchField')! as HTMLInputElement;
+        const len = field.value.length;
+        field.setSelectionRange(len, len);
+      }, 100);
+    }
+  };
+
   const handleClick = (value: string) => {
     // dispatch(settingsLanguageUpdateCreator(value));
   };
@@ -54,6 +98,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
       click={handleClick}
       text={result.text}
       type={result.type}
+      index={index}
       selected={index === searchResult.selected}
     ></SearchResult>
   ));
@@ -66,8 +111,11 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
         styleName='searchField'
         placeholder={messages.dashboardSpaceOrKeyword}
         onChange={onSearchFieldChanged}
+        onKeyDown={onSearchFieldKeyDown}
       ></input>
-      <div styleName='resultArea'>{results}</div>
+      <div id='resultArea' styleName='resultArea'>
+        {results}
+      </div>
     </DashboardPageTemplate>
   );
 }
