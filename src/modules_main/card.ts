@@ -1303,10 +1303,10 @@ export class Card implements ICard {
       if (process.platform === 'darwin') {
         opt = 'Option';
       }
-      globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
+      globalShortcut.registerAll([`CommandOrControl+${opt}+Shift+Enter`], () => {
         this._note.tray.popUpContextMenu();
       });
-      globalShortcut.registerAll([`CommandOrControl+${opt}+Shift+Enter`], () => {
+      globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
         if (dashboard !== undefined && !dashboard.isDestroyed()) {
           closeDashboard();
         }

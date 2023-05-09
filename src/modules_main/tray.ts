@@ -164,10 +164,10 @@ export const setTrayContextMenu = () => {
     }
 
     const contextMenu = Menu.buildFromTemplate([
-      ...changeNotes,
+      /*      ...changeNotes,
       {
         type: 'separator',
-      },
+      }, */
       {
         label: MESSAGE('newCard'),
         click: () => {
@@ -518,10 +518,10 @@ export const initializeTaskTray = (store: INote) => {
   if (process.platform === 'darwin') {
     opt = 'Option';
   }
-  globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
+  globalShortcut.registerAll([`CommandOrControl+${opt}+Shift+Enter`], () => {
     tray.popUpContextMenu();
   });
-  globalShortcut.registerAll([`CommandOrControl+${opt}+Shift+Enter`], () => {
+  globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
     if (dashboard !== undefined && !dashboard.isDestroyed()) {
       closeDashboard();
     }
