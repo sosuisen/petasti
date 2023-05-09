@@ -56,7 +56,9 @@ export const addSettingsHandler = (note: INote) => {
         note.info.messages = note.translations.messages();
         setMessages(note.info.messages);
         settingsDialog.webContents.send('update-info', note.info);
-        dashboard.webContents.send('update-info', note.info);
+        if (!dashboard.isDestroyed()) {
+          dashboard.webContents.send('update-info', note.info);
+        }
 
         emitter.emit('updateTrayContextMenu');
 

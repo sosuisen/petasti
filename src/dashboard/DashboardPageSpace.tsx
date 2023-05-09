@@ -143,10 +143,11 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
     ></SearchResult>
   ));
 
-  window.api.dashboard({
-    command: 'dashboard-create-note',
-  });
-  const newSpaceButtonOnClick = () => {};
+  const newSpaceButtonOnClick = () => {
+    window.api.dashboard({
+      command: 'dashboard-create-note',
+    });
+  };
 
   return (
     <DashboardPageTemplate item={props.item} index={props.index}>

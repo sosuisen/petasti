@@ -3,12 +3,15 @@
  * © 2023 Hidekazu Kubota
  */
 import { ipcMain } from 'electron';
+import prompt from 'electron-prompt';
 import { DatabaseCommand } from '../modules_common/db.types';
 import { INote } from './note_types';
 import { dashboard } from './dashboard';
 import { DashboardCommand } from '../modules_common/dashboard.types';
 import { openURL } from './url_schema';
 import { noteStore } from './note_store';
+import { MESSAGE } from './messages';
+import { cacheOfCard } from './card_cache';
 
 export const addDashboardHandler = (note: INote) => {
   // eslint-disable-next-line complexity
@@ -56,7 +59,7 @@ export const addDashboardHandler = (note: INote) => {
     }
   });
 
-  ipcMain.handle('dashboard', (e, command: DashboardCommand) => {
+  ipcMain.handle('dashboard', async (e, command: DashboardCommand) => {
     // eslint-disable-next-line default-case
     switch (command.command) {
       case 'dashboard-change-note': {
@@ -65,6 +68,36 @@ export const addDashboardHandler = (note: INote) => {
         break;
       }
       case 'dashboard-create-note': {
+        const newName: string | void | null = await prompt({
+          title: MESSAGE('note'),
+          label: MESSAGE('noteNewName'),
+          value: `${MESSAGE('noteName', String(noteStore.getState().size + 1))}`,
+          inputAttrs: {
+            type: 'text',
+            required: 'true',
+          },
+          height: 200,
+        }).catch(err => console.error(err.message));
+
+        if (
+          newName === null ||
+          newName === undefined ||
+          newName === '' ||
+          (newName as string).match(/^\s+$/)
+        ) {
+          return;
+        }
+        const [newNoteProp] = await note.createNote(newName as string, true);
+        cacheOfCard.forEach(card => card.resetContextMenu());
+
+        const noteDocs = [...noteStore.getState().values()].sort((a, b) => {
+          if (a.name > b.name) return 1;
+          else if (a.name < b.name) return -1;
+          return 0;
+        });
+
+        dashboard.webContents.send('search-result-note', noteDocs);
+
         break;
       }
     }
