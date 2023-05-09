@@ -98,6 +98,15 @@ export type DatabaseSearchNoteAndCard = {
   data: string;
 };
 
+export type DatabaseSearchNote = {
+  command: 'search-note';
+  data: string;
+};
+
+export type DatabaseGetAllNotes = {
+  command: 'get-all-notes';
+};
+
 export type DatabaseCommand =
   | DatabaseCardBodyUpdate
   | DatabaseCardSketchUpdate
@@ -116,4 +125,6 @@ export type DatabaseCommand =
   | DatabaseExportData
   | DatabaseImportData
   | DatabaseRebuildIndex
-  | DatabaseSearchNoteAndCard;
+  | DatabaseSearchNoteAndCard
+  | DatabaseSearchNote
+  | DatabaseGetAllNotes;

@@ -49,7 +49,7 @@ export function DashboardPageTemplate (props: DashboardPageTemplateProps) {
   return (
     <div
       style={style(props.item.color)}
-      styleName='settingPageTemplate'
+      styleName='dashboardPageTemplate'
       className={activeState}
       onClick={handleClick}
     >

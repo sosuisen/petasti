@@ -8,6 +8,10 @@ export const selectorMessages = (state: DashboardState) => {
   return state.info.messages;
 };
 
-export const selectorSearchResult = (state: DashboardState) => {
-  return state.searchResult;
+export const selectorSearchResultNoteAndCard = (state: DashboardState) => {
+  return state.searchResultNoteAndCard;
+};
+
+export const selectorSearchResultNote = (state: DashboardState) => {
+  return state.searchResultNote;
 };

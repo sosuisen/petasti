@@ -9,7 +9,12 @@ export interface DashboardInitAction {
   payload: DashboardState;
 }
 
-export type SearchResultState = {
+export type SearchResultNoteAndCardState = {
+  list: SearchResult[];
+  selected: number;
+};
+
+export type SearchResultNoteState = {
   list: SearchResult[];
   selected: number;
 };
@@ -20,21 +25,38 @@ export type SearchResult = {
   url: string;
 };
 
-export interface SearchResultShowAction {
-  type: 'search-result-show';
+export interface SearchResultNoteAndCardAction {
+  type: 'search-result-note-and-card';
   payload: SearchResult[];
 }
 
-export interface SearchResultSelectAction {
-  type: 'search-result-select';
+export interface SearchResultSelectNoteAndCardAction {
+  type: 'search-result-select-note-and-card';
   payload: number;
 }
 
-export type SearchResultAction = SearchResultShowAction | SearchResultSelectAction;
+export type SearchResultNoteAndCardActions =
+  | SearchResultNoteAndCardAction
+  | SearchResultSelectNoteAndCardAction;
+
+export interface SearchResultNoteAction {
+  type: 'search-result-note';
+  payload: SearchResult[];
+}
+
+export interface SearchResultSelectNoteAction {
+  type: 'search-result-select-note';
+  payload: number;
+}
+
+export type SearchResultNoteActions = SearchResultNoteAction | SearchResultSelectNoteAction;
+
+export type SearchResultAction = SearchResultNoteAndCardActions | SearchResultNoteActions;
 
 export type DashboardState = {
   info: InfoState;
-  searchResult: SearchResultState;
+  searchResultNoteAndCard: SearchResultNoteAndCardState;
+  searchResultNote: SearchResultNoteState;
 };
 
 export type TemporalDashboardAction = MessagesPutAction | AppPutAction | SearchResultAction;

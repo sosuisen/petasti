@@ -9,12 +9,12 @@ import { dashboardStore } from './store';
 import window from './window';
 
 export interface SearchResultProps {
-  click: (value: any) => void;
   text: string;
   url: string;
   type: string;
   index: number;
   selected: boolean;
+  hasCard: boolean;
 }
 
 export function SearchResult (props: SearchResultProps) {
@@ -28,6 +28,8 @@ export function SearchResult (props: SearchResultProps) {
     }
   };
 
+  const postfix = props.hasCard ? '-note-and-card' : '-note';
+
   const style = (color: ColorName) => ({
     backgroundColor: uiColors[color],
   });
@@ -39,21 +41,21 @@ export function SearchResult (props: SearchResultProps) {
 
   const onMouseEnter = () => {
     dashboardStore.dispatch({
-      type: 'search-result-select',
+      type: `search-result-select${postfix}`,
       payload: props.index,
     });
   };
 
   const onMouseLeave = () => {
     dashboardStore.dispatch({
-      type: 'search-result-select',
+      type: `search-result-select${postfix}`,
       payload: -1,
     });
   };
 
   return (
     <div
-      id={`search-result-${props.index}`}
+      id={`search-result${postfix}-${props.index}`}
       style={style(color)}
       styleName={`tag ${props.selected ? 'selected' : ''}`}
       onClick={handleClick}

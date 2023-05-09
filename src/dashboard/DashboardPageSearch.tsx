@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import './DashboardPageSearch.css';
 import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
-import { selectorMessages, selectorSearchResult } from './selector';
+import { selectorMessages, selectorSearchResultNoteAndCard } from './selector';
 import window from './window';
 import { SearchResult } from './SearchResult';
 import { dashboardStore } from './store';
@@ -19,7 +19,9 @@ export interface DashboardPageSearchProps {
 
 export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const messages = useSelector(selectorMessages);
-  const searchResult = useSelector(selectorSearchResult);
+  const searchResult = useSelector(selectorSearchResultNoteAndCard);
+
+  const postfix = '-note-and-card';
 
   const debounce = <T extends (...args: any[]) => unknown>(
     callback: T,
@@ -51,7 +53,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     let resultHeight = 0;
     const margin = 3;
     for (let i = 0; i <= selected - 4; i++) {
-      resultHeight += document.getElementById(`search-result-${i}`)!.offsetHeight;
+      resultHeight += document.getElementById(`search-result${postfix}-${i}`)!.offsetHeight;
       resultHeight += margin;
     }
     resultArea.scrollTop = resultHeight;
@@ -60,7 +62,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const onSearchFieldKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       const result = searchResult.list[searchResult.selected];
-      if (result.type === 'note') {
+      if (result && result.type === 'note') {
         const url = result.url;
         window.api.dashboard({
           command: 'dashboard-change-note',
@@ -75,7 +77,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
         }
 
         dashboardStore.dispatch({
-          type: 'search-result-select',
+          type: 'search-result-select-note-and-card',
           payload: searchResult.selected + 1,
         });
       }
@@ -86,7 +88,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
           setScrolltop(searchResult.selected - 1);
         }
         dashboardStore.dispatch({
-          type: 'search-result-select',
+          type: 'search-result-select-note-and-card',
           payload: searchResult.selected - 1,
         });
       }
@@ -99,18 +101,14 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     }
   };
 
-  const handleClick = (value: string) => {
-    // dispatch(settingsLanguageUpdateCreator(value));
-  };
-
-  const results = searchResult.list.map((result, index) => (
+  const results = searchResult.list.map((result, index: number) => (
     <SearchResult
-      click={handleClick}
       text={result.text}
       type={result.type}
       url={result.url}
       index={index}
       selected={index === searchResult.selected}
+      hasCard={true}
     ></SearchResult>
   ));
 
@@ -120,7 +118,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
         type='text'
         id='searchField'
         styleName='searchField'
-        placeholder={messages.dashboardSpaceOrKeyword}
+        placeholder={messages.dashboardInputSpaceOrKeyword}
         onChange={onSearchFieldChanged}
         onKeyDown={onSearchFieldKeyDown}
       ></input>

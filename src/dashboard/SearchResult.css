@@ -4,9 +4,11 @@
   margin-right: 7px;
   margin-bottom: 3px;
   cursor: pointer;
-  box-shadow: 1px 1px 3px 0 rgba(128, 96, 96, 0.7);  
+  box-shadow: 1px 1px 3px 0 rgba(128, 96, 96, 0.7);
+  opacity: 0.8;
 }
 
 .selected {
   box-shadow: 3px 3px 10px 0 rgba(128, 96, 96, 0.7);  
+  opacity: 1.0;
 }

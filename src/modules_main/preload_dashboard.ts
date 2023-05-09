@@ -35,3 +35,11 @@ ipcRenderer.on('search-result-note-and-card', (event, noteResults, cardResults) 
     'file://'
   );
 });
+
+ipcRenderer.on('search-result-note', (event, noteResults) => {
+  window.postMessage({ command: 'search-result-note', noteResults }, 'file://');
+});
+
+ipcRenderer.on('get-all-notes', (event, noteResults) => {
+  window.postMessage({ command: 'get-all-notes', noteResults }, 'file://');
+});

@@ -34,7 +34,7 @@ export function DashboardPages (props: DashboardProps) {
     return result;
   }, [] as JSX.Element[]);
   return (
-    <div styleName='settingPages'>
+    <div styleName='dashboardPages'>
       {activePage!}
       {pages}
     </div>

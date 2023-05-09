@@ -8,6 +8,7 @@ import { INote } from './note_types';
 import { dashboard } from './dashboard';
 import { DashboardCommand } from '../modules_common/dashboard.types';
 import { openURL } from './url_schema';
+import { noteStore } from './note_store';
 
 export const addDashboardHandler = (note: INote) => {
   // eslint-disable-next-line complexity
@@ -27,6 +28,28 @@ export const addDashboardHandler = (note: INote) => {
         );
 
         dashboard.webContents.send('search-result-note-and-card', noteDocs, cardDocs);
+
+        break;
+      }
+      case 'search-note': {
+        const noteResults = note.noteCollection.search('noteprop', command.data);
+
+        const noteDocs = await Promise.all(
+          noteResults.map(res => note.noteCollection.get(res.ref))
+        );
+
+        dashboard.webContents.send('search-result-note', noteDocs);
+
+        break;
+      }
+      case 'get-all-notes': {
+        const noteDocs = [...noteStore.getState().values()].sort((a, b) => {
+          if (a.name > b.name) return 1;
+          else if (a.name < b.name) return -1;
+          return 0;
+        });
+
+        dashboard.webContents.send('search-result-note', noteDocs);
 
         break;
       }

@@ -92,8 +92,24 @@ window.addEventListener('message', event => {
       });
 
       dashboardStore.dispatch({
-        type: 'search-result-show',
+        type: 'search-result-note-and-card',
         payload: [...noteList, ...cardList],
+      });
+
+      break;
+    }
+    case 'search-result-note': {
+      const noteDocs = event.data.noteResults as JsonDoc[];
+
+      const noteList = noteDocs.map(doc => {
+        const url = getUrlFromNoteId(doc._id.replace(/\/prop$/, ''));
+        const label: SearchResult = { type: 'note', text: doc.name, url };
+        return label;
+      });
+
+      dashboardStore.dispatch({
+        type: 'search-result-note',
+        payload: [...noteList],
       });
 
       break;

@@ -11,7 +11,10 @@ import {
   DashboardAction,
   DashboardState,
   SearchResultAction,
-  SearchResultState,
+  SearchResultNoteActions,
+  SearchResultNoteAndCardActions,
+  SearchResultNoteAndCardState,
+  SearchResultNoteState,
 } from '../modules_common/search.types';
 
 const infoReducer = (
@@ -34,21 +37,45 @@ const infoReducer = (
   }
 };
 
-const searchResultReducer = (
+const searchResultNoteAndCardReducer = (
   // eslint-disable-next-line default-param-last
-  state: SearchResultState = {
+  state: SearchResultNoteAndCardState = {
     list: [],
     selected: -1,
   },
-  action: SearchResultAction
+  action: SearchResultNoteAndCardActions
 ) => {
   switch (action.type) {
-    case 'search-result-show':
+    case 'search-result-note-and-card':
       return {
         list: JSON.parse(JSON.stringify(action.payload)),
         selected: -1,
       };
-    case 'search-result-select': {
+    case 'search-result-select-note-and-card': {
+      const newState = JSON.parse(JSON.stringify(state));
+      newState.selected = action.payload;
+      return newState;
+    }
+    default:
+      return state;
+  }
+};
+
+const searchResultNoteReducer = (
+  // eslint-disable-next-line default-param-last
+  state: SearchResultNoteState = {
+    list: [],
+    selected: -1,
+  },
+  action: SearchResultNoteActions
+) => {
+  switch (action.type) {
+    case 'search-result-note':
+      return {
+        list: JSON.parse(JSON.stringify(action.payload)),
+        selected: -1,
+      };
+    case 'search-result-select-note': {
       const newState = JSON.parse(JSON.stringify(state));
       newState.selected = action.payload;
       return newState;
@@ -60,7 +87,8 @@ const searchResultReducer = (
 
 export const dashboardReducer = combineReducers({
   info: infoReducer,
-  searchResult: searchResultReducer,
+  searchResultNoteAndCard: searchResultNoteAndCardReducer,
+  searchResultNote: searchResultNoteReducer,
 });
 
 type IAppDispatch = ThunkDispatch<DashboardState, any, DashboardAction>;
