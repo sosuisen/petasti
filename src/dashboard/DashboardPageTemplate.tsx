@@ -3,6 +3,7 @@
  * © 2023 Hidekazu Kubota
  */
 import * as React from 'react';
+import { useSelector } from 'react-redux';
 import { ColorName, uiColors } from '../modules_common/color';
 import { MenuItemProps } from './MenuItem';
 import './DashboardPageTemplate.css';
@@ -10,7 +11,6 @@ import { getRandomInt } from '../modules_common/utils';
 import { dashboardStore } from './store';
 import { DashboardChangePageAction } from './dashboard_local.types';
 import { selectorPage } from './selector';
-import { useSelector } from 'react-redux';
 
 export interface DashboardPageTemplateProps {
   item: MenuItemProps;

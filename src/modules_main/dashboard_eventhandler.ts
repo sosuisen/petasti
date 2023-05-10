@@ -68,7 +68,7 @@ export const addDashboardHandler = (note: INote) => {
           noteResults.map(res => note.noteCollection.get(res.ref))
         );
 
-        dashboard.webContents.send('search-result-note', noteDocs);
+        dashboard.webContents.send('search-result-note', noteDocs, -1);
 
         break;
       }
