@@ -10,27 +10,19 @@ import './Dashboard.css';
 import { MessageLabel } from '../modules_common/i18n';
 import { DashboardTitle } from './DashboardTitle';
 import { dashboardStore } from './store';
-import { localContext, LocalProvider, localReducer } from './store_local';
 
 export interface DashboardProps {
   title: MessageLabel;
   menu: MenuListProps;
-  defaultDashboardId: string;
 }
 
 export function Dashboard (props: DashboardProps) {
-  const [state, dispatch]: LocalProvider = React.useReducer(localReducer, {
-    activeDashboardId: props.defaultDashboardId,
-    previousActiveDashboardId: '',
-  });
   return (
     <div styleName='dashboard'>
       <Provider store={dashboardStore}>
-        <localContext.Provider value={[state, dispatch]}>
           <DashboardTitle title={props.title} items={props.menu.items} />
           <MenuList items={props.menu.items} />
           <DashboardPages items={props.menu.items} />
-        </localContext.Provider>
       </Provider>
     </div>
   );

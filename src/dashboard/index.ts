@@ -9,9 +9,8 @@ import { JsonDoc } from 'git-documentdb';
 import { InfoState } from '../modules_common/store.types';
 import { Dashboard, DashboardProps } from './Dashboard';
 import { dashboardStore } from './store';
-import { SearchResult } from '../modules_common/search.types';
 import { getUrlFromCardId, getUrlFromNoteId } from '../modules_common/utils';
-import { LocalProvider, localContext } from './store_local';
+import { SearchResult } from './dashboard_local.types';
 import { openAnotherTab } from './utils';
 
 // window.document.addEventListener('DOMContentLoaded', onready);
@@ -32,7 +31,6 @@ window.addEventListener('message', event => {
       const domContainer = document.getElementById('react-container');
 
       const props: DashboardProps = {
-        defaultDashboardId: 'search',
         title: 'dashboard',
         menu: {
           items: [
@@ -145,11 +143,24 @@ window.addEventListener('message', event => {
       });
       break;
     }
-    case 'show-page': {
-      openAnotherTab(dispatch, event.data.pageName);
+    case 'select-page': {
+      openAnotherTab(event.data.pageName);
       break;
     }
-
+    case 'escape': {
+      if (Object.keys(dashboardStore.getState().selectedCard.card).length > 0) {
+        // Close card
+        dashboardStore.dispatch({
+          type: 'set-selected-card',
+          payload: {},
+        });
+      }
+      else {
+        // Close dashboard
+        window.close();
+      }
+      break;
+    }
     default:
       break;
   }

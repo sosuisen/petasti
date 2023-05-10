@@ -12,15 +12,15 @@ import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
 import {
   selectorMessages,
+  selectorPage,
   selectorSearchResultNoteAndCard,
   selectorSelectedCard,
 } from './selector';
 import window from './window';
 import { SearchResult } from './SearchResult';
-import { SearchResult as SearchResultType } from '../modules_common/search.types';
+import { SearchResult as SearchResultType } from './dashboard_local.types';
 
 import { dashboardStore } from './store';
-import { localContext, LocalProvider } from './store_local';
 import { getUrlFromCardId } from '../modules_common/utils';
 import { openAnotherTab } from './utils';
 
@@ -32,9 +32,8 @@ export interface DashboardPageSearchProps {
 export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const messages = useSelector(selectorMessages);
   const searchResult = useSelector(selectorSearchResultNoteAndCard);
-  const [state, dispatch]: LocalProvider = React.useContext(localContext);
   const inputEl = useRef(null);
-
+  const pageState = useSelector(selectorPage);
   const selectedCard = useSelector(selectorSelectedCard);
 
   const postfix = '-note-and-card';
@@ -49,14 +48,14 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   }, [selectedCard.card]);
 
   useEffect(() => {
-    if (state.activeDashboardId === props.item.id) {
+    if (pageState.activeDashboardName === props.item.id) {
       // @ts-ignore
       if (inputEl.current) inputEl.current.focus();
     }
-  }, [state.activeDashboardId]);
+  }, [pageState.activeDashboardName]);
 
   useEffect(() => {
-    if (state.activeDashboardId === props.item.id) {
+    if (pageState.activeDashboardName === props.item.id) {
       // @ts-ignore
       if (inputEl.current) inputEl.current.focus();
     }
@@ -101,17 +100,22 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
 
   // eslint-disable-next-line complexity
   const onSearchFieldKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.ctrlKey && event.key === 's') {
-      openAnotherTab(dispatch, 'space');
-    }
-    else if (event.key === 'Enter') {
+    if (event.key === 'Enter') {
       const result = searchResult.list[searchResult.selected];
-      if (result && result.type === 'note') {
+      if (result) {
         const url = result.url;
-        window.api.dashboard({
-          command: 'dashboard-change-note',
-          url,
-        });
+        if (result.type === 'note') {
+          window.api.dashboard({
+            command: 'dashboard-change-note',
+            url,
+          });
+        }
+        else if (result.type === 'card') {
+          window.api.dashboard({
+            command: 'dashboard-open-card',
+            url,
+          });
+        }
       }
     }
     else if (event.key === 'ArrowDown') {

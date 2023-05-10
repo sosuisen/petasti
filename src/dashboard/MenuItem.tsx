@@ -6,11 +6,10 @@ import * as React from 'react';
 import './MenuItem.css';
 import { useSelector } from 'react-redux';
 import { ColorName, uiColors } from '../modules_common/color';
-import { LocalAction, localContext, LocalProvider } from './store_local';
 import { MessageLabel } from '../modules_common/i18n';
-import { getRandomInt } from '../modules_common/utils';
-import { selectorMessages } from './selector';
+import { selectorMessages, selectorPage } from './selector';
 import { openAnotherTab } from './utils';
+import { dashboardStore } from './store';
 
 export interface MenuItemProps {
   id: string;
@@ -28,10 +27,10 @@ export interface MenuItemPropsInternal {
 
 export function MenuItem (props: MenuItemProps & MenuItemPropsInternal) {
   const messages = useSelector(selectorMessages);
-  const [state, dispatch]: LocalProvider = React.useContext(localContext);
+  const pageState = useSelector(selectorPage);
 
-  const isActive = state.activeDashboardId === props.id;
-  const isPrevActive = state.previousActiveDashboardId === props.id;
+  const isActive = pageState.activeDashboardName === props.id;
+  const isPrevActive = pageState.previousActiveDashboardName === props.id;
 
   const menuHeight = 50;
   const style = (color: ColorName) => ({
@@ -40,7 +39,7 @@ export function MenuItem (props: MenuItemProps & MenuItemPropsInternal) {
   });
 
   const handleClick = () => {
-    openAnotherTab(dispatch, props.id);
+    openAnotherTab(props.id);
   };
 
   return (

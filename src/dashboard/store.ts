@@ -5,19 +5,20 @@
 import { applyMiddleware, combineReducers, createStore } from 'redux';
 import thunk, { ThunkDispatch, ThunkMiddleware } from 'redux-thunk';
 import { InfoState } from '../modules_common/store.types';
-import { InfoAction } from './action';
 import { ENGLISH } from '../modules_common/i18n';
 import {
   DashboardAction,
+  DashboardChangePageAction,
+  DashboardPageState,
   DashboardState,
-  SearchResultAction,
+  InfoAction,
   SearchResultNoteActions,
   SearchResultNoteAndCardActions,
   SearchResultNoteAndCardState,
   SearchResultNoteState,
   SelectedCardAction,
   SelectedCardState,
-} from '../modules_common/search.types';
+} from './dashboard_local.types';
 
 const infoReducer = (
   // eslint-disable-next-line default-param-last
@@ -115,11 +116,32 @@ const selectedCardReducer = (
   }
 };
 
+const pageReducer = (
+  // eslint-disable-next-line default-param-last
+  state: DashboardPageState = {
+    activeDashboardName: 'search',
+    previousActiveDashboardName: '',
+  },
+  action: DashboardChangePageAction
+) => {
+  // eslint-disable-next-line default-case
+  switch (action.type) {
+    case 'dashboard-change-page':
+      return {
+        activeDashboardName: action.payload,
+        previousActiveDashboardName: state.activeDashboardName,
+      };
+    default:
+      return state;
+  }
+};
+
 export const dashboardReducer = combineReducers({
   info: infoReducer,
   searchResultNoteAndCard: searchResultNoteAndCardReducer,
   searchResultNote: searchResultNoteReducer,
   selectedCard: selectedCardReducer,
+  page: pageReducer,
 });
 
 type IAppDispatch = ThunkDispatch<DashboardState, any, DashboardAction>;

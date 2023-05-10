@@ -3,7 +3,7 @@
  * © 2023 Hidekazu Kubota
  */
 
-import { SearchResult } from './search.types';
+import { SearchResult } from '../dashboard/dashboard_local.types';
 
 export type DashboardSearchNoteAndCard = {
   command: 'dashboard-search-note-and-card';

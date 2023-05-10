@@ -3,11 +3,14 @@
  * © 2023 Hidekazu Kubota
  */
 import * as React from 'react';
-import { LocalAction, localContext, LocalProvider } from './store_local';
 import { ColorName, uiColors } from '../modules_common/color';
 import { MenuItemProps } from './MenuItem';
 import './DashboardPageTemplate.css';
 import { getRandomInt } from '../modules_common/utils';
+import { dashboardStore } from './store';
+import { DashboardChangePageAction } from './dashboard_local.types';
+import { selectorPage } from './selector';
+import { useSelector } from 'react-redux';
 
 export interface DashboardPageTemplateProps {
   item: MenuItemProps;
@@ -16,19 +19,19 @@ export interface DashboardPageTemplateProps {
 }
 
 export function DashboardPageTemplate (props: DashboardPageTemplateProps) {
-  const [localState, dispatch]: LocalProvider = React.useContext(localContext);
+  const pageState = useSelector(selectorPage);
   const style = (color: ColorName) => ({
     backgroundColor: uiColors[color],
-    zIndex: localState.activeDashboardId === props.item.id ? 200 : 150 - props.index,
+    zIndex: pageState.activeDashboardName === props.item.id ? 200 : 150 - props.index,
     width: props.item.width + 'px',
     height: props.item.height + 'px',
   });
 
   let activeState = 'inactivePage';
-  if (localState.activeDashboardId === props.item.id) {
+  if (pageState.activeDashboardName === props.item.id) {
     activeState = 'activePage';
   }
-  else if (localState.previousActiveDashboardId === props.item.id) {
+  else if (pageState.previousActiveDashboardName === props.item.id) {
     activeState = 'previousActivePage';
   }
 
@@ -38,11 +41,11 @@ export function DashboardPageTemplate (props: DashboardPageTemplateProps) {
       (document.getElementById(
         'soundEffect0' + getRandomInt(1, 4)
       ) as HTMLAudioElement).play();
-      const action: LocalAction = {
-        type: 'UpdateActiveSetting',
-        activeDashboardId: props.item.id,
+      const action: DashboardChangePageAction = {
+        type: 'dashboard-change-page',
+        payload: props.item.id,
       };
-      dispatch(action);
+      dashboardStore.dispatch(action);
     }
   };
 

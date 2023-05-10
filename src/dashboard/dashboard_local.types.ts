@@ -1,30 +1,17 @@
-import { JsonDoc } from 'git-documentdb';
-import { AppPutAction, InfoState, MessagesPutAction } from './store.types';
-
 /**
  * Petasti
  * © 2023 Hidekazu Kubota
  */
-export interface DashboardInitAction {
-  type: 'dashboard-init';
-  payload: DashboardState;
-}
 
+import { JsonDoc } from 'git-documentdb';
+import { AppPutAction, InfoState, MessagesPutAction } from '../modules_common/store.types';
+
+/**
+ * SearchResultNoteAndCardState
+ */
 export type SearchResultNoteAndCardState = {
   list: SearchResult[];
   selected: number;
-};
-
-export type SearchResultNoteState = {
-  list: SearchResult[];
-  selected: number;
-  prevSelected: number;
-};
-
-export type SearchResult = {
-  type: 'note' | 'card';
-  text: string;
-  url: string;
 };
 
 export interface SearchResultNoteAndCardAction {
@@ -41,6 +28,15 @@ export type SearchResultNoteAndCardActions =
   | SearchResultNoteAndCardAction
   | SearchResultSelectNoteAndCardAction;
 
+/**
+ * SearchResultNoteState
+ */
+export type SearchResultNoteState = {
+  list: SearchResult[];
+  selected: number;
+  prevSelected: number;
+};
+
 export interface SearchResultNoteAction {
   type: 'search-result-note';
   payload: {
@@ -56,8 +52,20 @@ export interface SearchResultSelectNoteAction {
 
 export type SearchResultNoteActions = SearchResultNoteAction | SearchResultSelectNoteAction;
 
+/**
+ * SearchResult Common
+ */
+export type SearchResult = {
+  type: 'note' | 'card';
+  text: string;
+  url: string;
+};
+
 export type SearchResultAction = SearchResultNoteAndCardActions | SearchResultNoteActions;
 
+/**
+ * SelectedCardState
+ */
 export type CardReference = {
   noteName: string;
   url: string;
@@ -79,17 +87,49 @@ export interface SelectedCardReferenceSetAction {
 
 export type SelectedCardAction = SelectedCardSetAction | SelectedCardReferenceSetAction;
 
+/**
+ * DashboardPageState
+ */
+export type DashboardChangePageAction = {
+  type: 'dashboard-change-page';
+  payload: string;
+};
+
+export type DashboardPageState = {
+  activeDashboardName: string;
+  previousActiveDashboardName: string;
+};
+
+/**
+ * InfoState
+ */
+export interface InfoInitAction {
+  type: 'info-init';
+  payload: InfoState;
+}
+
+export type InfoAction = InfoInitAction;
+
+/**
+ * DashboardState
+ */
+export interface DashboardInitAction {
+  type: 'dashboard-init';
+  payload: DashboardState;
+}
+
 export type DashboardState = {
   info: InfoState;
   searchResultNoteAndCard: SearchResultNoteAndCardState;
   searchResultNote: SearchResultNoteState;
   selectedCard: SelectedCardState;
+  page: DashboardPageState;
 };
 
-export type TemporalDashboardAction =
+export type DashboardAction =
+  | DashboardInitAction
   | MessagesPutAction
   | AppPutAction
   | SearchResultAction
-  | SelectedCardAction;
-
-export type DashboardAction = DashboardInitAction | TemporalDashboardAction;
+  | SelectedCardAction
+  | DashboardChangePageAction;

@@ -31,7 +31,7 @@ import {
 import { createCardWindow } from './card';
 import { noteZOrderUpdateCreator } from './note_action_creator';
 import { showConfirmDialog } from './utils_main';
-import { CardReference } from '../modules_common/search.types';
+import { CardReference } from '../dashboard/dashboard_local.types';
 
 /**
  * Create card

@@ -6,10 +6,10 @@ import * as React from 'react';
 import './DashboardTitle.css';
 import { useSelector } from 'react-redux';
 import { MessageLabel } from '../modules_common/i18n';
-import { localContext, LocalProvider } from './store_local';
 import { MenuItemProps } from './MenuItem';
 import { darkenHexColor, strengthenHexColor, uiColors } from '../modules_common/color';
-import { selectorMessages } from './selector';
+import { selectorMessages, selectorPage } from './selector';
+import { dashboardStore } from './store';
 
 export interface DashboardTitleProps {
   title: MessageLabel;
@@ -18,11 +18,10 @@ export interface DashboardTitleProps {
 
 export function DashboardTitle (props: DashboardTitleProps) {
   const messages = useSelector(selectorMessages);
-
-  const [localState, dispatch]: LocalProvider = React.useContext(localContext);
+  const pageState = useSelector(selectorPage);
 
   const activeItem: MenuItemProps | undefined = props.items.find(
-    item => item.id === localState.activeDashboardId
+    item => item.id === pageState.activeDashboardName
   );
   let style;
   if (activeItem !== undefined) {

@@ -4,17 +4,19 @@
  */
 import * as React from 'react';
 import './DashboardPages.css';
-import { localContext, LocalProvider } from './store_local';
+import { useSelector } from 'react-redux';
 import { MenuItemProps } from './MenuItem';
 import { DashboardPageSpace } from './DashboardPageSpace';
 import { DashboardPageSearch } from './DashboardPageSearch';
+import { dashboardStore } from './store';
+import { selectorPage } from './selector';
 
 export interface DashboardProps {
   items: MenuItemProps[];
 }
 
 export function DashboardPages (props: DashboardProps) {
-  const [localState]: LocalProvider = React.useContext(localContext);
+  const pageState = useSelector(selectorPage);
   let activePage: JSX.Element;
   const pages = props.items.reduce((result, item, index) => {
     let page: JSX.Element;
@@ -25,7 +27,7 @@ export function DashboardPages (props: DashboardProps) {
       page = <DashboardPageSpace item={item} index={index} />;
     }
 
-    if (localState.activeDashboardId === item.id) {
+    if (pageState.activeDashboardName === item.id) {
       activePage = page!;
     }
     else {

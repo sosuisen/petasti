@@ -1,9 +1,9 @@
-import { useContext } from 'react';
 import { getRandomInt } from '../modules_common/utils';
-import { LocalAction, localContext, LocalProvider } from './store_local';
+import { DashboardChangePageAction } from './dashboard_local.types';
+import { dashboardStore } from './store';
 
 let currentAudio: HTMLAudioElement;
-export const openAnotherTab = (dispatch: React.Dispatch<LocalAction>, pageName: string) => {
+export const openAnotherTab = (pageName: string) => {
   // Play if page changes
   if (currentAudio !== undefined) {
     currentAudio.pause();
@@ -13,9 +13,9 @@ export const openAnotherTab = (dispatch: React.Dispatch<LocalAction>, pageName: 
   ) as HTMLAudioElement;
   currentAudio.play();
 
-  const action: LocalAction = {
-    type: 'UpdateActiveSetting',
-    activeDashboardId: pageName,
+  const action: DashboardChangePageAction = {
+    type: 'dashboard-change-page',
+    payload: pageName,
   };
-  dispatch(action);
+  dashboardStore.dispatch(action);
 };

@@ -52,6 +52,10 @@ ipcRenderer.on('get-references', (event, refs) => {
   window.postMessage({ command: 'get-references', refs }, 'file://');
 });
 
-ipcRenderer.on('show-page', (event, pageName) => {
-  window.postMessage({ command: 'show-page', pageName }, 'file://');
+ipcRenderer.on('select-page', (event, pageName) => {
+  window.postMessage({ command: 'select-page', pageName }, 'file://');
+});
+
+ipcRenderer.on('escape', event => {
+  window.postMessage({ command: 'escape' }, 'file://');
 });

@@ -2,7 +2,7 @@
  * Petasti
  * © 2023 Hidekazu Kubota
  */
-import { DashboardState } from '../modules_common/search.types';
+import { DashboardState } from './dashboard_local.types';
 
 export const selectorMessages = (state: DashboardState) => {
   return state.info.messages;
@@ -18,4 +18,8 @@ export const selectorSearchResultNote = (state: DashboardState) => {
 
 export const selectorSelectedCard = (state: DashboardState) => {
   return state.selectedCard;
+};
+
+export const selectorPage = (state: DashboardState) => {
+  return state.page;
 };

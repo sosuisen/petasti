@@ -8,11 +8,10 @@ import './DashboardPageSpace.css';
 import { useEffect, useRef } from 'react';
 import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
-import { selectorMessages, selectorSearchResultNote } from './selector';
+import { selectorMessages, selectorPage, selectorSearchResultNote } from './selector';
 import { SearchResult } from './SearchResult';
 import window from './window';
 import { dashboardStore } from './store';
-import { localContext, LocalProvider } from './store_local';
 import { openAnotherTab } from './utils';
 import { uiColors } from '../modules_common/color';
 
@@ -24,9 +23,8 @@ export interface DashboardPageSpaceProps {
 export function DashboardPageSpace (props: DashboardPageSpaceProps) {
   const messages = useSelector(selectorMessages);
   const searchResult = useSelector(selectorSearchResultNote);
-  const [state, dispatch]: LocalProvider = React.useContext(localContext);
   const inputEl = useRef(null);
-
+  const pageState = useSelector(selectorPage);
   const postfix = '-note';
 
   useEffect(() => {
@@ -38,11 +36,11 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
   }, [searchResult]);
 
   useEffect(() => {
-    if (state.activeDashboardId === props.item.id) {
+    if (pageState.activeDashboardName === props.item.id) {
       // @ts-ignore
       if (inputEl.current) inputEl.current.focus();
     }
-  }, [state.activeDashboardId]);
+  }, [pageState.activeDashboardName]);
 
   useEffect(() => {
     window.api.dashboard({
@@ -96,10 +94,7 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
 
   // eslint-disable-next-line complexity
   const onSearchFieldKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.ctrlKey && event.key === 'k') {
-      openAnotherTab(dispatch, 'search');
-    }
-    else if (event.key === 'Enter') {
+    if (event.key === 'Enter') {
       const result = searchResult.list[searchResult.selected];
       if (result && result.type === 'note') {
         const url = result.url;

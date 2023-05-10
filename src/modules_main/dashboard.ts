@@ -92,4 +92,9 @@ export const openDashboard = (note: INote) => {
     // Show search page
     dashboard.webContents.send('select-page', 'search');
   });
+
+  electronLocalshortcut.register(dashboard, 'Escape', () => {
+    // Show search page
+    dashboard.webContents.send('escape');
+  });
 };
