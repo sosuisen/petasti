@@ -35,7 +35,12 @@ import {
   defaultSoundDir,
   soundSrcDir,
 } from './modules_common/store.types';
-import { getRandomInt, getUrlFromSketchId, isLabelOpened, sleep } from './modules_common/utils';
+import {
+  getRandomInt,
+  getUrlFromSketchId,
+  isLabelOpened,
+  sleep,
+} from './modules_common/utils';
 import { initializeUrlSchema, openURL } from './modules_main/url_schema';
 import { DEFAULT_CARD_GEOMETRY } from './modules_common/const';
 import { MESSAGE } from './modules_main/messages';
