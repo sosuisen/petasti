@@ -94,15 +94,17 @@
   font-size: 12px;
   top: 308px;
   left: 0px;
-  width: 460px;
-  height: 70px;
+  width: 454px;
+  height: 62px;
   background-color: #f0f0f0;
   padding: 3px;
+  overflow-y: auto;
 }
 
 .ref {
   padding: 1px 3px 1px 3px;
   float: left;
   border-radius: 3px;
+  margin: 2px;
   background-color: #ffcac4;
 }
