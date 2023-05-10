@@ -4,15 +4,7 @@
  */
 import url from 'url';
 import path from 'path';
-import {
-  app,
-  BrowserWindow,
-  Display,
-  globalShortcut,
-  ipcMain,
-  Rectangle,
-  screen,
-} from 'electron';
+import { app, BrowserWindow, Display, ipcMain, Rectangle, screen } from 'electron';
 import { TaskMetadata } from 'git-documentdb';
 import bezier from 'bezier-easing';
 import AsyncLock from 'async-lock';
@@ -63,6 +55,13 @@ import {
   moveCardOutsideFromRightForMove,
 } from './card_locator';
 import { closeDashboard, dashboard, openDashboard } from './dashboard';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { electronLocalshortcut } = require('@hfelix/electron-localshortcut');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { getCurrentKeyboardLayout, getKeyMap } = require('native-keymap');
+
+electronLocalshortcut.setKeyboardLayout(getCurrentKeyboardLayout(), getKeyMap());
 
 type AccelCheck = {
   prevTime: number;
@@ -473,6 +472,8 @@ export class Card implements ICard {
         event.preventDefault();
         //      }
       });
+
+      this._addLocalShortcuts();
     }
   }
 
@@ -1040,288 +1041,281 @@ export class Card implements ICard {
     return type === 'position' ? positionChangeUnitSmall : sizeChangeUnitSmall;
   };
 
-  public addShortcuts = () => {
-    lock.acquire('registerShortcut', () => {
-      // Available shortcuts
-      // https://github.com/electron/electron/blob/main/docs/api/accelerator.md
-      let opt = 'Alt';
-      if (process.platform === 'darwin') {
-        opt = 'Option';
+  // Available shortcuts
+  private _addLocalShortcuts = () => {
+    // https://github.com/electron/electron/blob/main/docs/api/accelerator.md
+    let opt = 'Alt';
+    if (process.platform === 'darwin') {
+      opt = 'Option';
+    }
+
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+R', () => {
+      // Disable reload
+      // nop
+    });
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+W', () => {
+      // Disable close
+      // nop
+    });
+    electronLocalshortcut.register(this.window, opt + '+C', () => {
+      // if (this.status === 'Blurred') return;
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      // Context menu
+      this.window.webContents.sendInputEvent({
+        button: 'right',
+        type: 'mouseUp',
+        x: 30,
+        y: 30,
+      });
+    });
+    electronLocalshortcut.register(this.window, opt + '+T', () => {
+      this._note.tray.popUpContextMenu();
+    });
+
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+N', () => {
+      createRandomColorCard(this._note);
+    });
+    electronLocalshortcut.register(this.window, opt + '+N', () => {
+      createRandomColorCard(this._note);
+    });
+
+    const createSameColorCard = () => {
+      const cardId = generateNewCardId();
+      const newUrl = `${APP_SCHEME}://local/${this._note.settings.currentNoteId}/${cardId}`;
+
+      const geometry = { ...DEFAULT_CARD_GEOMETRY };
+      geometry.x = this.sketch.geometry.x + 30;
+      geometry.y = this.sketch.geometry.y + 30;
+      geometry.width = this.sketch.geometry.width;
+      geometry.height = this.sketch.geometry.height;
+
+      const newBody: Partial<CardBody> = {};
+      const newSketch: Partial<CardSketch> = {
+        geometry: {
+          x: geometry.x,
+          y: geometry.y,
+          z: 0,
+          width: geometry.width,
+          height: geometry.height,
+        },
+        style: {
+          uiColor: this.sketch.style.uiColor,
+          backgroundColor: this.sketch.style.backgroundColor,
+          opacity: this.sketch.style.opacity,
+          zoom: this.sketch.style.zoom,
+        },
+      };
+      createCardWindow(this._note, newUrl, newBody, newSketch);
+    };
+
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+Shift+N', () => {
+      createSameColorCard();
+    });
+    electronLocalshortcut.register(this.window, opt + '+Shift+N', () => {
+      createSameColorCard();
+    });
+
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+Plus', () => {
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      this.window.webContents.send('zoom-in');
+    });
+/*    electronLocalshortcut.register(this.window, 'CmdOrCtrl+NumpadAdd', () => {
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      this.window.webContents.send('zoom-in');
+    });
+*/
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+-', () => {
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      this.window.webContents.send('zoom-out');
+    });
+    /*
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+NumpadSubtract', () => {
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      this.window.webContents.send('zoom-out');
+    });
+*/
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+W', async () => {
+      // Close
+      await moveCardOutsideFromBottom(this.url);
+      await this._note.deleteCardSketch(this.url);
+    });
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Up', () => {
+      // if (this.status === 'Blurred') return;
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      const changeUnit = this._getChangeUnit('up', 'position');
+      const [oldX, oldY] = this.window.getPosition();
+      let newY = oldY - changeUnit;
+
+      const displayRect: Display = screen.getDisplayNearestPoint({ x: oldX, y: newY });
+      if (newY < displayRect.bounds.y) newY = displayRect.bounds.y;
+
+      this._moveByKey(oldX, newY);
+    });
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Down', () => {
+      // if (this.status === 'Blurred') return;
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      const changeUnit = this._getChangeUnit('down', 'position');
+      const rect = this.window.getBounds();
+      const oldX = rect.x;
+      const oldY = rect.y;
+      const oldHeight = rect.height;
+
+      let newY = oldY + changeUnit;
+
+      const displayRect: Display = screen.getDisplayNearestPoint({
+        x: oldX,
+        y: newY + oldHeight,
+      });
+      if (
+        newY >
+        displayRect.bounds.y + displayRect.bounds.height - WINDOW_POSITION_EDGE_MARGIN
+      ) {
+        newY =
+          displayRect.bounds.y + displayRect.bounds.height - WINDOW_POSITION_EDGE_MARGIN;
       }
 
-      globalShortcut.register('CommandOrControl+R', () => {
-        // Disable reload
-        // nop
-      });
-      globalShortcut.register('CommandOrControl+W', () => {
-        // Disable close
-        // nop
-      });
-      globalShortcut.register(opt + '+C', () => {
-        // if (this.status === 'Blurred') return;
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        // Context menu
-        this.window.webContents.sendInputEvent({
-          button: 'right',
-          type: 'mouseUp',
-          x: 30,
-          y: 30,
-        });
-      });
-      globalShortcut.register(opt + '+T', () => {
-        // if (this.status === 'Blurred') return;
-        this._note.tray.popUpContextMenu();
-      });
-      globalShortcut.registerAll(['CommandOrControl+N', opt + '+N'], () => {
-        // if (this.status === 'Blurred') return;
-        createRandomColorCard(this._note);
-      });
-      globalShortcut.registerAll(['CommandOrControl+Shift+N', opt + '+Shift+N'], () => {
-        // if (this.status === 'Blurred') return;
-        const cardId = generateNewCardId();
-        const newUrl = `${APP_SCHEME}://local/${this._note.settings.currentNoteId}/${cardId}`;
+      this._moveByKey(oldX, newY);
+    });
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Left', () => {
+      // if (this.status === 'Blurred') return;
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      const changeUnit = this._getChangeUnit('left', 'position');
+      const rect = this.window.getBounds();
+      const oldX = rect.x;
+      const oldY = rect.y;
+      const oldWidth = rect.width;
 
-        const geometry = { ...DEFAULT_CARD_GEOMETRY };
-        geometry.x = this.sketch.geometry.x + 30;
-        geometry.y = this.sketch.geometry.y + 30;
-        geometry.width = this.sketch.geometry.width;
-        geometry.height = this.sketch.geometry.height;
+      let newX = oldX - changeUnit;
 
-        const newBody: Partial<CardBody> = {};
-        const newSketch: Partial<CardSketch> = {
-          geometry: {
-            x: geometry.x,
-            y: geometry.y,
-            z: 0,
-            width: geometry.width,
-            height: geometry.height,
-          },
-          style: {
-            uiColor: this.sketch.style.uiColor,
-            backgroundColor: this.sketch.style.backgroundColor,
-            opacity: this.sketch.style.opacity,
-            zoom: this.sketch.style.zoom,
-          },
-        };
-        createCardWindow(this._note, newUrl, newBody, newSketch);
+      const displayRect: Display = screen.getDisplayNearestPoint({ x: newX, y: oldY });
+      if (newX < displayRect.bounds.x - oldWidth + WINDOW_POSITION_EDGE_MARGIN) {
+        newX = displayRect.bounds.x - oldWidth + WINDOW_POSITION_EDGE_MARGIN;
+      }
+
+      this._moveByKey(newX, oldY);
+    });
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Right', () => {
+      // if (this.status === 'Blurred') return;
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      const changeUnit = this._getChangeUnit('right', 'position');
+      const rect = this.window.getBounds();
+      const oldX = rect.x;
+      const oldY = rect.y;
+      const oldWidth = rect.width;
+
+      let newX = oldX + changeUnit;
+
+      const displayRect: Display = screen.getDisplayNearestPoint({
+        x: newX + oldWidth,
+        y: oldY,
       });
-      globalShortcut.registerAll(
-        ['CommandOrControl+Plus', 'CommandOrControl+numadd'],
-        () => {
-          // if (this.status === 'Blurred') return;
-          if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-          this.window.webContents.send('zoom-in');
+      if (
+        newX >
+        displayRect.bounds.x + displayRect.bounds.width - WINDOW_POSITION_EDGE_MARGIN
+      ) {
+        newX =
+          displayRect.bounds.x + displayRect.bounds.width - WINDOW_POSITION_EDGE_MARGIN;
+      }
+
+      this._moveByKey(newX, oldY);
+    });
+
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Shift+Left', () => {
+      // if (this.status === 'Blurred') return;
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      const changeUnit = this._getChangeUnit('left', 'size');
+      const [oldWidth, oldHeight] = this.window.getSize();
+      let newWidth = oldWidth - changeUnit;
+      if (newWidth < MINIMUM_WINDOW_WIDTH) newWidth = MINIMUM_WINDOW_WIDTH;
+      this._resizeByKey(newWidth, oldHeight);
+    });
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Shift+Right', () => {
+      // if (this.status === 'Blurred') return;
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      const changeUnit = this._getChangeUnit('right', 'size');
+      const [oldWidth, oldHeight] = this.window.getSize();
+      const newWidth = oldWidth + changeUnit;
+      this._resizeByKey(newWidth, oldHeight);
+    });
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Shift+Up', () => {
+      // if (this.status === 'Blurred') return;
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      const changeUnit = this._getChangeUnit('up', 'size');
+      const [oldWidth, oldHeight] = this.window.getSize();
+      let newHeight = oldHeight - changeUnit;
+      if (newHeight < MINIMUM_WINDOW_HEIGHT) newHeight = MINIMUM_WINDOW_HEIGHT;
+      this._resizeByKey(oldWidth, newHeight);
+    });
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Shift+Down', () => {
+      // if (this.status === 'Blurred') return;
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      const changeUnit = this._getChangeUnit('down', 'size');
+      const [oldWidth, oldHeight] = this.window.getSize();
+      const newHeight = oldHeight + changeUnit;
+      this._resizeByKey(oldWidth, newHeight);
+    });
+
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+S', () => {
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      if (isLabelOpened(this.sketch.label.status))
+        this.window.webContents.send('toggle-sticker');
+    });
+
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Space', () => {
+      // if (this.status === 'Blurred') return;
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      if (isLabelOpened(this.sketch.label.status)) {
+        this.window.webContents.send('transform-from-label');
+      }
+      else {
+        this.window.webContents.send('transform-to-label');
+      }
+    });
+
+    // For debugging
+    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+D', () => {
+      // if (!app.isPackaged && process.env.NODE_ENV === 'development') {
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      this.window.webContents.openDevTools();
+      // }
+    });
+
+    const moveFocusTo = (direction: Direction) => {
+      // Move current focus to right card
+      const relPos = calcRelativePositionOfCardUrl(this.url);
+      if (relPos[direction].length > 0) {
+        const nearestCardUrl = relPos[direction].reduce(
+          (prev, cur) => (prev.distance > cur.distance ? cur : prev),
+          relPos[direction][0]
+        ).url;
+        const nextCard = cacheOfCard.get(nearestCardUrl);
+        if (nextCard) {
+          nextCard.suppressFocusEvent = false;
+          nextCard.window?.focus();
         }
-      );
-      globalShortcut.registerAll(['CommandOrControl+-', 'CommandOrControl+numsub'], () => {
-        // if (this.status === 'Blurred') return;
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        this.window.webContents.send('zoom-out');
-      });
-      globalShortcut.register('CommandOrControl+' + opt + '+W', async () => {
-        // Close
-        await moveCardOutsideFromBottom(this.url);
-        await this._note.deleteCardSketch(this.url);
-      });
-      globalShortcut.register('CommandOrControl+' + opt + '+Up', () => {
-        // if (this.status === 'Blurred') return;
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        const changeUnit = this._getChangeUnit('up', 'position');
-        const [oldX, oldY] = this.window.getPosition();
-        let newY = oldY - changeUnit;
+      }
+    };
 
-        const displayRect: Display = screen.getDisplayNearestPoint({ x: oldX, y: newY });
-        if (newY < displayRect.bounds.y) newY = displayRect.bounds.y;
-
-        this._moveByKey(oldX, newY);
-      });
-      globalShortcut.register('CommandOrControl+' + opt + '+Down', () => {
-        // if (this.status === 'Blurred') return;
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        const changeUnit = this._getChangeUnit('down', 'position');
-        const rect = this.window.getBounds();
-        const oldX = rect.x;
-        const oldY = rect.y;
-        const oldHeight = rect.height;
-
-        let newY = oldY + changeUnit;
-
-        const displayRect: Display = screen.getDisplayNearestPoint({
-          x: oldX,
-          y: newY + oldHeight,
-        });
-        if (
-          newY >
-          displayRect.bounds.y + displayRect.bounds.height - WINDOW_POSITION_EDGE_MARGIN
-        ) {
-          newY =
-            displayRect.bounds.y + displayRect.bounds.height - WINDOW_POSITION_EDGE_MARGIN;
-        }
-
-        this._moveByKey(oldX, newY);
-      });
-      globalShortcut.register('CommandOrControl+' + opt + '+Left', () => {
-        // if (this.status === 'Blurred') return;
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        const changeUnit = this._getChangeUnit('left', 'position');
-        const rect = this.window.getBounds();
-        const oldX = rect.x;
-        const oldY = rect.y;
-        const oldWidth = rect.width;
-
-        let newX = oldX - changeUnit;
-
-        const displayRect: Display = screen.getDisplayNearestPoint({ x: newX, y: oldY });
-        if (newX < displayRect.bounds.x - oldWidth + WINDOW_POSITION_EDGE_MARGIN) {
-          newX = displayRect.bounds.x - oldWidth + WINDOW_POSITION_EDGE_MARGIN;
-        }
-
-        this._moveByKey(newX, oldY);
-      });
-      globalShortcut.register('CommandOrControl+' + opt + '+Right', () => {
-        // if (this.status === 'Blurred') return;
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        const changeUnit = this._getChangeUnit('right', 'position');
-        const rect = this.window.getBounds();
-        const oldX = rect.x;
-        const oldY = rect.y;
-        const oldWidth = rect.width;
-
-        let newX = oldX + changeUnit;
-
-        const displayRect: Display = screen.getDisplayNearestPoint({
-          x: newX + oldWidth,
-          y: oldY,
-        });
-        if (
-          newX >
-          displayRect.bounds.x + displayRect.bounds.width - WINDOW_POSITION_EDGE_MARGIN
-        ) {
-          newX =
-            displayRect.bounds.x + displayRect.bounds.width - WINDOW_POSITION_EDGE_MARGIN;
-        }
-
-        this._moveByKey(newX, oldY);
-      });
-
-      globalShortcut.register('CommandOrControl+' + opt + '+Shift+Left', () => {
-        // if (this.status === 'Blurred') return;
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        const changeUnit = this._getChangeUnit('left', 'size');
-        const [oldWidth, oldHeight] = this.window.getSize();
-        let newWidth = oldWidth - changeUnit;
-        if (newWidth < MINIMUM_WINDOW_WIDTH) newWidth = MINIMUM_WINDOW_WIDTH;
-        this._resizeByKey(newWidth, oldHeight);
-      });
-      globalShortcut.register('CommandOrControl+' + opt + '+Shift+Right', () => {
-        // if (this.status === 'Blurred') return;
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        const changeUnit = this._getChangeUnit('right', 'size');
-        const [oldWidth, oldHeight] = this.window.getSize();
-        const newWidth = oldWidth + changeUnit;
-        this._resizeByKey(newWidth, oldHeight);
-      });
-      globalShortcut.register('CommandOrControl+' + opt + '+Shift+Up', () => {
-        // if (this.status === 'Blurred') return;
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        const changeUnit = this._getChangeUnit('up', 'size');
-        const [oldWidth, oldHeight] = this.window.getSize();
-        let newHeight = oldHeight - changeUnit;
-        if (newHeight < MINIMUM_WINDOW_HEIGHT) newHeight = MINIMUM_WINDOW_HEIGHT;
-        this._resizeByKey(oldWidth, newHeight);
-      });
-      globalShortcut.register('CommandOrControl+' + opt + '+Shift+Down', () => {
-        // if (this.status === 'Blurred') return;
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        const changeUnit = this._getChangeUnit('down', 'size');
-        const [oldWidth, oldHeight] = this.window.getSize();
-        const newHeight = oldHeight + changeUnit;
-        this._resizeByKey(oldWidth, newHeight);
-      });
-
-      globalShortcut.register('CommandOrControl+' + opt + '+S', () => {
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        if (isLabelOpened(this.sketch.label.status))
-          this.window.webContents.send('toggle-sticker');
-      });
-
-      globalShortcut.register('CommandOrControl+' + opt + '+Space', () => {
-        // if (this.status === 'Blurred') return;
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        if (isLabelOpened(this.sketch.label.status)) {
-          this.window.webContents.send('transform-from-label');
-        }
-        else {
-          this.window.webContents.send('transform-to-label');
-        }
-      });
-
-      // For debugging
-      globalShortcut.register('CommandOrControl+' + opt + '+D', () => {
-        // if (!app.isPackaged && process.env.NODE_ENV === 'development') {
-        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-        this.window.webContents.openDevTools();
-        // }
-      });
-
-      const moveFocusTo = (direction: Direction) => {
-        // Move current focus to right card
-        const relPos = calcRelativePositionOfCardUrl(this.url);
-        if (relPos[direction].length > 0) {
-          const nearestCardUrl = relPos[direction].reduce(
-            (prev, cur) => (prev.distance > cur.distance ? cur : prev),
-            relPos[direction][0]
-          ).url;
-          const nextCard = cacheOfCard.get(nearestCardUrl);
-          if (nextCard) {
-            nextCard.suppressFocusEvent = false;
-            nextCard.window?.focus();
-          }
-        }
-      };
-
-      // Spatial hjkl
-      globalShortcut.registerAll([`${opt}+Left`], () => {
-        moveFocusTo('left');
-      });
-      globalShortcut.registerAll([`${opt}+Down`], () => {
-        moveFocusTo('down');
-      });
-      globalShortcut.registerAll([`${opt}+Up`], () => {
-        moveFocusTo('up');
-      });
-      globalShortcut.registerAll([`${opt}+Right`], () => {
-        moveFocusTo('right');
-      });
+    // Spatial hjkl
+    electronLocalshortcut.register(this.window, `${opt}+Left`, () => {
+      moveFocusTo('left');
+    });
+    electronLocalshortcut.register(this.window, `${opt}+Down`, () => {
+      moveFocusTo('down');
+    });
+    electronLocalshortcut.register(this.window, `${opt}+Up`, () => {
+      moveFocusTo('up');
+    });
+    electronLocalshortcut.register(this.window, `${opt}+Right`, () => {
+      moveFocusTo('right');
     });
   };
 
+  public addShortcuts = () => {
+    lock.acquire('registerShortcut', () => {});
+  };
+
   private _removeShortcuts = () => {
-    lock.acquire('registerShortcut', () => {
-      globalShortcut.unregisterAll();
-      let opt = 'Alt';
-      if (process.platform === 'darwin') {
-        opt = 'Option';
-      }
-      globalShortcut.registerAll([`CommandOrControl+${opt}+Shift+Enter`], () => {
-        this._note.tray.popUpContextMenu();
-      });
-      globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
-        if (dashboard !== undefined && !dashboard.isDestroyed()) {
-          closeDashboard();
-        }
-        else {
-          openDashboard(this._note);
-        }
-      });
-      // 'F'ront
-      globalShortcut.registerAll([`CommandOrControl+${opt}+F`], () => {
-        sortCardWindows(this._note.currentZOrder, true);
-      });
-      // 'B'ack
-      globalShortcut.registerAll([`CommandOrControl+${opt}+B`], () => {
-        minimizeAllCards(this._note.currentZOrder);
-      });
-    });
+    lock.acquire('registerShortcut', () => {});
   };
 }
