@@ -10,9 +10,6 @@ contextBridge.exposeInMainWorld('api', {
   /**
    * Command from Renderer process
    */
-  db: (command: DatabaseCommand) => {
-    return ipcRenderer.invoke('db-dashboard', command);
-  },
   dashboard: (command: DashboardCommand) => {
     return ipcRenderer.invoke('dashboard', command);
   },

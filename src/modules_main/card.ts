@@ -227,7 +227,6 @@ export const createCardWindow = async (
 
   await card.render();
   card.window?.focus();
-  card.addShortcuts();
   card.window?.webContents.send('card-focused');
 
   note.currentZOrder.push(card.url);
@@ -531,12 +530,6 @@ export class Card implements ICard {
       this._note.logger.debug('# Error in removeWindowListeners() ' + err);
     }
 
-    try {
-      this._removeShortcuts();
-    } catch (err) {
-      this._note.logger.debug('# Error in removeShortcuts() ' + err);
-    }
-
     this.disposeContextMenu();
 
     cacheOfCard.delete(this.url);
@@ -581,8 +574,6 @@ export class Card implements ICard {
     else {
       console.debug(`# focus ${this.url}`);
       try {
-        this.addShortcuts();
-
         if (this._note.currentZOrder[this._note.currentZOrder.length - 1] === this.url) {
           console.log('zOrder no change');
           this.window?.webContents.send('card-focused');
@@ -603,9 +594,6 @@ export class Card implements ICard {
   };
 
   private _blurListener = () => {
-    // this.status = 'Blurred';
-    this._removeShortcuts();
-
     if (this.suppressBlurEventOnce) {
       console.debug(`skip blur event listener ${this.url}`);
       this.suppressBlurEventOnce = false;
@@ -1051,11 +1039,17 @@ export class Card implements ICard {
 
     electronLocalshortcut.register(this.window, 'CmdOrCtrl+R', () => {
       // Disable reload
-      // nop
+
+      // return true to prevent default
+      // https://github.com/parro-it/electron-localshortcut/pull/92
+      return true;
     });
     electronLocalshortcut.register(this.window, 'CmdOrCtrl+W', () => {
       // Disable close
-      // nop
+
+      // return true to prevent default
+      // https://github.com/parro-it/electron-localshortcut/pull/92
+      return true;
     });
     electronLocalshortcut.register(this.window, opt + '+C', () => {
       // if (this.status === 'Blurred') return;
@@ -1079,66 +1073,55 @@ export class Card implements ICard {
       createRandomColorCard(this._note);
     });
 
-    const createSameColorCard = () => {
-      const cardId = generateNewCardId();
-      const newUrl = `${APP_SCHEME}://local/${this._note.settings.currentNoteId}/${cardId}`;
+    electronLocalshortcut.register(
+      this.window,
+      ['CmdOrCtrl+Shift+N', opt + '+Shift+N'],
+      () => {
+        const cardId = generateNewCardId();
+        const newUrl = `${APP_SCHEME}://local/${this._note.settings.currentNoteId}/${cardId}`;
 
-      const geometry = { ...DEFAULT_CARD_GEOMETRY };
-      geometry.x = this.sketch.geometry.x + 30;
-      geometry.y = this.sketch.geometry.y + 30;
-      geometry.width = this.sketch.geometry.width;
-      geometry.height = this.sketch.geometry.height;
+        const geometry = { ...DEFAULT_CARD_GEOMETRY };
+        geometry.x = this.sketch.geometry.x + 30;
+        geometry.y = this.sketch.geometry.y + 30;
+        geometry.width = this.sketch.geometry.width;
+        geometry.height = this.sketch.geometry.height;
 
-      const newBody: Partial<CardBody> = {};
-      const newSketch: Partial<CardSketch> = {
-        geometry: {
-          x: geometry.x,
-          y: geometry.y,
-          z: 0,
-          width: geometry.width,
-          height: geometry.height,
-        },
-        style: {
-          uiColor: this.sketch.style.uiColor,
-          backgroundColor: this.sketch.style.backgroundColor,
-          opacity: this.sketch.style.opacity,
-          zoom: this.sketch.style.zoom,
-        },
-      };
-      createCardWindow(this._note, newUrl, newBody, newSketch);
-    };
-
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+Shift+N', () => {
-      createSameColorCard();
-    });
-    electronLocalshortcut.register(this.window, opt + '+Shift+N', () => {
-      createSameColorCard();
-    });
+        const newBody: Partial<CardBody> = {};
+        const newSketch: Partial<CardSketch> = {
+          geometry: {
+            x: geometry.x,
+            y: geometry.y,
+            z: 0,
+            width: geometry.width,
+            height: geometry.height,
+          },
+          style: {
+            uiColor: this.sketch.style.uiColor,
+            backgroundColor: this.sketch.style.backgroundColor,
+            opacity: this.sketch.style.opacity,
+            zoom: this.sketch.style.zoom,
+          },
+        };
+        createCardWindow(this._note, newUrl, newBody, newSketch);
+      }
+    );
 
     electronLocalshortcut.register(this.window, 'CmdOrCtrl+Plus', () => {
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       this.window.webContents.send('zoom-in');
     });
-/*    electronLocalshortcut.register(this.window, 'CmdOrCtrl+NumpadAdd', () => {
-      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-      this.window.webContents.send('zoom-in');
-    });
-*/
+
     electronLocalshortcut.register(this.window, 'CmdOrCtrl+-', () => {
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       this.window.webContents.send('zoom-out');
     });
-    /*
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+NumpadSubtract', () => {
-      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-      this.window.webContents.send('zoom-out');
-    });
-*/
+
     electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+W', async () => {
       // Close
       await moveCardOutsideFromBottom(this.url);
       await this._note.deleteCardSketch(this.url);
     });
+
     electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Up', () => {
       // if (this.status === 'Blurred') return;
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
@@ -1255,7 +1238,7 @@ export class Card implements ICard {
       this._resizeByKey(oldWidth, newHeight);
     });
 
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+S', () => {
+    electronLocalshortcut.register(this.window, 'Space', () => {
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       if (isLabelOpened(this.sketch.label.status))
         this.window.webContents.send('toggle-sticker');
@@ -1309,13 +1292,5 @@ export class Card implements ICard {
     electronLocalshortcut.register(this.window, `${opt}+Right`, () => {
       moveFocusTo('right');
     });
-  };
-
-  public addShortcuts = () => {
-    lock.acquire('registerShortcut', () => {});
-  };
-
-  private _removeShortcuts = () => {
-    lock.acquire('registerShortcut', () => {});
   };
 }
