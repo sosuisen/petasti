@@ -51,8 +51,10 @@
   height: 30px;
   top: 0px;
   left: 0px;
-  font-size: 24px;
-  background-color: #c0c0c0;
+  font-size: 20px;
+  background-color: #e0e0e0;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
 }
 
 .cloneCardButton {
@@ -81,6 +83,8 @@
   height: 260px;
   opacity: 1.0;
   background-color: #f6f6f6;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
 }
 
 .referenceArea {
