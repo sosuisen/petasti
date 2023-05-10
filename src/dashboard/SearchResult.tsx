@@ -53,10 +53,12 @@ export function SearchResult (props: SearchResultProps) {
   };
 
   const onMouseLeave = () => {
+    /*
     dashboardStore.dispatch({
       type: `search-result-select${postfix}`,
       payload: -1,
     });
+    */
   };
 
   return (
@@ -68,7 +70,10 @@ export function SearchResult (props: SearchResultProps) {
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <span style={{ color: '#ff90f0' }} className='fab fa-flipboard'></span>
+      <span
+        style={props.type === 'note' ? { color: '#ff90f0' } : { color: '#d09020' }}
+        className={props.type === 'note' ? 'fas fa-th' : 'fab fa-flipboard'}
+      ></span>
       &nbsp;&nbsp;
       {props.text}
     </div>

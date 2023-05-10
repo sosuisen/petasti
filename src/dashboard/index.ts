@@ -111,7 +111,10 @@ window.addEventListener('message', event => {
 
       dashboardStore.dispatch({
         type: 'search-result-note',
-        payload: [...noteList],
+        payload: {
+          list: [...noteList],
+          selected: event.data.currentIndex,
+        },
       });
 
       break;

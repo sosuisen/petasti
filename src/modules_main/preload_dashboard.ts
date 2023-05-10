@@ -36,8 +36,11 @@ ipcRenderer.on('search-result-note-and-card', (event, noteResults, cardResults) 
   );
 });
 
-ipcRenderer.on('search-result-note', (event, noteResults) => {
-  window.postMessage({ command: 'search-result-note', noteResults }, 'file://');
+ipcRenderer.on('search-result-note', (event, noteResults, currentIndex) => {
+  window.postMessage(
+    { command: 'search-result-note', noteResults, currentIndex },
+    'file://'
+  );
 });
 
 ipcRenderer.on('get-all-notes', (event, noteResults) => {

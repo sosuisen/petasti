@@ -30,6 +30,14 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
   const postfix = '-note';
 
   useEffect(() => {
+    if (searchResult.prevSelected === -1) {
+      if (searchResult.selected > 2) {
+        setScrollTop(searchResult.selected);
+      }
+    }
+  }, [searchResult]);
+
+  useEffect(() => {
     if (state.activeDashboardId === props.item.id) {
       // @ts-ignore
       if (inputEl.current) inputEl.current.focus();
@@ -103,10 +111,9 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
     }
     else if (event.key === 'ArrowDown') {
       if (searchResult.selected < searchResult.list.length - 1) {
-        if (searchResult.selected > 2) {
+        if (searchResult.selected + 1 > 2) {
           setScrollTop(searchResult.selected + 1);
         }
-
         dashboardStore.dispatch({
           type: 'search-result-select-note',
           payload: searchResult.selected + 1,
@@ -115,7 +122,7 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
     }
     else if (event.key === 'ArrowUp') {
       if (searchResult.selected >= 0) {
-        if (searchResult.selected > 2) {
+        if (searchResult.selected - 1 > 2) {
           setScrollTop(searchResult.selected - 1);
         }
         dashboardStore.dispatch({

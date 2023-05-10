@@ -18,6 +18,7 @@ export type SearchResultNoteAndCardState = {
 export type SearchResultNoteState = {
   list: SearchResult[];
   selected: number;
+  prevSelected: number;
 };
 
 export type SearchResult = {
@@ -42,7 +43,10 @@ export type SearchResultNoteAndCardActions =
 
 export interface SearchResultNoteAction {
   type: 'search-result-note';
-  payload: SearchResult[];
+  payload: {
+    list: SearchResult[];
+    selected: number;
+  };
 }
 
 export interface SearchResultSelectNoteAction {

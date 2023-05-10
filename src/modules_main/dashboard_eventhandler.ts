@@ -49,13 +49,13 @@ export const addDashboardHandler = (note: INote) => {
         const noteResults = note.noteCollection.search('noteprop', command.data);
         const cardResults = note.cardCollection.search('card', command.data);
 
-        const noteDocs = await Promise.all(
-          noteResults.map(res => note.noteCollection.get(res.ref))
-        );
+        const noteDocs = (
+          await Promise.all(noteResults.map(res => note.noteCollection.get(res.ref)))
+        ).filter(n => n !== undefined);
 
-        const cardDocs = await Promise.all(
-          cardResults.map(res => note.cardCollection.get(res.ref))
-        );
+        const cardDocs = (
+          await Promise.all(cardResults.map(res => note.cardCollection.get(res.ref)))
+        ).filter(c => c !== undefined);
 
         dashboard.webContents.send('search-result-note-and-card', noteDocs, cardDocs);
 
@@ -79,7 +79,10 @@ export const addDashboardHandler = (note: INote) => {
           return 0;
         });
 
-        dashboard.webContents.send('search-result-note', noteDocs);
+        const currentNoteProp = noteStore.getState().get(note.settings.currentNoteId)!;
+        const currentIndex = noteDocs.indexOf(currentNoteProp);
+
+        dashboard.webContents.send('search-result-note', noteDocs, currentIndex);
 
         break;
       }
@@ -153,7 +156,9 @@ export const addDashboardHandler = (note: INote) => {
           return 0;
         });
 
-        dashboard.webContents.send('search-result-note', noteDocs);
+        const currentIndex = noteDocs.indexOf(newNoteProp);
+
+        dashboard.webContents.send('search-result-note', noteDocs, currentIndex);
 
         break;
       }

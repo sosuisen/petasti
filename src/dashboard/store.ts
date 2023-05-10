@@ -68,18 +68,21 @@ const searchResultNoteReducer = (
   state: SearchResultNoteState = {
     list: [],
     selected: -1,
+    prevSelected: -1,
   },
   action: SearchResultNoteActions
 ) => {
   switch (action.type) {
     case 'search-result-note':
       return {
-        list: JSON.parse(JSON.stringify(action.payload)),
-        selected: -1,
+        list: JSON.parse(JSON.stringify(action.payload.list)),
+        selected: action.payload.selected,
+        prevSelected: state.prevSelected,
       };
     case 'search-result-select-note': {
       const newState = JSON.parse(JSON.stringify(state));
       newState.selected = action.payload;
+      newState.prevSelected = state.selected;
       return newState;
     }
     default:

@@ -116,7 +116,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     }
     else if (event.key === 'ArrowDown') {
       if (searchResult.selected < searchResult.list.length - 1) {
-        if (searchResult.selected > 2) {
+        if (searchResult.selected + 1 > 2) {
           setScrollTop(searchResult.selected + 1);
         }
 
@@ -128,7 +128,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     }
     else if (event.key === 'ArrowUp') {
       if (searchResult.selected >= 0) {
-        if (searchResult.selected > 2) {
+        if (searchResult.selected - 1 > 2) {
           setScrollTop(searchResult.selected - 1);
         }
         dashboardStore.dispatch({
