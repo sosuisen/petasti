@@ -8,7 +8,6 @@ import { app, BrowserWindow, Display, ipcMain, Rectangle, screen } from 'electro
 import { TaskMetadata } from 'git-documentdb';
 import bezier from 'bezier-easing';
 import AsyncLock from 'async-lock';
-import { sleep } from 'git-documentdb-plugin-remote-nodegit';
 import {
   generateNewCardId,
   getCardIdFromUrl,
@@ -54,7 +53,6 @@ import {
   moveCardOutsideFromRightForCopy,
   moveCardOutsideFromRightForMove,
 } from './card_locator';
-import { closeDashboard, dashboard, openDashboard } from './dashboard';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { electronLocalshortcut } = require('@hfelix/electron-localshortcut');

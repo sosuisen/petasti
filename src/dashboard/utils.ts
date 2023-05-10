@@ -3,7 +3,7 @@ import { getRandomInt } from '../modules_common/utils';
 import { LocalAction, localContext, LocalProvider } from './store_local';
 
 let currentAudio: HTMLAudioElement;
-export const openAnotherTab = (dispatch: React.Dispatch<LocalAction>, tabId: string) => {
+export const openAnotherTab = (dispatch: React.Dispatch<LocalAction>, pageName: string) => {
   // Play if page changes
   if (currentAudio !== undefined) {
     currentAudio.pause();
@@ -15,7 +15,7 @@ export const openAnotherTab = (dispatch: React.Dispatch<LocalAction>, tabId: str
 
   const action: LocalAction = {
     type: 'UpdateActiveSetting',
-    activeDashboardId: tabId,
+    activeDashboardId: pageName,
   };
   dispatch(action);
 };

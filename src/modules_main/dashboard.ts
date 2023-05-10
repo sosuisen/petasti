@@ -3,10 +3,17 @@
  * © 2023 Hidekazu Kubota
  */
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import { INote } from './note_types';
 import { APP_ICON_NAME } from '../modules_common/const';
 import { openURL } from './url_schema';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { electronLocalshortcut } = require('@hfelix/electron-localshortcut');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { getCurrentKeyboardLayout, getKeyMap } = require('native-keymap');
+
+electronLocalshortcut.setKeyboardLayout(getCurrentKeyboardLayout(), getKeyMap());
 
 // eslint-disable-next-line import/no-mutable-exports
 export let dashboard: BrowserWindow;
@@ -58,4 +65,31 @@ export const openDashboard = (note: INote) => {
       dashboard.webContents.openDevTools();
     }
   }
+
+  // https://github.com/electron/electron/blob/main/docs/api/accelerator.md
+  let opt = 'Alt';
+  if (process.platform === 'darwin') {
+    opt = 'Option';
+  }
+
+  electronLocalshortcut.register(dashboard, 'CmdOrCtrl+R', () => {
+    // Disable reload
+
+    // return true to prevent default
+    // https://github.com/parro-it/electron-localshortcut/pull/92
+    return true;
+  });
+  /* Close window is allowed
+  electronLocalshortcut.register(this.window, 'CmdOrCtrl+W', () => {
+  });
+  */
+  electronLocalshortcut.register(dashboard, 'CmdOrCtrl+S', () => {
+    // Show space list page
+    dashboard.webContents.send('select-page', 'space');
+  });
+
+  electronLocalshortcut.register(dashboard, 'CmdOrCtrl+K', () => {
+    // Show search page
+    dashboard.webContents.send('select-page', 'search');
+  });
 };

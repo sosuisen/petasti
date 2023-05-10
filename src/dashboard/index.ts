@@ -11,6 +11,8 @@ import { Dashboard, DashboardProps } from './Dashboard';
 import { dashboardStore } from './store';
 import { SearchResult } from '../modules_common/search.types';
 import { getUrlFromCardId, getUrlFromNoteId } from '../modules_common/utils';
+import { LocalProvider, localContext } from './store_local';
+import { openAnotherTab } from './utils';
 
 // window.document.addEventListener('DOMContentLoaded', onready);
 
@@ -141,6 +143,10 @@ window.addEventListener('message', event => {
         type: 'set-selected-card-reference',
         payload: refs,
       });
+      break;
+    }
+    case 'show-page': {
+      openAnotherTab(dispatch, event.data.pageName);
       break;
     }
 

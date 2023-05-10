@@ -51,3 +51,7 @@ ipcRenderer.on('open-card', (event, cardProp) => {
 ipcRenderer.on('get-references', (event, refs) => {
   window.postMessage({ command: 'get-references', refs }, 'file://');
 });
+
+ipcRenderer.on('show-page', (event, pageName) => {
+  window.postMessage({ command: 'show-page', pageName }, 'file://');
+});
