@@ -86,6 +86,7 @@ export interface INote {
 
   getSortedNoteIdList: () => string[];
   changingToNoteId: string;
+  changengToNoteFocusedSketchId: string;
   createNote: (
     name?: string,
     waitFirstCardCreation?: boolean
@@ -98,4 +99,7 @@ export interface INote {
   ) => Rectangle;
 
   rebuildSearchIndex: () => Promise<void>;
+
+  // To avoid dependency cycle
+  closeDashboard: () => void;
 }

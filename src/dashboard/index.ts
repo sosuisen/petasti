@@ -132,6 +132,15 @@ window.addEventListener('message', event => {
       });
       break;
     }
+    case 'get-references': {
+      const refs = event.data.refs;
+      dashboardStore.dispatch({
+        type: 'set-selected-card-reference',
+        payload: refs,
+      });
+      break;
+    }
+
     default:
       break;
   }

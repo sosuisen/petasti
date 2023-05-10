@@ -6,6 +6,7 @@ import path from 'path';
 import { app, BrowserWindow, shell } from 'electron';
 import { INote } from './note_types';
 import { APP_ICON_NAME } from '../modules_common/const';
+import { openURL } from './url_schema';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let dashboard: BrowserWindow;
@@ -42,6 +43,12 @@ export const openDashboard = (note: INote) => {
   });
 
   dashboard.loadFile(path.join(__dirname, '../dashboard/dashboard.html'));
+
+  dashboard.webContents.on('new-window', (e, _url) => {
+    e.preventDefault();
+    openURL(_url);
+    // shell.openExternal(_url);
+  });
 
   // hot reload
   if (!app.isPackaged && process.env.NODE_ENV === 'development') {

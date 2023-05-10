@@ -218,6 +218,7 @@ class Note implements INote {
    */
 
   changingToNoteId = 'none'; // changingToNoteId stores next id while workspace is changing, 'none' or 'exit' or 'restart'
+  changengToNoteFocusedSketchId = '';
 
   /**
    * I18n
@@ -1132,6 +1133,10 @@ class Note implements INote {
     };
 
     return moveToRect;
+  };
+
+  closeDashboard = () => {
+    closeDashboard();
   };
 }
 

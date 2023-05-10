@@ -35,7 +35,7 @@ import {
   defaultSoundDir,
   soundSrcDir,
 } from './modules_common/store.types';
-import { getRandomInt, sleep } from './modules_common/utils';
+import { getRandomInt, getUrlFromSketchId, isLabelOpened, sleep } from './modules_common/utils';
 import { initializeUrlSchema, openURL } from './modules_main/url_schema';
 import { DEFAULT_CARD_GEOMETRY } from './modules_common/const';
 import { MESSAGE } from './modules_main/messages';
@@ -231,7 +231,7 @@ emitter.on('restart', async () => {
 /**
  * Change note
  */
-emitter.on('change-note', async (nextNoteId: string) => {
+emitter.on('change-note', async (nextNoteId: string, focusedSketchId: string) => {
   let loadingNoteProgressBar: ProgressBar | undefined = new ProgressBar({
     text: MESSAGE('loadingNoteProgressBarTitle'),
     detail: MESSAGE('loadingNoteProgressBarBody'),
@@ -279,6 +279,16 @@ emitter.on('change-note', async (nextNoteId: string) => {
     return;
   }
 
+  if (focusedSketchId) {
+    const card = cacheOfCard.get(getUrlFromSketchId(focusedSketchId));
+    if (card) {
+      card.focus();
+      if (isLabelOpened(card.sketch.label.status)) {
+        card.window?.webContents.send('transform-from-label');
+      }
+    }
+  }
+
   if (loadingNoteProgressBar) {
     loadingNoteProgressBar.setCompleted();
     setTimeout(() => {
@@ -297,9 +307,10 @@ app.on('window-all-closed', () => {
     emitter.emit('restart');
   }
   else if (note.changingToNoteId !== 'none') {
-    emitter.emit('change-note', note.changingToNoteId);
+    emitter.emit('change-note', note.changingToNoteId, note.changengToNoteFocusedSketchId);
   }
   note.changingToNoteId = 'none';
+  note.changengToNoteFocusedSketchId = '';
 });
 
 /**

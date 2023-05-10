@@ -47,3 +47,7 @@ ipcRenderer.on('get-all-notes', (event, noteResults) => {
 ipcRenderer.on('open-card', (event, cardProp) => {
   window.postMessage({ command: 'open-card', cardProp }, 'file://');
 });
+
+ipcRenderer.on('get-references', (event, refs) => {
+  window.postMessage({ command: 'get-references', refs }, 'file://');
+});

@@ -5,6 +5,25 @@
 
 import { SearchResult } from './search.types';
 
+export type DashboardSearchNoteAndCard = {
+  command: 'dashboard-search-note-and-card';
+  data: string;
+};
+
+export type DashboardSearchNote = {
+  command: 'dashboard-search-note';
+  data: string;
+};
+
+export type DashboardGetAllNotes = {
+  command: 'dashboard-get-all-notes';
+};
+
+export type DashboardGetReferences = {
+  command: 'dashboard-get-references';
+  data: string;
+};
+
 export type DashboardChangeNote = {
   command: 'dashboard-change-note';
   url: string;
@@ -25,6 +44,10 @@ export type DashboardOpenCard = {
 };
 
 export type DashboardCommand =
+  | DashboardSearchNoteAndCard
+  | DashboardSearchNote
+  | DashboardGetAllNotes
+  | DashboardGetReferences
   | DashboardChangeNote
   | DashboardCreateNote
   | DashboardCloneCards

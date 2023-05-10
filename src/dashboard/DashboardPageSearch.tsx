@@ -6,6 +6,8 @@ import * as React from 'react';
 import { useSelector } from 'react-redux';
 import './DashboardPageSearch.css';
 import { useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
 import {
@@ -18,8 +20,8 @@ import { SearchResult } from './SearchResult';
 import { SearchResult as SearchResultType } from '../modules_common/search.types';
 
 import { dashboardStore } from './store';
-import { LocalAction, localContext, LocalProvider } from './store_local';
-import { getRandomInt, getUrlFromCardId } from '../modules_common/utils';
+import { localContext, LocalProvider } from './store_local';
+import { getUrlFromCardId } from '../modules_common/utils';
 import { openAnotherTab } from './utils';
 
 export interface DashboardPageSearchProps {
@@ -36,6 +38,15 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const selectedCard = useSelector(selectorSelectedCard);
 
   const postfix = '-note-and-card';
+
+  useEffect(() => {
+    if (Object.keys(selectedCard.card).length > 0 && selectedCard.refs.length === 0) {
+      window.api.dashboard({
+        command: 'dashboard-get-references',
+        data: selectedCard.card._id,
+      });
+    }
+  }, [selectedCard.card]);
 
   useEffect(() => {
     if (state.activeDashboardId === props.item.id) {
@@ -64,8 +75,8 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   };
 
   const searchFieldChanged = (keyword: string) => {
-    window.api.db({
-      command: 'search-note-and-card',
+    window.api.dashboard({
+      command: 'dashboard-search-note-and-card',
       data: keyword,
     });
     document.getElementById('resultAreaNote')!.scrollTop = 0;
@@ -171,6 +182,16 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     ></SearchResult>
   ));
 
+  const references = selectedCard.refs
+    .filter(ref => ref !== undefined && ref !== null)
+    .map(ref => (
+      <div styleName='ref'>
+        <a href={ref.url} target='_blank'>
+          {ref.noteName}
+        </a>
+      </div>
+    ));
+
   return (
     <DashboardPageTemplate item={props.item} index={props.index}>
       <input
@@ -202,12 +223,16 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
             <span className='fas fa-file-download'></span>
           </div>
         </div>
-        <textarea
-          id='cardArea'
-          styleName='cardArea'
-          value={selectedCard.card._body}
-        ></textarea>
-        <div id='referenceArea' styleName='referenceArea'></div>
+        <div id='cardArea' styleName='cardArea'>
+          <ReactMarkdown
+            children={selectedCard.card._body}
+            linkTarget={'_blank'}
+            remarkPlugins={[remarkGfm]}
+          />
+        </div>
+        <div id='referenceArea' styleName='referenceArea'>
+          {references.length > 0 ? references : messages.dashboardReferenceNotExist}
+        </div>
       </div>
     </DashboardPageTemplate>
   );

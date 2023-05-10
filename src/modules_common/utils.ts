@@ -98,6 +98,11 @@ export const getUrlFromCardId = (cardId: string): string => {
   return `${APP_SCHEME}://local/card/${cardId}`;
 };
 
+export const getUrlFromSketchId = (sketchId: string): string => {
+  // petasti://local/noteID/(cardID|noteID);
+  return `${APP_SCHEME}://local/${sketchId}`;
+};
+
 export const isLabelOpened = (status: LabelStatus): boolean => {
   if (status === 'openedLabel' || status === 'openedSticker') return true;
   return false;

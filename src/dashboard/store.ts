@@ -91,7 +91,7 @@ const selectedCardReducer = (
   // eslint-disable-next-line default-param-last
   state: SelectedCardState = {
     card: {},
-    sketches: [],
+    refs: [],
   },
   action: SelectedCardAction
 ) => {
@@ -100,12 +100,12 @@ const selectedCardReducer = (
     case 'set-selected-card':
       return {
         card: JSON.parse(JSON.stringify(action.payload)),
-        sketches: JSON.parse(JSON.stringify(state.sketches)),
+        refs: [],
       };
     case 'set-selected-card-reference':
       return {
         card: JSON.parse(JSON.stringify(state.card)),
-        sketches: JSON.parse(JSON.stringify(action.payload)),
+        refs: JSON.parse(JSON.stringify(action.payload)),
       };
     default:
       return state;

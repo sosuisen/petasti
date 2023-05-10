@@ -54,9 +54,14 @@ export type SearchResultNoteActions = SearchResultNoteAction | SearchResultSelec
 
 export type SearchResultAction = SearchResultNoteAndCardActions | SearchResultNoteActions;
 
+export type CardReference = {
+  noteName: string;
+  url: string;
+};
+
 export type SelectedCardState = {
   card: JsonDoc;
-  sketches: string[];
+  refs: CardReference[];
 };
 
 export interface SelectedCardSetAction {

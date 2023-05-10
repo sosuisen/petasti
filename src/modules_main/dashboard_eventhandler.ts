@@ -4,7 +4,7 @@
  */
 import { Display, ipcMain, screen } from 'electron';
 import prompt from 'electron-prompt';
-import { DatabaseCommand } from '../modules_common/db.types';
+import { JsonDoc } from 'git-documentdb';
 import { INote } from './note_types';
 import { dashboard } from './dashboard';
 import { DashboardCommand } from '../modules_common/dashboard.types';
@@ -15,7 +15,10 @@ import { cacheOfCard } from './card_cache';
 import {
   getCardIdFromUrl,
   getCurrentDateAndTime,
+  getNoteIdFromUrl,
   getRandomInt,
+  getUrlFromCardId,
+  getUrlFromSketchId,
 } from '../modules_common/utils';
 import { cardColors, ColorName } from '../modules_common/color';
 import { CardSketch, Geometry, ZOrder } from '../modules_common/types';
@@ -28,6 +31,7 @@ import {
 import { createCardWindow } from './card';
 import { noteZOrderUpdateCreator } from './note_action_creator';
 import { showConfirmDialog } from './utils_main';
+import { CardReference } from '../modules_common/search.types';
 
 /**
  * Create card
@@ -38,10 +42,10 @@ delete color.transparent;
 
 export const addDashboardHandler = (note: INote) => {
   // eslint-disable-next-line complexity
-  ipcMain.handle('db-dashboard', async (e, command: DatabaseCommand) => {
+  ipcMain.handle('dashboard', async (e, command: DashboardCommand) => {
     // eslint-disable-next-line default-case
     switch (command.command) {
-      case 'search-note-and-card': {
+      case 'dashboard-search-note-and-card': {
         const noteResults = note.noteCollection.search('noteprop', command.data);
         const cardResults = note.cardCollection.search('card', command.data);
 
@@ -57,7 +61,7 @@ export const addDashboardHandler = (note: INote) => {
 
         break;
       }
-      case 'search-note': {
+      case 'dashboard-search-note': {
         const noteResults = note.noteCollection.search('noteprop', command.data);
 
         const noteDocs = await Promise.all(
@@ -68,7 +72,7 @@ export const addDashboardHandler = (note: INote) => {
 
         break;
       }
-      case 'get-all-notes': {
+      case 'dashboard-get-all-notes': {
         const noteDocs = [...noteStore.getState().values()].sort((a, b) => {
           if (a.name > b.name) return 1;
           else if (a.name < b.name) return -1;
@@ -79,13 +83,34 @@ export const addDashboardHandler = (note: INote) => {
 
         break;
       }
-    }
-  });
+      case 'dashboard-get-references': {
+        const cardId = command.data;
+        const promises: Promise<JsonDoc | undefined>[] = [];
+        for (const noteProp of [...noteStore.getState().values()]) {
+          const sketchId = noteProp._id + '/' + cardId;
+          // eslint-disable-next-line no-await-in-loop
+          promises.push(note.noteCollection.get(sketchId));
+        }
 
-  // eslint-disable-next-line complexity
-  ipcMain.handle('dashboard', async (e, command: DashboardCommand) => {
-    // eslint-disable-next-line default-case
-    switch (command.command) {
+        const refs: (CardReference | undefined)[] = (await Promise.all(promises))
+          .filter(res => res !== undefined)
+          .map(doc => {
+            const url = getUrlFromSketchId(doc!._id);
+            const noteId = getNoteIdFromUrl(url);
+            let noteName = noteStore.getState().get(noteId)?.name;
+            if (noteName === undefined) noteName = '';
+            return {
+              noteName,
+              url,
+            };
+          });
+        if (refs.length === 0) {
+          refs.push(undefined);
+        }
+        dashboard.webContents.send('get-references', refs);
+
+        break;
+      }
       case 'dashboard-change-note': {
         const url = command.url;
         openURL(url);

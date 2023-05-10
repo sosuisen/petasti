@@ -37,8 +37,8 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
   }, [state.activeDashboardId]);
 
   useEffect(() => {
-    window.api.db({
-      command: 'get-all-notes',
+    window.api.dashboard({
+      command: 'dashboard-get-all-notes',
     });
   }, []);
 
@@ -56,13 +56,13 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
 
   const searchFieldChanged = (keyword: string) => {
     if (keyword === '') {
-      window.api.db({
-        command: 'get-all-notes',
+      window.api.dashboard({
+        command: 'dashboard-get-all-notes',
       });
     }
     else {
-      window.api.db({
-        command: 'search-note',
+      window.api.dashboard({
+        command: 'dashboard-search-note',
         data: keyword,
       });
     }
