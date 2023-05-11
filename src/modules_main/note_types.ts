@@ -6,6 +6,7 @@ import { BrowserWindow, Rectangle, Tray } from 'electron';
 import {
   GitDocumentDB,
   ICollection,
+  JsonDoc,
   RemoteOptions,
   Sync,
   TaskMetadata,
@@ -101,5 +102,7 @@ export interface INote {
   rebuildSearchIndex: () => Promise<void>;
 
   // To avoid dependency cycle
-  closeDashboard: () => void;
+  openDashboardProxy: (note: INote, initialCardProp?: JsonDoc) => boolean;
+  closeDashboardProxy: () => void;
+  dashboardProxy: () => BrowserWindow;
 }

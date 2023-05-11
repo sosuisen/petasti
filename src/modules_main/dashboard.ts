@@ -4,10 +4,10 @@
  */
 import path from 'path';
 import { app, BrowserWindow } from 'electron';
+import { JsonDoc } from 'git-documentdb';
 import { INote } from './note_types';
 import { APP_ICON_NAME } from '../modules_common/const';
 import { openURL } from './url_schema';
-import { JsonDoc } from 'git-documentdb';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { electronLocalshortcut } = require('@hfelix/electron-localshortcut');

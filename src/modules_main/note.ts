@@ -20,6 +20,7 @@ import {
   Err,
   GitDocumentDB,
   ICollection,
+  JsonDoc,
   RemoteOptions,
   SearchEngineOption,
   Sync,
@@ -84,7 +85,7 @@ import {
 } from './note_action_creator';
 import { Card } from './card';
 import { closeSettings } from './settings';
-import { closeDashboard } from './dashboard';
+import { closeDashboard, dashboard, openDashboard } from './dashboard';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 GitDocumentDB.plugin(require('git-documentdb-plugin-remote-nodegit'));
@@ -1136,8 +1137,16 @@ class Note implements INote {
     return moveToRect;
   };
 
-  closeDashboard = () => {
+  openDashboardProxy = (note: INote, initialCardProp?: JsonDoc | undefined) => {
+    return openDashboard(note, initialCardProp);
+  };
+
+  closeDashboardProxy = () => {
     closeDashboard();
+  };
+
+  dashboardProxy = () => {
+    return dashboard;
   };
 }
 
