@@ -4,10 +4,20 @@
  */
 import { ulid } from 'ulid';
 import { monotonicFactory as monotonicFactoryHmtid } from 'hmtid';
-import { APP_SCHEME } from './const';
+import { APP_SCHEME, notebookDbName } from './const';
 import { LabelStatus } from './types';
 
 const hmtid = monotonicFactoryHmtid(undefined, '-', true);
+
+export const bookRegExp = 'b\\d\\d\\d';
+
+const getShortBookId = (bookId: string) => {
+  const resultBook = bookId.match(/book(\d\d\d)/);
+  if (resultBook && resultBook.length === 2) {
+    return 'b' + resultBook[1];
+  }
+  return 'invalid_bookid';
+};
 
 export const sleep = (msec: number) =>
   new Promise<void>(resolve => setTimeout(resolve, msec));
@@ -53,22 +63,33 @@ export const generateNewCardId = () => {
   return 'c' + hmtid(Date.now());
 };
 
-export const getLocationFromUrl = (cardUrl: string): string => {
-  const rex = new RegExp(`^(${APP_SCHEME}:\\/\\/.+/)[^/]+?$`);
-  const result = cardUrl.match(rex);
-  if (result && result.length === 2) {
-    return result[1];
-  }
-  return '';
-};
-
 export const getNoteIdFromUrl = (url: string): string => {
-  const rexNote = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/note/(n.+?)$`); // petast ://local/note/noteID
+  const rexNote = new RegExp(`^${APP_SCHEME}:\\/\\/.+?\\/${bookRegExp}\\/(n.+?)$`); // petast ://local/b001/noteID
   const resultNote = url.match(rexNote);
   if (resultNote && resultNote.length === 2) {
     return resultNote[1];
   }
-  const rexCard = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/(n.+?)\\/`); // petasti://local/noteID/(cardID|noteID)
+
+  const rexView = new RegExp(
+    `^${APP_SCHEME}:\\/\\/.+?\\/${bookRegExp}\\/(n[^/]+?)\\/c.+?$`
+  ); // petasti://local/b001/noteID/cardID
+  const resultView = url.match(rexView);
+  if (resultView && resultView.length === 2) {
+    return resultView[1];
+  }
+  return '';
+};
+
+export const getCardIdFromUrl = (url: string): string => {
+  const rexView = new RegExp(
+    `^${APP_SCHEME}:\\/\\/.+?\\/${bookRegExp}\\/n[^/]+?\\/(c.+?)$`
+  ); // petasti://local/b001/noteID/cardID
+  const resultView = url.match(rexView);
+  if (resultView && resultView.length === 2) {
+    return resultView[1];
+  }
+
+  const rexCard = new RegExp(`^${APP_SCHEME}:\\/\\/.+?\\/${bookRegExp}\\/(c.+?)$`); // petasti://local/b001/cardID
   const resultCard = url.match(rexCard);
   if (resultCard && resultCard.length === 2) {
     return resultCard[1];
@@ -76,31 +97,33 @@ export const getNoteIdFromUrl = (url: string): string => {
   return '';
 };
 
-export const getCardIdFromUrl = (url: string): string => {
-  const paths = url.split('/');
-  return paths[paths.length - 1];
-};
-
 export const getSketchIdFromUrl = (url: string): string => {
-  const rex = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/(n.+?)$`); // petasti://local/noteID/(cardID|noteID)
-  const result = url.match(rex);
-  if (result && result.length === 2) {
-    return result[1];
+  const rexView = new RegExp(
+    `^${APP_SCHEME}:\\/\\/.+?\\/${bookRegExp}\\/(n[^/]+?\\/c.+?)$`
+  ); // petasti://local/001/noteID/cardID
+  const resultView = url.match(rexView);
+  if (resultView && resultView.length === 2) {
+    return resultView[1];
   }
   return '';
 };
 
-export const getUrlFromNoteId = (noteId: string): string => {
-  return `${APP_SCHEME}://local/note/${noteId}`;
+export const getNoteUrl = (noteId: string): string => {
+  return `${APP_SCHEME}://local/${getShortBookId(notebookDbName)}/${noteId}`;
 };
 
-export const getUrlFromCardId = (cardId: string): string => {
-  return `${APP_SCHEME}://local/card/${cardId}`;
+export const getCardUrl = (cardId: string): string => {
+  return `${APP_SCHEME}://local/${getShortBookId(notebookDbName)}/${cardId}`;
 };
 
-export const getUrlFromSketchId = (sketchId: string): string => {
-  // petasti://local/noteID/(cardID|noteID);
-  return `${APP_SCHEME}://local/${sketchId}`;
+export const getSketchUrl = (noteId: string, cardId: string): string => {
+  // petasti://local/noteID/cardID
+  return `${APP_SCHEME}://local/${getShortBookId(notebookDbName)}/${noteId}/${cardId}`;
+};
+
+export const getSketchUrlFromSketchId = (sketchId: string): string => {
+  // petasti://local/noteID/cardID
+  return `${APP_SCHEME}://local/${getShortBookId(notebookDbName)}/${sketchId}`;
 };
 
 export const isLabelOpened = (status: LabelStatus): boolean => {

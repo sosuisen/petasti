@@ -37,7 +37,7 @@ import {
 } from './modules_common/store.types';
 import {
   getRandomInt,
-  getUrlFromSketchId,
+  getSketchUrlFromSketchId,
   isLabelOpened,
   sleep,
 } from './modules_common/utils';
@@ -285,7 +285,7 @@ emitter.on('change-note', async (nextNoteId: string, focusedSketchId: string) =>
   }
 
   if (focusedSketchId) {
-    const card = cacheOfCard.get(getUrlFromSketchId(focusedSketchId));
+    const card = cacheOfCard.get(getSketchUrlFromSketchId(focusedSketchId));
     if (card) {
       card.focus();
       if (isLabelOpened(card.sketch.label.status)) {

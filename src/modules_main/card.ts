@@ -11,10 +11,13 @@ import AsyncLock from 'async-lock';
 import {
   generateNewCardId,
   getCardIdFromUrl,
+  getCardUrl,
   getCurrentDateAndTime,
   getNoteIdFromUrl,
   getRandomInt,
   getSketchIdFromUrl,
+  getSketchUrl,
+  getSketchUrlFromSketchId,
   isLabelOpened,
 } from '../modules_common/utils';
 import {
@@ -191,7 +194,7 @@ export const createRandomColorCard = async (
 
   const cardId = generateNewCardId();
 
-  const newUrl = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
+  const newUrl = getSketchUrl(note.settings.currentNoteId, cardId);
 
   const cardSketch: Partial<CardSketch> = {
     ...sketch,
@@ -326,8 +329,8 @@ export class Card implements ICard {
       // Create card with default properties
       const noteId = noteIdOrUrl;
       cardId = generateNewCardId();
-      this.url = `${APP_SCHEME}://local/${noteId}/${cardId}`;
       sketchId = `${noteId}/${cardId}`;
+      this.url = getSketchUrlFromSketchId(sketchId);
     }
     else {
       this.url = noteIdOrUrl;
@@ -809,7 +812,7 @@ export class Card implements ICard {
   public moveToNote = async (noteId: string) => {
     const newCardSketch = JSON.parse(JSON.stringify(this.sketch));
     const newSketchId = `${noteId}/${getCardIdFromUrl(this.url)}`;
-    const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
+    const newUrl = getSketchUrlFromSketchId(newSketchId);
 
     const notCurrentNoteMsg =
       'The destination is not the current note. (This is not an error.)';
@@ -853,7 +856,7 @@ export class Card implements ICard {
   public copyToNote = async (noteId: string) => {
     const newCardSketch = JSON.parse(JSON.stringify(this.sketch));
     const newSketchId = `${noteId}/${getCardIdFromUrl(this.url)}`;
-    const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
+    const newUrl = getSketchUrlFromSketchId(newSketchId);
 
     const notCurrentNoteMsg =
       'The destination is not the current note. (This is not an error.)';
@@ -1076,7 +1079,7 @@ export class Card implements ICard {
       ['CmdOrCtrl+Shift+N', opt + '+Shift+N'],
       () => {
         const cardId = generateNewCardId();
-        const newUrl = `${APP_SCHEME}://local/${this._note.settings.currentNoteId}/${cardId}`;
+        const newUrl = getSketchUrl(this._note.settings.currentNoteId, cardId);
 
         const geometry = { ...DEFAULT_CARD_GEOMETRY };
         geometry.x = this.sketch.geometry.x + 30;

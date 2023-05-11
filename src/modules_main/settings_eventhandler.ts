@@ -21,7 +21,7 @@ import { DatabaseCommand } from '../modules_common/db.types';
 import { availableLanguages, defaultLanguage, MessageLabel } from '../modules_common/i18n';
 import { emitter } from './event';
 import { closeSettings, settingsDialog } from './settings';
-import { APP_SCHEME, DIALOG_BUTTON, SCHEMA_VERSION } from '../modules_common/const';
+import { DIALOG_BUTTON, SCHEMA_VERSION } from '../modules_common/const';
 import { cacheOfCard, closeAllCards } from './card_cache';
 import { MESSAGE, setMessages } from './messages';
 import { showConfirmDialog, showDialog } from './utils_main';

@@ -5,7 +5,11 @@ import { cacheOfCard, closeAllCards } from './card_cache';
 import { emitter } from './event';
 import { INote } from './note_types';
 import { closeSettings } from './settings';
-import { getUrlFromSketchId, isLabelOpened } from '../modules_common/utils';
+import {
+  bookRegExp,
+  getSketchUrlFromSketchId,
+  isLabelOpened,
+} from '../modules_common/utils';
 
 let note: INote;
 
@@ -16,7 +20,7 @@ export const initializeUrlSchema = (store: INote) => {
 // eslint-disable-next-line complexity
 export function openURL (url: string) {
   if (url.startsWith(APP_SCHEME + '://')) {
-    const rexNote = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/note/(n.+?)$`); // petasti://local/note/noteID
+    const rexNote = new RegExp(`^${APP_SCHEME}:\\/\\/.+?\\/${bookRegExp}\\/(n.+?)$`); // petasti://local/b001/noteID
     const resultNote = url.match(rexNote);
     if (resultNote && resultNote.length === 2) {
       // URL is note
@@ -41,12 +45,15 @@ export function openURL (url: string) {
       return;
     }
 
-    const rexSketch = new RegExp(`^${APP_SCHEME}:\\/\\/[^/]+?\\/(n[^/]+?)\\/(c.+?)$`); // petasti://local/noteId/noteID
-    const resultSketch = url.match(rexSketch);
-    if (resultSketch && resultSketch.length >= 2) {
+    const rexView = new RegExp(
+      `^${APP_SCHEME}:\\/\\/.+?\\/${bookRegExp}\\/(n[^/]+?)\\/(c.+?)$`
+    ); // petasti://local/001/noteID/cardID
+
+    const resultView = url.match(rexView);
+    if (resultView && resultView.length === 3) {
       // URL is note
-      const noteId = resultSketch[1];
-      const cardId = resultSketch[2];
+      const noteId = resultView[1];
+      const cardId = resultView[2];
       if (noteId !== note.settings.currentNoteId) {
         closeSettings();
         note.closeDashboard();
@@ -66,7 +73,7 @@ export function openURL (url: string) {
       }
       else {
         // focus card
-        const card = cacheOfCard.get(getUrlFromSketchId(noteId + '/' + cardId));
+        const card = cacheOfCard.get(getSketchUrlFromSketchId(noteId + '/' + cardId));
         if (card) {
           if (!card.window || card.window.isDestroyed() || !card.window.webContents) return;
           card.focus();

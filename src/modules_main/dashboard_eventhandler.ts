@@ -14,16 +14,16 @@ import { MESSAGE } from './messages';
 import { cacheOfCard } from './card_cache';
 import {
   getCardIdFromUrl,
+  getCardUrl,
   getCurrentDateAndTime,
   getNoteIdFromUrl,
   getRandomInt,
-  getUrlFromCardId,
-  getUrlFromSketchId,
+  getSketchUrl,
+  getSketchUrlFromSketchId,
 } from '../modules_common/utils';
 import { cardColors, ColorName } from '../modules_common/color';
 import { CardSketch, Geometry, ZOrder } from '../modules_common/types';
 import {
-  APP_SCHEME,
   DEFAULT_CARD_CONDITION,
   DEFAULT_CARD_LABEL,
   DIALOG_BUTTON,
@@ -98,7 +98,7 @@ export const addDashboardHandler = (note: INote) => {
         const refs: (CardReference | undefined)[] = (await Promise.all(promises))
           .filter(res => res !== undefined)
           .map(doc => {
-            const url = getUrlFromSketchId(doc!._id);
+            const url = getSketchUrlFromSketchId(doc!._id);
             const noteId = getNoteIdFromUrl(url);
             let noteName = noteStore.getState().get(noteId)?.name;
             if (noteName === undefined) noteName = '';
@@ -186,7 +186,7 @@ export const addDashboardHandler = (note: INote) => {
         for (const result of searchResults) {
           const cardId = getCardIdFromUrl(result.url);
 
-          const newUrl = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardId}`;
+          const newUrl = getSketchUrl(note.settings.currentNoteId, cardId);
           if (cacheOfCard.get(newUrl)) {
             continue;
           }

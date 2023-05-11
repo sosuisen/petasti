@@ -22,13 +22,13 @@ import {
   getCurrentDateAndTime,
   getCurrentLocalDate,
   getNoteIdFromUrl,
+  getNoteUrl,
   getRandomInt,
-  getUrlFromNoteId,
+  getSketchUrlFromSketchId,
 } from '../modules_common/utils';
 import {
   APP_ICON_NAME,
   APP_ICON_NAME_MONO,
-  APP_SCHEME,
   DEFAULT_CARD_GEOMETRY,
   DEFAULT_CARD_LABEL,
   MINIMUM_WINDOW_HEIGHT,
@@ -78,7 +78,7 @@ export const setTrayContextMenu = () => {
         result.push({
           label: `${noteProp.name}`,
           click: () => {
-            const url = getUrlFromNoteId(noteProp._id);
+            const url = getNoteUrl(noteProp._id);
             const markdown = `[${noteProp.name}](${url})`;
             const cardBody: Partial<CardBody> = {
               _body: markdown,
@@ -115,7 +115,7 @@ export const setTrayContextMenu = () => {
         result.push({
           label: `${noteProp.name}`,
           click: () => {
-            const noteUrl = getUrlFromNoteId(noteProp._id);
+            const noteUrl = getNoteUrl(noteProp._id);
             clipboard.writeText(noteUrl);
           },
         });
@@ -287,7 +287,7 @@ export const setTrayContextMenu = () => {
 
             const newCardSketch = JSON.parse(JSON.stringify(card.sketch));
             const newSketchId = `${newNoteProp._id}/${getCardIdFromUrl(card.url)}`;
-            const newUrl = `${APP_SCHEME}://local/${newSketchId}`;
+            const newUrl = getSketchUrlFromSketchId(newSketchId);
             newCardSketch._id = newSketchId;
             promises.push(note.createCardSketch(newUrl, newCardSketch, true));
           }

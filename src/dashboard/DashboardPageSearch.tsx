@@ -21,7 +21,7 @@ import { SearchResult } from './SearchResult';
 import { SearchResult as SearchResultType } from './dashboard_local.types';
 
 import { dashboardStore } from './store';
-import { getUrlFromCardId } from '../modules_common/utils';
+import { getCardUrl } from '../modules_common/utils';
 import { openAnotherTab } from './utils';
 
 export interface DashboardPageSearchProps {
@@ -167,7 +167,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     const result: SearchResultType = {
       type: 'card',
       text: '',
-      url: getUrlFromCardId(selectedCard.card._id),
+      url: getCardUrl(selectedCard.card._id),
     };
     window.api.dashboard({
       command: 'dashboard-clone-cards',

@@ -21,10 +21,9 @@ import {
   noteDeleteCreator,
   noteUpdateCreator,
 } from './note_action_creator';
-import { emitter } from './event';
-import { APP_SCHEME } from '../modules_common/const';
 import { createCardWindow, sortCardWindows } from './card';
 import { validateCardId } from './validator';
+import { getSketchUrl, getSketchUrlFromSketchId } from '../modules_common/utils';
 
 export const initSync = async (note: INote): Promise<Sync | undefined> => {
   let sync: Sync | undefined;
@@ -59,7 +58,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
           continue;
         }
 
-        const newUrl = `${APP_SCHEME}://local/${note.settings.currentNoteId}/${cardBodyId}`;
+        const newUrl = getSketchUrl(note.settings.currentNoteId, cardBodyId);
         console.log(`# change card <${changedFile.operation}> ${newUrl}`);
         const card = cacheOfCard.get(newUrl);
 
@@ -110,14 +109,14 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
             continue;
           }
           // Update card sketch
-          const newUrl = `${APP_SCHEME}://local/${sketchId}`;
+          const newUrl = getSketchUrlFromSketchId(sketchId);
           console.log(`# change sketch <${changedFile.operation}> ${newUrl}`);
           const card = cacheOfCard.get(newUrl);
 
           if (changedFile.operation === 'insert') {
             // Create card
             if (note.settings.currentNoteId === noteId) {
-              const url = `${APP_SCHEME}://local/${sketchId}`;
+              const url = getSketchUrlFromSketchId(sketchId);
               // eslint-disable-next-line no-await-in-loop
               const cardBody = await note.cardCollection.get(cardId);
               // Data already exists. Do not serialize again.
@@ -149,7 +148,7 @@ export const initSync = async (note: INote): Promise<Sync | undefined> => {
             if (card) {
               // Can delete.
               // Delete from remote is superior to update from renderer.
-              const url = `${APP_SCHEME}://local/${sketchId}`;
+              const url = getSketchUrlFromSketchId(sketchId);
               note.deleteCardSketch(url);
               note.logger.debug(`deleteCardSketch: ${sketchId}`);
             }

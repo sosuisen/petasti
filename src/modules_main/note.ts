@@ -35,6 +35,8 @@ import {
   getCurrentDateAndTime,
   getLocalDateAndTime,
   getNoteIdFromUrl,
+  getSketchIdFromUrl,
+  getSketchUrlFromSketchId,
   isLabelOpened,
 } from '../modules_common/utils';
 import {
@@ -63,7 +65,6 @@ import {
 } from '../modules_common/i18n';
 import {
   APP_ICON_NAME,
-  APP_SCHEME,
   DEFAULT_CARD_LABEL,
   MINIMUM_WINDOW_HEIGHT,
   MINIMUM_WINDOW_HEIGHT_OFFSET,
@@ -608,7 +609,7 @@ class Note implements INote {
     });
 
     const getCardProp = async (sketchDoc: CardSketch): Promise<CardProperty> => {
-      const url = `${APP_SCHEME}://local/${sketchDoc._id}`; // petasti://local/noteID/(cardID|noteID)
+      const url = getSketchUrlFromSketchId(sketchDoc._id);
       const cardId = getCardIdFromUrl(url);
       let cardBodyDoc = await this._cardCollection.get(cardId);
       if (cardBodyDoc === undefined) {
