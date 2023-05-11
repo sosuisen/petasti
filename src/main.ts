@@ -312,10 +312,10 @@ app.on('window-all-closed', () => {
     emitter.emit('restart');
   }
   else if (note.changingToNoteId !== 'none') {
-    emitter.emit('change-note', note.changingToNoteId, note.changengToNoteFocusedSketchId);
+    emitter.emit('change-note', note.changingToNoteId, note.changingToNoteFocusedSketchId);
   }
   note.changingToNoteId = 'none';
-  note.changengToNoteFocusedSketchId = '';
+  note.changingToNoteFocusedSketchId = '';
 });
 
 /**

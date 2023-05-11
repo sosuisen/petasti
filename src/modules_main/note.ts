@@ -219,7 +219,7 @@ class Note implements INote {
    */
 
   changingToNoteId = 'none'; // changingToNoteId stores next id while workspace is changing, 'none' or 'exit' or 'restart'
-  changengToNoteFocusedSketchId = '';
+  changingToNoteFocusedSketchId = '';
 
   /**
    * I18n

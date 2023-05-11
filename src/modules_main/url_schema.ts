@@ -10,6 +10,7 @@ import {
   getSketchUrlFromSketchId,
   isLabelOpened,
 } from '../modules_common/utils';
+import { noteStore } from './note_store';
 
 let note: INote;
 
@@ -25,6 +26,9 @@ export function openURL (url: string) {
     if (resultNote && resultNote.length === 2) {
       // URL is note
       const noteId = resultNote[1];
+      if (noteStore.getState().get(noteId) === undefined) {
+        return;
+      }
       if (noteId !== note.settings.currentNoteId) {
         closeSettings();
         note.closeDashboard();
@@ -51,7 +55,7 @@ export function openURL (url: string) {
 
     const resultView = url.match(rexView);
     if (resultView && resultView.length === 3) {
-      // URL is note
+      // URL is view
       const noteId = resultView[1];
       const cardId = resultView[2];
       if (noteId !== note.settings.currentNoteId) {
@@ -62,7 +66,7 @@ export function openURL (url: string) {
         }
         else {
           note.changingToNoteId = noteId;
-          note.changengToNoteFocusedSketchId = noteId + '/' + cardId;
+          note.changingToNoteFocusedSketchId = noteId + '/' + cardId;
           try {
             closeAllCards(note);
           } catch (e) {

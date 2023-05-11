@@ -86,7 +86,7 @@ export interface INote {
 
   getSortedNoteIdList: () => string[];
   changingToNoteId: string;
-  changengToNoteFocusedSketchId: string;
+  changingToNoteFocusedSketchId: string;
   createNote: (
     name?: string,
     waitFirstCardCreation?: boolean
