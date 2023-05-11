@@ -7,6 +7,7 @@ import { app, BrowserWindow } from 'electron';
 import { INote } from './note_types';
 import { APP_ICON_NAME } from '../modules_common/const';
 import { openURL } from './url_schema';
+import { JsonDoc } from 'git-documentdb';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { electronLocalshortcut } = require('@hfelix/electron-localshortcut');
@@ -24,9 +25,9 @@ export const closeDashboard = () => {
   }
 };
 
-export const openDashboard = (note: INote) => {
+export const openDashboard = (note: INote, initialCardProp?: JsonDoc): boolean => {
   if (dashboard !== undefined && !dashboard.isDestroyed()) {
-    return;
+    return false;
   }
 
   dashboard = new BrowserWindow({
@@ -47,6 +48,9 @@ export const openDashboard = (note: INote) => {
 
   dashboard.webContents.on('did-finish-load', () => {
     dashboard.webContents.send('initialize-store', note.info);
+    if (initialCardProp) {
+      dashboard.webContents.send('open-card', initialCardProp);
+    }
   });
 
   dashboard.loadFile(path.join(__dirname, '../dashboard/dashboard.html'));
@@ -97,4 +101,5 @@ export const openDashboard = (note: INote) => {
     // Show search page
     dashboard.webContents.send('escape');
   });
+  return true;
 };

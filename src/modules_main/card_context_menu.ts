@@ -13,6 +13,7 @@ import { INote } from './note_types';
 import { noteStore } from './note_store';
 import { DEFAULT_CARD_GEOMETRY } from '../modules_common/const';
 import { emitter } from './event';
+import { dashboard, openDashboard } from './dashboard';
 
 /**
  * Context Menu
@@ -171,6 +172,15 @@ export const setContextMenu = (note: INote, card: ICard) => {
       ],
       prepend: (defaultActions, params, browserWindow) => {
         const menus: MenuItemConstructorOptions[] = [
+          {
+            label: MESSAGE('openOriginalCard'),
+            click: () => {
+              if (!openDashboard(note, card.body)) {
+                dashboard.webContents.send('open-card', card.body);
+              }
+            },
+          },
+          { type: 'separator' },
           {
             label:
               card.hasSelection && !isLabelOpened(card.sketch.label.status)

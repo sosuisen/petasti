@@ -64,7 +64,7 @@ export const generateNewCardId = () => {
 };
 
 export const getNoteIdFromUrl = (url: string): string => {
-  const rexNote = new RegExp(`^${APP_SCHEME}:\\/\\/.+?\\/${bookRegExp}\\/(n.+?)$`); // petast ://local/b001/noteID
+  const rexNote = new RegExp(`^${APP_SCHEME}:\\/\\/.+?\\/${bookRegExp}\\/(n[^/]+?)$`); // petast ://local/b001/noteID
   const resultNote = url.match(rexNote);
   if (resultNote && resultNote.length === 2) {
     return resultNote[1];
