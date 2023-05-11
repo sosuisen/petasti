@@ -17,6 +17,7 @@
 }
 
 .cloneAllButton {
+  cursor: pointer;
   font-size: 24px;
   margin-top: 5px;
   margin-left: 3px;
@@ -59,6 +60,7 @@
 }
 
 .cloneCardButton {
+  cursor: pointer;
   margin-top: 1px;
   margin-right: 3px;
   position: absolute;
@@ -67,6 +69,7 @@
 }
 
 .closeCardButton {
+  cursor: pointer;
   margin-top: 1px;
   margin-right: 3px;
   position:absolute;
