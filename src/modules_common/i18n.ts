@@ -163,8 +163,8 @@ const NOTE_ENGLISH: MessagesNote = {
   firstNoteName: '#Workspace',
   noteName: 'Space $1',
   noteMove: 'Move to',
-  noteCopy: 'Clone to',
-  noteCardExist: 'Clone already exists on the space.',
+  noteCopy: 'Copy to',
+  noteCardExist: 'The same card already exists on the space.',
   noteRename: 'Rename this space',
   noteDelete: 'Delete this space',
   noteCannotDelete:
@@ -250,7 +250,7 @@ const DASHBOARD_ENGLISH: MessagesDashboard = {
   dashboardInputSpaceOrKeyword: 'Input space name or keyword',
   dashboardInputSpace: 'Input space name',
   cloneCardsConfirmation:
-    'Clone all search result cards to this space. Are you sure you want to proceed?',
+    'Copy all search result cards to this space. Are you sure you want to proceed?',
   dashboardReferenceNotExist: 'There is no space referring to this card.',
   copyToCurrentSpace: 'Copy to current space',
   copyLink: 'Copy link',
@@ -326,8 +326,8 @@ const NOTE_JAPANESE: MessagesNote = {
   firstNoteName: '#ワークスペース',
   noteName: 'スペース $1',
   noteMove: '移動',
-  noteCopy: 'クローンを作成',
-  noteCardExist: 'コピー先には既にクローンがあります。',
+  noteCopy: 'コピーを作成',
+  noteCardExist: 'コピー先には既に同じカードがあります。',
   noteRename: 'スペース名を変更',
   noteDelete: 'このスペースを削除',
   noteCannotDelete:
@@ -414,7 +414,7 @@ const DASHBOARD_JAPANESE: MessagesDashboard = {
   dashboardInputSpaceOrKeyword: 'スペース名またはキーワードを入力',
   dashboardInputSpace: 'スペース名を入力',
   cloneCardsConfirmation:
-    '検索結果のカードを全てこのスペースへクローンします。進めてよろしいですか？',
+    '検索結果のカードを全てこのスペースへコピーします。進めてよろしいですか？',
   dashboardReferenceNotExist: 'このカードを参照しているスペースはありません',
   copyToCurrentSpace: '現在のスペースへコピーする',
   copyLink: 'リンクをコピーする',
