@@ -520,6 +520,21 @@ export class CardEditorMarkdown implements ICardEditor {
       .use(tooltip)
       //      .use(slash)
       .create();
+
+    const innerEditor = document.querySelector('#editor .milkdown .editor') as HTMLElement;
+    innerEditor.addEventListener('paste', async event => {
+      if (event.clipboardData?.types.includes('text/html')) {
+        return;
+      }
+      const pasteData = event.clipboardData?.getData('text') as string;
+      if (pasteData.match(/.+:\/\/.+/)) {
+        // Reload markdown to parse when pasteData has schema.
+        await this.setData(
+          cardStore.getState().body._body,
+          cardStore.getState().sketch.collapsedList
+        );
+      }
+    });
   };
 
   public hasSelection = () => {
