@@ -337,7 +337,7 @@ export class CardEditorMarkdown implements ICardEditor {
         }
       });
 
-    document.getElementById('editor')!.addEventListener('click', (event: MouseEvent) => {
+    document.getElementById('editor')!.addEventListener('mouseup', (event: MouseEvent) => {
       this._editor.action(ctx => {
         const view = ctx.get(editorViewCtx);
         if (view.state.selection.empty) {

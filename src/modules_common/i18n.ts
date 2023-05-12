@@ -64,7 +64,7 @@ type MessagesNote = {
   noteDuplicate: string;
   noteNewNameDuplicate: string;
   residentNoteName: string;
-  noteCopyUrlToClipboard: string;
+  noteCopyLinkToClipboard: string;
   noteCreateLink: string;
 };
 
@@ -174,7 +174,7 @@ const NOTE_ENGLISH: MessagesNote = {
   noteDuplicate: 'Duplicate this space',
   noteNewNameDuplicate: 'Enter duplicated space name',
   residentNoteName: 'Resident space',
-  noteCopyUrlToClipboard: 'Copy space URL',
+  noteCopyLinkToClipboard: 'Copy link to space',
   noteCreateLink: 'Create link to space',
 };
 
@@ -338,7 +338,7 @@ const NOTE_JAPANESE: MessagesNote = {
   noteDuplicate: 'スペースを複製',
   noteNewNameDuplicate: '複製先のスペース名を入力してください',
   residentNoteName: '常駐スペース',
-  noteCopyUrlToClipboard: 'スペースのURLをコピー',
+  noteCopyLinkToClipboard: 'スペースへのリンクをコピー',
   noteCreateLink: 'スペースへのリンクを作成',
 };
 

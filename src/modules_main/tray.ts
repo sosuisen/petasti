@@ -105,7 +105,7 @@ export const setTrayContextMenu = () => {
         return result;
       }, [] as MenuItemConstructorOptions[]);
 
-    const copyUrlOfNote: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
+    const copyLinkOfNote: MenuItemConstructorOptions[] = [...noteStore.getState().values()]
       .sort((a, b) => {
         if (a.name > b.name) return 1;
         else if (a.name < b.name) return -1;
@@ -116,7 +116,8 @@ export const setTrayContextMenu = () => {
           label: `${noteProp.name}`,
           click: () => {
             const noteUrl = getNoteUrl(noteProp._id);
-            clipboard.writeText(noteUrl);
+            const link = `[${noteProp.name}](${noteUrl})`;
+            clipboard.writeText(link);
           },
         });
         return result;
@@ -305,13 +306,13 @@ export const setTrayContextMenu = () => {
           cacheOfCard.forEach(card => card.resetContextMenu());
         },
       },
-      {
+      /*      {
         label: MESSAGE('noteCreateLink'),
         submenu: [...createLinkOfNote],
-      },
+      }, */
       {
-        label: MESSAGE('noteCopyUrlToClipboard'),
-        submenu: [...copyUrlOfNote],
+        label: MESSAGE('noteCopyLinkToClipboard'),
+        submenu: [...copyLinkOfNote],
       },
       {
         label: MESSAGE('noteDelete'),
