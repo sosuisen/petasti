@@ -81,7 +81,7 @@
   "dependencies": {
     "@hfelix/electron-localshortcut": "^4.0.1",
     "@sosuisen/milkdown-core": "^4.11.2-alpha.5",
-    "@sosuisen/milkdown-plugin-clipboard": "^4.11.2-alpha.4",
+    "@sosuisen/milkdown-plugin-clipboard": "^4.11.2-alpha.5",
     "@sosuisen/milkdown-plugin-emoji": "^4.11.2-alpha.0",
     "@sosuisen/milkdown-plugin-history": "^4.11.1",
     "@sosuisen/milkdown-plugin-i18n": "^4.11.1",
