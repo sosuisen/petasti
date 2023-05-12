@@ -46,6 +46,7 @@ type MessagesMain = {
   transformToLabel: string;
   transformFromLabel: string;
   copyOf: string;
+  copyCardViewLink: string;
 };
 
 type MessagesNote = {
@@ -318,6 +319,7 @@ export const ENGLISH: Messages = {
   transformToLabel: 'Labelize',
   transformFromLabel: 'Open label',
   copyOf: '-copy',
+  copyCardViewLink: 'Copy link to this card',
 };
 
 const NOTE_JAPANESE: MessagesNote = {
@@ -479,6 +481,7 @@ export const JAPANESE: Messages = {
   transformToLabel: 'ラベルにする',
   transformFromLabel: 'ラベルを開く',
   copyOf: 'のコピー',
+  copyCardViewLink: 'このカードのリンクをコピー',
 };
 
 export const availableLanguages = ['en', 'ja'];

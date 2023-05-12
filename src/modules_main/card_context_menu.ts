@@ -6,7 +6,13 @@ import { BrowserWindow, clipboard, ipcMain, MenuItemConstructorOptions } from 'e
 import contextMenu from 'electron-context-menu';
 import { cardColors, ColorName } from '../modules_common/color';
 import { CardBody, CardSketch, ICard } from '../modules_common/types';
-import { getNoteIdFromUrl, isLabelOpened } from '../modules_common/utils';
+import {
+  getCardUrl,
+  getNoteIdFromUrl,
+  getSketchUrl,
+  getTextLabel,
+  isLabelOpened,
+} from '../modules_common/utils';
 import { cacheOfCard } from './card_cache';
 import { MESSAGE } from './messages';
 import { INote } from './note_types';
@@ -178,6 +184,16 @@ export const setContextMenu = (note: INote, card: ICard) => {
               if (!openDashboard(note, card.body)) {
                 dashboard.webContents.send('open-card', card.body);
               }
+            },
+          },
+          {
+            label: MESSAGE('copyCardViewLink'),
+            click: () => {
+              const link = `[${getTextLabel(card.body._body, 20, true)}](${getSketchUrl(
+                note.settings.currentNoteId,
+                card.body._id
+              )})`;
+              clipboard.writeText(link);
             },
           },
           { type: 'separator' },

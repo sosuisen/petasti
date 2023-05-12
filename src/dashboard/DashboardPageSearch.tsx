@@ -21,7 +21,7 @@ import { SearchResult } from './SearchResult';
 import { SearchResult as SearchResultType } from './dashboard_local.types';
 
 import { dashboardStore } from './store';
-import { getCardUrl } from '../modules_common/utils';
+import { getCardUrl, getTextLabel } from '../modules_common/utils';
 import { openAnotherTab } from './utils';
 
 export interface DashboardPageSearchProps {
@@ -176,13 +176,15 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   };
 
   const copyCardLinkButtonOnClick = () => {
-    const link = `[link](${getCardUrl(selectedCard.card._id)})`;
+    const link = `[${getTextLabel(selectedCard.card._body, 20, true)}](${getCardUrl(
+      selectedCard.card._id
+    )})`;
     navigator.clipboard.writeText(link);
   };
 
   const results = searchResult.list.map((result, index: number) => (
     <SearchResult
-      text={result.text}
+      text={getTextLabel(result.text, 300, false)}
       type={result.type}
       url={result.url}
       index={index}

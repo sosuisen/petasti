@@ -130,3 +130,35 @@ export const isLabelOpened = (status: LabelStatus): boolean => {
   if (status === 'openedLabel' || status === 'openedSticker') return true;
   return false;
 };
+
+export const getTextLabel = (
+  text: string,
+  length: number,
+  firstLineOnly: boolean
+): string => {
+  // Extract first line
+  if (firstLineOnly) {
+    const arr = text.split('\n');
+    text = arr[0];
+  }
+
+  // Remove link
+  const rexLink = /\[(.+?)]\(.+?\)/gm;
+  text = text.replace(rexLink, '$1');
+
+  // Remove Header
+  text = text.replace(/^#+?\s/gm, '');
+
+  // Remove list item
+  text = text.replace(/^[*-]\s/gm, '');
+
+  // Remove bold and em and strike
+  text = text.replace(/[*~]/gm, '');
+
+  text = text.substring(0, length);
+  if (text.length === 0 || /^\s+$/.exec(text)) {
+    text = 'card';
+  }
+
+  return text;
+};
