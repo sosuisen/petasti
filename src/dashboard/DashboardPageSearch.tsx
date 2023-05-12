@@ -175,6 +175,11 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     });
   };
 
+  const copyCardLinkButtonOnClick = () => {
+    const link = `[link](${getCardUrl(selectedCard.card._id)})`;
+    navigator.clipboard.writeText(link);
+  };
+
   const results = searchResult.list.map((result, index: number) => (
     <SearchResult
       text={result.text}
@@ -223,9 +228,20 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
           <div styleName='closeCardButton' onClick={closeCardButtonOnClick}>
             <span className='fas fa-window-close'></span>
           </div>
-          <div styleName='cloneCardButton' onClick={cloneCardButtonOnClick}>
+          <button
+            title={messages.copyToCurrentSpace}
+            styleName='cloneCardButton'
+            onClick={cloneCardButtonOnClick}
+          >
             <span className='fas fa-file-download'></span>
-          </div>
+          </button>
+          <button
+            title={messages.copyLink}
+            styleName='copyCardLinkButton'
+            onClick={copyCardLinkButtonOnClick}
+          >
+            <span className='fas fa-link'></span>
+          </button>
         </div>
         <div id='cardArea' styleName='cardArea'>
           <ReactMarkdown
