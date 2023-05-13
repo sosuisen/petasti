@@ -9,7 +9,7 @@ import { MessageLabel } from '../modules_common/i18n';
 import { MenuItemProps } from './MenuItem';
 import { darkenHexColor, strengthenHexColor, uiColors } from '../modules_common/color';
 import { selectorMessages, selectorPage } from './selector';
-import { dashboardStore } from './store';
+import window from './window';
 
 export interface DashboardTitleProps {
   title: MessageLabel;
@@ -34,7 +34,9 @@ export function DashboardTitle (props: DashboardTitleProps) {
   }
 
   const close = () => {
-    window.close();
+    window.api.dashboard({
+      command: 'dashboard-close',
+    });
   };
 
   return (

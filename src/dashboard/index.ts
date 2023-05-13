@@ -12,6 +12,7 @@ import { dashboardStore } from './store';
 import { getCardUrl, getNoteUrl } from '../modules_common/utils';
 import { SearchResult } from './dashboard_local.types';
 import { openAnotherTab } from './utils';
+import window from './window';
 
 // window.document.addEventListener('DOMContentLoaded', onready);
 
@@ -158,7 +159,9 @@ window.addEventListener('message', event => {
       }
       else {
         // Close dashboard
-        window.close();
+        window.api.dashboard({
+          command: 'dashboard-close',
+        });
       }
       break;
     }

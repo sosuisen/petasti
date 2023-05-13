@@ -434,7 +434,7 @@ export const addSettingsHandler = (note: INote) => {
     note.changingToNoteId = 'restart';
     try {
       closeSettings();
-      closeDashboard();
+      closeDashboard(true);
       closeAllCards(note);
     } catch (error) {
       console.error(error);

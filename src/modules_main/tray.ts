@@ -138,8 +138,8 @@ export const setTrayContextMenu = () => {
             checked: noteProp._id === note.settings.currentNoteId,
             click: () => {
               if (noteProp._id !== note.settings.currentNoteId) {
-                closeSettings();
-                closeDashboard();
+                // closeSettings();
+                // closeDashboard();
                 if (cacheOfCard.size === 0) {
                   note.updateNoteZOrder();
                   emitter.emit('change-note', noteProp._id);
@@ -464,7 +464,7 @@ export const setTrayContextMenu = () => {
         click: () => {
           note.changingToNoteId = 'exit';
           closeSettings();
-          closeDashboard();
+          closeDashboard(true);
           if (cacheOfCard.size === 0) {
             emitter.emit('exit');
           }
@@ -530,7 +530,12 @@ export const initializeTaskTray = (store: INote) => {
   });
   globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
     if (dashboard !== undefined && !dashboard.isDestroyed()) {
-      closeDashboard();
+      if (dashboard.isMinimized() || !dashboard.isVisible()) {
+        openDashboard(note);
+      }
+      else {
+        closeDashboard(false);
+      }
     }
     else {
       openDashboard(note);

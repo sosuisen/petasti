@@ -185,6 +185,7 @@ const startApp = async (isRestart: boolean) => {
   initializeUrlSchema(note);
 
   // for debug
+  /*
   if (
     !app.isPackaged &&
     process.env.NODE_ENV === 'development' &&
@@ -192,6 +193,8 @@ const startApp = async (isRestart: boolean) => {
   ) {
     openDashboard(note);
   }
+  */
+  openDashboard(note, undefined, true);
 };
 
 app.on('ready', () => {

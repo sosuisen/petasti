@@ -6,7 +6,7 @@ import { Display, ipcMain, screen } from 'electron';
 import prompt from 'electron-prompt';
 import { JsonDoc } from 'git-documentdb';
 import { INote } from './note_types';
-import { dashboard } from './dashboard';
+import { closeDashboard, dashboard } from './dashboard';
 import { DashboardCommand } from '../modules_common/dashboard.types';
 import { openURL } from './url_schema';
 import { noteStore } from './note_store';
@@ -284,6 +284,10 @@ export const addDashboardHandler = (note: INote) => {
           );
         }
 
+        break;
+      }
+      case 'dashboard-close': {
+        closeDashboard(false);
         break;
       }
     }

@@ -43,6 +43,10 @@ export type DashboardOpenCard = {
   url: string;
 };
 
+export type DashboardClose = {
+  command: 'dashboard-close';
+};
+
 export type DashboardCommand =
   | DashboardSearchNoteAndCard
   | DashboardSearchNote
@@ -51,4 +55,5 @@ export type DashboardCommand =
   | DashboardChangeNote
   | DashboardCreateNote
   | DashboardCloneCards
-  | DashboardOpenCard;
+  | DashboardOpenCard
+  | DashboardClose;

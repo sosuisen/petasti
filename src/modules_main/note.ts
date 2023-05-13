@@ -808,7 +808,7 @@ class Note implements INote {
     note.changingToNoteId = 'restart';
     try {
       closeSettings();
-      closeDashboard();
+      closeDashboard(false);
       closeAllCards(note);
     } catch (error) {
       console.error(error);
@@ -1137,12 +1137,16 @@ class Note implements INote {
     return moveToRect;
   };
 
-  openDashboardProxy = (note: INote, initialCardProp?: JsonDoc | undefined) => {
-    return openDashboard(note, initialCardProp);
+  openDashboardProxy = (
+    note: INote,
+    initialCardProp?: JsonDoc | undefined,
+    minimize?: boolean
+  ) => {
+    return openDashboard(note, initialCardProp, minimize);
   };
 
-  closeDashboardProxy = () => {
-    closeDashboard();
+  closeDashboardProxy = (destroy: boolean) => {
+    closeDashboard(destroy);
   };
 
   dashboardProxy = () => {

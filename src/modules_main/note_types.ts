@@ -102,7 +102,11 @@ export interface INote {
   rebuildSearchIndex: () => Promise<void>;
 
   // To avoid dependency cycle
-  openDashboardProxy: (note: INote, initialCardProp?: JsonDoc) => boolean;
-  closeDashboardProxy: () => void;
+  openDashboardProxy: (
+    note: INote,
+    initialCardProp?: JsonDoc,
+    minimize?: boolean
+  ) => boolean;
+  closeDashboardProxy: (destroy: boolean) => void;
   dashboardProxy: () => BrowserWindow;
 }

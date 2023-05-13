@@ -19,14 +19,25 @@ electronLocalshortcut.setKeyboardLayout(getCurrentKeyboardLayout(), getKeyMap())
 // eslint-disable-next-line import/no-mutable-exports
 export let dashboard: BrowserWindow;
 
-export const closeDashboard = () => {
+export const closeDashboard = (destroy: boolean) => {
   if (dashboard !== undefined && !dashboard.isDestroyed()) {
-    dashboard.close();
+    if (destroy) {
+      dashboard.close();
+    }
+    else {
+      dashboard.minimize();
+    }
   }
 };
 
-export const openDashboard = (note: INote, initialCardProp?: JsonDoc): boolean => {
-  if (dashboard !== undefined && !dashboard.isDestroyed()) {
+export const openDashboard = (
+  note: INote,
+  initialCardProp?: JsonDoc,
+  minimize?: boolean
+): boolean => {
+  if (!minimize && dashboard !== undefined && !dashboard.isDestroyed()) {
+    dashboard.restore();
+    dashboard.show();
     return false;
   }
 
@@ -43,6 +54,8 @@ export const openDashboard = (note: INote, initialCardProp?: JsonDoc): boolean =
     autoHideMenuBar: true,
     transparent: true,
     frame: false,
+    title: 'Petasti Dashboard',
+    show: false,
     icon: path.join(__dirname, '../../assets/' + APP_ICON_NAME),
   });
 
@@ -83,10 +96,12 @@ export const openDashboard = (note: INote, initialCardProp?: JsonDoc): boolean =
     // https://github.com/parro-it/electron-localshortcut/pull/92
     return true;
   });
-  /* Close window is allowed
-  electronLocalshortcut.register(this.window, 'CmdOrCtrl+W', () => {
+  /* Close window is not allowed */
+  electronLocalshortcut.register(dashboard, 'CmdOrCtrl+W', () => {
+    closeDashboard(false);
+    return true;
   });
-  */
+
   electronLocalshortcut.register(dashboard, 'CmdOrCtrl+S', () => {
     // Show space list page
     dashboard.webContents.send('select-page', 'space');
