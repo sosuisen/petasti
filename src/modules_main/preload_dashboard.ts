@@ -56,6 +56,10 @@ ipcRenderer.on('select-page', (event, pageName) => {
   window.postMessage({ command: 'select-page', pageName }, 'file://');
 });
 
+ipcRenderer.on('playaudio', (event, name) => {
+  window.postMessage({ command: 'playaudio', name }, 'file://');
+});
+
 ipcRenderer.on('escape', event => {
   window.postMessage({ command: 'escape' }, 'file://');
 });

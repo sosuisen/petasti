@@ -1,5 +1,6 @@
 import { getRandomInt } from '../modules_common/utils';
 import { defaultSoundDir } from '../modules_common/store.types';
+import { dashboard } from './dashboard';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const player = require('node-wav-player');
@@ -121,8 +122,10 @@ export const soundFiles: { [key: string]: string } = {
 export const playSound = (soundName: string, maxInt = 1) => {
   const rand = getRandomInt(1, maxInt + 1);
 
-  // play(defaultSoundDir + soundFiles[soundName + rand]);
+  dashboard.webContents.send('playaudio', soundName + rand);
 
+  // play(defaultSoundDir + soundFiles[soundName + rand]);
+  /*
   player
     .play({
       path: defaultSoundDir + soundFiles[soundName + rand],
@@ -133,4 +136,5 @@ export const playSound = (soundName: string, maxInt = 1) => {
     .catch((error: any) => {
       console.error(error);
     });
+  } */
 };

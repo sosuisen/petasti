@@ -11,7 +11,7 @@ import { Dashboard, DashboardProps } from './Dashboard';
 import { dashboardStore } from './store';
 import { getCardUrl, getNoteUrl } from '../modules_common/utils';
 import { SearchResult } from './dashboard_local.types';
-import { openAnotherTab } from './utils';
+import { openAnotherTab, playAudio } from './utils';
 import window from './window';
 
 // window.document.addEventListener('DOMContentLoaded', onready);
@@ -147,6 +147,10 @@ window.addEventListener('message', event => {
     }
     case 'select-page': {
       openAnotherTab(event.data.pageName);
+      break;
+    }
+    case 'playaudio': {
+      playAudio(event.data.name);
       break;
     }
     case 'escape': {
