@@ -516,7 +516,7 @@ export class CardEditorMarkdown implements ICardEditor {
       .use(history)
       .use(listener)
       .use(prism)
-      .use(emoji.headless())
+      //      .use(emoji.headless())
       .use(tooltip)
       //      .use(slash)
       .create();
