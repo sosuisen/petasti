@@ -165,7 +165,7 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
       </button>
       <input
         ref={inputEl}
-        type='text'
+        type='search'
         id='searchFieldNote'
         styleName='searchField'
         placeholder={messages.dashboardInputSpace}

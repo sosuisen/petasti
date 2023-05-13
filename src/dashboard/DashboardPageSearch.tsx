@@ -206,7 +206,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     <DashboardPageTemplate item={props.item} index={props.index}>
       <input
         ref={inputEl}
-        type='text'
+        type='search'
         id='searchField'
         styleName='searchField'
         placeholder={messages.dashboardInputSpaceOrKeyword}
