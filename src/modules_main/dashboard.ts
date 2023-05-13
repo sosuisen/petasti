@@ -25,7 +25,8 @@ export const closeDashboard = (destroy: boolean) => {
       dashboard.close();
     }
     else {
-      dashboard.minimize();
+      //      dashboard.minimize();
+      dashboard.hide();
     }
   }
 };
@@ -36,7 +37,7 @@ export const openDashboard = (
   minimize?: boolean
 ): boolean => {
   if (!minimize && dashboard !== undefined && !dashboard.isDestroyed()) {
-    dashboard.restore();
+    // dashboard.restore();
     dashboard.show();
     return false;
   }
