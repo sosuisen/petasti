@@ -386,6 +386,9 @@ window.addEventListener('message', event => {
     case 'delete-selection':
       cardEditor.deleteSelection();
       break;
+    case 'replace-selection':
+      cardEditor.replaceSelection(event.data.markdown);
+      break;
     case 'get-selected-markdown': {
       document.getElementById('newIcon')?.classList.add('fa-spin');
       setTimeout(() => {

@@ -555,6 +555,32 @@ export class CardEditorMarkdown implements ICardEditor {
     });
   };
 
+  public replaceSelection = (markdown: string) => {
+    this._editor.action(ctx => {
+      const parser = ctx.get(parserCtx);
+      const editorView = ctx.get(editorViewCtx);
+      let newDoc;
+      let newState;
+      try {
+        newDoc = parser(markdown);
+      } catch (err) {}
+      if (newDoc != null) {
+        const frag = Fragment.from(newDoc);
+        newState = editorView.state.apply(
+          editorView.state.tr.replaceWith(
+            editorView.state.selection.from,
+            editorView.state.selection.to,
+            frag
+          )
+        );
+      }
+      else {
+        newState = editorView.state.apply(editorView.state.tr.deleteSelection());
+      }
+      editorView.updateState(newState);
+    });
+  };
+
   public getSelectedMarkdown = (): [string, number, number, number, number] => {
     return this._editor.action(ctx => {
       const serializer = ctx.get(serializerCtx);

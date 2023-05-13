@@ -10,6 +10,7 @@ import {
   getCardUrl,
   getNoteIdFromUrl,
   getSketchUrl,
+  getSketchUrlFromSketchId,
   getTextLabel,
   isLabelOpened,
 } from '../modules_common/utils';
@@ -96,7 +97,8 @@ export const setContextMenu = (note: INote, card: ICard) => {
     left: number,
     right: number,
     top: number,
-    bottom: number
+    bottom: number,
+    srcSketchUrl?: string
   ) => {
     const moveToRect = note.calcVacantLand(card.sketch.geometry, {
       x: card.sketch.geometry.x + left,
@@ -126,7 +128,7 @@ export const setContextMenu = (note: INote, card: ICard) => {
       },
     };
 
-    emitter.emit('create-card', cardBody, cardSketch, moveToRect);
+    emitter.emit('create-card', cardBody, cardSketch, moveToRect, srcSketchUrl);
   };
 
   const createMenu = () => {
@@ -208,8 +210,15 @@ export const setContextMenu = (note: INote, card: ICard) => {
                 ipcMain.handleOnce(
                   'response-of-get-selected-markdown-' + encodeURIComponent(card.url),
                   (event, markdown, startLeft, endRight, top, bottom) => {
-                    createCardFromMarkdown(markdown, startLeft, endRight, top, bottom + 50);
-                    card.window?.webContents.send('delete-selection');
+                    createCardFromMarkdown(
+                      markdown,
+                      startLeft,
+                      endRight,
+                      top,
+                      bottom + 50,
+                      getSketchUrlFromSketchId(card.sketch._id)
+                    );
+                    // card.window?.webContents.send('delete-selection');
                   }
                 );
               }

@@ -174,6 +174,13 @@ ipcRenderer.on('delete-selection', () =>
   window.postMessage({ command: 'delete-selection' }, 'file://')
 );
 
+ipcRenderer.on(
+  'replace-selection',
+  (event: Electron.IpcRendererEvent, markdown: string) => {
+    window.postMessage({ command: 'replace-selection', markdown }, 'file://');
+  }
+);
+
 ipcRenderer.on('get-selected-markdown', () =>
   window.postMessage({ command: 'get-selected-markdown' }, 'file://')
 );

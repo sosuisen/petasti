@@ -38,6 +38,7 @@ import {
 import {
   getRandomInt,
   getSketchUrlFromSketchId,
+  getTextLabel,
   isLabelOpened,
   sleep,
 } from './modules_common/utils';
@@ -326,7 +327,12 @@ app.on('window-all-closed', () => {
  */
 emitter.on(
   'create-card',
-  (cardBody: Partial<CardBody>, cardSketch: Partial<CardSketch>, moveToRect: Rectangle) => {
+  (
+    cardBody: Partial<CardBody>,
+    cardSketch: Partial<CardSketch>,
+    moveToRect: Rectangle,
+    srcSketchUrl?: string
+  ) => {
     setTimeout(() => {
       playSound('create', 5);
 
@@ -337,7 +343,22 @@ emitter.on(
         cardSketch,
         true,
         moveToRect
-      );
+      )
+        .then(newSketchUrl => {
+          if (srcSketchUrl) {
+            const markdown = cacheOfCard.get(newSketchUrl)?.body._body;
+            if (markdown) {
+              const link = `[${getTextLabel(markdown, 30, true)}](${newSketchUrl})`;
+              const srcCard = cacheOfCard.get(srcSketchUrl);
+              if (srcCard) {
+                srcCard.window?.webContents.send('replace-selection', link);
+                // Need focus to refresh view
+                srcCard!.focus();
+              }
+            }
+          }
+        })
+        .catch(() => {});
     }, 100);
   }
 );

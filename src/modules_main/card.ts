@@ -217,7 +217,7 @@ export const createCardWindow = async (
   partialCardSketch: Partial<CardSketch>,
   updateDB = true,
   moveToRect: Rectangle | undefined = undefined
-): Promise<void> => {
+): Promise<string> => {
   const card = new Card(note, noteIdOrUrl, partialCardBody, partialCardSketch);
 
   if (moveToRect) {
@@ -235,6 +235,8 @@ export const createCardWindow = async (
   if (moveToRect) {
     card.setRect(moveToRect.x, moveToRect.y, moveToRect.width, moveToRect.height, true);
   }
+
+  return getSketchUrlFromSketchId(card.sketch._id);
 };
 
 /**
