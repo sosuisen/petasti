@@ -256,7 +256,7 @@ export const calcRelativePositionOfCardUrl = (
 };
 
 export const moveCardOutsideFromTop = async (url: string) => {
-  playSound('delete', 3, true);
+  playSound('delete', 3);
 
   const card = cacheOfCard.get(url);
   if (card) {
@@ -287,7 +287,7 @@ export const moveCardOutsideFromTop = async (url: string) => {
 };
 
 export const moveCardOutsideFromBottom = async (url: string) => {
-  playSound('drop', 3, true);
+  playSound('drop', 3);
 
   const card = cacheOfCard.get(url);
   if (card) {
@@ -312,7 +312,7 @@ export const moveCardOutsideFromBottom = async (url: string) => {
 };
 
 export const moveCardOutsideFromRightForCopy = async (url: string) => {
-  playSound('move', 3, true);
+  playSound('move', 3);
   const card = cacheOfCard.get(url);
   if (card) {
     const bounds: Geometry2D = getActualGeometry2D(card);
@@ -335,7 +335,7 @@ export const moveCardOutsideFromRightForCopy = async (url: string) => {
 };
 
 export const moveCardOutsideFromRightForMove = async (url: string) => {
-  playSound('move', 3, true);
+  playSound('move', 3);
   const card = cacheOfCard.get(url);
   if (card) {
     const bounds: Geometry2D = getActualGeometry2D(card);

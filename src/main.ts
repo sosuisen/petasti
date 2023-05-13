@@ -325,7 +325,7 @@ emitter.on(
   'create-card',
   (cardBody: Partial<CardBody>, cardSketch: Partial<CardSketch>, moveToRect: Rectangle) => {
     setTimeout(() => {
-      playSound('create', 5, true);
+      playSound('create', 5);
 
       createCardWindow(
         note,
@@ -369,7 +369,7 @@ ipcMain.handle(
     cardSketch: Partial<CardSketch>,
     parentRect: Rectangle
   ): Promise<void> => {
-    playSound('create', 5, true);
+    playSound('create', 5);
 
     const xOffset = getRandomInt(10, 30);
     const yOffset = getRandomInt(10, 30);
@@ -480,10 +480,10 @@ ipcMain.handle(
 
 ipcMain.handle('start-transform', (event, shape: 'label' | 'card') => {
   if (shape === 'label') {
-    playSound('drop', 3, true);
+    playSound('drop', 3);
   }
   else if (shape === 'card') {
-    playSound('create', 5, true);
+    playSound('create', 5);
   }
 });
 

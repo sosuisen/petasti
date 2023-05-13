@@ -168,7 +168,7 @@ export const createRandomColorCard = async (
   body: Partial<CardBody> = {},
   sketch: Partial<CardSketch> = {}
 ) => {
-  playSound('create', 5, true);
+  playSound('create', 5);
 
   let geometry: Geometry;
   if (sketch.geometry) {

@@ -1,7 +1,33 @@
 import { getRandomInt } from '../modules_common/utils';
 import { defaultSoundDir } from '../modules_common/store.types';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const player = require('node-wav-player');
+
+/* Don't work
+import Speaker from 'speaker'; 
+import { StreamAudioContext as AudioContext } from '@descript/web-audio-js';
+
+const play = (path: string) => {
+  const buf = fs.readFileSync(path);
+  const context = new AudioContext();
+
+  context
+    .decodeAudioData(buf.buffer)
+    .then(audioBuffer => {
+      const source = context.createBufferSource();
+      source.buffer = audioBuffer;
+      source.loop = false;
+      //      source.loopStart = 0;
+      //      source.loopEnd = audioBuffer.duration;
+      source.playbackRate.value = 1.0;
+      source.connect(context.destination, 0, 0);
+      context.pipe(new Speaker());
+      context.resume();
+    })
+    .catch(() => {});
+};
+*/
 
 /*
  * [カードの移動・分身。ばしゅっ系]
@@ -92,32 +118,19 @@ export const soundFiles: { [key: string]: string } = {
   delete3: 'delete3.wav',
 };
 
-export const playSound = (soundName: string, maxInt = 1, async = false) => {
+export const playSound = (soundName: string, maxInt = 1) => {
   const rand = getRandomInt(1, maxInt + 1);
-  if (async) {
-    setTimeout(() => {
-      player
-        .play({
-          path: defaultSoundDir + soundFiles[soundName + rand],
-        })
-        .then(() => {
-          console.log('The wav file started to be played successfully.');
-        })
-        .catch((error: any) => {
-          console.error(error);
-        });
-    }, 1);
-  }
-  else {
-    player
-      .play({
-        path: defaultSoundDir + soundFiles[soundName + rand],
-      })
-      .then(() => {
-        console.log('The wav file started to be played successfully.');
-      })
-      .catch((error: any) => {
-        console.error(error);
-      });
-  }
+
+  // play(defaultSoundDir + soundFiles[soundName + rand]);
+
+  player
+    .play({
+      path: defaultSoundDir + soundFiles[soundName + rand],
+    })
+    .then(() => {
+      console.log('The wav file started to be played successfully.');
+    })
+    .catch((error: any) => {
+      console.error(error);
+    });
 };
