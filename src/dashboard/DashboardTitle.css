@@ -45,7 +45,7 @@
     -webkit-user-select: none  is also needed.
   */
   -webkit-app-region: drag;
-  -webkit-user-select: none;
+  user-select: none;
 
   position: absolute;
   top: 0px;
