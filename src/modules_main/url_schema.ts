@@ -39,8 +39,8 @@ export async function openURL (url: string) {
         return;
       }
       if (noteId !== note.settings.currentNoteId) {
-        // closeSettings();
-        // note.closeDashboardProxy();
+        closeSettings();
+        note.closeDashboardProxy(false);
         if (cacheOfCard.size === 0) {
           emitter.emit('change-note', noteId);
         }
@@ -72,8 +72,8 @@ export async function openURL (url: string) {
         const doc = await note.noteCollection.get(noteId + '/' + cardId);
         if (doc) {
           // CardView exists
-          // closeSettings();
-          // note.closeDashboardProxy();
+          closeSettings();
+          note.closeDashboardProxy(false);
           if (cacheOfCard.size === 0) {
             emitter.emit('change-note', noteId);
           }
