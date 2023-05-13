@@ -138,8 +138,8 @@ export const setTrayContextMenu = () => {
             checked: noteProp._id === note.settings.currentNoteId,
             click: () => {
               if (noteProp._id !== note.settings.currentNoteId) {
-                // closeSettings();
-                // closeDashboard();
+                closeSettings();
+                closeDashboard();
                 if (cacheOfCard.size === 0) {
                   note.updateNoteZOrder();
                   emitter.emit('change-note', noteProp._id);
