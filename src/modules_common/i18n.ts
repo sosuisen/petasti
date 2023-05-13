@@ -252,7 +252,7 @@ const DASHBOARD_ENGLISH: MessagesDashboard = {
   dashboardInputSpace: 'Input space name',
   cloneCardsConfirmation:
     'Copy all search result cards to this space. Are you sure you want to proceed?',
-  dashboardReferenceNotExist: 'There is no space referring to this card.',
+  dashboardReferenceNotExist: 'There is no space on which this card is placed.',
   copyToCurrentSpace: 'Copy to current space',
   copyLink: 'Copy link',
 };
@@ -417,7 +417,7 @@ const DASHBOARD_JAPANESE: MessagesDashboard = {
   dashboardInputSpace: 'スペース名を入力',
   cloneCardsConfirmation:
     '検索結果のカードを全てこのスペースへコピーします。進めてよろしいですか？',
-  dashboardReferenceNotExist: 'このカードを参照しているスペースはありません',
+  dashboardReferenceNotExist: 'このカードを配置しているスペースはありません',
   copyToCurrentSpace: '現在のスペースへコピーする',
   copyLink: 'リンクをコピーする',
 };

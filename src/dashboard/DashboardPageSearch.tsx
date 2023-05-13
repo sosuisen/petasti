@@ -22,7 +22,6 @@ import { SearchResult as SearchResultType } from './dashboard_local.types';
 
 import { dashboardStore } from './store';
 import { getCardUrl, getTextLabel } from '../modules_common/utils';
-import { openAnotherTab } from './utils';
 
 export interface DashboardPageSearchProps {
   item: MenuItemProps;
@@ -250,6 +249,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
             children={selectedCard.card._body}
             linkTarget={'_blank'}
             remarkPlugins={[remarkGfm]}
+            transformLinkUri={null}
           />
         </div>
         <div id='referenceArea' styleName='referenceArea'>

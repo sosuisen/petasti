@@ -87,7 +87,8 @@ window.addEventListener('message', event => {
         const url = getCardUrl(doc._id);
         const label: SearchResult = {
           type: 'card',
-          text: doc._body.substr(0, 70).replaceAll('&nbsp;', ' '),
+          // If too short, markdown link notation to the petasti card will be broken
+          text: doc._body.substr(0, 140).replaceAll('&nbsp;', ' '),
           url,
         };
         return label;
