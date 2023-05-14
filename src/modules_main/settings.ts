@@ -28,7 +28,7 @@ export const openSettings = (note: INote) => {
       contextIsolation: true,
     },
     width: 800,
-    height: 360,
+    height: 400,
     maximizable: false,
     fullscreenable: false,
     autoHideMenuBar: true,
