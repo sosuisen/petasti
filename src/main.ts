@@ -126,6 +126,15 @@ const startApp = async (isRestart: boolean) => {
   // load workspaces
   const cardProps = await note.loadNotebook();
 
+  // Async
+  note
+    .rebuildSearchIndex()
+    .then(() => {
+      note.cardCollection.serializeIndex();
+      note.noteCollection.serializeIndex();
+    })
+    .catch(() => {});
+
   let loadingNoteProgressBar: ProgressBar | undefined = new ProgressBar({
     text: MESSAGE('loadingNoteProgressBarTitle'),
     detail: MESSAGE('loadingNoteProgressBarBody'),
@@ -217,7 +226,7 @@ const closeCurrentNote = () => {
 const closeNotebook = async () => {
   await closeCurrentNote();
 
-  await note.closeDB();
+  await note.closeDB().catch(() => {});
   destroyTray();
 };
 
@@ -317,6 +326,12 @@ app.on('window-all-closed', () => {
   }
   else if (note.changingToNoteId !== 'none') {
     emitter.emit('change-note', note.changingToNoteId, note.changingToNoteFocusedSketchId);
+  }
+  else {
+    // Shutdown app
+    // ... not work!
+    // note.cardCollection.serializeIndex();
+    // note.noteCollection.serializeIndex();
   }
   note.changingToNoteId = 'none';
   note.changingToNoteFocusedSketchId = '';

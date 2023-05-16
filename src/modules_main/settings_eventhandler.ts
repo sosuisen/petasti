@@ -201,6 +201,8 @@ export const addSettingsHandler = (note: INote) => {
       }
       case 'rebuild-index': {
         await note.rebuildSearchIndex();
+        await note.cardCollection.serializeIndex();
+        await note.noteCollection.serializeIndex();
         break;
       }
     }
