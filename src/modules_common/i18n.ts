@@ -294,7 +294,7 @@ export const ENGLISH: Messages = {
   btnAllow: 'Allow',
   btnCancel: 'Cancel ', // 'Cancel' is automatically translated to local language, so add use 'Cancel '.
   btnRemove: 'Remove',
-  settings: 'Settings  (CtrlOrCmd+Alt+Shift+Enter)',
+  settings: 'Settings',
   syncNow: 'Sync now',
   // lockCard: 'Lock card',
   // unlockCard: 'Unlock card',
@@ -457,7 +457,7 @@ export const JAPANESE: Messages = {
   btnAllow: '許可する',
   btnCancel: 'キャンセル',
   btnRemove: '削除する',
-  settings: '設定  (CtrlOrCmd+Alt+Shift+Enter)',
+  settings: '設定',
   syncNow: '今すぐ同期',
   // lockCard: 'ロックする',
   // unlockCard: 'ロック解除する',
