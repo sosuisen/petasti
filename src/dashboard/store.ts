@@ -10,6 +10,8 @@ import {
   DashboardAction,
   DashboardChangePageAction,
   DashboardPageState,
+  DashboardSearchTextAction,
+  DashboardSearchTextState,
   DashboardState,
   InfoAction,
   SearchResultNoteActions,
@@ -136,12 +138,38 @@ const pageReducer = (
   }
 };
 
+const searchTextReducer = (
+  // eslint-disable-next-line default-param-last
+  state: DashboardSearchTextState = {
+    searchPageText: '',
+    spacePageText: '',
+  },
+  action: DashboardSearchTextAction
+) => {
+  // eslint-disable-next-line default-case
+  switch (action.type) {
+    case 'dashboard-change-search-page-text':
+      return {
+        searchPageText: action.payload,
+        spacePageText: state.spacePageText,
+      };
+    case 'dashboard-change-space-page-text':
+      return {
+        searchPageText: state.searchPageText,
+        spacePageText: action.payload,
+      };
+    default:
+      return state;
+  }
+};
+
 export const dashboardReducer = combineReducers({
   info: infoReducer,
   searchResultNoteAndCard: searchResultNoteAndCardReducer,
   searchResultNote: searchResultNoteReducer,
   selectedCard: selectedCardReducer,
   page: pageReducer,
+  searchText: searchTextReducer,
 });
 
 type IAppDispatch = ThunkDispatch<DashboardState, any, DashboardAction>;

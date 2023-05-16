@@ -8,7 +8,12 @@ import './DashboardPageSpace.css';
 import { useEffect, useRef } from 'react';
 import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
-import { selectorMessages, selectorPage, selectorSearchResultNote } from './selector';
+import {
+  selecterSearchText,
+  selectorMessages,
+  selectorPage,
+  selectorSearchResultNote,
+} from './selector';
 import { SearchResult } from './SearchResult';
 import window from './window';
 import { dashboardStore } from './store';
@@ -25,6 +30,7 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
   const searchResult = useSelector(selectorSearchResultNote);
   const inputEl = useRef(null);
   const pageState = useSelector(selectorPage);
+  const searchText = useSelector(selecterSearchText);
   const postfix = '-note';
 
   useEffect(() => {
@@ -78,6 +84,12 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
 
   const onSearchFieldChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     const keyword = event.target.value;
+
+    dashboardStore.dispatch({
+      type: 'dashboard-change-space-page-text',
+      payload: keyword,
+    });
+
     debouncedSearchFieldChanged(keyword);
   };
 
@@ -171,6 +183,7 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
         placeholder={messages.dashboardInputSpace}
         onChange={onSearchFieldChanged}
         onKeyDown={onSearchFieldKeyDown}
+        value={searchText.spacePageText}
       ></input>
       <div id='resultAreaNote' styleName='resultArea'>
         {results}

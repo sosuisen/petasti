@@ -23,3 +23,7 @@ export const selectorSelectedCard = (state: DashboardState) => {
 export const selectorPage = (state: DashboardState) => {
   return state.page;
 };
+
+export const selecterSearchText = (state: DashboardState) => {
+  return state.searchText;
+};

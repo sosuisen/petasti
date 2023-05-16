@@ -5,12 +5,13 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 import './DashboardPageSearch.css';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
 import {
+  selecterSearchText,
   selectorMessages,
   selectorPage,
   selectorSearchResultNoteAndCard,
@@ -34,6 +35,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const inputEl = useRef(null);
   const pageState = useSelector(selectorPage);
   const selectedCard = useSelector(selectorSelectedCard);
+  const searchText = useSelector(selecterSearchText);
 
   const postfix = '-note-and-card';
 
@@ -83,6 +85,12 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
 
   const onSearchFieldChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     const keyword = event.target.value;
+
+    dashboardStore.dispatch({
+      type: 'dashboard-change-search-page-text',
+      payload: keyword,
+    });
+
     debouncedSearchFieldChanged(keyword);
   };
 
@@ -212,6 +220,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
         placeholder={messages.dashboardInputSpaceOrKeyword}
         onChange={onSearchFieldChanged}
         onKeyDown={onSearchFieldKeyDown}
+        value={searchText.searchPageText}
       ></input>
       <div styleName='cloneAllButton' onClick={onCloneAllButtonClick}>
         <i className='fas fa-file-download'></i>

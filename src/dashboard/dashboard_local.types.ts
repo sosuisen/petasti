@@ -101,6 +101,28 @@ export type DashboardPageState = {
 };
 
 /**
+ * DashboardSearchTextState
+ */
+export type DashboardChangeSearchPageTextAction = {
+  type: 'dashboard-change-search-page-text';
+  payload: string;
+};
+
+export type DashboardChangeSpacePageTextAction = {
+  type: 'dashboard-change-space-page-text';
+  payload: string;
+};
+
+export type DashboardSearchTextAction =
+  | DashboardChangeSearchPageTextAction
+  | DashboardChangeSpacePageTextAction;
+
+export type DashboardSearchTextState = {
+  searchPageText: string;
+  spacePageText: string;
+};
+
+/**
  * InfoState
  */
 export interface InfoInitAction {
@@ -124,6 +146,7 @@ export type DashboardState = {
   searchResultNote: SearchResultNoteState;
   selectedCard: SelectedCardState;
   page: DashboardPageState;
+  searchText: DashboardSearchTextState;
 };
 
 export type DashboardAction =
@@ -132,4 +155,5 @@ export type DashboardAction =
   | AppPutAction
   | SearchResultAction
   | SelectedCardAction
-  | DashboardChangePageAction;
+  | DashboardChangePageAction
+  | DashboardSearchTextAction;

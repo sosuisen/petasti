@@ -161,6 +161,24 @@ window.addEventListener('message', event => {
           payload: {},
         });
       }
+      else if (
+        dashboardStore.getState().page.activeDashboardName === 'search' &&
+        dashboardStore.getState().searchText.searchPageText.length > 0
+      ) {
+        dashboardStore.dispatch({
+          type: 'dashboard-change-search-page-text',
+          payload: '',
+        });
+      }
+      else if (
+        dashboardStore.getState().page.activeDashboardName === 'space' &&
+        dashboardStore.getState().searchText.spacePageText.length > 0
+      ) {
+        dashboardStore.dispatch({
+          type: 'dashboard-change-space-page-text',
+          payload: '',
+        });
+      }
       else {
         // Close dashboard
         window.api.dashboard({
