@@ -448,7 +448,7 @@ export const setTrayContextMenu = () => {
         },
       },
       {
-        label: MESSAGE('dashboard'),
+        label: MESSAGE('dashboardWithShortcut'),
         click: () => {
           openDashboard(note);
         },

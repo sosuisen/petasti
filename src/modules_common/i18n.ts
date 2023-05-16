@@ -125,6 +125,7 @@ type MessagesSettings = {
 
 type MessagesDashboard = {
   dashboard: string;
+  dashboardWithShortcut: string;
   dashboardPageSearch: string;
   dashboardPageSpace: string;
   dashboardInputSpaceOrKeyword: string;
@@ -246,6 +247,7 @@ const RENDERER_ENGLISH: MessagesRenderer = {
 
 const DASHBOARD_ENGLISH: MessagesDashboard = {
   dashboard: 'Dashboard',
+  dashboardWithShortcut: 'Dashboard  (CtrlOrCmd+Alt+Enter)',
   dashboardPageSearch: 'Search',
   dashboardPageSpace: 'Space',
   dashboardInputSpaceOrKeyword: 'Input space name or keyword',
@@ -269,11 +271,11 @@ export const ENGLISH: Messages = {
   ...DASHBOARD_ENGLISH,
   databaseCreateError: 'Error: Cannot create database($1)',
   exit: 'Exit',
-  zoomIn: 'Zoom In',
-  zoomOut: 'Zoom Out',
+  zoomIn: 'Zoom In  (CtrlOrCmd+-)',
+  zoomOut: 'Zoom Out  (CtrlOrCmd++)',
   bringToFront: 'Bring to Front',
   sendToBack: 'Send to Back',
-  newCard: 'New card',
+  newCard: 'New card  (CtrlOrCmd+N)',
   newCardFromSelection: 'New card from selection',
   openOriginalCard: 'Open the original card',
   confirmClosing:
@@ -292,7 +294,7 @@ export const ENGLISH: Messages = {
   btnAllow: 'Allow',
   btnCancel: 'Cancel ', // 'Cancel' is automatically translated to local language, so add use 'Cancel '.
   btnRemove: 'Remove',
-  settings: 'Settings...',
+  settings: 'Settings  (CtrlOrCmd+Alt+Shift+Enter)',
   syncNow: 'Sync now',
   // lockCard: 'Lock card',
   // unlockCard: 'Unlock card',
@@ -300,7 +302,7 @@ export const ENGLISH: Messages = {
   copy: 'Copy',
   copyAsMarkdown: 'Copy as markdown',
   paste: 'Paste',
-  pasteAndMatchStyle: 'Paste and match style',
+  pasteAndMatchStyle: 'Paste and match style  (CtrlOrCmd+Shfit+V)',
   white: 'white',
   yellow: 'yellow',
   red: 'red',
@@ -314,10 +316,10 @@ export const ENGLISH: Messages = {
   addToDictionary: 'Add to dictionary',
   saveSnapshot: 'Save snapshot',
   snapshotName: 'Enter snapshot name',
-  redisplayCards: 'Bring all cards to front',
-  minimizeAllCards: 'Minimize all cards',
-  transformToLabel: 'Labelize',
-  transformFromLabel: 'Open label',
+  redisplayCards: 'Bring all cards to front  (CtrlOrCmd+Alt+F)',
+  minimizeAllCards: 'Minimize all cards  (CtrlOrCmd+Alt+B)',
+  transformToLabel: 'Labelize  (CtrlOrCmd+Alt+Space)',
+  transformFromLabel: 'Open label  (CtrlOrCmd+Alt+Space)',
   copyOf: '-copy',
   copyCardViewLink: 'Copy link to this card',
 };
@@ -411,6 +413,7 @@ const RENDERER_JAPANESE: MessagesRenderer = {
 
 const DASHBOARD_JAPANESE: MessagesDashboard = {
   dashboard: 'ダッシュボード',
+  dashboardWithShortcut: 'ダッシュボード  (CtrlOrCmd+Alt+Enter)',
   dashboardPageSearch: '検索',
   dashboardPageSpace: 'スペース',
   dashboardInputSpaceOrKeyword: 'スペース名またはキーワードを入力',
@@ -434,7 +437,7 @@ export const JAPANESE: Messages = {
   zoomOut: '縮小',
   bringToFront: '最前面へ',
   sendToBack: '最背面へ',
-  newCard: '新規カード',
+  newCard: '新規カード  (CtrlOrCmd+N)',
   newCardFromSelection: '選択範囲から新規カード',
   openOriginalCard: 'オリジナルのカードを開く',
   confirmClosing:
@@ -454,7 +457,7 @@ export const JAPANESE: Messages = {
   btnAllow: '許可する',
   btnCancel: 'キャンセル',
   btnRemove: '削除する',
-  settings: '設定...',
+  settings: '設定  (CtrlOrCmd+Alt+Shift+Enter)',
   syncNow: '今すぐ同期',
   // lockCard: 'ロックする',
   // unlockCard: 'ロック解除する',
@@ -462,7 +465,7 @@ export const JAPANESE: Messages = {
   copy: 'コピー',
   copyAsMarkdown: 'コピー（Markdown形式）',
   paste: '貼り付け',
-  pasteAndMatchStyle: '貼り付け（書式なし）',
+  pasteAndMatchStyle: '貼り付け（書式なし）(CtrlOrCmd+Shift+V)',
   white: '白',
   yellow: '黄',
   red: '赤',
@@ -476,10 +479,10 @@ export const JAPANESE: Messages = {
   addToDictionary: '辞書に追加',
   saveSnapshot: 'スナップショット保存',
   snapshotName: 'スナップショット名を入力してください',
-  redisplayCards: '全カードを前面に表示',
-  minimizeAllCards: '全カードを最小化',
-  transformToLabel: 'ラベルにする',
-  transformFromLabel: 'ラベルを開く',
+  redisplayCards: '全カードを前面に表示  (CtrlOrCmd+Alt+F)',
+  minimizeAllCards: '全カードを最小化  (CtrlOrCmd+Alt+B)',
+  transformToLabel: 'ラベルにする  (CtrlOrCmd+Alt+Space)',
+  transformFromLabel: 'ラベルを開く  (CtrlOrCmd+Alt+Space)',
   copyOf: 'のコピー',
   copyCardViewLink: 'このカードのリンクをコピー',
 };

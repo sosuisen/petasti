@@ -12,6 +12,17 @@ import {
 // Utility for i18n
 let messages: Messages;
 
+let myOS: 'win32' | 'darwin' | 'linux' = 'win32';
+if (process.platform === 'win32') {
+  myOS = 'win32';
+}
+else if (process.platform === 'darwin') {
+  myOS = 'darwin';
+}
+else {
+  myOS = 'linux';
+}
+
 export const messagesRenderer: MessagesRenderer = ({} as unknown) as MessagesRenderer;
 
 export const MESSAGE = (label: MessageLabel, ...args: string[]) => {
@@ -23,6 +34,11 @@ export const MESSAGE = (label: MessageLabel, ...args: string[]) => {
       message = message.replace(variable, replacement);
     });
   }
+
+  let ctrlOrCmd = 'Ctrl';
+  if (myOS === 'darwin') ctrlOrCmd = 'Cmd';
+  message = message.replace('CtrlOrCmd', ctrlOrCmd);
+
   return message;
 };
 
