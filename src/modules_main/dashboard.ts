@@ -113,9 +113,11 @@ export const openDashboard = (
     dashboard.webContents.send('select-page', 'search');
   });
 
+  /* This interfares clearing search field by ESC
   electronLocalshortcut.register(dashboard, 'Escape', () => {
     // Show search page
     dashboard.webContents.send('escape');
   });
+  */
   return true;
 };
