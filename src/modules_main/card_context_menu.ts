@@ -339,6 +339,13 @@ export const setContextMenu = (note: INote, card: ICard) => {
         setColor('white'),
         setColor('gray'),
         setColor('transparent'),
+        { type: 'separator' },
+        {
+          label: MESSAGE('dashboardWithShortcut'),
+          click: () => {
+            openDashboard(note);
+          },
+        },
       ],
     });
   };
