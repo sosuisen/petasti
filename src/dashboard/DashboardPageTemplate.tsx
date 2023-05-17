@@ -10,7 +10,7 @@ import './DashboardPageTemplate.css';
 import { getRandomInt } from '../modules_common/utils';
 import { dashboardStore } from './store';
 import { DashboardChangePageAction } from './dashboard_local.types';
-import { selectorPage } from './selector';
+import { selectorDialog } from './selector';
 
 export interface DashboardPageTemplateProps {
   item: MenuItemProps;
@@ -19,19 +19,19 @@ export interface DashboardPageTemplateProps {
 }
 
 export function DashboardPageTemplate (props: DashboardPageTemplateProps) {
-  const pageState = useSelector(selectorPage);
+  const dialogState = useSelector(selectorDialog);
   const style = (color: ColorName) => ({
     backgroundColor: uiColors[color],
-    zIndex: pageState.activeDashboardName === props.item.id ? 200 : 150 - props.index,
+    zIndex: dialogState.activeDashboardName === props.item.id ? 200 : 150 - props.index,
     width: props.item.width + 'px',
     height: props.item.height + 'px',
   });
 
   let activeState = 'inactivePage';
-  if (pageState.activeDashboardName === props.item.id) {
+  if (dialogState.activeDashboardName === props.item.id) {
     activeState = 'activePage';
   }
-  else if (pageState.previousActiveDashboardName === props.item.id) {
+  else if (dialogState.previousActiveDashboardName === props.item.id) {
     activeState = 'previousActivePage';
   }
 

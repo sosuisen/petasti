@@ -27,6 +27,7 @@ export const closeDashboard = (destroy: boolean) => {
     else {
       //      dashboard.minimize();
       dashboard.hide();
+      dashboard.webContents.send('hide');
     }
   }
 };
@@ -39,6 +40,7 @@ export const openDashboard = (
   if (!minimize && dashboard !== undefined && !dashboard.isDestroyed()) {
     // dashboard.restore();
     dashboard.show();
+    dashboard.webContents.send('show');
     return false;
   }
 

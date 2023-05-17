@@ -149,6 +149,20 @@ window.addEventListener('message', event => {
       openAnotherTab(event.data.pageName);
       break;
     }
+    case 'show': {
+      dashboardStore.dispatch({
+        type: 'dashboard-change-visible',
+        payload: true,
+      });
+      break;
+    }
+    case 'hide': {
+      dashboardStore.dispatch({
+        type: 'dashboard-change-visible',
+        payload: false,
+      });
+      break;
+    }
     case 'playaudio': {
       playAudio(event.data.name);
       break;
@@ -162,7 +176,7 @@ window.addEventListener('message', event => {
         });
       }
       else if (
-        dashboardStore.getState().page.activeDashboardName === 'search' &&
+        dashboardStore.getState().dialog.activeDashboardName === 'search' &&
         dashboardStore.getState().searchText.searchPageText.length > 0
       ) {
         dashboardStore.dispatch({
@@ -171,7 +185,7 @@ window.addEventListener('message', event => {
         });
       }
       else if (
-        dashboardStore.getState().page.activeDashboardName === 'space' &&
+        dashboardStore.getState().dialog.activeDashboardName === 'space' &&
         dashboardStore.getState().searchText.spacePageText.length > 0
       ) {
         dashboardStore.dispatch({

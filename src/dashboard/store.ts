@@ -8,8 +8,8 @@ import { InfoState } from '../modules_common/store.types';
 import { ENGLISH } from '../modules_common/i18n';
 import {
   DashboardAction,
-  DashboardChangePageAction,
-  DashboardPageState,
+  DashboardDialogAction,
+  DashboardDialogState,
   DashboardSearchTextAction,
   DashboardSearchTextState,
   DashboardState,
@@ -118,20 +118,27 @@ const selectedCardReducer = (
   }
 };
 
-const pageReducer = (
+const dialogReducer = (
   // eslint-disable-next-line default-param-last
-  state: DashboardPageState = {
+  state: DashboardDialogState = {
     activeDashboardName: 'search',
     previousActiveDashboardName: '',
+    isVisible: false,
   },
-  action: DashboardChangePageAction
+  action: DashboardDialogAction
 ) => {
-  // eslint-disable-next-line default-case
   switch (action.type) {
     case 'dashboard-change-page':
       return {
         activeDashboardName: action.payload,
         previousActiveDashboardName: state.activeDashboardName,
+        isVisible: state.isVisible,
+      };
+    case 'dashboard-change-visible':
+      return {
+        activeDashboardName: state.activeDashboardName,
+        previousActiveDashboardName: state.previousActiveDashboardName,
+        isVisible: action.payload,
       };
     default:
       return state;
@@ -168,7 +175,7 @@ export const dashboardReducer = combineReducers({
   searchResultNoteAndCard: searchResultNoteAndCardReducer,
   searchResultNote: searchResultNoteReducer,
   selectedCard: selectedCardReducer,
-  page: pageReducer,
+  dialog: dialogReducer,
   searchText: searchTextReducer,
 });
 

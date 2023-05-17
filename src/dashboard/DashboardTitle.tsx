@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import { MessageLabel } from '../modules_common/i18n';
 import { MenuItemProps } from './MenuItem';
 import { darkenHexColor, strengthenHexColor, uiColors } from '../modules_common/color';
-import { selectorMessages, selectorPage } from './selector';
+import { selectorMessages, selectorDialog } from './selector';
 import window from './window';
 
 export interface DashboardTitleProps {
@@ -18,10 +18,10 @@ export interface DashboardTitleProps {
 
 export function DashboardTitle (props: DashboardTitleProps) {
   const messages = useSelector(selectorMessages);
-  const pageState = useSelector(selectorPage);
+  const dialogState = useSelector(selectorDialog);
 
   const activeItem: MenuItemProps | undefined = props.items.find(
-    item => item.id === pageState.activeDashboardName
+    item => item.id === dialogState.activeDashboardName
   );
   let style;
   if (activeItem !== undefined) {

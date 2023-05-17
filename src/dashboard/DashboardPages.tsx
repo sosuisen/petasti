@@ -8,15 +8,14 @@ import { useSelector } from 'react-redux';
 import { MenuItemProps } from './MenuItem';
 import { DashboardPageSpace } from './DashboardPageSpace';
 import { DashboardPageSearch } from './DashboardPageSearch';
-import { dashboardStore } from './store';
-import { selectorPage } from './selector';
+import { selectorDialog } from './selector';
 
 export interface DashboardProps {
   items: MenuItemProps[];
 }
 
 export function DashboardPages (props: DashboardProps) {
-  const pageState = useSelector(selectorPage);
+  const dialogState = useSelector(selectorDialog);
   let activePage: JSX.Element;
   const pages = props.items.reduce((result, item, index) => {
     let page: JSX.Element;
@@ -27,7 +26,7 @@ export function DashboardPages (props: DashboardProps) {
       page = <DashboardPageSpace item={item} index={index} />;
     }
 
-    if (pageState.activeDashboardName === item.id) {
+    if (dialogState.activeDashboardName === item.id) {
       activePage = page!;
     }
     else {

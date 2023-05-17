@@ -12,8 +12,8 @@ import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
 import {
   selecterSearchText,
+  selectorDialog,
   selectorMessages,
-  selectorPage,
   selectorSearchResultNoteAndCard,
   selectorSelectedCard,
 } from './selector';
@@ -34,7 +34,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const messages = useSelector(selectorMessages);
   const searchResult = useSelector(selectorSearchResultNoteAndCard);
   const inputElm = useRef(null) as React.RefObject<HTMLInputElement>;
-  const pageState = useSelector(selectorPage);
+  const dialogState = useSelector(selectorDialog);
   const selectedCard = useSelector(selectorSelectedCard);
   const searchText = useSelector(selecterSearchText);
 
@@ -50,17 +50,16 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   }, [selectedCard.card]);
 
   useEffect(() => {
-    if (pageState.activeDashboardName === props.item.id) {
+    if (dialogState.activeDashboardName === props.item.id) {
       if (inputElm.current) inputElm.current.focus();
     }
-  }, [pageState.activeDashboardName]);
+  }, [dialogState.activeDashboardName]);
 
   useEffect(() => {
-    if (pageState.activeDashboardName === props.item.id) {
-      // @ts-ignore
+    if (dialogState.isVisible && dialogState.activeDashboardName === props.item.id) {
       if (inputElm.current) inputElm.current.focus();
     }
-  }, []);
+  }, [dialogState.isVisible]);
 
   const searchFieldChanged = (keyword: string) => {
     window.api.dashboard({

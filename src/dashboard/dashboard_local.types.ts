@@ -95,9 +95,19 @@ export type DashboardChangePageAction = {
   payload: string;
 };
 
-export type DashboardPageState = {
+export type DashboardChangeVisibleAction = {
+  type: 'dashboard-change-visible';
+  payload: boolean;
+};
+
+export type DashboardDialogAction =
+  | DashboardChangePageAction
+  | DashboardChangeVisibleAction;
+
+export type DashboardDialogState = {
   activeDashboardName: string;
   previousActiveDashboardName: string;
+  isVisible: boolean;
 };
 
 /**
@@ -145,7 +155,7 @@ export type DashboardState = {
   searchResultNoteAndCard: SearchResultNoteAndCardState;
   searchResultNote: SearchResultNoteState;
   selectedCard: SelectedCardState;
-  page: DashboardPageState;
+  dialog: DashboardDialogState;
   searchText: DashboardSearchTextState;
 };
 
@@ -155,5 +165,5 @@ export type DashboardAction =
   | AppPutAction
   | SearchResultAction
   | SelectedCardAction
-  | DashboardChangePageAction
+  | DashboardDialogAction
   | DashboardSearchTextAction;

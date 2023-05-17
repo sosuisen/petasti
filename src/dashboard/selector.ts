@@ -20,8 +20,8 @@ export const selectorSelectedCard = (state: DashboardState) => {
   return state.selectedCard;
 };
 
-export const selectorPage = (state: DashboardState) => {
-  return state.page;
+export const selectorDialog = (state: DashboardState) => {
+  return state.dialog;
 };
 
 export const selecterSearchText = (state: DashboardState) => {

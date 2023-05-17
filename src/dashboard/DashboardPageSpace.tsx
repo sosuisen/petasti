@@ -10,14 +10,13 @@ import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
 import {
   selecterSearchText,
+  selectorDialog,
   selectorMessages,
-  selectorPage,
   selectorSearchResultNote,
 } from './selector';
 import { SearchResult } from './SearchResult';
 import window from './window';
 import { dashboardStore } from './store';
-import { openAnotherTab } from './utils';
 import { uiColors } from '../modules_common/color';
 import { useDebounce } from './CustomHooks';
 
@@ -29,8 +28,8 @@ export interface DashboardPageSpaceProps {
 export function DashboardPageSpace (props: DashboardPageSpaceProps) {
   const messages = useSelector(selectorMessages);
   const searchResult = useSelector(selectorSearchResultNote);
-  const inputEl = useRef(null);
-  const pageState = useSelector(selectorPage);
+  const inputElm = useRef(null) as React.RefObject<HTMLInputElement>;
+  const dialogState = useSelector(selectorDialog);
   const searchText = useSelector(selecterSearchText);
   const postfix = '-note';
 
@@ -43,11 +42,17 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
   }, [searchResult]);
 
   useEffect(() => {
-    if (pageState.activeDashboardName === props.item.id) {
+    if (dialogState.activeDashboardName === props.item.id) {
       // @ts-ignore
-      if (inputEl.current) inputEl.current.focus();
+      if (inputElm.current) inputElm.current.focus();
     }
-  }, [pageState.activeDashboardName]);
+  }, [dialogState.activeDashboardName]);
+
+  useEffect(() => {
+    if (dialogState.isVisible && dialogState.activeDashboardName === props.item.id) {
+      if (inputElm.current) inputElm.current.focus();
+    }
+  }, [dialogState.isVisible]);
 
   useEffect(() => {
     window.api.dashboard({
@@ -165,7 +170,7 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
         <span>{messages.noteNew}</span>
       </button>
       <input
-        ref={inputEl}
+        ref={inputElm}
         type='search'
         id='searchFieldNote'
         styleName='searchField'

@@ -7,7 +7,7 @@ import './MenuItem.css';
 import { useSelector } from 'react-redux';
 import { ColorName, uiColors } from '../modules_common/color';
 import { MessageLabel } from '../modules_common/i18n';
-import { selectorMessages, selectorPage } from './selector';
+import { selectorDialog, selectorMessages } from './selector';
 import { openAnotherTab } from './utils';
 import { dashboardStore } from './store';
 
@@ -27,10 +27,10 @@ export interface MenuItemPropsInternal {
 
 export function MenuItem (props: MenuItemProps & MenuItemPropsInternal) {
   const messages = useSelector(selectorMessages);
-  const pageState = useSelector(selectorPage);
+  const dialogState = useSelector(selectorDialog);
 
-  const isActive = pageState.activeDashboardName === props.id;
-  const isPrevActive = pageState.previousActiveDashboardName === props.id;
+  const isActive = dialogState.activeDashboardName === props.id;
+  const isPrevActive = dialogState.previousActiveDashboardName === props.id;
 
   const menuHeight = 50;
   const style = (color: ColorName) => ({

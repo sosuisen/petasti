@@ -56,10 +56,18 @@ ipcRenderer.on('select-page', (event, pageName) => {
   window.postMessage({ command: 'select-page', pageName }, 'file://');
 });
 
+ipcRenderer.on('hide', () => {
+  window.postMessage({ command: 'hide' }, 'file://');
+});
+
+ipcRenderer.on('show', () => {
+  window.postMessage({ command: 'show' }, 'file://');
+});
+
 ipcRenderer.on('playaudio', (event, name) => {
   window.postMessage({ command: 'playaudio', name }, 'file://');
 });
 
-ipcRenderer.on('escape', event => {
+ipcRenderer.on('escape', () => {
   window.postMessage({ command: 'escape' }, 'file://');
 });
