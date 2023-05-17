@@ -35,7 +35,12 @@ export type DashboardCreateNote = {
 
 export type DashboardCloneCards = {
   command: 'dashboard-clone-cards';
-  data: SearchResult[];
+  data: string[];
+};
+
+export type DashboardCloneSingleCard = {
+  command: 'dashboard-clone-single-card';
+  data: string;
 };
 
 export type DashboardOpenCard = {
@@ -55,5 +60,6 @@ export type DashboardCommand =
   | DashboardChangeNote
   | DashboardCreateNote
   | DashboardCloneCards
+  | DashboardCloneSingleCard
   | DashboardOpenCard
   | DashboardClose;

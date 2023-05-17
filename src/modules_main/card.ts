@@ -533,6 +533,9 @@ export class Card implements ICard {
       this._note.logger.debug('# Error in removeWindowListeners() ' + err);
     }
 
+    const handler = 'finish-load-' + encodeURIComponent(this.url);
+    ipcMain.removeHandler(handler);
+
     this.disposeContextMenu();
 
     cacheOfCard.delete(this.url);

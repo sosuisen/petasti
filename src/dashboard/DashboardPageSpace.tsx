@@ -9,10 +9,10 @@ import { useEffect, useRef } from 'react';
 import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
 import {
-  selecterSearchText,
   selectorDialog,
   selectorMessages,
   selectorSearchResultNote,
+  selectorSearchText,
 } from './selector';
 import { SearchResult } from './SearchResult';
 import window from './window';
@@ -30,7 +30,7 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
   const searchResult = useSelector(selectorSearchResultNote);
   const inputElm = useRef(null) as React.RefObject<HTMLInputElement>;
   const dialogState = useSelector(selectorDialog);
-  const searchText = useSelector(selecterSearchText);
+  const searchText = useSelector(selectorSearchText);
   const postfix = '-note';
 
   useEffect(() => {

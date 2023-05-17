@@ -146,30 +146,27 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const onCloneAllButtonClick = () => {
     window.api.dashboard({
       command: 'dashboard-clone-cards',
-      data: searchResult.list.filter(result => result.type === 'card'),
+      data: searchResult.list
+        .filter(result => result.type === 'card')
+        .map(result => result.url),
     });
   };
 
-  const closeCardButtonOnClick = () => {
+  const onCloseCardButtonClick = () => {
     dashboardStore.dispatch({
       type: 'set-selected-card',
       payload: {},
     });
   };
 
-  const cloneCardButtonOnClick = () => {
-    const result: SearchResultType = {
-      type: 'card',
-      text: '',
-      url: getCardUrl(selectedCard.card._id),
-    };
+  const onCloneCardButtonClick = () => {
     window.api.dashboard({
-      command: 'dashboard-clone-cards',
-      data: [result],
+      command: 'dashboard-clone-single-card',
+      data: getCardUrl(selectedCard.card._id),
     });
   };
 
-  const copyCardLinkButtonOnClick = () => {
+  const onCopyCardLinkButtonClick = () => {
     const link = `[${getTextLabel(selectedCard.card._body, 20, true)}](${getCardUrl(
       selectedCard.card._id
     )})`;
@@ -222,20 +219,20 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
         }`}
       >
         <div id='cardPanelTool' styleName='cardPanelTool'>
-          <div styleName='closeCardButton' onClick={closeCardButtonOnClick}>
+          <div styleName='closeCardButton' onClick={onCloseCardButtonClick}>
             <span className='fas fa-window-close'></span>
           </div>
           <button
             title={messages.copyToCurrentSpace}
             styleName='cloneCardButton'
-            onClick={cloneCardButtonOnClick}
+            onClick={onCloneCardButtonClick}
           >
             <span className='fas fa-file-download'></span>
           </button>
           <button
             title={messages.copyLink}
             styleName='copyCardLinkButton'
-            onClick={copyCardLinkButtonOnClick}
+            onClick={onCopyCardLinkButtonClick}
           >
             <span className='fas fa-link'></span>
           </button>

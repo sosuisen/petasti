@@ -2,7 +2,7 @@
  * Petasti
  * © 2023 Hidekazu Kubota
  */
-import { Display, ipcMain, screen } from 'electron';
+import { Display, ipcMain, ipcRenderer, screen } from 'electron';
 import prompt from 'electron-prompt';
 import { JsonDoc } from 'git-documentdb';
 import { INote } from './note_types';
@@ -39,6 +39,89 @@ import { CardReference } from '../dashboard/dashboard_local.types';
 let color = { ...cardColors };
 // @ts-ignore
 delete color.transparent;
+
+const updateReferences = async (note: INote, cardId: string) => {
+  const promises: Promise<JsonDoc | undefined>[] = [];
+  for (const noteProp of [...noteStore.getState().values()]) {
+    const sketchId = noteProp._id + '/' + cardId;
+    // eslint-disable-next-line no-await-in-loop
+    promises.push(note.noteCollection.get(sketchId));
+  }
+
+  const refs: (CardReference | undefined)[] = (await Promise.all(promises))
+    .filter(res => res !== undefined)
+    .map(doc => {
+      const url = getSketchUrlFromSketchId(doc!._id);
+      const noteId = getNoteIdFromUrl(url);
+      let noteName = noteStore.getState().get(noteId)?.name;
+      if (noteName === undefined) noteName = '';
+      return {
+        noteName,
+        url,
+      };
+    });
+  if (refs.length === 0) {
+    refs.push(undefined);
+  }
+  dashboard.webContents.send('get-references', refs);
+};
+
+const createClonedCard = async (
+  note: INote,
+  newUrl: string,
+  cardBody: JsonDoc,
+  geometry: Geometry,
+  zOrder: ZOrder
+) => {
+  const cardId = getCardIdFromUrl(newUrl);
+
+  let colorList = Object.entries(color);
+  if (colorList.length === 0) {
+    color = { ...cardColors };
+    // @ts-ignore
+    delete color.transparent;
+    colorList = Object.entries(color);
+  }
+  const newColor: ColorName = colorList[getRandomInt(0, colorList.length)][0] as ColorName;
+  delete color[newColor];
+
+  const current = getCurrentDateAndTime();
+  const date = {
+    createdDate: current,
+    modifiedDate: current,
+  };
+
+  const _id = `note/${note.settings.currentNoteId}/${cardId}`;
+
+  const cardSketch: CardSketch = {
+    geometry,
+    style: {
+      uiColor: cardColors[newColor],
+      backgroundColor: cardColors[newColor],
+      opacity: 1.0,
+      zoom: 1.0,
+    },
+    condition: DEFAULT_CARD_CONDITION,
+    label: DEFAULT_CARD_LABEL,
+    collapsedList: [],
+    date,
+    _id,
+  };
+
+  // eslint-disable-next-line no-await-in-loop
+  await note.createCardSketch(newUrl, cardSketch, true);
+
+  // eslint-disable-next-line no-await-in-loop
+  await createCardWindow(note, newUrl, cardBody!, cardSketch);
+
+  // Update zOrder of target note asynchronously
+
+  if (note.settings.saveZOrder) {
+    if (!zOrder!.includes(newUrl)) {
+      zOrder!.push(newUrl);
+    }
+  }
+};
 
 export const addDashboardHandler = (note: INote) => {
   // eslint-disable-next-line complexity
@@ -88,30 +171,7 @@ export const addDashboardHandler = (note: INote) => {
       }
       case 'dashboard-get-references': {
         const cardId = command.data;
-        const promises: Promise<JsonDoc | undefined>[] = [];
-        for (const noteProp of [...noteStore.getState().values()]) {
-          const sketchId = noteProp._id + '/' + cardId;
-          // eslint-disable-next-line no-await-in-loop
-          promises.push(note.noteCollection.get(sketchId));
-        }
-
-        const refs: (CardReference | undefined)[] = (await Promise.all(promises))
-          .filter(res => res !== undefined)
-          .map(doc => {
-            const url = getSketchUrlFromSketchId(doc!._id);
-            const noteId = getNoteIdFromUrl(url);
-            let noteName = noteStore.getState().get(noteId)?.name;
-            if (noteName === undefined) noteName = '';
-            return {
-              noteName,
-              url,
-            };
-          });
-        if (refs.length === 0) {
-          refs.push(undefined);
-        }
-        dashboard.webContents.send('get-references', refs);
-
+        updateReferences(note, cardId);
         break;
       }
       case 'dashboard-change-note': {
@@ -162,29 +222,77 @@ export const addDashboardHandler = (note: INote) => {
 
         break;
       }
-      case 'dashboard-clone-cards': {
-        const searchResults = command.data;
+      case 'dashboard-clone-single-card': {
+        const url = command.data;
 
-        if (searchResults.length > 1) {
-          const confirmResult = showConfirmDialog(
-            dashboard,
-            'question',
-            ['btnOK', 'btnCancel'],
-            'cloneCardsConfirmation'
-          );
+        // Update references
+        const cardId = getCardIdFromUrl(url);
 
-          if (confirmResult !== DIALOG_BUTTON.ok) {
-            return;
-          }
+        const newUrl = getSketchUrl(note.settings.currentNoteId, cardId);
+        if (cacheOfCard.get(newUrl)) {
+          return;
         }
 
-        let zOrder: ZOrder;
+        let zOrder: ZOrder = [];
         if (note.settings.saveZOrder) {
           zOrder = [...noteStore.getState().get(note.settings.currentNoteId)!.zOrder];
         }
 
-        for (const result of searchResults) {
-          const cardId = getCardIdFromUrl(result.url);
+        // eslint-disable-next-line no-await-in-loop
+        const cardBody = await note.cardCollection.get(cardId);
+        if (!cardBody) return;
+
+        const geometry: Geometry = {
+          x: 20,
+          y: 20,
+          z: 0,
+          width: 250,
+          height: 250,
+        };
+
+        geometry.x += getRandomInt(30, 100);
+        geometry.y += getRandomInt(30, 100);
+
+        await createClonedCard(note, newUrl, cardBody!, geometry, zOrder);
+
+        if (note.settings.saveZOrder) {
+          noteStore.dispatch(
+            noteZOrderUpdateCreator(
+              note,
+              note.settings.currentNoteId,
+              zOrder!,
+              'local',
+              undefined,
+              true
+            )
+          );
+        }
+
+        // Update references
+        updateReferences(note, cardId);
+        break;
+      }
+      case 'dashboard-clone-cards': {
+        const urls = command.data;
+
+        const confirmResult = showConfirmDialog(
+          dashboard,
+          'question',
+          ['btnOK', 'btnCancel'],
+          'cloneCardsConfirmation'
+        );
+
+        if (confirmResult !== DIALOG_BUTTON.ok) {
+          return;
+        }
+
+        let zOrder: ZOrder = [];
+        if (note.settings.saveZOrder) {
+          zOrder = [...noteStore.getState().get(note.settings.currentNoteId)!.zOrder];
+        }
+
+        for (const url of urls) {
+          const cardId = getCardIdFromUrl(url);
 
           const newUrl = getSketchUrl(note.settings.currentNoteId, cardId);
           if (cacheOfCard.get(newUrl)) {
@@ -208,7 +316,7 @@ export const addDashboardHandler = (note: INote) => {
             width: display.bounds.width,
             height: display.bounds.height,
           };
-          if (searchResults.length < 10) {
+          if (urls.length < 10) {
             geometry.x += getRandomInt(30, rect.width / 2);
             geometry.y += getRandomInt(30, rect.height / 2);
           }
@@ -221,53 +329,12 @@ export const addDashboardHandler = (note: INote) => {
             geometry.height += getRandomInt(30, 100);
           }
 
-          let colorList = Object.entries(color);
-          if (colorList.length === 0) {
-            color = { ...cardColors };
-            // @ts-ignore
-            delete color.transparent;
-            colorList = Object.entries(color);
-          }
-          const newColor: ColorName = colorList[
-            getRandomInt(0, colorList.length)
-          ][0] as ColorName;
-          delete color[newColor];
-
-          const current = getCurrentDateAndTime();
-          const date = {
-            createdDate: current,
-            modifiedDate: current,
-          };
-
-          const _id = `note/${note.settings.currentNoteId}/${cardId}`;
-
-          const cardSketch: CardSketch = {
-            geometry,
-            style: {
-              uiColor: cardColors[newColor],
-              backgroundColor: cardColors[newColor],
-              opacity: 1.0,
-              zoom: 1.0,
-            },
-            condition: DEFAULT_CARD_CONDITION,
-            label: DEFAULT_CARD_LABEL,
-            collapsedList: [],
-            date,
-            _id,
-          };
-
-          // eslint-disable-next-line no-await-in-loop
-          await note.createCardSketch(newUrl, cardSketch, true);
-
-          // eslint-disable-next-line no-await-in-loop
-          await createCardWindow(note, newUrl, cardBody!, cardSketch);
-
-          // Update zOrder of target note asynchronously
-
           if (note.settings.saveZOrder) {
-            if (!zOrder!.includes(newUrl)) {
-              zOrder!.push(newUrl);
-            }
+            // eslint-disable-next-line no-await-in-loop
+            await createClonedCard(note, newUrl, cardBody, geometry, zOrder);
+          }
+          else {
+            createClonedCard(note, newUrl, cardBody, geometry, zOrder);
           }
         }
 
@@ -283,7 +350,6 @@ export const addDashboardHandler = (note: INote) => {
             )
           );
         }
-
         break;
       }
       case 'dashboard-close': {
