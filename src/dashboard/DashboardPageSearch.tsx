@@ -5,7 +5,7 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 import './DashboardPageSearch.css';
-import { useCallback, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MenuItemProps } from './MenuItem';
