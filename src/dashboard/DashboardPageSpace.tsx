@@ -19,6 +19,7 @@ import window from './window';
 import { dashboardStore } from './store';
 import { openAnotherTab } from './utils';
 import { uiColors } from '../modules_common/color';
+import { useDebounce } from './CustomHooks';
 
 export interface DashboardPageSpaceProps {
   item: MenuItemProps;
@@ -54,18 +55,6 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
     });
   }, []);
 
-  const debounce = <T extends (...args: any[]) => unknown>(
-    callback: T,
-    delay = 250
-  ): ((...args: Parameters<T>) => void) => {
-    let timeoutId: NodeJS.Timeout;
-    return (...args) => {
-      clearTimeout(timeoutId);
-      // eslint-disable-next-line node/no-callback-literal
-      timeoutId = setTimeout(() => callback(...args), delay);
-    };
-  };
-
   const searchFieldChanged = (keyword: string) => {
     if (keyword === '') {
       window.api.dashboard({
@@ -80,7 +69,7 @@ export function DashboardPageSpace (props: DashboardPageSpaceProps) {
     }
     document.getElementById('resultAreaNote')!.scrollTop = 0;
   };
-  const debouncedSearchFieldChanged = debounce(searchFieldChanged);
+  const debouncedSearchFieldChanged = useDebounce(searchFieldChanged);
 
   const onSearchFieldChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     const keyword = event.target.value;

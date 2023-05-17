@@ -5,7 +5,7 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 import './DashboardPageSearch.css';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MenuItemProps } from './MenuItem';
@@ -23,6 +23,7 @@ import { SearchResult as SearchResultType } from './dashboard_local.types';
 
 import { dashboardStore } from './store';
 import { getCardUrl, getTextLabel } from '../modules_common/utils';
+import { useDebounce } from './CustomHooks';
 
 export interface DashboardPageSearchProps {
   item: MenuItemProps;
@@ -32,7 +33,7 @@ export interface DashboardPageSearchProps {
 export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const messages = useSelector(selectorMessages);
   const searchResult = useSelector(selectorSearchResultNoteAndCard);
-  const inputEl = useRef(null) as React.RefObject<HTMLInputElement>;
+  const inputElm = useRef(null) as React.RefObject<HTMLInputElement>;
   const pageState = useSelector(selectorPage);
   const selectedCard = useSelector(selectorSelectedCard);
   const searchText = useSelector(selecterSearchText);
@@ -50,28 +51,16 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
 
   useEffect(() => {
     if (pageState.activeDashboardName === props.item.id) {
-      if (inputEl.current) inputEl.current.focus();
+      if (inputElm.current) inputElm.current.focus();
     }
   }, [pageState.activeDashboardName]);
 
   useEffect(() => {
     if (pageState.activeDashboardName === props.item.id) {
       // @ts-ignore
-      if (inputEl.current) inputEl.current.focus();
+      if (inputElm.current) inputElm.current.focus();
     }
   }, []);
-
-  const debounce = <T extends (...args: any[]) => unknown>(
-    callback: T,
-    delay = 250
-  ): ((...args: Parameters<T>) => void) => {
-    let timeoutId: NodeJS.Timeout;
-    return (...args) => {
-      clearTimeout(timeoutId);
-      // eslint-disable-next-line node/no-callback-literal
-      timeoutId = setTimeout(() => callback(...args), delay);
-    };
-  };
 
   const searchFieldChanged = (keyword: string) => {
     window.api.dashboard({
@@ -80,7 +69,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
     });
     document.getElementById('resultAreaNote')!.scrollTop = 0;
   };
-  const debouncedSearchFieldChanged = debounce(searchFieldChanged);
+  const debouncedSearchFieldChanged = useDebounce(searchFieldChanged);
 
   const onSearchFieldChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     const keyword = event.target.value;
@@ -212,7 +201,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   return (
     <DashboardPageTemplate item={props.item} index={props.index}>
       <input
-        ref={inputEl}
+        ref={inputElm}
         type='search'
         id='searchField'
         styleName='searchField'
