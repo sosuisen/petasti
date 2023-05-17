@@ -535,6 +535,11 @@ export const initializeTaskTray = (store: INote) => {
       }
       else {
         closeDashboard(false);
+        const topCardUrl = note.currentZOrder[note.currentZOrder.length - 1];
+        const topCard = cacheOfCard.get(topCardUrl);
+        if (topCard && topCard.window && !topCard.isFake && !topCard.window.isDestroyed()) {
+          topCard!.focus();
+        }
       }
     }
     else {
