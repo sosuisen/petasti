@@ -135,6 +135,7 @@ window.addEventListener('message', event => {
         type: 'set-selected-card',
         payload: cardProp,
       });
+      openAnotherTab('search');
       break;
     }
     case 'get-references': {
