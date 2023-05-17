@@ -170,7 +170,7 @@ export const setTrayContextMenu = () => {
         type: 'separator',
       }, */
       {
-        label: MESSAGE('newCard'),
+        label: MESSAGE('newCardFromTray'),
         click: () => {
           createRandomColorCard(note);
         },
@@ -553,6 +553,10 @@ export const initializeTaskTray = (store: INote) => {
   // 'B'ack
   globalShortcut.registerAll([`CommandOrControl+${opt}+B`], () => {
     minimizeAllCards(note.currentZOrder);
+  });
+  // 'N'ew card
+  globalShortcut.registerAll([`CommandOrControl+${opt}+N`], () => {
+    createRandomColorCard(note);
   });
 
   // for debug
