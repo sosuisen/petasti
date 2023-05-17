@@ -5,7 +5,7 @@
 import * as React from 'react';
 import { useSelector } from 'react-redux';
 import './DashboardPageSearch.css';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MenuItemProps } from './MenuItem';
@@ -32,7 +32,7 @@ export interface DashboardPageSearchProps {
 export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const messages = useSelector(selectorMessages);
   const searchResult = useSelector(selectorSearchResultNoteAndCard);
-  const inputEl = useRef(null);
+  const inputEl = useRef(null) as React.RefObject<HTMLInputElement>;
   const pageState = useSelector(selectorPage);
   const selectedCard = useSelector(selectorSelectedCard);
   const searchText = useSelector(selecterSearchText);
@@ -50,7 +50,6 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
 
   useEffect(() => {
     if (pageState.activeDashboardName === props.item.id) {
-      // @ts-ignore
       if (inputEl.current) inputEl.current.focus();
     }
   }, [pageState.activeDashboardName]);
