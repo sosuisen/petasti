@@ -40,7 +40,7 @@ window.addEventListener('message', event => {
             {
               id: 'save',
               label: 'settingPageSave',
-              icon: 'fas fa-share-square',
+              icon: 'fas fa-hdd',
               color: 'yellow',
               width: 450,
               height: 270,
@@ -48,7 +48,7 @@ window.addEventListener('message', event => {
             {
               id: 'sync',
               label: 'settingPageSync',
-              icon: 'fas fa-shield-alt',
+              icon: 'fas fa-sync-alt',
               color: 'purple',
               width: 350,
               height: 270,
