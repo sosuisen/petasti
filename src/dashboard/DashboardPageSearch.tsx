@@ -11,10 +11,10 @@ import remarkGfm from 'remark-gfm';
 import { MenuItemProps } from './MenuItem';
 import { DashboardPageTemplate } from './DashboardPageTemplate';
 import {
-  selecterSearchText,
   selectorDialog,
   selectorMessages,
   selectorSearchResultNoteAndCard,
+  selectorSearchText,
   selectorSelectedCard,
 } from './selector';
 import window from './window';
@@ -36,7 +36,7 @@ export function DashboardPageSearch (props: DashboardPageSearchProps) {
   const inputElm = useRef(null) as React.RefObject<HTMLInputElement>;
   const dialogState = useSelector(selectorDialog);
   const selectedCard = useSelector(selectorSelectedCard);
-  const searchText = useSelector(selecterSearchText);
+  const searchText = useSelector(selectorSearchText);
 
   const postfix = '-note-and-card';
 

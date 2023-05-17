@@ -24,6 +24,6 @@ export const selectorDialog = (state: DashboardState) => {
   return state.dialog;
 };
 
-export const selecterSearchText = (state: DashboardState) => {
+export const selectorSearchText = (state: DashboardState) => {
   return state.searchText;
 };
