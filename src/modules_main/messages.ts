@@ -39,6 +39,10 @@ export const MESSAGE = (label: MessageLabel, ...args: string[]) => {
   if (myOS === 'darwin') ctrlOrCmd = 'Cmd';
   message = message.replace('CtrlOrCmd', ctrlOrCmd);
 
+  let altOrOpt = 'Alt';
+  if (myOS === 'darwin') altOrOpt = 'Opt';
+  message = message.replace('AltOrOpt', altOrOpt);
+
   return message;
 };
 

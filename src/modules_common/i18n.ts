@@ -6,6 +6,7 @@ type MessagesMain = {
   bringToFront: string;
   sendToBack: string;
   newCard: string;
+  newCardFromTray: string;
   newCardFromSelection: string;
   openOriginalCard: string;
   confirmClosing: string;
@@ -247,7 +248,7 @@ const RENDERER_ENGLISH: MessagesRenderer = {
 
 const DASHBOARD_ENGLISH: MessagesDashboard = {
   dashboard: 'Dashboard',
-  dashboardWithShortcut: 'Dashboard  (CtrlOrCmd+Alt+Enter)',
+  dashboardWithShortcut: 'Dashboard  (CtrlOrCmd+AltOrOpt+Enter)',
   dashboardPageSearch: 'Search',
   dashboardPageSpace: 'Space',
   dashboardInputSpaceOrKeyword: 'Input space name or keyword',
@@ -276,6 +277,7 @@ export const ENGLISH: Messages = {
   bringToFront: 'Bring to Front',
   sendToBack: 'Send to Back',
   newCard: 'New card  (CtrlOrCmd+N)',
+  newCardFromTray: 'New card (CtrlOrCmd+AltOrOpt+N)',
   newCardFromSelection: 'New card from selection',
   openOriginalCard: 'Open the original card',
   confirmClosing:
@@ -316,10 +318,10 @@ export const ENGLISH: Messages = {
   addToDictionary: 'Add to dictionary',
   saveSnapshot: 'Save snapshot',
   snapshotName: 'Enter snapshot name',
-  redisplayCards: 'Bring all cards to front  (CtrlOrCmd+Alt+F)',
-  minimizeAllCards: 'Minimize all cards  (CtrlOrCmd+Alt+B)',
-  transformToLabel: 'Labelize  (CtrlOrCmd+Alt+Space)',
-  transformFromLabel: 'Open label  (CtrlOrCmd+Alt+Space)',
+  redisplayCards: 'Bring all cards to front  (CtrlOrCmd+AltOrOpt+F)',
+  minimizeAllCards: 'Minimize all cards  (CtrlOrCmd+AltOrOpt+B)',
+  transformToLabel: 'Labelize  (CtrlOrCmd+AltOrOpt+Space)',
+  transformFromLabel: 'Open label  (CtrlOrCmd+AltOrOpt+Space)',
   copyOf: '-copy',
   copyCardViewLink: 'Copy link to this card',
 };
@@ -413,7 +415,7 @@ const RENDERER_JAPANESE: MessagesRenderer = {
 
 const DASHBOARD_JAPANESE: MessagesDashboard = {
   dashboard: 'ダッシュボード',
-  dashboardWithShortcut: 'ダッシュボード  (CtrlOrCmd+Alt+Enter)',
+  dashboardWithShortcut: 'ダッシュボード  (CtrlOrCmd+AltOrOpt+Enter)',
   dashboardPageSearch: '検索',
   dashboardPageSpace: 'スペース',
   dashboardInputSpaceOrKeyword: 'スペース名またはキーワードを入力',
@@ -438,6 +440,7 @@ export const JAPANESE: Messages = {
   bringToFront: '最前面へ',
   sendToBack: '最背面へ',
   newCard: '新規カード  (CtrlOrCmd+N)',
+  newCardFromTray: '新規カード  (CtrlOrCmd+AltOrOpt+N)',
   newCardFromSelection: '選択範囲から新規カード',
   openOriginalCard: 'オリジナルのカードを開く',
   confirmClosing:
@@ -479,10 +482,10 @@ export const JAPANESE: Messages = {
   addToDictionary: '辞書に追加',
   saveSnapshot: 'スナップショット保存',
   snapshotName: 'スナップショット名を入力してください',
-  redisplayCards: '全カードを前面に表示  (CtrlOrCmd+Alt+F)',
-  minimizeAllCards: '全カードを最小化  (CtrlOrCmd+Alt+B)',
-  transformToLabel: 'ラベルにする  (CtrlOrCmd+Alt+Space)',
-  transformFromLabel: 'ラベルを開く  (CtrlOrCmd+Alt+Space)',
+  redisplayCards: '全カードを前面に表示  (CtrlOrCmd+AltOrOpt+F)',
+  minimizeAllCards: '全カードを最小化  (CtrlOrCmd+AltOrOpt+B)',
+  transformToLabel: 'ラベルにする  (CtrlOrCmd+AltOrOpt+Space)',
+  transformFromLabel: 'ラベルを開く  (CtrlOrCmd+AltOrOpt+Space)',
   copyOf: 'のコピー',
   copyCardViewLink: 'このカードのリンクをコピー',
 };
