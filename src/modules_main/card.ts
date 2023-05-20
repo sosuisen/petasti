@@ -429,7 +429,9 @@ export class Card implements ICard {
 
         icon: path.join(__dirname, `../assets/${APP_ICON_NAME}`),
       });
-      this.window.setMaxListeners(20);
+      // これがショートカット利かない問題の元凶では
+      // this.window.setMaxListeners(20);
+      this.window.setMaxListeners(50);
 
       // for Mac
       this.window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
