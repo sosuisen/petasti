@@ -20,9 +20,9 @@ export function Dashboard (props: DashboardProps) {
   return (
     <div styleName='dashboard'>
       <Provider store={dashboardStore}>
-          <DashboardTitle title={props.title} items={props.menu.items} />
-          <MenuList items={props.menu.items} />
-          <DashboardPages items={props.menu.items} />
+        <DashboardTitle title={props.title} items={props.menu.items} />
+        <MenuList items={props.menu.items} />
+        <DashboardPages items={props.menu.items} />
       </Provider>
     </div>
   );

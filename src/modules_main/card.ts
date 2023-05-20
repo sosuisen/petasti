@@ -429,7 +429,12 @@ export class Card implements ICard {
 
         icon: path.join(__dirname, `../assets/${APP_ICON_NAME}`),
       });
-      this.window.setMaxListeners(20);
+      // これがショートカット利かない問題の元凶では
+      // this.window.setMaxListeners(20);
+      this.window.setMaxListeners(50);
+
+      // for Mac
+      this.window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
       if (!app.isPackaged && process.env.NODE_ENV === 'development') {
         // this.window.webContents.openDevTools();
@@ -1112,23 +1117,23 @@ export class Card implements ICard {
       }
     );
 
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+Plus', () => {
+    electronLocalshortcut.register(this.window, 'Ctrl+Plus', () => {
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       this.window.webContents.send('zoom-in');
     });
 
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+-', () => {
+    electronLocalshortcut.register(this.window, 'Ctrl+-', () => {
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       this.window.webContents.send('zoom-out');
     });
 
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+W', async () => {
+    electronLocalshortcut.register(this.window, 'Ctrl+' + opt + '+W', async () => {
       // Close
       await moveCardOutsideFromBottom(this.url);
       await this._note.deleteCardSketch(this.url);
     });
 
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Up', () => {
+    electronLocalshortcut.register(this.window, 'Ctrl+' + opt + '+Up', () => {
       // if (this.status === 'Blurred') return;
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       const changeUnit = this._getChangeUnit('up', 'position');
@@ -1140,7 +1145,7 @@ export class Card implements ICard {
 
       this._moveByKey(oldX, newY);
     });
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Down', () => {
+    electronLocalshortcut.register(this.window, 'Ctrl+' + opt + '+Down', () => {
       // if (this.status === 'Blurred') return;
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       const changeUnit = this._getChangeUnit('down', 'position');
@@ -1165,7 +1170,7 @@ export class Card implements ICard {
 
       this._moveByKey(oldX, newY);
     });
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Left', () => {
+    electronLocalshortcut.register(this.window, 'Ctrl+' + opt + '+Left', () => {
       // if (this.status === 'Blurred') return;
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       const changeUnit = this._getChangeUnit('left', 'position');
@@ -1183,7 +1188,7 @@ export class Card implements ICard {
 
       this._moveByKey(newX, oldY);
     });
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Right', () => {
+    electronLocalshortcut.register(this.window, 'Ctrl+' + opt + '+Right', () => {
       // if (this.status === 'Blurred') return;
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       const changeUnit = this._getChangeUnit('right', 'position');
@@ -1209,7 +1214,7 @@ export class Card implements ICard {
       this._moveByKey(newX, oldY);
     });
 
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Shift+Left', () => {
+    electronLocalshortcut.register(this.window, 'Ctrl+' + opt + '+Shift+Left', () => {
       // if (this.status === 'Blurred') return;
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       const changeUnit = this._getChangeUnit('left', 'size');
@@ -1218,7 +1223,7 @@ export class Card implements ICard {
       if (newWidth < MINIMUM_WINDOW_WIDTH) newWidth = MINIMUM_WINDOW_WIDTH;
       this._resizeByKey(newWidth, oldHeight);
     });
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Shift+Right', () => {
+    electronLocalshortcut.register(this.window, 'Ctrl+' + opt + '+Shift+Right', () => {
       // if (this.status === 'Blurred') return;
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       const changeUnit = this._getChangeUnit('right', 'size');
@@ -1226,7 +1231,7 @@ export class Card implements ICard {
       const newWidth = oldWidth + changeUnit;
       this._resizeByKey(newWidth, oldHeight);
     });
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Shift+Up', () => {
+    electronLocalshortcut.register(this.window, 'Ctrl+' + opt + '+Shift+Up', () => {
       // if (this.status === 'Blurred') return;
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       const changeUnit = this._getChangeUnit('up', 'size');
@@ -1235,7 +1240,7 @@ export class Card implements ICard {
       if (newHeight < MINIMUM_WINDOW_HEIGHT) newHeight = MINIMUM_WINDOW_HEIGHT;
       this._resizeByKey(oldWidth, newHeight);
     });
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Shift+Down', () => {
+    electronLocalshortcut.register(this.window, 'Ctrl+' + opt + '+Shift+Down', () => {
       // if (this.status === 'Blurred') return;
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       const changeUnit = this._getChangeUnit('down', 'size');
@@ -1250,7 +1255,7 @@ export class Card implements ICard {
         this.window.webContents.send('toggle-sticker');
     });
 
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+Space', () => {
+    electronLocalshortcut.register(this.window, 'Ctrl+' + opt + '+Space', () => {
       // if (this.status === 'Blurred') return;
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       if (isLabelOpened(this.sketch.label.status)) {
