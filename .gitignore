@@ -103,3 +103,4 @@ config.json
 node_modules_before_using_rxdb
 Petasti-win32-x64/
 installer/
+Petasti-darwin-x64/
