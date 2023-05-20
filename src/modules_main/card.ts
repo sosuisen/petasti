@@ -1121,6 +1121,11 @@ export class Card implements ICard {
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
       this.window.webContents.send('zoom-in');
     });
+    // For mac jp/us keyboard
+    electronLocalshortcut.register(this.window, ['Ctrl+;', 'Ctrl+='], () => {
+      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      this.window.webContents.send('zoom-in');
+    });
 
     electronLocalshortcut.register(this.window, 'Ctrl+-', () => {
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
