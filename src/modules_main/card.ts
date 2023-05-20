@@ -1040,6 +1040,53 @@ export class Card implements ICard {
     return type === 'position' ? positionChangeUnitSmall : sizeChangeUnitSmall;
   };
 
+  private _createCardFromShortcut = (shift: boolean) => {
+    playSound('create', 5);
+    const cardId = generateNewCardId();
+    const newUrl = getSketchUrl(this._note.settings.currentNoteId, cardId);
+
+    const geometry = { ...DEFAULT_CARD_GEOMETRY };
+    geometry.x = this.sketch.geometry.x + 30;
+    geometry.y = this.sketch.geometry.y + 30;
+    if (shift) {
+      geometry.width = this.sketch.geometry.width;
+      geometry.height = this.sketch.geometry.height;
+    }
+
+    const xOffset = getRandomInt(10, 30);
+    const yOffset = getRandomInt(10, 30);
+
+    const moveToRect = this._note.calcVacantLand(
+      this.sketch.geometry,
+      {
+        x: geometry.x,
+        y: geometry.y,
+        width: geometry.width,
+        height: geometry.height,
+      },
+      xOffset,
+      yOffset
+    );
+
+    const newBody: Partial<CardBody> = {};
+    const newSketch: Partial<CardSketch> = {
+      geometry: {
+        x: geometry.x,
+        y: geometry.y,
+        z: 0,
+        width: geometry.width,
+        height: geometry.height,
+      },
+      style: {
+        uiColor: this.sketch.style.uiColor,
+        backgroundColor: this.sketch.style.backgroundColor,
+        opacity: this.sketch.style.opacity,
+        zoom: this.sketch.style.zoom,
+      },
+    };
+    createCardWindow(this._note, newUrl, newBody, newSketch, true, moveToRect);
+  };
+
   // Available shortcuts
   private _addLocalShortcuts = () => {
     // https://github.com/electron/electron/blob/main/docs/api/accelerator.md
@@ -1077,43 +1124,15 @@ export class Card implements ICard {
       this._note.tray.popUpContextMenu();
     });
 
-    electronLocalshortcut.register(this.window, 'CmdOrCtrl+N', () => {
-      createRandomColorCard(this._note);
-    });
-    electronLocalshortcut.register(this.window, opt + '+N', () => {
-      createRandomColorCard(this._note);
+    electronLocalshortcut.register(this.window, ['CmdOrCtrl+N', opt + '+N'], () => {
+      this._createCardFromShortcut(false);
     });
 
     electronLocalshortcut.register(
       this.window,
       ['CmdOrCtrl+Shift+N', opt + '+Shift+N'],
       () => {
-        const cardId = generateNewCardId();
-        const newUrl = getSketchUrl(this._note.settings.currentNoteId, cardId);
-
-        const geometry = { ...DEFAULT_CARD_GEOMETRY };
-        geometry.x = this.sketch.geometry.x + 30;
-        geometry.y = this.sketch.geometry.y + 30;
-        geometry.width = this.sketch.geometry.width;
-        geometry.height = this.sketch.geometry.height;
-
-        const newBody: Partial<CardBody> = {};
-        const newSketch: Partial<CardSketch> = {
-          geometry: {
-            x: geometry.x,
-            y: geometry.y,
-            z: 0,
-            width: geometry.width,
-            height: geometry.height,
-          },
-          style: {
-            uiColor: this.sketch.style.uiColor,
-            backgroundColor: this.sketch.style.backgroundColor,
-            opacity: this.sketch.style.opacity,
-            zoom: this.sketch.style.zoom,
-          },
-        };
-        createCardWindow(this._note, newUrl, newBody, newSketch);
+        this._createCardFromShortcut(true);
       }
     );
 
