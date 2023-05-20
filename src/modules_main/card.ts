@@ -133,6 +133,7 @@ export const sortCardWindows = (zOrder: string[], suppressFocus = false) => {
       if (card.window.isMinimized()) {
         card.window.restore();
       }
+      // Need show() to bring all cards to the front in macOS
       card.window.show();
       card.window.moveTop();
 
@@ -154,6 +155,7 @@ export const sortCardWindows = (zOrder: string[], suppressFocus = false) => {
 
 export const minimizeAllCards = (zOrder: string[]) => {
   const backToFront = sortCards(zOrder);
+  // minimize() is too slow to minimize windows on macOS with genie effect.
   //  backToFront.forEach(card => card.window?.minimize());
   backToFront.forEach(card => card.window?.hide());
 };
