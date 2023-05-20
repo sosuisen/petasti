@@ -431,6 +431,9 @@ export class Card implements ICard {
       });
       this.window.setMaxListeners(20);
 
+      // for Mac
+      this.window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
       if (!app.isPackaged && process.env.NODE_ENV === 'development') {
         // this.window.webContents.openDevTools();
       }
