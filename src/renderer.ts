@@ -232,7 +232,8 @@ const initializeUIEvents = () => {
 
     closing = true;
     suppressFocusEvent = true; // Suppress focus event in order not to focus and save this card just after closing card window.
-    if (cardStore.getState().body._body === '' || event.ctrlKey) {
+    //    if (cardStore.getState().body._body === '' || event.ctrlKey) {
+    if (cardStore.getState().body._body === '' || event.altKey) {
       window.api.deleteCard(cardStore.getState().workState.url);
     }
     else {

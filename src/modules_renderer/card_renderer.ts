@@ -10,7 +10,7 @@ import {
   strengthenHexColor,
 } from '../modules_common/color';
 import window from './window';
-import { getCtrlDown } from '../modules_common/keys';
+import { getAltDown } from '../modules_common/keys';
 import { cardStore } from './card_store';
 import { CARD_MARGIN_LEFT, CARD_MARGIN_TOP, CARD_PADDING } from '../modules_common/const';
 import { getConfig } from './config';
@@ -170,7 +170,7 @@ const renderTitleBar = () => {
   }
   document.getElementById('title')!.style.width = titleWidth + 'px';
 
-  if (getCtrlDown() || cardStore.getState().body._body === '') {
+  if (getAltDown() || cardStore.getState().body._body === '') {
     document.getElementById('closeIcon')!.className = 'far fa-trash-alt title-btn-icon';
   }
   else {
