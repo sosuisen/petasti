@@ -291,8 +291,12 @@ emitter.on('change-note', async (nextNoteId: string, focusedSketchId: string) =>
     console.debug(`Completed to load ${size} cards`);
   } catch (err) {
     // Show error
-    if (loadingNoteProgressBar) loadingNoteProgressBar.close();
     note.logger.debug('# Error in change-note: ' + err);
+    if (loadingNoteProgressBar) {
+      try {
+        loadingNoteProgressBar.close();
+      } catch (err2) {}
+    }
     // TODO: Need detailed error message for user.
     return;
   }
