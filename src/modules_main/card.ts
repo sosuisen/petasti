@@ -133,6 +133,7 @@ export const sortCardWindows = (zOrder: string[], suppressFocus = false) => {
       if (card.window.isMinimized()) {
         card.window.restore();
       }
+      card.window.show();
       card.window.moveTop();
 
       // !ALERT: Dirty hack not to call updateCardSketchDoc
@@ -153,7 +154,8 @@ export const sortCardWindows = (zOrder: string[], suppressFocus = false) => {
 
 export const minimizeAllCards = (zOrder: string[]) => {
   const backToFront = sortCards(zOrder);
-  backToFront.forEach(card => card.window?.minimize());
+  //  backToFront.forEach(card => card.window?.minimize());
+  backToFront.forEach(card => card.window?.hide());
 };
 
 /**
