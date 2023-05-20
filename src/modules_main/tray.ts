@@ -525,10 +525,10 @@ export const initializeTaskTray = (store: INote) => {
   if (process.platform === 'darwin') {
     opt = 'Option';
   }
-  globalShortcut.registerAll([`CommandOrControl+${opt}+Shift+Enter`], () => {
+  globalShortcut.registerAll([`Control+${opt}+Shift+Enter`], () => {
     tray.popUpContextMenu();
   });
-  globalShortcut.registerAll([`CommandOrControl+${opt}+Enter`], () => {
+  globalShortcut.registerAll([`Control+${opt}+Enter`], () => {
     if (dashboard !== undefined && !dashboard.isDestroyed()) {
       if (dashboard.isMinimized() || !dashboard.isVisible()) {
         openDashboard(note);
@@ -547,15 +547,15 @@ export const initializeTaskTray = (store: INote) => {
     }
   });
   // 'F'ront
-  globalShortcut.registerAll([`CommandOrControl+${opt}+F`], () => {
+  globalShortcut.registerAll([`Control+${opt}+F`], () => {
     sortCardWindows(note.currentZOrder, true);
   });
   // 'B'ack
-  globalShortcut.registerAll([`CommandOrControl+${opt}+B`], () => {
+  globalShortcut.registerAll([`Control+${opt}+B`], () => {
     minimizeAllCards(note.currentZOrder);
   });
   // 'N'ew card
-  globalShortcut.registerAll([`CommandOrControl+${opt}+N`], () => {
+  globalShortcut.registerAll([`Control+${opt}+N`], () => {
     createRandomColorCard(note);
   });
 
