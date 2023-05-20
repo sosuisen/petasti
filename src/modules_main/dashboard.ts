@@ -105,12 +105,12 @@ export const openDashboard = (
     return true;
   });
 
-  electronLocalshortcut.register(dashboard, 'CmdOrCtrl+S', () => {
+  electronLocalshortcut.register(dashboard, 'Ctrl+S', () => {
     // Show space list page
     dashboard.webContents.send('select-page', 'space');
   });
 
-  electronLocalshortcut.register(dashboard, 'CmdOrCtrl+K', () => {
+  electronLocalshortcut.register(dashboard, 'Ctrl+K', () => {
     // Show search page
     dashboard.webContents.send('select-page', 'search');
   });

@@ -248,7 +248,7 @@ const RENDERER_ENGLISH: MessagesRenderer = {
 
 const DASHBOARD_ENGLISH: MessagesDashboard = {
   dashboard: 'Dashboard',
-  dashboardWithShortcut: 'Dashboard  (CtrlOrCmd+AltOrOpt+Enter)',
+  dashboardWithShortcut: 'Dashboard  (Ctrl+AltOrOpt+Enter)',
   dashboardPageSearch: 'Search',
   dashboardPageSpace: 'Space',
   dashboardInputSpaceOrKeyword: 'Input space name or keyword',
@@ -272,12 +272,12 @@ export const ENGLISH: Messages = {
   ...DASHBOARD_ENGLISH,
   databaseCreateError: 'Error: Cannot create database($1)',
   exit: 'Exit',
-  zoomIn: 'Zoom In  (CtrlOrCmd+-)',
-  zoomOut: 'Zoom Out  (CtrlOrCmd++)',
+  zoomIn: 'Zoom In  (Ctrl+-)',
+  zoomOut: 'Zoom Out  (Ctrl++)',
   bringToFront: 'Bring to Front',
   sendToBack: 'Send to Back',
   newCard: 'New card  (CtrlOrCmd+N)',
-  newCardFromTray: 'New card (CtrlOrCmd+AltOrOpt+N)',
+  newCardFromTray: 'New card (Ctrl+AltOrOpt+N)',
   newCardFromSelection: 'New card from selection',
   openOriginalCard: 'Open the original card',
   confirmClosing:
@@ -318,10 +318,10 @@ export const ENGLISH: Messages = {
   addToDictionary: 'Add to dictionary',
   saveSnapshot: 'Save snapshot',
   snapshotName: 'Enter snapshot name',
-  redisplayCards: 'Bring all cards to front  (CtrlOrCmd+AltOrOpt+F)',
-  minimizeAllCards: 'Minimize all cards  (CtrlOrCmd+AltOrOpt+B)',
-  transformToLabel: 'Labelize  (CtrlOrCmd+AltOrOpt+Space)',
-  transformFromLabel: 'Open label  (CtrlOrCmd+AltOrOpt+Space)',
+  redisplayCards: 'Bring all cards to front  (Ctrl+AltOrOpt+F)',
+  minimizeAllCards: 'Minimize all cards  (Ctrl+AltOrOpt+B)',
+  transformToLabel: 'Labelize  (Ctrl+AltOrOpt+Space)',
+  transformFromLabel: 'Open label  (Ctrl+AltOrOpt+Space)',
   copyOf: '-copy',
   copyCardViewLink: 'Copy link to this card',
 };
@@ -415,7 +415,7 @@ const RENDERER_JAPANESE: MessagesRenderer = {
 
 const DASHBOARD_JAPANESE: MessagesDashboard = {
   dashboard: 'ダッシュボード',
-  dashboardWithShortcut: 'ダッシュボード  (CtrlOrCmd+AltOrOpt+Enter)',
+  dashboardWithShortcut: 'ダッシュボード  (Ctrl+AltOrOpt+Enter)',
   dashboardPageSearch: '検索',
   dashboardPageSpace: 'スペース',
   dashboardInputSpaceOrKeyword: 'スペース名またはキーワードを入力',
@@ -440,7 +440,7 @@ export const JAPANESE: Messages = {
   bringToFront: '最前面へ',
   sendToBack: '最背面へ',
   newCard: '新規カード  (CtrlOrCmd+N)',
-  newCardFromTray: '新規カード  (CtrlOrCmd+AltOrOpt+N)',
+  newCardFromTray: '新規カード  (Ctrl+AltOrOpt+N)',
   newCardFromSelection: '選択範囲から新規カード',
   openOriginalCard: 'オリジナルのカードを開く',
   confirmClosing:
@@ -482,10 +482,10 @@ export const JAPANESE: Messages = {
   addToDictionary: '辞書に追加',
   saveSnapshot: 'スナップショット保存',
   snapshotName: 'スナップショット名を入力してください',
-  redisplayCards: '全カードを前面に表示  (CtrlOrCmd+AltOrOpt+F)',
-  minimizeAllCards: '全カードを最小化  (CtrlOrCmd+AltOrOpt+B)',
-  transformToLabel: 'ラベルにする  (CtrlOrCmd+AltOrOpt+Space)',
-  transformFromLabel: 'ラベルを開く  (CtrlOrCmd+AltOrOpt+Space)',
+  redisplayCards: '全カードを前面に表示  (Ctrl+AltOrOpt+F)',
+  minimizeAllCards: '全カードを最小化  (Ctrl+AltOrOpt+B)',
+  transformToLabel: 'ラベルにする  (Ctrl+AltOrOpt+Space)',
+  transformFromLabel: 'ラベルを開く  (Ctrl+AltOrOpt+Space)',
   copyOf: 'のコピー',
   copyCardViewLink: 'このカードのリンクをコピー',
 };
