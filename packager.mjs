@@ -11,6 +11,10 @@ const createInstaller = async () => {
   // Default App icon
   // If the file extension of icon is omitted, its is auto-completed to the correct extension based on the platform.
   const icon = 'assets/petasti-icon'; 
+
+  // Use png2icons to create .icns for macOS
+  // https://blog1.mammb.com/entry/2023/03/29/090000
+  // https://github.com/idesis-gmbh/png2icons
   
   // A URL to an ICO file displayed in Control Panel > Programs and Features
   // Defaults to the Atom icon.
