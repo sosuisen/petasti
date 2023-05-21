@@ -1116,15 +1116,20 @@ export class Card implements ICard {
     electronLocalshortcut.register(this.window, opt + '+C', () => {
       // if (this.status === 'Blurred') return;
       if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+      let type: 'mouseUp' | 'mouseDown' = 'mouseUp';
+      if (process.platform === 'darwin') {
+        type = 'mouseDown';
+      }
+
       // Context menu
       this.window.webContents.sendInputEvent({
         button: 'right',
-        type: 'mouseUp',
-        x: 30,
-        y: 30,
+        type,
+        x: 3,
+        y: 3,
       });
     });
-    electronLocalshortcut.register(this.window, opt + '+T', () => {
+    electronLocalshortcut.register(this.window, [opt + '+T', 'Ctrl+' + opt + '+T'], () => {
       this._note.tray.popUpContextMenu();
     });
 
