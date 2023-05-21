@@ -4,6 +4,7 @@
  */
 
 import path from 'path';
+import os from 'os';
 import { app } from 'electron';
 import { notebookDbName } from './const';
 import { Messages } from './i18n';
@@ -21,8 +22,22 @@ export const dataDirName = 'petasti_data';
  *
  * TODO: Default path for Mac / Linux is needed.
  */
+let myOS: 'win32' | 'darwin' | 'linux' = 'win32';
+if (process.platform === 'win32') {
+  myOS = 'win32';
+}
+else if (process.platform === 'darwin') {
+  myOS = 'darwin';
+}
+else {
+  myOS = 'linux';
+}
+let defaultDataDirByOS = path.join(__dirname, `../../../../../../${dataDirName}`);
+if (myOS !== 'win32') {
+  defaultDataDirByOS = path.join(os.homedir(), dataDirName);
+}
 export const defaultDataDir = app.isPackaged
-  ? path.join(__dirname, `../../../../../../${dataDirName}`)
+  ? defaultDataDirByOS
   : path.join(__dirname, `../../${dataDirName}`);
 // export const defaultDataDir = 'C:\\Users\\kubota\\AppData\\Local\\petasti_data';
 
