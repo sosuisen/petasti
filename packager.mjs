@@ -1,6 +1,7 @@
 import packager from 'electron-packager';
 import electronRebuild from 'electron-rebuild';
 import electronInstaller from 'electron-winstaller';
+import createDMG from 'electron-installer-dmg';
 import packageJson from './package.json' assert{ type: "json" };
 
 const createInstaller = async () => {
@@ -44,7 +45,7 @@ const createInstaller = async () => {
   
   }).catch(e => console.log(`Error in Packager: ${e.message}`));
 
-  console.log('Building installer...');
+  console.log('Building windows installer...');
   await electronInstaller.createWindowsInstaller({
       appDirectory: './Petasti-win32-x64',
       outputDirectory: './installer/',
@@ -55,6 +56,15 @@ const createInstaller = async () => {
       setupExe: `${name}-${packageJson.version}-Setup.exe`,
       noMsi: true
     }).catch (e => console.log(`Error in Windows Installer: ${e.message}`));
+
+  console.log('Building macOS installer...');
+
+  await createDMG({
+    appPath: './Petasti-darwin-x64/Petasti.app',
+    out: './Petasti-darwin-x64',
+    title: `${name}-${packageJson.version}`,
+    name: `${name}-${packageJson.version}`,
+  }).catch (e => console.log(`Error in macOS Installer: ${e.message}`));
 };
 
 createInstaller();
