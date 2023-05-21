@@ -1129,9 +1129,6 @@ export class Card implements ICard {
         y: 3,
       });
     });
-    electronLocalshortcut.register(this.window, [opt + '+T', 'Ctrl+' + opt + '+T'], () => {
-      this._note.tray.popUpContextMenu();
-    });
 
     electronLocalshortcut.register(this.window, ['CmdOrCtrl+N', opt + '+N'], () => {
       this._createCardFromShortcut(false);
