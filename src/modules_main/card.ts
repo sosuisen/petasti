@@ -309,14 +309,14 @@ export class Card implements ICard {
   /**
    * Context menu
    */
-  public resetContextMenu: () => void = () => {};
-  public disposeContextMenu: () => void = () => {};
+  public resetContextMenu: () => void = () => { };
+  public disposeContextMenu: () => void = () => { };
 
   /**
    * Constructor
    */
   // eslint-disable-next-line complexity
-  constructor (
+  constructor(
     note: INote,
     noteIdOrUrl: string,
     cardBody?: Partial<CardBody>,
@@ -988,23 +988,23 @@ export class Card implements ICard {
     left: AccelCheck;
     right: AccelCheck;
   } = {
-    up: {
-      prevTime: 0,
-      count: 0,
-    },
-    down: {
-      prevTime: 0,
-      count: 0,
-    },
-    left: {
-      prevTime: 0,
-      count: 0,
-    },
-    right: {
-      prevTime: 0,
-      count: 0,
-    },
-  };
+      up: {
+        prevTime: 0,
+        count: 0,
+      },
+      down: {
+        prevTime: 0,
+        count: 0,
+      },
+      left: {
+        prevTime: 0,
+        count: 0,
+      },
+      right: {
+        prevTime: 0,
+        count: 0,
+      },
+    };
 
   // eslint-disable-next-line complexity
   private _getChangeUnit = (
@@ -1285,16 +1285,21 @@ export class Card implements ICard {
         this.window.webContents.send('toggle-sticker');
     });
 
-    electronLocalshortcut.register(this.window, 'Ctrl+' + opt + '+Space', () => {
-      // if (this.status === 'Blurred') return;
-      if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
-      if (isLabelOpened(this.sketch.label.status)) {
-        this.window.webContents.send('transform-from-label');
-      }
-      else {
-        this.window.webContents.send('transform-to-label');
-      }
-    });
+    // Some keyboards cannot input Ctrl + opt + Space
+    // Use M like command + M on macOS
+    electronLocalshortcut.register(
+      this.window,
+      ['Ctrl+' + opt + '+Space', 'Ctrl+' + opt + '+M'],
+      () => {
+        // if (this.status === 'Blurred') return;
+        if (!this.window || this.window.isDestroyed() || !this.window.webContents) return;
+        if (isLabelOpened(this.sketch.label.status)) {
+          this.window.webContents.send('transform-from-label');
+        }
+        else {
+          this.window.webContents.send('transform-to-label');
+        }
+      });
 
     // For debugging
     electronLocalshortcut.register(this.window, 'CmdOrCtrl+' + opt + '+D', () => {
