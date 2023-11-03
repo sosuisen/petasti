@@ -1,7 +1,7 @@
 {
   "name": "petasti",
   "productName": "Petasti",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "Petasti",
   "main": "dist/main.js",
   "scripts": {
