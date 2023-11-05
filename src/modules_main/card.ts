@@ -1311,7 +1311,6 @@ export class Card implements ICard {
     });
 
     const moveFocusTo = (direction: Direction) => {
-      // Move current focus to right card
       const relPos = calcRelativePositionOfCardUrl(this.url);
       if (relPos[direction].length > 0) {
         const nearestCardUrl = relPos[direction].reduce(
