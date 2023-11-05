@@ -31,13 +31,6 @@ import { initCardRenderer, render, shadowHeight } from './modules_renderer/card_
 import { saveCardColor } from './modules_renderer/save';
 import window from './modules_renderer/window';
 import {
-  getShiftDown,
-  setAltDown,
-  setCtrlDown,
-  setMetaDown,
-  setShiftDown,
-} from './modules_common/keys';
-import {
   cardBodyUpdateCreator,
   cardGeometryUpdateCreator,
   cardLabelUpdateCreator,
@@ -57,6 +50,8 @@ let cardCssStyle: CardCssStyle = {
 };
 
 let suppressFocusEvent = false;
+
+let suppressMouseDownEvent = false;
 
 const cardEditor: ICardEditor = new CardEditorMarkdown();
 
@@ -147,18 +142,18 @@ const toggleSticker = async () => {
  */
 const initializeUIEvents = () => {
   document.addEventListener('keydown', e => {
-    setShiftDown(e.shiftKey);
-    setCtrlDown(e.ctrlKey);
-    setAltDown(e.altKey);
-    setMetaDown(e.metaKey); // Windows key, Command key
+    window.api.setShiftDown(e.shiftKey);
+    window.api.setCtrlDown(e.ctrlKey);
+    window.api.setAltDown(e.altKey);
+    window.api.setMetaDown(e.metaKey); // Windows key, Command key
     render(['TitleBar']);
   });
 
   document.addEventListener('keyup', e => {
-    setShiftDown(e.shiftKey);
-    setCtrlDown(e.ctrlKey);
-    setAltDown(e.altKey);
-    setMetaDown(e.metaKey); // Windows key, Command key
+    window.api.setShiftDown(e.shiftKey);
+    window.api.setCtrlDown(e.ctrlKey);
+    window.api.setAltDown(e.altKey);
+    window.api.setMetaDown(e.metaKey); // Windows key, Command key
     render(['TitleBar']);
   });
 
@@ -167,9 +162,8 @@ const initializeUIEvents = () => {
     return false;
   });
 
-  document.getElementById('contents')!.addEventListener('mousedown', event => {
-    console.log('## contents mousedown');
-    startEditorByClick({ x: event.clientX, y: event.clientY } as InnerClickEvent);
+  document.getElementById('contents')!.addEventListener('mousedown', e => {
+    startEditorByClick({ x: e.clientX, y: e.clientY } as InnerClickEvent);
   });
 
   // eslint-disable-next-line no-unused-expressions
@@ -184,7 +178,7 @@ const initializeUIEvents = () => {
     const geometry = { ...DEFAULT_CARD_GEOMETRY };
     geometry.x = cardStore.getState().sketch.geometry.x;
     geometry.y = cardStore.getState().sketch.geometry.y;
-    if (getShiftDown()) {
+    if (await window.api.getShiftDown()) {
       geometry.width = cardStore.getState().sketch.geometry.width;
       geometry.height = cardStore.getState().sketch.geometry.height;
     }
@@ -267,10 +261,13 @@ const initializeUIEvents = () => {
     }
   });
 
-  window.addEventListener('mouseleave', event => {});
+  window.addEventListener('mousemove', e => {
+    window.api.setShiftDown(e.shiftKey);
+    window.api.setCtrlDown(e.ctrlKey);
+    window.api.setAltDown(e.altKey);
+    window.api.setMetaDown(e.metaKey); // Windows key, Command key
 
-  window.addEventListener('mousemove', event => {
-    if (event.buttons !== 1) {
+    if (e.buttons !== 1) {
       // left button is not down
       onBodyMouseUp();
     }
@@ -285,49 +282,80 @@ const initializeUIEvents = () => {
     });
     animationId = requestAnimationFrame(moveWindow);
   };
-  document.getElementById('titleBar')!.addEventListener('mousedown', event => {
+  document.getElementById('titleBar')!.addEventListener('mousedown', e => {
     if (!isLabelOpened(cardStore.getState().sketch.label.status)) {
       onBodyMouseUp();
-      mouseOffsetX = event.clientX;
-      mouseOffsetY = event.clientY;
+      mouseOffsetX = e.clientX;
+      mouseOffsetY = e.clientY;
       moveStartX = window.screenX;
       moveStartY = window.screenY;
 
       document.body!.addEventListener('mouseup', onBodyMouseUp);
       requestAnimationFrame(moveWindow);
-      event.preventDefault();
+      e.preventDefault();
     }
   });
 
-  document.body!.addEventListener('mousedown', event => {
+  document.body!.addEventListener('mousedown', e => {
+    // sendLeftMouseClick による mousedownは、screenX, screenYが0になる。
+    // このイベントハンドラでは、sendLeftMouseClickによるものを除外する。
+    if (e.screenX === 0 && e.screenY === 0) {
+      return;
+    }
+
+    window.api.setShiftDown(e.shiftKey);
+    window.api.setCtrlDown(e.ctrlKey);
+    window.api.setAltDown(e.altKey);
+    window.api.setMetaDown(e.metaKey); // Windows key, Command key
+
+    // if (await window.api.getCtrlDown()) {
+    if (e.ctrlKey) {
+      console.log('body mousedown: selectCard');
+      window.api.selectCard(cardStore.getState().workState.url);
+    }
+    else {
+      console.log('body mousedown: deselectAllCards');
+      window.api.deselectAllCards();
+    }
+
     if (isLabelOpened(cardStore.getState().sketch.label.status)) {
       onBodyMouseUp();
-      mouseOffsetX = event.clientX;
-      mouseOffsetY = event.clientY;
+      mouseOffsetX = e.clientX;
+      mouseOffsetY = e.clientY;
       moveStartX = window.screenX;
       moveStartY = window.screenY;
 
       document.body!.addEventListener('mouseup', onBodyMouseUp);
       requestAnimationFrame(moveWindow);
-      event.preventDefault();
+      e.preventDefault();
     }
   });
 
-  document.getElementById('title')!.addEventListener('dblclick', event => {
+  document.getElementById('title')!.addEventListener('dblclick', e => {
+    window.api.setShiftDown(e.shiftKey);
+    window.api.setCtrlDown(e.ctrlKey);
+    window.api.setAltDown(e.altKey);
+    window.api.setMetaDown(e.metaKey); // Windows key, Command key
+
     if (!isLabelOpened(cardStore.getState().sketch.label.status)) {
       onBodyMouseUp();
       onTransformToLabel();
-      event.preventDefault();
-      event.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();
     }
   });
 
-  document.body!.addEventListener('dblclick', event => {
+  document.body!.addEventListener('dblclick', e => {
+    window.api.setShiftDown(e.shiftKey);
+    window.api.setCtrlDown(e.ctrlKey);
+    window.api.setAltDown(e.altKey);
+    window.api.setMetaDown(e.metaKey); // Windows key, Command key
+
     if (isLabelOpened(cardStore.getState().sketch.label.status)) {
       onBodyMouseUp();
       onTransformToCard();
-      event.preventDefault();
-      event.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();
     }
   });
 };
@@ -654,6 +682,15 @@ const onCardFocused = () => {
 
   if (suppressFocusEvent) return;
 
+  /*
+  if (await window.api.getCtrlDown()) {
+    window.api.selectCard(cardStore.getState().workState.url);
+  }
+  else {
+    window.api.deselectAllCards();
+  }
+  */
+
   cardStore.dispatch(cardSketchBringToFrontCreator());
 
   render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
@@ -678,10 +715,10 @@ const onCardBlurred = () => {
   }
 
   /* reset modifier keys */
-  setShiftDown(false);
-  setCtrlDown(false);
-  setAltDown(false);
-  setMetaDown(false);
+  window.api.setShiftDown(false);
+  window.api.setCtrlDown(false);
+  window.api.setAltDown(false);
+  window.api.setMetaDown(false);
 
   render(['TitleBar', 'TitleBarStyle', 'ContentsData', 'CardStyle', 'ContentsRect']);
 };
@@ -1036,6 +1073,7 @@ const startEditor = async (x?: number, y?: number) => {
     */
     // Need not to use MouseDown but MouseClick
     window.api.sendLeftMouseClick(cardStore.getState().workState.url, x, y);
+    suppressMouseDownEvent = true;
   }
 };
 
@@ -1162,7 +1200,6 @@ const addDroppedImage = async (fileDropEvent: FileDropEvent) => {
 };
 
 window.addEventListener('load', onload, false);
-window.addEventListener('beforeunload', async e => {});
 
 // Remove APIs
 const disableAPIList = ['open', 'alert', 'confirm', 'prompt', 'print'];

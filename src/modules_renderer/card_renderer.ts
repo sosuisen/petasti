@@ -10,7 +10,6 @@ import {
   strengthenHexColor,
 } from '../modules_common/color';
 import window from './window';
-import { getAltDown } from '../modules_common/keys';
 import { cardStore } from './card_store';
 import { CARD_MARGIN_LEFT, CARD_MARGIN_TOP, CARD_PADDING } from '../modules_common/const';
 import { getConfig } from './config';
@@ -55,7 +54,7 @@ const setWindowTitle = () => {
 };
 
 // eslint-disable-next-line complexity
-const renderTitleBar = () => {
+const renderTitleBar = async () => {
   let geomWidth;
   let geomHeight;
 
@@ -170,7 +169,7 @@ const renderTitleBar = () => {
   }
   document.getElementById('title')!.style.width = titleWidth + 'px';
 
-  if (getAltDown() || cardStore.getState().body._body === '') {
+  if ((await window.api.getAltDown()) || cardStore.getState().body._body === '') {
     document.getElementById('closeIcon')!.className = 'far fa-trash-alt title-btn-icon';
   }
   else {

@@ -128,6 +128,19 @@ class Note implements INote {
   currentZOrder: ZOrder = [];
 
   /**
+   * Selected cards
+   */
+  selectedCards: string[] = [];
+
+  /**
+   * Key
+   */
+  shiftDown = false;
+  ctrlDown = false;
+  altDown = false;
+  metaDown = false;
+
+  /**
    * Logger
    */
   logger: Logger;

@@ -55,7 +55,6 @@ import {
 } from './card_action_creator';
 import { getConfig } from './config';
 import window from './window';
-import { getCtrlDown, getMetaDown } from '../modules_common/keys';
 import { CARD_MARGIN_LEFT, CARD_MARGIN_TOP, CARD_PADDING } from '../modules_common/const';
 
 export class CardEditorMarkdown implements ICardEditor {
@@ -226,7 +225,7 @@ export class CardEditorMarkdown implements ICardEditor {
 
     document
       .getElementById('editor')!
-      .addEventListener('keydown', (event: KeyboardEvent) => {
+      .addEventListener('keydown', async (event: KeyboardEvent) => {
         if (this._editor === undefined) return;
         if (event.code === 'Tab') {
           this._editor.action(ctx => {
@@ -267,8 +266,8 @@ export class CardEditorMarkdown implements ICardEditor {
           });
         }
         else if (
-          ((getConfig().os !== 'darwin' && getCtrlDown()) ||
-            (getConfig().os === 'darwin' && getMetaDown())) &&
+          ((getConfig().os !== 'darwin' && (await window.api.getCtrlDown())) ||
+            (getConfig().os === 'darwin' && (await window.api.getMetaDown()))) &&
           (event.code === 'ArrowUp' || event.code === 'ArrowDown')
         ) {
           const isCollapse = event.code === 'ArrowUp';

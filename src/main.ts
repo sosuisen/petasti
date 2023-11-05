@@ -534,6 +534,34 @@ ipcMain.handle('get-uuid', () => {
   //  return uuidv4();
 });
 
+ipcMain.handle('select-card', (event, url: string) => {
+  if (note.selectedCards.includes(url)) {
+    // Deselect
+    note.selectedCards = note.selectedCards.filter(item => item !== url);
+    if (cacheOfCard.get(url)?.window) {
+      cacheOfCard.get(url)?.window?.webContents.send('deselect-card');
+    }
+  }
+  else {
+    // Select
+    note.selectedCards.push(url);
+    if (cacheOfCard.get(url)?.window) {
+      cacheOfCard.get(url)?.window?.webContents.send('select-card');
+    }
+  }
+  console.log('Selected cards: ' + note.selectedCards);
+});
+
+ipcMain.handle('deselect-all-cards', () => {
+  note.selectedCards.forEach(url => {
+    if (cacheOfCard.get(url)?.window) {
+      cacheOfCard.get(url)?.window?.webContents.send('deselect-card');
+    }
+  });
+  note.selectedCards = [];
+  console.log('Selected cards: ' + note.selectedCards);
+});
+
 ipcMain.handle(
   'send-mouse-input',
   (event, url: string, mouseInputEvent: MouseInputEvent[]) => {
@@ -564,6 +592,38 @@ ipcMain.handle('db', async (event, command: DatabaseCommand) => {
     default:
       break;
   }
+});
+
+ipcMain.handle('get-ctrl-down', () => {
+  return note.ctrlDown;
+});
+
+ipcMain.handle('get-shift-down', () => {
+  return note.shiftDown;
+});
+
+ipcMain.handle('get-alt-down', () => {
+  return note.altDown;
+});
+
+ipcMain.handle('get-meta-down', () => {
+  return note.metaDown;
+});
+
+ipcMain.handle('set-shift-down', (event, isDown: boolean) => {
+  note.shiftDown = isDown;
+});
+
+ipcMain.handle('set-ctrl-down', (event, isDown: boolean) => {
+  note.ctrlDown = isDown;
+});
+
+ipcMain.handle('set-alt-down', (event, isDown: boolean) => {
+  note.altDown = isDown;
+});
+
+ipcMain.handle('set-meta-down', (event, isDown: boolean) => {
+  note.metaDown = isDown;
 });
 
 ipcMain.handle('window-moving', (e, url, { mouseOffsetX, mouseOffsetY }) => {

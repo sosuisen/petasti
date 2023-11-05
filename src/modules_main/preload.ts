@@ -50,8 +50,20 @@ contextBridge.exposeInMainWorld('api', {
   focus: (url: string) => {
     return ipcRenderer.invoke('focus', url);
   },
+  getAltDown: () => {
+    return ipcRenderer.invoke('get-alt-down');
+  },
+  getCtrlDown: () => {
+    return ipcRenderer.invoke('get-ctrl-down');
+  },
   getCurrentDisplayRect: (points: { x: number; y: number }[]) => {
     return ipcRenderer.invoke('get-current-display-rect', points);
+  },
+  getMetaDown: () => {
+    return ipcRenderer.invoke('get-meta-down');
+  },
+  getShiftDown: () => {
+    return ipcRenderer.invoke('get-shift-down');
   },
   getUuid: () => {
     return ipcRenderer.invoke('get-uuid');
@@ -81,6 +93,12 @@ contextBridge.exposeInMainWorld('api', {
       top,
       bottom
     );
+  },
+  selectCard: (url: string) => {
+    return ipcRenderer.invoke('select-card', url);
+  },
+  deselectAllCards: () => {
+    return ipcRenderer.invoke('deselect-all-cards');
   },
   sendLeftMouseDown: (url: string, x: number, y: number) => {
     const leftMouseDown: MouseInputEvent = {
@@ -114,6 +132,18 @@ contextBridge.exposeInMainWorld('api', {
       y,
     };
     return ipcRenderer.invoke('send-mouse-input', url, [leftMouseDown, leftMouseUp]);
+  },
+  setShiftDown: (isDown: boolean) => {
+    return ipcRenderer.invoke('set-shift-down', isDown);
+  },
+  setCtrlDown: (isDown: boolean) => {
+    return ipcRenderer.invoke('set-ctrl-down', isDown);
+  },
+  setAltDown: (isDown: boolean) => {
+    return ipcRenderer.invoke('set-alt-down', isDown);
+  },
+  setMetaDown: (isDown: boolean) => {
+    return ipcRenderer.invoke('set-meta-down', isDown);
   },
   setWindowRect: (
     url: string,

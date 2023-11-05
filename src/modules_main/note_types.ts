@@ -34,6 +34,13 @@ export interface INote {
 
   currentZOrder: ZOrder;
 
+  selectedCards: string[];
+
+  shiftDown: boolean;
+  ctrlDown: boolean;
+  altDown: boolean;
+  metaDown: boolean;
+
   logger: Logger;
 
   cardCollection: ICollection;

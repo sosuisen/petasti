@@ -29,12 +29,16 @@ interface WindowWithAPI extends Window {
     finishLoad: (url: string) => Promise<void>;
     finishRenderCard: (url: string) => Promise<void>;
     focus: (url: string) => Promise<void>;
+    getAltDown: () => Promise<boolean>;
+    getCtrlDown: () => Promise<boolean>;
     getCurrentDisplayRect: (
       points: {
         x: number;
         y: number;
       }[]
     ) => { x: number; y: number; width: number; height: number }[];
+    getMetaDown: () => Promise<boolean>;
+    getShiftDown: () => Promise<boolean>;
     getUuid: () => Promise<string>;
     getZoomLevel: () => number;
     openURL: (url: string) => Promise<void>;
@@ -47,8 +51,14 @@ interface WindowWithAPI extends Window {
       top: number,
       bottom: number
     ) => Promise<void>;
+    selectCard: (url: string) => Promise<void>;
+    deselectAllCards: () => Promise<void>;
     sendLeftMouseDown: (url: string, x: number, y: number) => Promise<void>;
     sendLeftMouseClick: (url: string, x: number, y: number) => Promise<void>;
+    setShiftDown: (isDown: boolean) => Promise<void>;
+    setCtrlDown: (isDown: boolean) => Promise<void>;
+    setAltDown: (isDown: boolean) => Promise<void>;
+    setMetaDown: (isDown: boolean) => Promise<void>;
     setTitle: (url: string, title: string) => Promise<void>;
     setWindowRect: (
       url: string,
