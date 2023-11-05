@@ -26,6 +26,7 @@ import {
   CardLabelUpdateAction,
   CardSketchModifiedDateUpdateAction,
   CardStyleUpdateAction,
+  CardWorkStateSelectedUpdateAction,
   CardWorkStateStatusUpdateAction,
 } from './card_action';
 import { CardState, ChangeFrom } from './card_types';
@@ -477,5 +478,17 @@ export const cardWorkStateStatusUpdateCreator = (status: CardStatus) => {
       payload: status,
     };
     dispatch(cardStatusAction);
+  };
+};
+
+export const cardWorkStateSelectedUpdateCreator = (selected: boolean) => {
+  return function (dispatch: Dispatch<any>, getState: () => CardState) {
+    if (getState().sketch._id === '') return;
+
+    const cardSelectedAction: CardWorkStateSelectedUpdateAction = {
+      type: 'card-work-state-selected-update',
+      payload: selected,
+    };
+    dispatch(cardSelectedAction);
   };
 };

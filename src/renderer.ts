@@ -37,6 +37,7 @@ import {
   cardSketchBringToFrontCreator,
   cardSketchUpdateCreator,
   cardStyleUpdateCreator,
+  cardWorkStateSelectedUpdateCreator,
   cardWorkStateStatusUpdateCreator,
 } from './modules_renderer/card_action_creator';
 import { setMessages } from './modules_renderer/messages_renderer';
@@ -310,11 +311,9 @@ const initializeUIEvents = () => {
 
     // if (await window.api.getCtrlDown()) {
     if (e.ctrlKey) {
-      console.log('body mousedown: selectCard');
       window.api.selectCard(cardStore.getState().workState.url);
     }
     else {
-      console.log('body mousedown: deselectAllCards');
       window.api.deselectAllCards();
     }
 
@@ -408,6 +407,12 @@ window.addEventListener('message', event => {
       break;
     case 'card-focused':
       onCardFocused();
+      break;
+    case 'card-selected':
+      onCardSelected();
+      break;
+    case 'card-deselected':
+      onCardDeselected();
       break;
     case 'change-card-color':
       onChangeCardColor(event.data.backgroundColor, event.data.opacity);
@@ -682,15 +687,6 @@ const onCardFocused = () => {
 
   if (suppressFocusEvent) return;
 
-  /*
-  if (await window.api.getCtrlDown()) {
-    window.api.selectCard(cardStore.getState().workState.url);
-  }
-  else {
-    window.api.deselectAllCards();
-  }
-  */
-
   cardStore.dispatch(cardSketchBringToFrontCreator());
 
   render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
@@ -721,6 +717,22 @@ const onCardBlurred = () => {
   window.api.setMetaDown(false);
 
   render(['TitleBar', 'TitleBarStyle', 'ContentsData', 'CardStyle', 'ContentsRect']);
+};
+
+const onCardSelected = () => {
+  if (closing) return;
+
+  cardStore.dispatch(cardWorkStateSelectedUpdateCreator(true));
+
+  render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
+};
+
+const onCardDeselected = () => {
+  if (closing) return;
+
+  cardStore.dispatch(cardWorkStateSelectedUpdateCreator(false));
+
+  render(['TitleBar', 'TitleBarStyle', 'CardStyle', 'ContentsRect']);
 };
 
 const onChangeCardColor = (backgroundColor: string, opacity = 1.0) => {
@@ -820,6 +832,7 @@ const onRenderCard = (
     payload: {
       url,
       status: 'Blurred',
+      selected: false,
     },
   });
 

@@ -95,6 +95,7 @@ export type NoteProp = {
 export type CardWorkState = {
   url: string;
   status: CardStatus;
+  selected: boolean;
 };
 
 export type CardPositionDebounceItem = {

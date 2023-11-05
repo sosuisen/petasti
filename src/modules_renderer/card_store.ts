@@ -229,6 +229,7 @@ const cardWorkStateReducer = (
   state: CardWorkState = {
     url: '',
     status: 'Blurred',
+    selected: false,
   },
   action: CardWorkStateAction
 ) => {
@@ -240,6 +241,10 @@ const cardWorkStateReducer = (
     case 'card-work-state-status-update': {
       console.log('# cardWorkStateReducer: ' + action.payload);
       return { ...state, status: action.payload };
+    }
+    case 'card-work-state-selected-update': {
+      console.log('# cardWorkStateReducer: ' + action.payload);
+      return { ...state, selected: action.payload };
     }
     default:
       return state;

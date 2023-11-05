@@ -170,7 +170,15 @@ export interface CardWorkStateStatusUpdateAction {
   payload: CardStatus;
 }
 
-export type CardWorkStateAction = CardWorkStateInitAction | CardWorkStateStatusUpdateAction;
+export interface CardWorkStateSelectedUpdateAction {
+  type: 'card-work-state-selected-update';
+  payload: boolean;
+}
+
+export type CardWorkStateAction =
+  | CardWorkStateInitAction
+  | CardWorkStateStatusUpdateAction
+  | CardWorkStateSelectedUpdateAction;
 
 /**
  * CardAction

@@ -273,3 +273,11 @@ ipcRenderer.on('transform-from-label', (event: Electron.IpcRendererEvent) =>
 ipcRenderer.on('toggle-sticker', (event: Electron.IpcRendererEvent) =>
   window.postMessage({ command: 'toggle-sticker' }, 'file://')
 );
+
+ipcRenderer.on('card-selected', (event: Electron.IpcRendererEvent) =>
+  window.postMessage({ command: 'card-selected' }, 'file://')
+);
+
+ipcRenderer.on('card-deselected', (event: Electron.IpcRendererEvent) =>
+  window.postMessage({ command: 'card-deselected' }, 'file://')
+);

@@ -365,19 +365,26 @@ const renderCardStyle = () => {
   }
 
   if (cardStore.getState().sketch.style.opacity !== 0) {
-    if (cardStore.getState().workState.status === 'Focused') {
+    if (cardStore.getState().workState.selected) {
+      document.getElementById(
+        'card'
+      )!.style.border = `${cardCssStyle.borderWidth}px solid #00ff00`;
+    }
+    else if (cardStore.getState().workState.status === 'Focused') {
       document.getElementById(
         'card'
       )!.style.border = `${cardCssStyle.borderWidth}px solid #ff0000`;
       setTimeout(() => {
-        const card = document.getElementById('card');
-        if (card) {
-          card.style.transition = 'border-color 0.5s ease-in';
-          card.style.border = `${cardCssStyle.borderWidth}px solid ${borderRgba}`;
-          setTimeout(() => {
-            const card2 = document.getElementById('card');
-            if (card2) card2.style.transition = '';
-          }, 700);
+        if (!cardStore.getState().workState.selected) {
+          const card = document.getElementById('card');
+          if (card) {
+            card.style.transition = 'border-color 0.5s ease-in';
+            card.style.border = `${cardCssStyle.borderWidth}px solid ${borderRgba}`;
+            setTimeout(() => {
+              const card2 = document.getElementById('card');
+              if (card2) card2.style.transition = '';
+            }, 700);
+          }
         }
       }, 1000);
     }

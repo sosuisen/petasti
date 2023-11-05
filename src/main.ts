@@ -539,14 +539,14 @@ ipcMain.handle('select-card', (event, url: string) => {
     // Deselect
     note.selectedCards = note.selectedCards.filter(item => item !== url);
     if (cacheOfCard.get(url)?.window) {
-      cacheOfCard.get(url)?.window?.webContents.send('deselect-card');
+      cacheOfCard.get(url)?.window?.webContents.send('card-deselected');
     }
   }
   else {
     // Select
     note.selectedCards.push(url);
     if (cacheOfCard.get(url)?.window) {
-      cacheOfCard.get(url)?.window?.webContents.send('select-card');
+      cacheOfCard.get(url)?.window?.webContents.send('card-selected');
     }
   }
   console.log('Selected cards: ' + note.selectedCards);
@@ -555,7 +555,7 @@ ipcMain.handle('select-card', (event, url: string) => {
 ipcMain.handle('deselect-all-cards', () => {
   note.selectedCards.forEach(url => {
     if (cacheOfCard.get(url)?.window) {
-      cacheOfCard.get(url)?.window?.webContents.send('deselect-card');
+      cacheOfCard.get(url)?.window?.webContents.send('card-deselected');
     }
   });
   note.selectedCards = [];
